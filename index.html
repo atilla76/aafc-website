@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,26 +7,21 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; }
-  
   nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.1); }
   .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 2px; }
   .nav-links a { color: rgba(245,241,235,0.6); text-decoration: none; margin-left: 32px; font-size: 14px; transition: color 0.2s; }
   .nav-links a:hover { color: #F5F1EB; }
-
   .hero { text-align: center; padding: 100px 20px 80px; }
   .hero h1 { font-size: 52px; font-weight: 300; color: #F5F1EB; line-height: 1.2; margin-bottom: 20px; }
   .hero h1 span { color: #B89A6A; font-weight: 600; }
   .hero p { font-size: 18px; color: rgba(245,241,235,0.6); max-width: 560px; margin: 0 auto 40px; line-height: 1.7; }
-  
   .badges { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
   .badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.2s; }
   .badge:hover { background: rgba(184,154,106,0.2); }
   .badge svg { width: 20px; height: 20px; }
-
   .features { padding: 80px 60px; max-width: 1100px; margin: 0 auto; }
   .features h2 { text-align: center; font-size: 32px; font-weight: 400; margin-bottom: 16px; }
   .features .sub { text-align: center; color: rgba(245,241,235,0.5); font-size: 15px; margin-bottom: 56px; }
-  
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
   .card { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 16px; padding: 28px; }
   .icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px; }
@@ -35,21 +30,17 @@
   .icon-teal { background: rgba(29,158,117,0.2); }
   .card h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
   .card p { font-size: 14px; color: rgba(245,241,235,0.5); line-height: 1.6; }
-
   .specialties { padding: 60px; background: rgba(245,241,235,0.02); border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); }
   .specialties h2 { text-align: center; font-size: 28px; font-weight: 400; margin-bottom: 40px; }
   .spec-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 700px; margin: 0 auto; }
   .spec { background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.1); border-radius: 100px; padding: 10px 20px; font-size: 14px; color: rgba(245,241,235,0.7); }
-
   .cta { text-align: center; padding: 80px 20px; }
   .cta h2 { font-size: 36px; font-weight: 300; margin-bottom: 16px; }
   .cta p { color: rgba(245,241,235,0.5); margin-bottom: 36px; font-size: 16px; }
-
   footer { border-top: 1px solid rgba(245,241,235,0.08); padding: 32px 60px; display: flex; justify-content: space-between; align-items: center; }
   footer p { font-size: 13px; color: rgba(245,241,235,0.3); }
   footer a { font-size: 13px; color: rgba(245,241,235,0.4); text-decoration: none; }
   footer a:hover { color: #F5F1EB; }
-
   @media (max-width: 600px) {
     nav { padding: 16px 20px; }
     .hero h1 { font-size: 34px; }
@@ -64,15 +55,15 @@
 <nav>
   <div class="logo">AAFC</div>
   <div class="nav-links">
-    <a href="#features">Özellikler</a>
-    <a href="#specialties">Uzmanlıklar</a>
-    <a href="privacy.html">Gizlilik</a>
+    <a href="#features">Features</a>
+    <a href="#specialties">Specialties</a>
+    <a href="privacy.html">Privacy</a>
   </div>
 </nav>
 
 <section class="hero">
-  <h1>Klinik Fotoğraf &<br><span>Hasta Arşiv Uygulaması</span></h1>
-  <p>Hastalarınızın gelişimini yıllar içinde takip edin. Fotoğraflarınız güvenle depolansın, kolayca karşılaştırın.</p>
+  <h1>Clinical Photo &<br><span>Patient Archive App</span></h1>
+  <p>Track your patients' progress over the years. Store photos securely and compare them with ease.</p>
   <div class="badges">
     <a href="https://apps.apple.com/app/id123456789" class="badge">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -86,57 +77,56 @@
 </section>
 
 <section class="features" id="features">
-  <h2>Her şey elinizin altında</h2>
-  <p class="sub">Klinik fotoğraf yönetimini kolaylaştıran tüm araçlar</p>
+  <h2>Everything you need</h2>
+  <p class="sub">All the tools to simplify clinical photo management</p>
   <div class="grid">
     <div class="card">
       <div class="icon icon-purple">📁</div>
-      <h3>Hasta Arşivi</h3>
-      <p>Tüm hastalarınızın fotoğraflarını düzenli şekilde arşivleyin. İsim ile anında arama yapın.</p>
+      <h3>Patient Archive</h3>
+      <p>Archive all your patients' photos in an organized way. Search instantly by name.</p>
     </div>
     <div class="card">
       <div class="icon icon-gold">🖼</div>
-      <h3>Önce / Sonra Kolajı</h3>
-      <p>İki farklı vizit fotoğrafını yan yana karşılaştırın. Gelişimi kolayca görün ve paylaşın.</p>
+      <h3>Before / After Collage</h3>
+      <p>Compare photos from two different visits side by side. Visualize progress and share easily.</p>
     </div>
     <div class="card">
       <div class="icon icon-teal">☁️</div>
-      <h3>Güvenli Depolama</h3>
-      <p>Tüm fotoğraflarınız güvenli bulut sunucusunda saklanır. İstediğiniz zaman yedekleyin.</p>
+      <h3>Secure Storage</h3>
+      <p>All your photos are stored on a secure cloud server. Back up anytime you want.</p>
     </div>
     <div class="card">
       <div class="icon icon-purple">📄</div>
-      <h3>PDF Rapor</h3>
-      <p>Hasta gelişimini profesyonel PDF raporları olarak kaydedin ve paylaşın.</p>
+      <h3>PDF Reports</h3>
+      <p>Save and share patient progress as professional PDF reports.</p>
     </div>
     <div class="card">
       <div class="icon icon-gold">📷</div>
-      <h3>5 Açı Fotoğraflama</h3>
-      <p>Ön yüz, sol/sağ 45°, sol/sağ profil — standart açılarda tutarlı fotoğraf çekin.</p>
+      <h3>5-Angle Photography</h3>
+      <p>Front, left/right 45°, left/right profile — capture consistent photos from standard angles.</p>
     </div>
     <div class="card">
       <div class="icon icon-teal">👥</div>
-      <h3>Çoklu Kullanıcı</h3>
-      <p>Klinik ekibinizle aynı hastaya aynı anda erişin. Yetki yönetimi ile güvenli paylaşım.</p>
+      <h3>Multi-User</h3>
+      <p>Access the same patient with your clinic team simultaneously. Secure sharing with role management.</p>
     </div>
   </div>
 </section>
 
 <section class="specialties" id="specialties">
-  <h2>Kimler için?</h2>
+  <h2>Who is it for?</h2>
   <div class="spec-grid">
-    <span class="spec">Medikal Estetik</span>
-    <span class="spec">Plastik Cerrahi</span>
-    <span class="spec">KBB</span>
-    <span class="spec">Cildiye</span>
-    <span class="spec">Dermatoloji</span>
-    <span class="spec">Estetik Klinikler</span>
+    <span class="spec">Medical Aesthetics</span>
+    <span class="spec">Plastic Surgery</span>
+    <span class="spec">ENT</span>
+    <span class="spec">Dermatology</span>
+    <span class="spec">Aesthetic Clinics</span>
   </div>
 </section>
 
 <section class="cta">
-  <h2>Hemen başlayın</h2>
-  <p>iOS ve Android için ücretsiz indirin</p>
+  <h2>Get started today</h2>
+  <p>Download for free on iOS and Android</p>
   <div class="badges">
     <a href="https://apps.apple.com/app/id123456789" class="badge">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -152,7 +142,7 @@
 <footer>
   <p>© 2026 AAFC — Aesthetic Archive for Clinics</p>
   <div>
-    <a href="privacy.html">Gizlilik Politikası</a>
+    <a href="privacy.html">Privacy Policy</a>
   </div>
 </footer>
 

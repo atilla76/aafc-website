@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AAFC Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; min-height: 100vh; }
+  
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid rgba(245,241,235,0.1); }
+  .logo { font-size: 20px; font-weight: 600; color: #B89A6A; letter-spacing: 2px; text-decoration: none; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .user-email { font-size: 13px; color: rgba(245,241,235,0.5); }
+  .btn-logout { background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.12); color: rgba(245,241,235,0.6); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .btn-logout:hover { background: rgba(245,241,235,0.1); }
+
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 61px); padding: 20px; }
+  .login-box { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; }
+  .login-box h2 { font-size: 24px; font-weight: 400; margin-bottom: 8px; }
+  .login-box p { color: rgba(245,241,235,0.4); font-size: 14px; margin-bottom: 32px; }
+  
+  label { display: block; font-size: 12px; color: rgba(245,241,235,0.5); margin-bottom: 6px; letter-spacing: 0.5px; }
+  input { width: 100%; background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.12); border-radius: 10px; padding: 12px 14px; color: #F5F1EB; font-size: 14px; margin-bottom: 16px; }
+  input:focus { outline: none; border-color: rgba(184,154,106,0.4); }
+  
+  .btn-primary { width: 100%; background: #B89A6A; border: none; border-radius: 10px; padding: 14px; color: #1C1929; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #c9aa7a; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  
+  .error { color: #E05555; font-size: 13px; margin-top: 8px; }
+
+  .panel { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+  .panel h2 { font-size: 28px; font-weight: 400; margin-bottom: 8px; }
+  .panel .sub { color: rgba(245,241,235,0.4); font-size: 14px; margin-bottom: 40px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 40px; }
+  .stat { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 14px; padding: 20px; }
+  .stat-val { font-size: 32px; font-weight: 600; color: #B89A6A; }
+  .stat-lbl { font-size: 12px; color: rgba(245,241,235,0.4); margin-top: 4px; }
+
+  .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .action-card { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 16px; padding: 24px; }
+  .action-card h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+  .action-card p { font-size: 13px; color: rgba(245,241,235,0.4); margin-bottom: 20px; line-height: 1.6; }
+  .btn-action { background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
+  .btn-action:hover { background: rgba(184,154,106,0.2); }
+  .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .progress { margin-top: 12px; font-size: 12px; color: rgba(245,241,235,0.4); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">AAFC</a>
+  <div class="nav-right">
+    <span class="user-email" id="userEmail"></span>
+    <button class="btn-logout hidden" id="btnLogout" onclick="logout()">Cikis Yap</button>
+  </div>
+</nav>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginSection">
+  <div class="login-box">
+    <h2>Panel Girisi</h2>
+    <p>Klinik hesabinizla giris yapin</p>
+    <label>E-POSTA</label>
+    <input type="email" id="email" placeholder="klinik@email.com" />
+    <label>SIFRE</label>
+    <input type="password" id="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()" />
+    <button class="btn-primary" id="btnLogin" onclick="login()">Giris Yap</button>
+    <div class="error hidden" id="loginError"></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div class="panel hidden" id="panelSection">
+  <h2>Veri Merkezi</h2>
+  <p class="sub">Klinik verilerinizi goruntuleyin ve indirin</p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="statHasta">-</div><div class="stat-lbl">Hasta</div></div>
+    <div class="stat"><div class="stat-val" id="statVizit">-</div><div class="stat-lbl">Vizit</div></div>
+    <div class="stat"><div class="stat-val" id="statFoto">-</div><div class="stat-lbl">Fotograf</div></div>
+    <div class="stat"><div class="stat-val" id="statBelge">-</div><div class="stat-lbl">Belge</div></div>
+  </div>
+
+  <div class="actions">
+    <div class="action-card">
+      <h3>JSON Yedek</h3>
+      <p>Tum hasta, vizit ve fotograf URL bilgilerini JSON formatinda indirin. Fotograf dosyalari dahil degildir.</p>
+      <button class="btn-action" id="btnJson" onclick="downloadJson()">JSON Indir</button>
+      <div class="progress hidden" id="progressJson"></div>
+    </div>
+    <div class="action-card">
+      <h3>Fotograf Listesi</h3>
+      <p>Tum fotograf URL adreslerini CSV formatinda indirin. Her fotografi ayrica indirebilirsiniz.</p>
+      <button class="btn-action" id="btnCsv" onclick="downloadCsv()">CSV Indir</button>
+      <div class="progress hidden" id="progressCsv"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hugxacklprzujswtaike.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let clinicId = null;
+
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) await showPanel(session.user);
+}
+
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('btnLogin');
+  const err = document.getElementById('loginError');
+  
+  btn.disabled = true;
+  btn.textContent = 'Giris yapiliyor...';
+  err.classList.add('hidden');
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  
+  if (error) {
+    err.textContent = 'Hatali email veya sifre';
+    err.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Giris Yap';
+  } else {
+    await showPanel(data.user);
+  }
+}
+
+async function showPanel(user) {
+  document.getElementById('loginSection').classList.add('hidden');
+  document.getElementById('panelSection').classList.remove('hidden');
+  document.getElementById('userEmail').textContent = user.email;
+  document.getElementById('btnLogout').classList.remove('hidden');
+
+  // clinic_id al
+  const { data: userData } = await supabase.from('users').select('clinic_id').eq('auth_id', user.id).single();
+  clinicId = userData?.clinic_id;
+
+  await loadStats();
+}
+
+async function loadStats() {
+  if (!clinicId) return;
+
+  const { data: patients } = await supabase.from('patients').select('id').eq('clinic_id', clinicId);
+  const { data: visits } = await supabase.from('visits').select('id').eq('clinic_id', clinicId);
+  const { data: photos } = await supabase.from('photos').select('id').eq('clinic_id', clinicId);
+  const { data: docs } = await supabase.from('documents').select('id').eq('clinic_id', clinicId);
+
+  document.getElementById('statHasta').textContent = patients?.length || 0;
+  document.getElementById('statVizit').textContent = visits?.length || 0;
+  document.getElementById('statFoto').textContent = photos?.length || 0;
+  document.getElementById('statBelge').textContent = docs?.length || 0;
+}
+
+async function downloadJson() {
+  const btn = document.getElementById('btnJson');
+  const progress = document.getElementById('progressJson');
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  progress.textContent = 'Veriler hazirlaniyor...';
+
+  const { data: patients } = await supabase.from('patients').select('*').eq('clinic_id', clinicId);
+  const allData = [];
+
+  for (const p of patients) {
+    progress.textContent = `${p.name} ${p.surname || ''} isleniyor...`;
+    const { data: visits } = await supabase.from('visits').select('*').eq('patient_id', p.id);
+    const visitsWithData = [];
+    for (const v of visits || []) {
+      const { data: photos } = await supabase.from('photos').select('*').eq('visit_id', v.id);
+      const { data: docs } = await supabase.from('documents').select('*').eq('visit_id', v.id);
+      visitsWithData.push({ ...v, photos: photos || [], documents: docs || [] });
+    }
+    allData.push({ ...p, visits: visitsWithData });
+  }
+
+  const json = JSON.stringify({ export_date: new Date().toISOString(), clinic_id: clinicId, patients: allData }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aafc_yedek_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+
+  progress.textContent = 'Indirildi!';
+  btn.disabled = false;
+}
+
+async function downloadCsv() {
+  const btn = document.getElementById('btnCsv');
+  const progress = document.getElementById('progressCsv');
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  progress.textContent = 'Fotograf listesi hazirlaniyor...';
+
+  const { data: patients } = await supabase.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
+  const rows = ['Hasta Ad,Hasta Soyad,Vizit Tarihi,Bolge,Fotograf URL'];
+
+  for (const p of patients || []) {
+    const { data: visits } = await supabase.from('visits').select('*').eq('patient_id', p.id);
+    for (const v of visits || []) {
+      const { data: photos } = await supabase.from('photos').select('*').eq('visit_id', v.id);
+      for (const ph of photos || []) {
+        rows.push(`${p.name},${p.surname || ''},${v.visit_date || ''},${v.region || ''},${ph.file_path}`);
+      }
+    }
+  }
+
+  const csv = rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aafc_fotograflar_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+
+  progress.textContent = 'Indirildi!';
+  btn.disabled = false;
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  document.getElementById('loginSection').classList.remove('hidden');
+  document.getElementById('panelSection').classList.add('hidden');
+  document.getElementById('btnLogout').classList.add('hidden');
+  document.getElementById('userEmail').textContent = '';
+  clinicId = null;
+}
+
+init();
+</script>
+</body>
+</html>

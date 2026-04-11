@@ -107,12 +107,12 @@
 <script>
 const SUPABASE_URL = 'https://hugxacklprzujswtaike.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let clinicId = null;
 
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await client.auth.getSession();
   if (session) await showPanel(session.user);
 }
 
@@ -126,7 +126,7 @@ async function login() {
   btn.textContent = 'Giris yapiliyor...';
   err.classList.add('hidden');
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
   
   if (error) {
     err.textContent = 'Hatali email veya sifre';
@@ -145,7 +145,7 @@ async function showPanel(user) {
   document.getElementById('btnLogout').classList.remove('hidden');
 
   // clinic_id al
-  const { data: userData } = await supabase.from('users').select('clinic_id').eq('auth_id', user.id).single();
+  const { data: userData } = await client.from('users').select('clinic_id').eq('auth_id', user.id).single();
   clinicId = userData?.clinic_id;
 
   await loadStats();
@@ -154,10 +154,10 @@ async function showPanel(user) {
 async function loadStats() {
   if (!clinicId) return;
 
-  const { data: patients } = await supabase.from('patients').select('id').eq('clinic_id', clinicId);
-  const { data: visits } = await supabase.from('visits').select('id').eq('clinic_id', clinicId);
-  const { data: photos } = await supabase.from('photos').select('id').eq('clinic_id', clinicId);
-  const { data: docs } = await supabase.from('documents').select('id').eq('clinic_id', clinicId);
+  const { data: patients } = await client.from('patients').select('id').eq('clinic_id', clinicId);
+  const { data: visits } = await client.from('visits').select('id').eq('clinic_id', clinicId);
+  const { data: photos } = await client.from('photos').select('id').eq('clinic_id', clinicId);
+  const { data: docs } = await client.from('documents').select('id').eq('clinic_id', clinicId);
 
   document.getElementById('statHasta').textContent = patients?.length || 0;
   document.getElementById('statVizit').textContent = visits?.length || 0;
@@ -172,16 +172,16 @@ async function downloadJson() {
   progress.classList.remove('hidden');
   progress.textContent = 'Veriler hazirlaniyor...';
 
-  const { data: patients } = await supabase.from('patients').select('*').eq('clinic_id', clinicId);
+  const { data: patients } = await client.from('patients').select('*').eq('clinic_id', clinicId);
   const allData = [];
 
   for (const p of patients) {
     progress.textContent = `${p.name} ${p.surname || ''} isleniyor...`;
-    const { data: visits } = await supabase.from('visits').select('*').eq('patient_id', p.id);
+    const { data: visits } = await client.from('visits').select('*').eq('patient_id', p.id);
     const visitsWithData = [];
     for (const v of visits || []) {
-      const { data: photos } = await supabase.from('photos').select('*').eq('visit_id', v.id);
-      const { data: docs } = await supabase.from('documents').select('*').eq('visit_id', v.id);
+      const { data: photos } = await client.from('photos').select('*').eq('visit_id', v.id);
+      const { data: docs } = await client.from('documents').select('*').eq('visit_id', v.id);
       visitsWithData.push({ ...v, photos: photos || [], documents: docs || [] });
     }
     allData.push({ ...p, visits: visitsWithData });
@@ -206,13 +206,13 @@ async function downloadCsv() {
   progress.classList.remove('hidden');
   progress.textContent = 'Fotograf listesi hazirlaniyor...';
 
-  const { data: patients } = await supabase.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
+  const { data: patients } = await client.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
   const rows = ['Hasta Ad,Hasta Soyad,Vizit Tarihi,Bolge,Fotograf URL'];
 
   for (const p of patients || []) {
-    const { data: visits } = await supabase.from('visits').select('*').eq('patient_id', p.id);
+    const { data: visits } = await client.from('visits').select('*').eq('patient_id', p.id);
     for (const v of visits || []) {
-      const { data: photos } = await supabase.from('photos').select('*').eq('visit_id', v.id);
+      const { data: photos } = await client.from('photos').select('*').eq('visit_id', v.id);
       for (const ph of photos || []) {
         rows.push(`${p.name},${p.surname || ''},${v.visit_date || ''},${v.region || ''},${ph.file_path}`);
       }
@@ -232,7 +232,7 @@ async function downloadCsv() {
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await client.auth.signOut();
   document.getElementById('loginSection').classList.remove('hidden');
   document.getElementById('panelSection').classList.add('hidden');
   document.getElementById('btnLogout').classList.add('hidden');
@@ -244,3 +244,6 @@ init();
 </script>
 </body>
 </html>
+
+
+

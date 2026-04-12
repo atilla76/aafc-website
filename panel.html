@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,9 +53,9 @@
   <div class="login-box">
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
-    <label>E-POSTA</label>
-    <input type="email" id="email" placeholder="klinik@email.com" />
-    <label>SIFRE</label>
+    <label>EMAIL</label>
+    <input type="email" id="email" placeholder="clinic@email.com" />
+    <label>PASSWORD</label>
     <input type="password" id="password" placeholder="••••••••" />
     <button class="btn-primary" id="btnLogin">Sign In</button>
     <div class="error hidden" id="loginError"></div>
@@ -66,10 +66,10 @@
   <h2>Data Center</h2>
   <p class="sub">View and download your clinic data</p>
   <div class="stats">
-    <div class="stat"><div class="stat-val" id="statHasta">-</div><div class="stat-lbl">Hasta</div></div>
-    <div class="stat"><div class="stat-val" id="statVizit">-</div><div class="stat-lbl">Vizit</div></div>
-    <div class="stat"><div class="stat-val" id="statFoto">-</div><div class="stat-lbl">Fotograf</div></div>
-    <div class="stat"><div class="stat-val" id="statBelge">-</div><div class="stat-lbl">Belge</div></div>
+    <div class="stat"><div class="stat-val" id="statHasta">-</div><div class="stat-lbl">Patients</div></div>
+    <div class="stat"><div class="stat-val" id="statVizit">-</div><div class="stat-lbl">Visits</div></div>
+    <div class="stat"><div class="stat-val" id="statFoto">-</div><div class="stat-lbl">Photos</div></div>
+    <div class="stat"><div class="stat-val" id="statBelge">-</div><div class="stat-lbl">Documents</div></div>
   </div>
   <div class="actions">
     <div class="action-card">
@@ -105,13 +105,10 @@ document.getElementById('btnLogin').addEventListener('click', async function() {
   const password = document.getElementById('password').value;
   const btn = document.getElementById('btnLogin');
   const err = document.getElementById('loginError');
-  
   btn.disabled = true;
-  btn.textContent = 'Logging in...';
+  btn.textContent = 'Signing in...';
   err.classList.add('hidden');
-
   const { data, error } = await db.auth.signInWithPassword({ email, password });
-  
   if (error) {
     err.textContent = 'Invalid email or password';
     err.classList.remove('hidden');
@@ -137,12 +134,10 @@ document.getElementById('btnJson').addEventListener('click', async function() {
   btn.disabled = true;
   progress.classList.remove('hidden');
   progress.textContent = 'Preparing data...';
-
   const { data: patients } = await db.from('patients').select('*').eq('clinic_id', clinicId);
   const allData = [];
-
   for (const p of patients || []) {
-    progress.textContent = p.name + ' isleniyor...';
+    progress.textContent = 'Processing ' + p.name + '...';
     const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
     const visitsWithData = [];
     for (const v of visits || []) {
@@ -152,15 +147,13 @@ document.getElementById('btnJson').addEventListener('click', async function() {
     }
     allData.push({ ...p, visits: visitsWithData });
   }
-
   const json = JSON.stringify({ export_date: new Date().toISOString(), patients: allData }, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'aafc_yedek_' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'aafc_backup_' + new Date().toISOString().split('T')[0] + '.json';
   a.click();
-
   progress.textContent = 'Downloaded!';
   btn.disabled = false;
 });
@@ -170,11 +163,9 @@ document.getElementById('btnCsv').addEventListener('click', async function() {
   const progress = document.getElementById('progressCsv');
   btn.disabled = true;
   progress.classList.remove('hidden');
-  progress.textContent = 'Photo List hazirlaniyor...';
-
+  progress.textContent = 'Preparing photo list...';
   const { data: patients } = await db.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
-  const rows = ['Hasta Ad,Hasta Soyad,Vizit Tarihi,Bolge,Fotograf URL'];
-
+  const rows = ['Patient Name,Patient Surname,Visit Date,Region,Photo URL'];
   for (const p of patients || []) {
     const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
     for (const v of visits || []) {
@@ -184,15 +175,13 @@ document.getElementById('btnCsv').addEventListener('click', async function() {
       }
     }
   }
-
   const csv = rows.join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'aafc_fotograflar_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 'aafc_photos_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
-
   progress.textContent = 'Downloaded!';
   btn.disabled = false;
 });
@@ -202,15 +191,12 @@ async function showPanel(user) {
   document.getElementById('panelSection').classList.remove('hidden');
   document.getElementById('userEmail').textContent = user.email;
   document.getElementById('btnLogout').classList.remove('hidden');
-
   const { data: userData } = await db.from('users').select('clinic_id').eq('auth_id', user.id).single();
   clinicId = userData?.clinic_id;
-
   const { data: patients } = await db.from('patients').select('id').eq('clinic_id', clinicId);
   const { data: visits } = await db.from('visits').select('id').eq('clinic_id', clinicId);
   const { data: photos } = await db.from('photos').select('id').eq('clinic_id', clinicId);
   const { data: docs } = await db.from('documents').select('id').eq('clinic_id', clinicId);
-
   document.getElementById('statHasta').textContent = patients?.length || 0;
   document.getElementById('statVizit').textContent = visits?.length || 0;
   document.getElementById('statFoto').textContent = photos?.length || 0;
@@ -221,4 +207,3 @@ init();
 </script>
 </body>
 </html>
-

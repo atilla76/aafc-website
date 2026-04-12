@@ -45,26 +45,26 @@
   <a href="index.html" class="logo">AAFC</a>
   <div class="nav-right">
     <span class="user-email" id="userEmail"></span>
-    <button class="btn-logout hidden" id="btnLogout">Cikis Yap</button>
+    <button class="btn-logout hidden" id="btnLogout">Sign Out</button>
   </div>
 </nav>
 
 <div class="login-wrap" id="loginSection">
   <div class="login-box">
-    <h2>Panel Girisi</h2>
-    <p>Klinik hesabinizla giris yapin</p>
+    <h2>Panel Login</h2>
+    <p>Sign in with your clinic account</p>
     <label>E-POSTA</label>
     <input type="email" id="email" placeholder="klinik@email.com" />
     <label>SIFRE</label>
     <input type="password" id="password" placeholder="••••••••" />
-    <button class="btn-primary" id="btnLogin">Giris Yap</button>
+    <button class="btn-primary" id="btnLogin">Sign In</button>
     <div class="error hidden" id="loginError"></div>
   </div>
 </div>
 
 <div class="panel hidden" id="panelSection">
-  <h2>Veri Merkezi</h2>
-  <p class="sub">Klinik verilerinizi goruntuleyin ve indirin</p>
+  <h2>Data Center</h2>
+  <p class="sub">View and download your clinic data</p>
   <div class="stats">
     <div class="stat"><div class="stat-val" id="statHasta">-</div><div class="stat-lbl">Hasta</div></div>
     <div class="stat"><div class="stat-val" id="statVizit">-</div><div class="stat-lbl">Vizit</div></div>
@@ -73,15 +73,15 @@
   </div>
   <div class="actions">
     <div class="action-card">
-      <h3>JSON Yedek</h3>
-      <p>Tum hasta, vizit ve fotograf URL bilgilerini JSON formatinda indirin.</p>
-      <button class="btn-action" id="btnJson">JSON Indir</button>
+      <h3>JSON Backup</h3>
+      <p>Download all patient, visit and photo URL data in JSON format.</p>
+      <button class="btn-action" id="btnJson">Download JSON</button>
       <div class="progress hidden" id="progressJson"></div>
     </div>
     <div class="action-card">
-      <h3>Fotograf Listesi</h3>
-      <p>Tum fotograf URL adreslerini CSV formatinda indirin.</p>
-      <button class="btn-action" id="btnCsv">CSV Indir</button>
+      <h3>Photo List</h3>
+      <p>Download all photo URLs in CSV format.</p>
+      <button class="btn-action" id="btnCsv">Download CSV</button>
       <div class="progress hidden" id="progressCsv"></div>
     </div>
   </div>
@@ -107,16 +107,16 @@ document.getElementById('btnLogin').addEventListener('click', async function() {
   const err = document.getElementById('loginError');
   
   btn.disabled = true;
-  btn.textContent = 'Giris yapiliyor...';
+  btn.textContent = 'Logging in...';
   err.classList.add('hidden');
 
   const { data, error } = await db.auth.signInWithPassword({ email, password });
   
   if (error) {
-    err.textContent = 'Hatali email veya sifre';
+    err.textContent = 'Invalid email or password';
     err.classList.remove('hidden');
     btn.disabled = false;
-    btn.textContent = 'Giris Yap';
+    btn.textContent = 'Sign In';
   } else {
     await showPanel(data.user);
   }
@@ -136,7 +136,7 @@ document.getElementById('btnJson').addEventListener('click', async function() {
   const progress = document.getElementById('progressJson');
   btn.disabled = true;
   progress.classList.remove('hidden');
-  progress.textContent = 'Veriler hazirlaniyor...';
+  progress.textContent = 'Preparing data...';
 
   const { data: patients } = await db.from('patients').select('*').eq('clinic_id', clinicId);
   const allData = [];
@@ -161,7 +161,7 @@ document.getElementById('btnJson').addEventListener('click', async function() {
   a.download = 'aafc_yedek_' + new Date().toISOString().split('T')[0] + '.json';
   a.click();
 
-  progress.textContent = 'Indirildi!';
+  progress.textContent = 'Downloaded!';
   btn.disabled = false;
 });
 
@@ -170,7 +170,7 @@ document.getElementById('btnCsv').addEventListener('click', async function() {
   const progress = document.getElementById('progressCsv');
   btn.disabled = true;
   progress.classList.remove('hidden');
-  progress.textContent = 'Fotograf listesi hazirlaniyor...';
+  progress.textContent = 'Photo List hazirlaniyor...';
 
   const { data: patients } = await db.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
   const rows = ['Hasta Ad,Hasta Soyad,Vizit Tarihi,Bolge,Fotograf URL'];
@@ -193,7 +193,7 @@ document.getElementById('btnCsv').addEventListener('click', async function() {
   a.download = 'aafc_fotograflar_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
 
-  progress.textContent = 'Indirildi!';
+  progress.textContent = 'Downloaded!';
   btn.disabled = false;
 });
 
@@ -221,3 +221,4 @@ init();
 </script>
 </body>
 </html>
+

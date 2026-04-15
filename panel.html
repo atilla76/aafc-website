@@ -4,367 +4,329 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AAFC Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#1C1929; color:#F5F1EB; height:100vh; overflow:hidden; }
 .login-wrap { display:flex; align-items:center; justify-content:center; height:100vh; }
 .login-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:20px; padding:40px; width:100%; max-width:400px; }
-.login-box .logo { font-size:24px; font-weight:600; color:#B89A6A; letter-spacing:2px; margin-bottom:8px; }
+.logo { font-size:24px; font-weight:600; color:#B89A6A; letter-spacing:2px; margin-bottom:8px; }
 .login-box h2 { font-size:22px; font-weight:400; margin-bottom:6px; }
 .login-box p { color:rgba(245,241,235,0.4); font-size:14px; margin-bottom:28px; }
-label { display:block; font-size:11px; color:rgba(245,241,235,0.5); margin-bottom:6px; letter-spacing:0.5px; }
-input { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:10px; padding:12px 14px; color:#F5F1EB; font-size:14px; margin-bottom:14px; }
-input:focus { outline:none; border-color:rgba(184,154,106,0.4); }
-.btn-primary { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
-.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
-.error { color:#E05555; font-size:13px; margin-top:8px; display:none; }
-.app { display:none; height:100vh; }
-.app.visible { display:flex; }
+.lbl { display:block; font-size:11px; color:rgba(245,241,235,0.5); margin-bottom:6px; }
+.inp { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:10px; padding:12px 14px; color:#F5F1EB; font-size:14px; margin-bottom:14px; outline:none; }
+.inp:focus { border-color:rgba(184,154,106,0.4); }
+.btn-login { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
+.btn-login:disabled { opacity:0.5; }
+.err { color:#E05555; font-size:13px; margin-top:8px; display:none; }
+.app { display:none; height:100vh; flex-direction:row; }
+.app.on { display:flex; }
 .sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
-.sidebar-header { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.sidebar-header .logo { font-size:18px; font-weight:600; color:#B89A6A; letter-spacing:2px; }
-.btns { display:flex; gap:6px; align-items:center; }
-.btn-dl { border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:500; }
-.btn-json { background:rgba(29,158,117,0.15); border:1px solid rgba(29,158,117,0.3) !important; color:#1D9E75; }
-.btn-csv { background:rgba(184,154,106,0.15); border:1px solid rgba(184,154,106,0.3) !important; color:#B89A6A; }
-.btn-logout { background:none; border:1px solid rgba(245,241,235,0.12); color:rgba(245,241,235,0.5); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; }
-.search-wrap { padding:12px; border-bottom:1px solid rgba(245,241,235,0.08); }
-.search-wrap input { margin:0; padding:10px 12px; font-size:13px; }
-.patient-list { flex:1; overflow-y:auto; }
-.patient-item { padding:12px 16px; cursor:pointer; border-bottom:1px solid rgba(245,241,235,0.04); transition:background 0.15s; }
-.patient-item:hover { background:rgba(245,241,235,0.04); }
-.patient-item.active { background:rgba(184,154,106,0.1); border-left:3px solid #B89A6A; }
-.patient-item .name { font-size:14px; font-weight:500; }
-.patient-item .meta { font-size:11px; color:rgba(245,241,235,0.4); margin-top:2px; }
-.main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
-.main-header { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); }
-.main-header h2 { font-size:20px; font-weight:400; }
-.main-header .meta { font-size:13px; color:rgba(245,241,235,0.4); margin-top:4px; }
-.main-content { padding:24px; flex:1; }
-.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:rgba(245,241,235,0.3); gap:12px; font-size:14px; }
-.sec-title { font-size:10px; color:rgba(245,241,235,0.4); letter-spacing:0.16px; margin-bottom:10px; margin-top:20px; }
-.sec-title:first-child { margin-top:0; }
-/* Info card */
-.info-card { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:16px; margin-bottom:4px; }
-.info-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(245,241,235,0.06); font-size:13px; }
-.info-row:last-child { border-bottom:none; }
-.info-row .lbl { color:rgba(245,241,235,0.4); }
-.info-row .val { color:#F5F1EB; font-weight:500; }
-/* Visits */
-.visits-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
-.visit-card { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; cursor:pointer; transition:all 0.15s; }
-.visit-card:hover { border-color:rgba(184,154,106,0.3); }
-.visit-card.active { border-color:#B89A6A; background:rgba(184,154,106,0.1); }
-.visit-card .vtype { font-size:10px; font-weight:600; color:#B89A6A; margin-bottom:5px; }
-.visit-card .vregion { font-size:14px; font-weight:500; margin-bottom:3px; }
-.visit-card .vdate { font-size:11px; color:rgba(245,241,235,0.4); }
-/* Photos */
-.photos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
-.photo-card { border-radius:10px; overflow:hidden; background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); }
-.photo-card img { width:100%; aspect-ratio:3/4; object-fit:cover; cursor:pointer; display:block; transition:opacity 0.15s; }
-.photo-card img:hover { opacity:0.85; }
-.photo-card .plabel { padding:5px 8px; font-size:10px; color:rgba(245,241,235,0.5); }
-/* Docs */
-.docs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.s-head { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
+.s-logo { font-size:16px; font-weight:600; color:#B89A6A; letter-spacing:2px; }
+.s-btns { display:flex; gap:5px; }
+.btn-sm { padding:5px 9px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:500; border:none; }
+.btn-json { background:rgba(29,158,117,0.2); color:#1D9E75; }
+.btn-csv { background:rgba(184,154,106,0.2); color:#B89A6A; }
+.btn-out { background:none; border:1px solid rgba(245,241,235,0.15) !important; color:rgba(245,241,235,0.5); }
+.s-search { padding:10px; border-bottom:1px solid rgba(245,241,235,0.08); }
+.s-search input { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.1); border-radius:8px; padding:8px 12px; color:#F5F1EB; font-size:13px; outline:none; }
+.p-list { flex:1; overflow-y:auto; }
+.p-item { padding:11px 16px; cursor:pointer; border-bottom:1px solid rgba(245,241,235,0.04); }
+.p-item:hover { background:rgba(245,241,235,0.04); }
+.p-item.on { background:rgba(184,154,106,0.1); border-left:3px solid #B89A6A; }
+.p-name { font-size:14px; font-weight:500; }
+.p-meta { font-size:11px; color:rgba(245,241,235,0.4); margin-top:2px; }
+.main { flex:1; overflow-y:auto; }
+.m-head { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); }
+.m-head h2 { font-size:20px; font-weight:400; }
+.m-head .sub { font-size:13px; color:rgba(245,241,235,0.4); margin-top:4px; }
+.m-body { padding:20px 24px; }
+.empty { display:flex; align-items:center; justify-content:center; height:80vh; color:rgba(245,241,235,0.3); font-size:14px; }
+.sec { font-size:10px; color:rgba(245,241,235,0.4); letter-spacing:0.5px; margin:18px 0 8px; }
+.sec:first-child { margin-top:0; }
+.info-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; }
+.i-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(245,241,235,0.06); font-size:13px; }
+.i-row:last-child { border:none; }
+.i-lbl { color:rgba(245,241,235,0.4); }
+.i-val { color:#F5F1EB; font-weight:500; }
+.v-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+.v-card { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; cursor:pointer; }
+.v-card:hover { border-color:rgba(184,154,106,0.3); }
+.v-card.on { border-color:#B89A6A; background:rgba(184,154,106,0.08); }
+.v-type { font-size:10px; font-weight:600; color:#B89A6A; margin-bottom:4px; }
+.v-region { font-size:14px; font-weight:500; margin-bottom:3px; }
+.v-date { font-size:11px; color:rgba(245,241,235,0.4); }
+.ph-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+.ph-card { border-radius:10px; overflow:hidden; background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); }
+.ph-card img { width:100%; aspect-ratio:3/4; object-fit:cover; cursor:pointer; display:block; }
+.ph-card img:hover { opacity:0.85; }
+.ph-lbl { padding:5px 8px; font-size:10px; color:rgba(245,241,235,0.5); }
+.doc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
 .doc-card { border-radius:10px; overflow:hidden; background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); }
-.doc-card img { width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer; display:block; transition:opacity 0.15s; }
+.doc-card img { width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer; display:block; }
 .doc-card img:hover { opacity:0.85; }
-.doc-card .dlabel { padding:5px 8px; font-size:10px; color:rgba(245,241,235,0.5); }
-/* Notes */
 .notes-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; font-size:13px; color:rgba(245,241,235,0.7); line-height:1.6; }
-/* Lightbox */
-.lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; align-items:center; justify-content:center; }
-.lightbox.open { display:flex; }
-.lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
-.lightbox-close { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:18px; }
-.loader { display:flex; align-items:center; justify-content:center; padding:40px; color:rgba(245,241,235,0.3); font-size:14px; }
-::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.1); border-radius:2px; }
+.lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center; }
+.lb.on { display:flex; }
+.lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
+.lb-x { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; }
+.loader { padding:30px; text-align:center; color:rgba(245,241,235,0.3); font-size:13px; }
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.15); border-radius:2px; }
 </style>
 </head>
 <body>
 
-<div class="login-wrap" id="loginSection">
+<div class="login-wrap" id="loginWrap">
   <div class="login-box">
     <div class="logo">AAFC</div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
-    <label>EMAIL</label>
-    <input type="email" id="email" placeholder="clinic@email.com"/>
-    <label>PASSWORD</label>
-    <input type="password" id="password" placeholder="••••••••"/>
-    <button class="btn-primary" id="btnLogin">Sign In</button>
-    <div class="error" id="loginError">Invalid email or password</div>
+    <span class="lbl">EMAIL</span>
+    <input class="inp" type="email" id="iEmail" placeholder="clinic@email.com"/>
+    <span class="lbl">PASSWORD</span>
+    <input class="inp" type="password" id="iPass" placeholder="••••••••"/>
+    <button class="btn-login" id="btnLogin" onclick="doLogin()">Sign In</button>
+    <div class="err" id="loginErr">Invalid email or password</div>
   </div>
 </div>
 
-<div class="app" id="appSection">
+<div class="app" id="app">
   <div class="sidebar">
-    <div class="sidebar-header">
-      <span class="logo">AAFC</span>
-      <div class="btns">
-        <button class="btn-dl btn-json" onclick="downloadJSON()">JSON</button>
-        <button class="btn-dl btn-csv" onclick="downloadCSV()">CSV</button>
-        <button class="btn-logout" id="btnLogout">Sign Out</button>
+    <div class="s-head">
+      <span class="s-logo">AAFC</span>
+      <div class="s-btns">
+        <button class="btn-sm btn-json" onclick="dlJSON()">JSON</button>
+        <button class="btn-sm btn-csv" onclick="dlCSV()">CSV</button>
+        <button class="btn-sm btn-out" onclick="doLogout()">Sign Out</button>
       </div>
     </div>
-    <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="Search patients..." oninput="filterPatients()"/>
+    <div class="s-search">
+      <input type="text" id="search" placeholder="Search patients..." oninput="filterP()"/>
     </div>
-    <div class="patient-list" id="patientList">
-      <div class="loader">Loading...</div>
-    </div>
+    <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
   </div>
-
-  <div class="main">
-    <div class="empty" id="emptyState">Select a patient to view details</div>
-    <div id="patientDetail" style="display:none; flex-direction:column;">
-      <div class="main-header">
-        <h2 id="detailName"></h2>
-        <div class="meta" id="detailMeta"></div>
+  <div class="main" id="main">
+    <div class="empty" id="emptyMsg">Select a patient</div>
+    <div id="pDetail" style="display:none">
+      <div class="m-head">
+        <h2 id="dName"></h2>
+        <div class="sub" id="dMeta"></div>
       </div>
-      <div class="main-content">
-
-        <div class="sec-title">PATIENT INFO</div>
-        <div class="info-card" id="patientInfo"></div>
-
-        <div class="sec-title">VISITS</div>
-        <div class="visits-grid" id="visitsList"></div>
-
-        <div id="visitDetail" style="display:none">
-          <div class="sec-title">VISIT INFO</div>
-          <div class="info-card" id="visitInfo"></div>
-
-          <div id="notesSection" style="display:none">
-            <div class="sec-title">NOTES</div>
-            <div class="notes-box" id="visitNotes"></div>
+      <div class="m-body">
+        <div class="sec">PATIENT INFO</div>
+        <div class="info-box" id="pInfo"></div>
+        <div class="sec">VISITS</div>
+        <div class="v-grid" id="vList"></div>
+        <div id="vDetail" style="display:none">
+          <div class="sec">VISIT INFO</div>
+          <div class="info-box" id="vInfo"></div>
+          <div id="notesWrap" style="display:none">
+            <div class="sec">NOTES</div>
+            <div class="notes-box" id="vNotes"></div>
           </div>
-
-          <div id="photosSection" style="display:none">
-            <div class="sec-title">PHOTOS</div>
-            <div class="photos-grid" id="photosGrid"></div>
+          <div id="phWrap" style="display:none">
+            <div class="sec">PHOTOS</div>
+            <div class="ph-grid" id="phGrid"></div>
           </div>
-
-          <div id="kartSection" style="display:none">
-            <div class="sec-title">TREATMENT CARD</div>
-            <div class="docs-grid" id="kartGrid"></div>
+          <div id="kartWrap" style="display:none">
+            <div class="sec">TREATMENT CARD</div>
+            <div class="doc-grid" id="kartGrid"></div>
           </div>
-
-          <div id="onamSection" style="display:none">
-            <div class="sec-title">PATIENT CONSENT</div>
-            <div class="docs-grid" id="onamGrid"></div>
+          <div id="onamWrap" style="display:none">
+            <div class="sec">PATIENT CONSENT</div>
+            <div class="doc-grid" id="onamGrid"></div>
           </div>
-
-          <div id="barkodSection" style="display:none">
-            <div class="sec-title">PRODUCT BARCODE</div>
-            <div class="docs-grid" id="barkodGrid"></div>
+          <div id="barkodWrap" style="display:none">
+            <div class="sec">PRODUCT BARCODE</div>
+            <div class="doc-grid" id="barkodGrid"></div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">x</button>
-  <img id="lightboxImg" src="" alt=""/>
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lb-x" onclick="closeLb()">x</button>
+  <img id="lbImg" src="" alt=""/>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL = 'https://hugxacklprzujswtaike.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const angleLabels = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
-let clinicId = null, allPatients = [], selectedPatientId = null, selectedVisitId = null, allVisits = [];
+const SB_URL = 'https://hugxacklprzujswtaike.supabase.co';
+const SB_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+const db = supabase.createClient(SB_URL, SB_KEY);
+const AL = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
+let cid = null, patients = [], selPid = null, selVid = null, visits = [];
 
-async function init() {
+window.onload = async function() {
   const { data: { session } } = await db.auth.getSession();
   if (session) await showApp(session.user);
+};
+
+async function doLogin() {
+  const email = document.getElementById('iEmail').value.trim();
+  const pass = document.getElementById('iPass').value;
+  const btn = document.getElementById('btnLogin');
+  const err = document.getElementById('loginErr');
+  if (!email || !pass) { err.style.display='block'; err.textContent='Please fill all fields'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in...'; err.style.display = 'none';
+  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.style.display = 'block'; err.textContent = 'Invalid email or password';
+    btn.disabled = false; btn.textContent = 'Sign In';
+  } else {
+    await showApp(data.user);
+  }
 }
 
-document.getElementById('btnLogin').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const btn = document.getElementById('btnLogin');
-  const err = document.getElementById('loginError');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  err.style.display = 'none';
-  const { data, error } = await db.auth.signInWithPassword({ email, password });
-  if (error) { err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Sign In'; }
-  else await showApp(data.user);
-});
-
-document.getElementById('btnLogout').addEventListener('click', async () => {
+async function doLogout() {
   await db.auth.signOut();
-  clinicId = null; allPatients = [];
-  document.getElementById('loginSection').style.display = 'flex';
-  document.getElementById('appSection').classList.remove('visible');
-});
+  cid = null; patients = [];
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('app').classList.remove('on');
+}
 
 async function showApp(user) {
-  document.getElementById('loginSection').style.display = 'none';
-  document.getElementById('appSection').classList.add('visible');
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').classList.add('on');
   const { data: u } = await db.from('users').select('clinic_id').eq('auth_id', user.id).single();
-  clinicId = u.clinic_id;
+  if (!u) { alert('User not found'); return; }
+  cid = u.clinic_id;
   await loadPatients();
 }
 
 async function loadPatients() {
-  const { data } = await db.from('patients').select('*').eq('clinic_id', clinicId).order('created_at', { ascending: false });
-  allPatients = data || [];
-  renderPatients(allPatients);
+  const { data } = await db.from('patients').select('*').eq('clinic_id', cid).order('created_at', { ascending: false });
+  patients = data || [];
+  renderPatients(patients);
 }
 
 function renderPatients(list) {
-  const el = document.getElementById('patientList');
+  const el = document.getElementById('pList');
   if (!list.length) { el.innerHTML = '<div class="loader">No patients</div>'; return; }
   el.innerHTML = list.map(p => 
-    <div class="patient-item " onclick="selectPatient('')">
-      <div class="name"> </div>
-      <div class="meta"></div>
+    <div class="p-item " onclick="selPatient('')">
+      <div class="p-name"> </div>
+      <div class="p-meta"></div>
     </div>).join('');
 }
 
-function filterPatients() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  renderPatients(allPatients.filter(p => (p.name+' '+(p.surname||'')).toLowerCase().includes(q)));
+function filterP() {
+  const q = document.getElementById('search').value.toLowerCase();
+  renderPatients(patients.filter(p => (p.name+' '+(p.surname||'')).toLowerCase().includes(q)));
 }
 
-async function selectPatient(id) {
-  selectedPatientId = id; selectedVisitId = null;
-  filterPatients();
-  const p = allPatients.find(x => x.id === id);
-  document.getElementById('emptyState').style.display = 'none';
-  const detail = document.getElementById('patientDetail');
-  detail.style.display = 'flex'; detail.style.flexDirection = 'column';
-  document.getElementById('detailName').textContent = p.name + ' ' + (p.surname||'');
-  document.getElementById('detailMeta').textContent = [p.birth_date, p.phone, p.city].filter(Boolean).join(' · ');
-  document.getElementById('visitDetail').style.display = 'none';
-
-  // Hasta bilgileri
-  document.getElementById('patientInfo').innerHTML = [
-    ['Name', p.name + ' ' + (p.surname||'')],
+async function selPatient(id) {
+  selPid = id; selVid = null;
+  filterP();
+  const p = patients.find(x => x.id===id);
+  document.getElementById('emptyMsg').style.display = 'none';
+  document.getElementById('pDetail').style.display = 'block';
+  document.getElementById('vDetail').style.display = 'none';
+  document.getElementById('dName').textContent = p.name+' '+(p.surname||'');
+  document.getElementById('dMeta').textContent = [p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
+  document.getElementById('pInfo').innerHTML = [
+    ['Name', p.name+' '+(p.surname||'')],
     ['Date of Birth', p.birth_date||'-'],
     ['Phone', p.phone||'-'],
     ['City', p.city||'-'],
-    p.notes ? ['Notes', p.notes] : null
-  ].filter(Boolean).map(([l,v]) => <div class="info-row"><span class="lbl"></span><span class="val"></span></div>).join('');
-
-  document.getElementById('visitsList').innerHTML = '<div class="loader">Loading...</div>';
+    p.notes?['Notes',p.notes]:null
+  ].filter(Boolean).map(([l,v])=><div class="i-row"><span class="i-lbl"></span><span class="i-val"></span></div>).join('');
+  document.getElementById('vList').innerHTML = '<div class="loader">Loading...</div>';
   const { data } = await db.from('visits').select('*').eq('patient_id', id).order('created_at', { ascending: false });
-  allVisits = data || [];
-  renderVisits(allVisits);
+  visits = data || [];
+  renderVisits();
 }
 
-function renderVisits(list) {
-  const el = document.getElementById('visitsList');
-  if (!list.length) { el.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>'; return; }
-  el.innerHTML = list.map(v => 
-    <div class="visit-card " onclick="selectVisit('')">
-      <div class="vtype"></div>
-      <div class="vregion"></div>
-      <div class="vdate"></div>
+function renderVisits() {
+  const el = document.getElementById('vList');
+  if (!visits.length) { el.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>'; return; }
+  el.innerHTML = visits.map(v=>
+    <div class="v-card " onclick="selVisit('')">
+      <div class="v-type"></div>
+      <div class="v-region"></div>
+      <div class="v-date"></div>
     </div>).join('');
 }
 
-async function selectVisit(id) {
-  selectedVisitId = id;
-  renderVisits(allVisits);
-  const v = allVisits.find(x => x.id === id);
-  document.getElementById('visitDetail').style.display = 'block';
-
-  // Vizit bilgileri
-  document.getElementById('visitInfo').innerHTML = [
+async function selVisit(id) {
+  selVid = id;
+  renderVisits();
+  const v = visits.find(x => x.id===id);
+  document.getElementById('vDetail').style.display = 'block';
+  document.getElementById('vInfo').innerHTML = [
     ['Type', v.visit_type||'-'],
     ['Region', v.region||'-'],
-    ['Date', v.visit_date||'-'],
-  ].map(([l,v2]) => <div class="info-row"><span class="lbl"></span><span class="val"></span></div>).join('');
-
-  // Notlar
+    ['Date', v.visit_date||'-']
+  ].map(([l,v2])=><div class="i-row"><span class="i-lbl"></span><span class="i-val"></span></div>).join('');
   if (v.notes) {
-    document.getElementById('notesSection').style.display = 'block';
-    document.getElementById('visitNotes').textContent = v.notes;
-  } else {
-    document.getElementById('notesSection').style.display = 'none';
-  }
+    document.getElementById('notesWrap').style.display = 'block';
+    document.getElementById('vNotes').textContent = v.notes;
+  } else { document.getElementById('notesWrap').style.display = 'none'; }
 
-  // Fotograflar
   const { data: photos } = await db.from('photos').select('*').eq('visit_id', id).order('angle_index');
   if (photos && photos.length) {
-    document.getElementById('photosSection').style.display = 'block';
-    document.getElementById('photosGrid').innerHTML = photos.map(p => 
-      <div class="photo-card">
-        <img src="" onclick="openLightbox('')"/>
-        <div class="plabel"></div>
+    document.getElementById('phWrap').style.display = 'block';
+    document.getElementById('phGrid').innerHTML = photos.map(p=>
+      <div class="ph-card">
+        <img src="" onclick="openLb('')"/>
+        <div class="ph-lbl"></div>
       </div>).join('');
-  } else {
-    document.getElementById('photosSection').style.display = 'none';
-  }
+  } else { document.getElementById('phWrap').style.display = 'none'; }
 
-  // Belgeler
   const { data: docs } = await db.from('documents').select('*').eq('visit_id', id);
-  const kart = (docs||[]).filter(d => d.doc_type === 'kart');
-  const onam = (docs||[]).filter(d => d.doc_type === 'onam');
-  const barkod = (docs||[]).filter(d => d.doc_type === 'barkod');
-
-  showDocs('kartSection', 'kartGrid', kart);
-  showDocs('onamSection', 'onamGrid', onam);
-  showDocs('barkodSection', 'barkodGrid', barkod);
+  showDocs('kartWrap','kartGrid',(docs||[]).filter(d=>d.doc_type==='kart'));
+  showDocs('onamWrap','onamGrid',(docs||[]).filter(d=>d.doc_type==='onam'));
+  showDocs('barkodWrap','barkodGrid',(docs||[]).filter(d=>d.doc_type==='barkod'));
 }
 
-function showDocs(sectionId, gridId, docs) {
-  if (!docs.length) { document.getElementById(sectionId).style.display = 'none'; return; }
-  document.getElementById(sectionId).style.display = 'block';
-  document.getElementById(gridId).innerHTML = docs.map((d,i) => 
+function showDocs(wid, gid, docs) {
+  if (!docs.length) { document.getElementById(wid).style.display='none'; return; }
+  document.getElementById(wid).style.display = 'block';
+  document.getElementById(gid).innerHTML = docs.map((d,i)=>
     <div class="doc-card">
-      <img src="" onclick="openLightbox('')"/>
-      <div class="dlabel"></div>
+      <img src="" onclick="openLb('')"/>
     </div>).join('');
 }
 
-function openLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+function openLb(src) { document.getElementById('lbImg').src=src; document.getElementById('lb').classList.add('on'); }
+function closeLb() { document.getElementById('lb').classList.remove('on'); }
 
-async function downloadJSON() {
-  const { data: patients } = await db.from('patients').select('*').eq('clinic_id', clinicId);
-  const allData = [];
-  for (const p of patients||[]) {
-    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
-    const vWithData = [];
-    for (const v of visits||[]) {
-      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
-      const { data: docs } = await db.from('documents').select('*').eq('visit_id', v.id);
-      vWithData.push({ ...v, photos: photos||[], documents: docs||[] });
+async function dlJSON() {
+  const { data: ps } = await db.from('patients').select('*').eq('clinic_id', cid);
+  const all = [];
+  for (const p of ps||[]) {
+    const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
+    const vd = [];
+    for (const v of vs||[]) {
+      const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
+      const { data: dc } = await db.from('documents').select('*').eq('visit_id', v.id);
+      vd.push({ ...v, photos: ph||[], documents: dc||[] });
     }
-    allData.push({ ...p, visits: vWithData });
+    all.push({ ...p, visits: vd });
   }
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify({ export_date: new Date().toISOString(), patients: allData }, null, 2)], { type: 'application/json' }));
-  a.download = 'aafc_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ date: new Date().toISOString(), patients: all }, null, 2)], { type: 'application/json' }));
+  a.download = 'aafc_'+new Date().toISOString().split('T')[0]+'.json';
   a.click();
 }
 
-async function downloadCSV() {
-  const { data: patients } = await db.from('patients').select('id,name,surname').eq('clinic_id', clinicId);
-  const rows = ['Patient Name,Patient Surname,Visit Date,Region,Photo URL'];
-  for (const p of patients||[]) {
-    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
-    for (const v of visits||[]) {
-      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
-      for (const ph of photos||[]) rows.push([p.name, p.surname||'', v.visit_date||'', v.region||'', ph.file_path].join(','));
+async function dlCSV() {
+  const { data: ps } = await db.from('patients').select('id,name,surname').eq('clinic_id', cid);
+  const rows = ['Patient,Surname,Visit Date,Region,Photo URL'];
+  for (const p of ps||[]) {
+    const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
+    for (const v of vs||[]) {
+      const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
+      for (const x of ph||[]) rows.push([p.name,p.surname||'',v.visit_date||'',v.region||'',x.file_path].join(','));
     }
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
-  a.download = 'aafc_photos_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 'aafc_'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();
 }
-
-init();
 </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AAFC Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#1C1929; color:#F5F1EB; height:100vh; overflow:hidden; }
@@ -19,16 +20,29 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .btn-login { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
 .btn-login:disabled { opacity:0.5; }
 .err { color:#E05555; font-size:13px; margin-top:8px; display:none; }
-.app { display:none; height:100vh; }
+.app { display:none; height:100vh; flex-direction:column; }
 .app.on { display:flex; }
+/* Top banner */
+.banner { background:rgba(184,154,106,0.1); border-bottom:1px solid rgba(184,154,106,0.2); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.banner-text { font-size:12px; color:rgba(245,241,235,0.6); }
+.banner-text strong { color:#B89A6A; }
+.banner-btns { display:flex; gap:8px; }
+.btn-banner { padding:6px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:500; border:none; }
+.btn-zip { background:rgba(108,99,168,0.2); color:#9B8FD4; border:1px solid rgba(108,99,168,0.3); }
+.btn-html { background:rgba(29,158,117,0.2); color:#1D9E75; border:1px solid rgba(29,158,117,0.3); }
+.btn-json { background:rgba(184,154,106,0.2); color:#B89A6A; border:1px solid rgba(184,154,106,0.3); }
+.btn-csv { background:rgba(245,241,235,0.08); color:rgba(245,241,235,0.6); border:1px solid rgba(245,241,235,0.15); }
+/* Layout */
+.layout { display:flex; flex:1; overflow:hidden; }
 .sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
 .s-head { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
 .s-logo { font-size:16px; font-weight:600; color:#B89A6A; letter-spacing:2px; }
-.s-btns { display:flex; gap:5px; }
-.btn-sm { padding:5px 9px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:500; border:none; }
-.btn-json { background:rgba(29,158,117,0.2); color:#1D9E75; }
-.btn-csv { background:rgba(184,154,106,0.2); color:#B89A6A; }
-.btn-out { background:none; border:1px solid rgba(245,241,235,0.15); color:rgba(245,241,235,0.5); }
+.btn-out { background:none; border:1px solid rgba(245,241,235,0.15); color:rgba(245,241,235,0.5); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; }
+/* Stats */
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(245,241,235,0.08); border-bottom:1px solid rgba(245,241,235,0.08); }
+.stat { background:#1C1929; padding:10px 14px; }
+.stat .n { font-size:18px; font-weight:600; color:#B89A6A; }
+.stat .l { font-size:10px; color:rgba(245,241,235,0.4); margin-top:2px; }
 .s-search { padding:10px; border-bottom:1px solid rgba(245,241,235,0.08); }
 .s-search input { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.1); border-radius:8px; padding:8px 12px; color:#F5F1EB; font-size:13px; outline:none; }
 .p-list { flex:1; overflow-y:auto; }
@@ -38,9 +52,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .p-name { font-size:14px; font-weight:500; }
 .p-meta { font-size:11px; color:rgba(245,241,235,0.4); margin-top:2px; }
 .main { flex:1; overflow-y:auto; }
-.m-head { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); }
+.m-head { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
 .m-head h2 { font-size:20px; font-weight:400; }
 .m-head .sub { font-size:13px; color:rgba(245,241,235,0.4); margin-top:4px; }
+.m-head-btns { display:flex; gap:8px; }
 .m-body { padding:20px 24px; }
 .empty { display:flex; align-items:center; justify-content:center; height:80vh; color:rgba(245,241,235,0.3); font-size:14px; }
 .sec { font-size:10px; color:rgba(245,241,235,0.4); letter-spacing:0.5px; margin:18px 0 8px; }
@@ -72,6 +87,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
 .lb-x { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; }
 .loader { padding:30px; text-align:center; color:rgba(245,241,235,0.3); font-size:13px; }
+.progress { position:fixed; bottom:20px; right:20px; background:#1C1929; border:1px solid rgba(184,154,106,0.3); border-radius:12px; padding:12px 20px; font-size:13px; color:#B89A6A; display:none; z-index:100; }
 ::-webkit-scrollbar { width:4px; }
 ::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.15); border-radius:2px; }
 </style>
@@ -93,54 +109,75 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 </div>
 
 <div class="app" id="app">
-  <div class="sidebar">
-    <div class="s-head">
-      <span class="s-logo">AAFC</span>
-      <div class="s-btns">
-        <button class="btn-sm btn-json" onclick="dlJSON()">JSON</button>
-        <button class="btn-sm btn-csv" onclick="dlCSV()">CSV</button>
-        <button class="btn-sm btn-out" onclick="doLogout()">Sign Out</button>
-      </div>
+  <div class="banner">
+    <div class="banner-text">
+      <strong>Backup & Export</strong> — Download all your clinic data including photos as ZIP or HTML report
     </div>
-    <div class="s-search">
-      <input type="text" id="search" placeholder="Search patients..." oninput="filterP()"/>
+    <div class="banner-btns">
+      <button class="btn-banner btn-zip" onclick="dlZIP()">ZIP (with photos)</button>
+      <button class="btn-banner btn-html" onclick="dlHTML()">HTML Report</button>
+      <button class="btn-banner btn-json" onclick="dlJSON()">JSON</button>
+      <button class="btn-banner btn-csv" onclick="dlCSV()">CSV</button>
     </div>
-    <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
   </div>
-  <div class="main">
-    <div class="empty" id="emptyMsg">Select a patient</div>
-    <div id="pDetail" style="display:none">
-      <div class="m-head">
-        <h2 id="dName"></h2>
-        <div class="sub" id="dMeta"></div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="s-head">
+        <span class="s-logo">AAFC</span>
+        <button class="btn-out" onclick="doLogout()">Sign Out</button>
       </div>
-      <div class="m-body">
-        <div class="sec">PATIENT INFO</div>
-        <div class="info-box" id="pInfo"></div>
-        <div class="sec">VISITS</div>
-        <div class="v-grid" id="vList"></div>
-        <div id="vDetail" style="display:none">
-          <div class="sec">VISIT INFO</div>
-          <div class="info-box" id="vInfo"></div>
-          <div id="notesWrap" style="display:none">
-            <div class="sec">NOTES</div>
-            <div class="notes-box" id="vNotes"></div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="statP">0</div><div class="l">Patients</div></div>
+        <div class="stat"><div class="n" id="statV">0</div><div class="l">Visits</div></div>
+        <div class="stat"><div class="n" id="statPh">0</div><div class="l">Photos</div></div>
+        <div class="stat"><div class="n" id="statD">0</div><div class="l">Documents</div></div>
+      </div>
+      <div class="s-search">
+        <input type="text" id="search" placeholder="Search patients..." oninput="filterP()"/>
+      </div>
+      <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
+    </div>
+    <div class="main">
+      <div class="empty" id="emptyMsg">Select a patient</div>
+      <div id="pDetail" style="display:none">
+        <div class="m-head">
+          <div>
+            <h2 id="dName"></h2>
+            <div class="sub" id="dMeta"></div>
           </div>
-          <div id="phWrap" style="display:none">
-            <div class="sec">PHOTOS</div>
-            <div class="ph-grid" id="phGrid"></div>
+          <div class="m-head-btns">
+            <button class="btn-banner btn-zip" onclick="dlPatientZIP()">ZIP</button>
+            <button class="btn-banner btn-html" onclick="dlPatientHTML()">HTML</button>
           </div>
-          <div id="kartWrap" style="display:none">
-            <div class="sec">TREATMENT CARD</div>
-            <div class="doc-grid" id="kartGrid"></div>
-          </div>
-          <div id="onamWrap" style="display:none">
-            <div class="sec">PATIENT CONSENT</div>
-            <div class="doc-grid" id="onamGrid"></div>
-          </div>
-          <div id="barkodWrap" style="display:none">
-            <div class="sec">PRODUCT BARCODE</div>
-            <div class="doc-grid" id="barkodGrid"></div>
+        </div>
+        <div class="m-body">
+          <div class="sec">PATIENT INFO</div>
+          <div class="info-box" id="pInfo"></div>
+          <div class="sec">VISITS</div>
+          <div class="v-grid" id="vList"></div>
+          <div id="vDetail" style="display:none">
+            <div class="sec">VISIT INFO</div>
+            <div class="info-box" id="vInfo"></div>
+            <div id="notesWrap" style="display:none">
+              <div class="sec">NOTES</div>
+              <div class="notes-box" id="vNotes"></div>
+            </div>
+            <div id="phWrap" style="display:none">
+              <div class="sec">PHOTOS</div>
+              <div class="ph-grid" id="phGrid"></div>
+            </div>
+            <div id="kartWrap" style="display:none">
+              <div class="sec">TREATMENT CARD</div>
+              <div class="doc-grid" id="kartGrid"></div>
+            </div>
+            <div id="onamWrap" style="display:none">
+              <div class="sec">PATIENT CONSENT</div>
+              <div class="doc-grid" id="onamGrid"></div>
+            </div>
+            <div id="barkodWrap" style="display:none">
+              <div class="sec">PRODUCT BARCODE</div>
+              <div class="doc-grid" id="barkodGrid"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -152,13 +189,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
   <button class="lb-x" onclick="closeLb()">x</button>
   <img id="lbImg" src="" alt=""/>
 </div>
+<div class="progress" id="progress">Preparing download...</div>
 
 <script>
 const SB_URL = 'https://hugxacklprzujswtaike.supabase.co';
 const SB_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
 const db = supabase.createClient(SB_URL, SB_KEY);
 const AL = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
-let cid = null, patients = [], selPid = null, selVid = null, visits = [];
+let cid = null, patients = [], selPid = null, selVid = null, visits = [], selPatient = null;
 
 window.onload = async function() {
   const { data: { session } } = await db.auth.getSession();
@@ -176,9 +214,7 @@ async function doLogin() {
   if (error) {
     err.style.display = 'block'; err.textContent = 'Invalid email or password';
     btn.disabled = false; btn.textContent = 'Sign In';
-  } else {
-    await showApp(data.user);
-  }
+  } else { await showApp(data.user); }
 }
 
 async function doLogout() {
@@ -195,6 +231,19 @@ async function showApp(user) {
   if (!u) { alert('User not found'); return; }
   cid = u.clinic_id;
   await loadPatients();
+  await loadStats();
+}
+
+async function loadStats() {
+  const { data: ps } = await db.from('patients').select('id', { count: 'exact' }).eq('clinic_id', cid);
+  const { count: pc } = await db.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
+  const { count: vc } = await db.from('visits').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
+  const { count: phc } = await db.from('photos').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
+  const { count: dc } = await db.from('documents').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
+  document.getElementById('statP').textContent = pc || 0;
+  document.getElementById('statV').textContent = vc || 0;
+  document.getElementById('statPh').textContent = phc || 0;
+  document.getElementById('statD').textContent = dc || 0;
 }
 
 async function loadPatients() {
@@ -210,7 +259,7 @@ function renderP(list) {
   list.forEach(function(p) {
     const cls = p.id === selPid ? 'on' : '';
     const meta = [p.birth_date, p.phone].filter(Boolean).join(' · ');
-    html += '<div class="p-item ' + cls + '" onclick="selPatient(\'' + p.id + '\')">';
+    html += '<div class="p-item ' + cls + '" onclick="selP(\'' + p.id + '\')">';
     html += '<div class="p-name">' + p.name + ' ' + (p.surname||'') + '</div>';
     html += '<div class="p-meta">' + meta + '</div></div>';
   });
@@ -222,10 +271,11 @@ function filterP() {
   renderP(patients.filter(function(p) { return (p.name+' '+(p.surname||'')).toLowerCase().includes(q); }));
 }
 
-async function selPatient(id) {
+async function selP(id) {
   selPid = id; selVid = null;
   filterP();
-  const p = patients.find(function(x) { return x.id === id; });
+  selPatient = patients.find(function(x) { return x.id === id; });
+  const p = selPatient;
   document.getElementById('emptyMsg').style.display = 'none';
   document.getElementById('pDetail').style.display = 'block';
   document.getElementById('vDetail').style.display = 'none';
@@ -250,7 +300,7 @@ function renderV() {
   let html = '';
   visits.forEach(function(v) {
     const cls = v.id === selVid ? 'on' : '';
-    html += '<div class="v-card ' + cls + '" onclick="selVisit(\'' + v.id + '\')">';
+    html += '<div class="v-card ' + cls + '" onclick="selV(\'' + v.id + '\')">';
     html += '<div class="v-type">' + (v.visit_type||'Visit') + '</div>';
     html += '<div class="v-region">' + (v.region||'') + '</div>';
     html += '<div class="v-date">' + (v.visit_date||'') + '</div></div>';
@@ -258,7 +308,7 @@ function renderV() {
   el.innerHTML = html;
 }
 
-async function selVisit(id) {
+async function selV(id) {
   selVid = id;
   renderV();
   const v = visits.find(function(x) { return x.id === id; });
@@ -301,45 +351,179 @@ function showDocs(wid, gid, docs) {
 function openLb(src) { document.getElementById('lbImg').src = src; document.getElementById('lb').classList.add('on'); }
 function closeLb() { document.getElementById('lb').classList.remove('on'); }
 
-async function dlJSON() {
+function showProgress(msg) { var el = document.getElementById('progress'); el.textContent = msg; el.style.display = 'block'; }
+function hideProgress() { document.getElementById('progress').style.display = 'none'; }
+
+async function fetchAllData() {
   const { data: ps } = await db.from('patients').select('*').eq('clinic_id', cid);
   const all = [];
-  for (let i = 0; i < (ps||[]).length; i++) {
-    const p = ps[i];
+  for (var i = 0; i < (ps||[]).length; i++) {
+    var p = ps[i];
     const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
-    const vd = [];
-    for (let j = 0; j < (vs||[]).length; j++) {
-      const v = vs[j];
+    var vd = [];
+    for (var j = 0; j < (vs||[]).length; j++) {
+      var v = vs[j];
       const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
       const { data: dc } = await db.from('documents').select('*').eq('visit_id', v.id);
       vd.push(Object.assign({}, v, { photos: ph||[], documents: dc||[] }));
     }
     all.push(Object.assign({}, p, { visits: vd }));
   }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify({ date: new Date().toISOString(), patients: all }, null, 2)], { type: 'application/json' }));
-  a.download = 'aafc_' + new Date().toISOString().split('T')[0] + '.json';
-  a.click();
+  return all;
 }
 
-async function dlCSV() {
-  const { data: ps } = await db.from('patients').select('id,name,surname').eq('clinic_id', cid);
-  const rows = ['Patient,Surname,Visit Date,Region,Photo URL'];
-  for (let i = 0; i < (ps||[]).length; i++) {
-    const p = ps[i];
-    const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
-    for (let j = 0; j < (vs||[]).length; j++) {
-      const v = vs[j];
-      const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
-      for (let k = 0; k < (ph||[]).length; k++) {
-        rows.push([p.name, p.surname||'', v.visit_date||'', v.region||'', ph[k].file_path].join(','));
+async function fetchPatientData(pid) {
+  var p = patients.find(function(x) { return x.id === pid; });
+  const { data: vs } = await db.from('visits').select('*').eq('patient_id', pid);
+  var vd = [];
+  for (var j = 0; j < (vs||[]).length; j++) {
+    var v = vs[j];
+    const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
+    const { data: dc } = await db.from('documents').select('*').eq('visit_id', v.id);
+    vd.push(Object.assign({}, v, { photos: ph||[], documents: dc||[] }));
+  }
+  return [Object.assign({}, p, { visits: vd })];
+}
+
+async function dlZIP() {
+  showProgress('Preparing ZIP...');
+  var all = await fetchAllData();
+  await makeZIP(all, 'aafc_all_' + new Date().toISOString().split('T')[0]);
+  hideProgress();
+}
+
+async function dlPatientZIP() {
+  if (!selPid) return;
+  showProgress('Preparing ZIP...');
+  var all = await fetchPatientData(selPid);
+  var name = (selPatient.name + '_' + (selPatient.surname||'')).replace(/\s/g, '_');
+  await makeZIP(all, 'aafc_' + name);
+  hideProgress();
+}
+
+async function makeZIP(allData, filename) {
+  var zip = new JSZip();
+  var total = 0;
+  for (var i = 0; i < allData.length; i++) {
+    var p = allData[i];
+    var folder = zip.folder(p.name + '_' + (p.surname||''));
+    folder.file('info.json', JSON.stringify({ name: p.name, surname: p.surname, birth_date: p.birth_date, phone: p.phone, city: p.city }, null, 2));
+    for (var j = 0; j < p.visits.length; j++) {
+      var v = p.visits[j];
+      var vfolder = folder.folder('visit_' + (j+1) + '_' + (v.visit_date||'').split('T')[0]);
+      for (var k = 0; k < v.photos.length; k++) {
+        var ph = v.photos[k];
+        showProgress('Downloading photos... ' + (++total));
+        try {
+          var resp = await fetch(ph.file_path);
+          var blob = await resp.blob();
+          vfolder.file('photo_' + (AL[ph.angle_index]||ph.angle_index) + '.jpg', blob);
+        } catch(e) {}
+      }
+      for (var k = 0; k < v.documents.length; k++) {
+        var dc = v.documents[k];
+        try {
+          var resp = await fetch(dc.file_path);
+          var blob = await resp.blob();
+          vfolder.file('doc_' + dc.doc_type + '_' + (k+1) + '.jpg', blob);
+        } catch(e) {}
       }
     }
   }
-  const a = document.createElement('a');
+  showProgress('Creating ZIP file...');
+  var content = await zip.generateAsync({ type: 'blob' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(content);
+  a.download = filename + '.zip';
+  a.click();
+}
+
+async function dlHTML() {
+  showProgress('Preparing HTML report...');
+  var all = await fetchAllData();
+  await makeHTML(all, 'aafc_report_' + new Date().toISOString().split('T')[0]);
+  hideProgress();
+}
+
+async function dlPatientHTML() {
+  if (!selPid) return;
+  showProgress('Preparing HTML report...');
+  var all = await fetchPatientData(selPid);
+  var name = (selPatient.name + '_' + (selPatient.surname||'')).replace(/\s/g, '_');
+  await makeHTML(all, 'aafc_' + name + '_report');
+  hideProgress();
+}
+
+async function makeHTML(allData, filename) {
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title>';
+  html += '<style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}';
+  html += 'h1{color:#B89A6A;margin-bottom:4px}.patient{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}';
+  html += 'h2{color:#B89A6A;font-size:18px;margin-bottom:8px}';
+  html += '.info{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}';
+  html += '.visit{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}';
+  html += 'h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}';
+  html += '.photos{display:flex;flex-wrap:wrap;gap:8px}';
+  html += '.photos img{width:140px;height:186px;object-fit:cover;border-radius:6px}';
+  html += '.lbl{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;text-align:center}';
+  html += '</style></head><body>';
+  html += '<h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">' + new Date().toLocaleDateString() + '</p>';
+  for (var i = 0; i < allData.length; i++) {
+    var p = allData[i];
+    html += '<div class="patient">';
+    html += '<h2>' + p.name + ' ' + (p.surname||'') + '</h2>';
+    html += '<div class="info">' + [p.birth_date, p.phone, p.city].filter(Boolean).join(' · ') + '</div>';
+    for (var j = 0; j < p.visits.length; j++) {
+      var v = p.visits[j];
+      html += '<div class="visit">';
+      html += '<h3>' + (v.visit_type||'Visit') + ' — ' + (v.region||'') + ' — ' + (v.visit_date||'').split('T')[0] + '</h3>';
+      if (v.photos.length) {
+        html += '<div class="photos">';
+        for (var k = 0; k < v.photos.length; k++) {
+          var ph = v.photos[k];
+          html += '<div><img src="' + ph.file_path + '"/><div class="lbl">' + (AL[ph.angle_index]||'') + '</div></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</body></html>';
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  a.download = filename + '.html';
+  a.click();
+}
+
+async function dlJSON() {
+  showProgress('Preparing JSON...');
+  var all = await fetchAllData();
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ date: new Date().toISOString(), patients: all }, null, 2)], { type: 'application/json' }));
+  a.download = 'aafc_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  hideProgress();
+}
+
+async function dlCSV() {
+  showProgress('Preparing CSV...');
+  var all = await fetchAllData();
+  var rows = ['Patient,Surname,Visit Date,Region,Angle,Photo URL'];
+  for (var i = 0; i < all.length; i++) {
+    var p = all[i];
+    for (var j = 0; j < p.visits.length; j++) {
+      var v = p.visits[j];
+      for (var k = 0; k < v.photos.length; k++) {
+        var ph = v.photos[k];
+        rows.push([p.name, p.surname||'', (v.visit_date||'').split('T')[0], v.region||'', AL[ph.angle_index]||'', ph.file_path].join(','));
+      }
+    }
+  }
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
   a.download = 'aafc_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
+  hideProgress();
 }
 </script>
 </body>

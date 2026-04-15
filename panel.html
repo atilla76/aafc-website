@@ -5,86 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AAFC Panel</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; min-height: 100vh; }
-  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid rgba(245,241,235,0.1); }
-  .logo { font-size: 20px; font-weight: 600; color: #B89A6A; letter-spacing: 2px; text-decoration: none; }
-  .nav-right { display: flex; align-items: center; gap: 16px; }
-  .user-email { font-size: 13px; color: rgba(245,241,235,0.5); }
-  .btn-logout { background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.12); color: rgba(245,241,235,0.6); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 61px); padding: 20px; }
-  .login-box { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; }
-  .login-box h2 { font-size: 24px; font-weight: 400; margin-bottom: 8px; }
-  .login-box p { color: rgba(245,241,235,0.4); font-size: 14px; margin-bottom: 32px; }
-  label { display: block; font-size: 12px; color: rgba(245,241,235,0.5); margin-bottom: 6px; letter-spacing: 0.5px; }
-  input { width: 100%; background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.12); border-radius: 10px; padding: 12px 14px; color: #F5F1EB; font-size: 14px; margin-bottom: 16px; }
-  input:focus { outline: none; border-color: rgba(184,154,106,0.4); }
-  .btn-primary { width: 100%; background: #B89A6A; border: none; border-radius: 10px; padding: 14px; color: #1C1929; font-size: 15px; font-weight: 600; cursor: pointer; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .error { color: #E05555; font-size: 13px; margin-top: 8px; }
-  .panel { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-  .panel h2 { font-size: 28px; font-weight: 400; margin-bottom: 8px; }
-  .panel .sub { color: rgba(245,241,235,0.4); font-size: 14px; margin-bottom: 40px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 40px; }
-  .stat { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 14px; padding: 20px; }
-  .stat-val { font-size: 32px; font-weight: 600; color: #B89A6A; }
-  .stat-lbl { font-size: 12px; color: rgba(245,241,235,0.4); margin-top: 4px; }
-  .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-  .action-card { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 16px; padding: 24px; }
-  .action-card h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
-  .action-card p { font-size: 13px; color: rgba(245,241,235,0.4); margin-bottom: 20px; line-height: 1.6; }
-  .btn-action { background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
-  .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
-  .progress { margin-top: 12px; font-size: 12px; color: rgba(245,241,235,0.4); }
-  .hidden { display: none; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#1C1929; color:#F5F1EB; height:100vh; overflow:hidden; }
+/* Login */
+.login-wrap { display:flex; align-items:center; justify-content:center; height:100vh; }
+.login-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:20px; padding:40px; width:100%; max-width:400px; }
+.login-box .logo { font-size:24px; font-weight:600; color:#B89A6A; letter-spacing:2px; margin-bottom:8px; }
+.login-box h2 { font-size:22px; font-weight:400; margin-bottom:6px; }
+.login-box p { color:rgba(245,241,235,0.4); font-size:14px; margin-bottom:28px; }
+label { display:block; font-size:11px; color:rgba(245,241,235,0.5); margin-bottom:6px; letter-spacing:0.5px; }
+input { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:10px; padding:12px 14px; color:#F5F1EB; font-size:14px; margin-bottom:14px; }
+input:focus { outline:none; border-color:rgba(184,154,106,0.4); }
+.btn-primary { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+.error { color:#E05555; font-size:13px; margin-top:8px; }
+/* App layout */
+.app { display:none; height:100vh; }
+.app.visible { display:flex; }
+/* Sidebar */
+.sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
+.sidebar-header { padding:16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
+.sidebar-header .logo { font-size:18px; font-weight:600; color:#B89A6A; letter-spacing:2px; }
+.btn-logout { background:none; border:1px solid rgba(245,241,235,0.12); color:rgba(245,241,235,0.5); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; }
+.search-wrap { padding:12px; border-bottom:1px solid rgba(245,241,235,0.08); }
+.search-wrap input { margin:0; padding:10px 12px; font-size:13px; }
+.patient-list { flex:1; overflow-y:auto; }
+.patient-item { padding:12px 16px; cursor:pointer; border-bottom:1px solid rgba(245,241,235,0.04); transition:background 0.15s; }
+.patient-item:hover { background:rgba(245,241,235,0.04); }
+.patient-item.active { background:rgba(184,154,106,0.1); border-left:3px solid #B89A6A; }
+.patient-item .name { font-size:14px; font-weight:500; }
+.patient-item .meta { font-size:11px; color:rgba(245,241,235,0.4); margin-top:2px; }
+/* Main */
+.main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+.main-header { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; gap:16px; }
+.main-header h2 { font-size:18px; font-weight:400; }
+.main-header .meta { font-size:13px; color:rgba(245,241,235,0.4); }
+.main-content { padding:24px; flex:1; }
+/* Empty state */
+.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:rgba(245,241,235,0.3); gap:12px; font-size:14px; }
+/* Visits */
+.visits-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:24px; }
+.visit-card { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:16px; cursor:pointer; transition:all 0.15s; }
+.visit-card:hover { border-color:rgba(184,154,106,0.3); background:rgba(184,154,106,0.05); }
+.visit-card.active { border-color:#B89A6A; background:rgba(184,154,106,0.1); }
+.visit-card .vtype { font-size:10px; font-weight:600; color:#B89A6A; margin-bottom:6px; }
+.visit-card .vregion { font-size:14px; font-weight:500; margin-bottom:4px; }
+.visit-card .vdate { font-size:11px; color:rgba(245,241,235,0.4); }
+/* Photos */
+.section-title { font-size:11px; color:rgba(245,241,235,0.4); letter-spacing:0.16px; margin-bottom:12px; }
+.photos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+.photo-pair { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; overflow:hidden; }
+.photo-pair .pair-label { padding:10px 12px; font-size:12px; font-weight:500; border-bottom:1px solid rgba(245,241,235,0.08); }
+.photo-pair .pair-imgs { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+.photo-pair .pair-imgs img { width:100%; aspect-ratio:3/4; object-fit:cover; cursor:pointer; transition:opacity 0.15s; }
+.photo-pair .pair-imgs img:hover { opacity:0.85; }
+.photo-pair .pair-imgs .empty-img { width:100%; aspect-ratio:3/4; background:rgba(245,241,235,0.04); display:flex; align-items:center; justify-content:center; font-size:11px; color:rgba(245,241,235,0.2); }
+.pair-footer { display:grid; grid-template-columns:1fr 1fr; font-size:10px; color:rgba(245,241,235,0.3); text-align:center; padding:6px 0; }
+/* Lightbox */
+.lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; align-items:center; justify-content:center; }
+.lightbox.open { display:flex; }
+.lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
+.lightbox-close { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:18px; }
+/* Loader */
+.loader { display:flex; align-items:center; justify-content:center; padding:40px; color:rgba(245,241,235,0.3); font-size:14px; }
+/* Scrollbar */
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.1); border-radius:2px; }
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="logo">AAFC</a>
-  <div class="nav-right">
-    <span class="user-email" id="userEmail"></span>
-    <button class="btn-logout hidden" id="btnLogout">Sign Out</button>
-  </div>
-</nav>
-
+<!-- Login -->
 <div class="login-wrap" id="loginSection">
   <div class="login-box">
+    <div class="logo">AAFC</div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
     <label>EMAIL</label>
-    <input type="email" id="email" placeholder="clinic@email.com" />
+    <input type="email" id="email" placeholder="clinic@email.com"/>
     <label>PASSWORD</label>
-    <input type="password" id="password" placeholder="••••••••" />
+    <input type="password" id="password" placeholder="••••••••"/>
     <button class="btn-primary" id="btnLogin">Sign In</button>
-    <div class="error hidden" id="loginError"></div>
+    <div class="error" id="loginError" style="display:none"></div>
   </div>
 </div>
 
-<div class="panel hidden" id="panelSection">
-  <h2>Data Center</h2>
-  <p class="sub">View and download your clinic data</p>
-  <div class="stats">
-    <div class="stat"><div class="stat-val" id="statHasta">-</div><div class="stat-lbl">Patients</div></div>
-    <div class="stat"><div class="stat-val" id="statVizit">-</div><div class="stat-lbl">Visits</div></div>
-    <div class="stat"><div class="stat-val" id="statFoto">-</div><div class="stat-lbl">Photos</div></div>
-    <div class="stat"><div class="stat-val" id="statBelge">-</div><div class="stat-lbl">Documents</div></div>
-  </div>
-  <div class="actions">
-    <div class="action-card">
-      <h3>JSON Backup</h3>
-      <p>Download all patient, visit and photo URL data in JSON format.</p>
-      <button class="btn-action" id="btnJson">Download JSON</button>
-      <div class="progress hidden" id="progressJson"></div>
+<!-- App -->
+<div class="app" id="appSection">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">AAFC</span>
+      <button class="btn-logout" id="btnLogout">Sign Out</button>
     </div>
-    <div class="action-card">
-      <h3>Photo List</h3>
-      <p>Download all photo URLs in CSV format.</p>
-      <button class="btn-action" id="btnCsv">Download CSV</button>
-      <div class="progress hidden" id="progressCsv"></div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search patients..." oninput="filterPatients()"/>
+    </div>
+    <div class="patient-list" id="patientList">
+      <div class="loader">Loading...</div>
     </div>
   </div>
+  <div class="main" id="main">
+    <div class="empty" id="emptyState">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Select a patient to view details
+    </div>
+    <div id="patientDetail" style="display:none; flex-direction:column; height:100%;">
+      <div class="main-header">
+        <div>
+          <h2 id="detailName"></h2>
+          <div class="meta" id="detailMeta"></div>
+        </div>
+      </div>
+      <div class="main-content">
+        <div class="section-title">VISITS</div>
+        <div class="visits-grid" id="visitsList"></div>
+        <div id="photosSection" style="display:none">
+          <div class="section-title" id="photosTitle">PHOTOS</div>
+          <div class="photos-grid" id="photosGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt=""/>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -94,113 +140,134 @@ const SUPABASE_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let clinicId = null;
+let allPatients = [];
+let selectedPatientId = null;
+let selectedVisitId = null;
+let visits1 = [], visits2 = [];
+
+const angleLabels = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
 
 async function init() {
   const { data: { session } } = await db.auth.getSession();
-  if (session) await showPanel(session.user);
+  if (session) await showApp(session.user);
 }
 
-document.getElementById('btnLogin').addEventListener('click', async function() {
+document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const btn = document.getElementById('btnLogin');
   const err = document.getElementById('loginError');
-  btn.disabled = true;
-  btn.textContent = 'Signing in...';
-  err.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  err.style.display = 'none';
   const { data, error } = await db.auth.signInWithPassword({ email, password });
   if (error) {
     err.textContent = 'Invalid email or password';
-    err.classList.remove('hidden');
-    btn.disabled = false;
-    btn.textContent = 'Sign In';
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In';
   } else {
-    await showPanel(data.user);
+    await showApp(data.user);
   }
 });
 
-document.getElementById('btnLogout').addEventListener('click', async function() {
+document.getElementById('btnLogout').addEventListener('click', async () => {
   await db.auth.signOut();
-  document.getElementById('loginSection').classList.remove('hidden');
-  document.getElementById('panelSection').classList.add('hidden');
-  document.getElementById('btnLogout').classList.add('hidden');
-  document.getElementById('userEmail').textContent = '';
-  clinicId = null;
+  clinicId = null; allPatients = [];
+  document.getElementById('loginSection').style.display = 'flex';
+  document.getElementById('appSection').classList.remove('visible');
 });
 
-document.getElementById('btnJson').addEventListener('click', async function() {
-  const btn = document.getElementById('btnJson');
-  const progress = document.getElementById('progressJson');
-  btn.disabled = true;
-  progress.classList.remove('hidden');
-  progress.textContent = 'Preparing data...';
-  const { data: patients } = await db.from('patients').select('*').eq('clinic_id', clinicId);
-  const allData = [];
-  for (const p of patients || []) {
-    progress.textContent = 'Processing ' + p.name + '...';
-    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
-    const visitsWithData = [];
-    for (const v of visits || []) {
-      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
-      const { data: docs } = await db.from('documents').select('*').eq('visit_id', v.id);
-      visitsWithData.push({ ...v, photos: photos || [], documents: docs || [] });
-    }
-    allData.push({ ...p, visits: visitsWithData });
-  }
-  const json = JSON.stringify({ export_date: new Date().toISOString(), patients: allData }, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'aafc_backup_' + new Date().toISOString().split('T')[0] + '.json';
-  a.click();
-  progress.textContent = 'Downloaded!';
-  btn.disabled = false;
-});
-
-document.getElementById('btnCsv').addEventListener('click', async function() {
-  const btn = document.getElementById('btnCsv');
-  const progress = document.getElementById('progressCsv');
-  btn.disabled = true;
-  progress.classList.remove('hidden');
-  progress.textContent = 'Preparing photo list...';
-  const { data: patients } = await db.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
-  const rows = ['Patient Name,Patient Surname,Visit Date,Region,Photo URL'];
-  for (const p of patients || []) {
-    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
-    for (const v of visits || []) {
-      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
-      for (const ph of photos || []) {
-        rows.push(p.name + ',' + (p.surname || '') + ',' + (v.visit_date || '') + ',' + (v.region || '') + ',' + ph.file_path);
-      }
-    }
-  }
-  const csv = rows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'aafc_photos_' + new Date().toISOString().split('T')[0] + '.csv';
-  a.click();
-  progress.textContent = 'Downloaded!';
-  btn.disabled = false;
-});
-
-async function showPanel(user) {
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('panelSection').classList.remove('hidden');
-  document.getElementById('userEmail').textContent = user.email;
-  document.getElementById('btnLogout').classList.remove('hidden');
+async function showApp(user) {
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('appSection').classList.add('visible');
   const { data: userData } = await db.from('users').select('clinic_id').eq('auth_id', user.id).single();
   clinicId = userData?.clinic_id;
-  const { data: patients } = await db.from('patients').select('id').eq('clinic_id', clinicId);
-  const { data: visits } = await db.from('visits').select('id').eq('clinic_id', clinicId);
-  const { data: photos } = await db.from('photos').select('id').eq('clinic_id', clinicId);
-  const { data: docs } = await db.from('documents').select('id').eq('clinic_id', clinicId);
-  document.getElementById('statHasta').textContent = patients?.length || 0;
-  document.getElementById('statVizit').textContent = visits?.length || 0;
-  document.getElementById('statFoto').textContent = photos?.length || 0;
-  document.getElementById('statBelge').textContent = docs?.length || 0;
+  await loadPatients();
+}
+
+async function loadPatients() {
+  const { data } = await db.from('patients').select('*').eq('clinic_id', clinicId).order('created_at', { ascending: false });
+  allPatients = data || [];
+  renderPatients(allPatients);
+}
+
+function renderPatients(list) {
+  const el = document.getElementById('patientList');
+  if (!list.length) { el.innerHTML = '<div class="loader">No patients found</div>'; return; }
+  el.innerHTML = list.map(p => `
+    <div class="patient-item ${p.id === selectedPatientId ? 'active' : ''}" onclick="selectPatient('${p.id}')">
+      <div class="name">${p.name} ${p.surname || ''}</div>
+      <div class="meta">${p.birth_date || ''} ${p.phone ? '· ' + p.phone : ''}</div>
+    </div>
+  `).join('');
+}
+
+function filterPatients() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  renderPatients(allPatients.filter(p => (p.name + ' ' + (p.surname||'')).toLowerCase().includes(q)));
+}
+
+async function selectPatient(id) {
+  selectedPatientId = id;
+  selectedVisitId = null;
+  renderPatients(allPatients.filter(p => {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    return (p.name + ' ' + (p.surname||'')).toLowerCase().includes(q);
+  }));
+  const p = allPatients.find(x => x.id === id);
+  document.getElementById('emptyState').style.display = 'none';
+  const detail = document.getElementById('patientDetail');
+  detail.style.display = 'flex';
+  document.getElementById('detailName').textContent = p.name + ' ' + (p.surname || '');
+  document.getElementById('detailMeta').textContent = [p.birth_date, p.phone, p.city].filter(Boolean).join(' · ');
+  document.getElementById('photosSection').style.display = 'none';
+  document.getElementById('visitsList').innerHTML = '<div class="loader">Loading visits...</div>';
+  const { data: visitsData } = await db.from('visits').select('*').eq('patient_id', id).order('created_at', { ascending: false });
+  visits1 = visitsData || [];
+  renderVisits(visits1);
+}
+
+function renderVisits(list) {
+  const el = document.getElementById('visitsList');
+  if (!list.length) { el.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits found</div>'; return; }
+  el.innerHTML = list.map(v => `
+    <div class="visit-card ${v.id === selectedVisitId ? 'active' : ''}" onclick="selectVisit('${v.id}')">
+      <div class="vtype">${v.visit_type || 'Visit'}</div>
+      <div class="vregion">${v.region || ''}</div>
+      <div class="vdate">${v.visit_date || ''}</div>
+    </div>
+  `).join('');
+}
+
+async function selectVisit(id) {
+  selectedVisitId = id;
+  renderVisits(visits1);
+  const photosSection = document.getElementById('photosSection');
+  const photosGrid = document.getElementById('photosGrid');
+  photosSection.style.display = 'block';
+  photosGrid.innerHTML = '<div class="loader">Loading photos...</div>';
+  const { data: photos } = await db.from('photos').select('*').eq('visit_id', id).order('angle_index');
+  if (!photos || !photos.length) {
+    photosGrid.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No photos found</div>';
+    return;
+  }
+  // Her açı için tek fotoğraf göster
+  const byAngle = {};
+  photos.forEach(p => byAngle[p.angle_index] = p);
+  photosGrid.innerHTML = Object.entries(byAngle).map(([idx, p]) => `
+    <div class="photo-pair">
+      <div class="pair-label">${angleLabels[parseInt(idx)] || 'Photo'}</div>
+      <img src="${p.file_path}" onclick="openLightbox('${p.file_path}')" style="width:100%;aspect-ratio:3/4;object-fit:cover;cursor:pointer;"/>
+    </div>
+  `).join('');
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
 }
 
 init();

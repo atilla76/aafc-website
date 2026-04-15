@@ -19,7 +19,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .btn-login { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
 .btn-login:disabled { opacity:0.5; }
 .err { color:#E05555; font-size:13px; margin-top:8px; display:none; }
-.app { display:none; height:100vh; flex-direction:row; }
+.app { display:none; height:100vh; }
 .app.on { display:flex; }
 .sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
 .s-head { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
@@ -28,7 +28,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .btn-sm { padding:5px 9px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:500; border:none; }
 .btn-json { background:rgba(29,158,117,0.2); color:#1D9E75; }
 .btn-csv { background:rgba(184,154,106,0.2); color:#B89A6A; }
-.btn-out { background:none; border:1px solid rgba(245,241,235,0.15) !important; color:rgba(245,241,235,0.5); }
+.btn-out { background:none; border:1px solid rgba(245,241,235,0.15); color:rgba(245,241,235,0.5); }
 .s-search { padding:10px; border-bottom:1px solid rgba(245,241,235,0.08); }
 .s-search input { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.1); border-radius:8px; padding:8px 12px; color:#F5F1EB; font-size:13px; outline:none; }
 .p-list { flex:1; overflow-y:auto; }
@@ -72,7 +72,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
 .lb-x { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; }
 .loader { padding:30px; text-align:center; color:rgba(245,241,235,0.3); font-size:13px; }
-::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.15); border-radius:2px; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.15); border-radius:2px; }
 </style>
 </head>
 <body>
@@ -106,7 +107,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
     </div>
     <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
   </div>
-  <div class="main" id="main">
+  <div class="main">
     <div class="empty" id="emptyMsg">Select a patient</div>
     <div id="pDetail" style="display:none">
       <div class="m-head">
@@ -199,132 +200,145 @@ async function showApp(user) {
 async function loadPatients() {
   const { data } = await db.from('patients').select('*').eq('clinic_id', cid).order('created_at', { ascending: false });
   patients = data || [];
-  renderPatients(patients);
+  renderP(patients);
 }
 
-function renderPatients(list) {
+function renderP(list) {
   const el = document.getElementById('pList');
   if (!list.length) { el.innerHTML = '<div class="loader">No patients</div>'; return; }
-  el.innerHTML = list.map(p => 
-    <div class="p-item " onclick="selPatient('')">
-      <div class="p-name"> </div>
-      <div class="p-meta"></div>
-    </div>).join('');
+  let html = '';
+  list.forEach(function(p) {
+    const cls = p.id === selPid ? 'on' : '';
+    const meta = [p.birth_date, p.phone].filter(Boolean).join(' · ');
+    html += '<div class="p-item ' + cls + '" onclick="selPatient(\'' + p.id + '\')">';
+    html += '<div class="p-name">' + p.name + ' ' + (p.surname||'') + '</div>';
+    html += '<div class="p-meta">' + meta + '</div></div>';
+  });
+  el.innerHTML = html;
 }
 
 function filterP() {
   const q = document.getElementById('search').value.toLowerCase();
-  renderPatients(patients.filter(p => (p.name+' '+(p.surname||'')).toLowerCase().includes(q)));
+  renderP(patients.filter(function(p) { return (p.name+' '+(p.surname||'')).toLowerCase().includes(q); }));
 }
 
 async function selPatient(id) {
   selPid = id; selVid = null;
   filterP();
-  const p = patients.find(x => x.id===id);
+  const p = patients.find(function(x) { return x.id === id; });
   document.getElementById('emptyMsg').style.display = 'none';
   document.getElementById('pDetail').style.display = 'block';
   document.getElementById('vDetail').style.display = 'none';
-  document.getElementById('dName').textContent = p.name+' '+(p.surname||'');
-  document.getElementById('dMeta').textContent = [p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
-  document.getElementById('pInfo').innerHTML = [
-    ['Name', p.name+' '+(p.surname||'')],
-    ['Date of Birth', p.birth_date||'-'],
-    ['Phone', p.phone||'-'],
-    ['City', p.city||'-'],
-    p.notes?['Notes',p.notes]:null
-  ].filter(Boolean).map(([l,v])=><div class="i-row"><span class="i-lbl"></span><span class="i-val"></span></div>).join('');
+  document.getElementById('dName').textContent = p.name + ' ' + (p.surname||'');
+  document.getElementById('dMeta').textContent = [p.birth_date, p.phone, p.city].filter(Boolean).join(' · ');
+  let infoHtml = '';
+  infoHtml += '<div class="i-row"><span class="i-lbl">Name</span><span class="i-val">' + p.name + ' ' + (p.surname||'') + '</span></div>';
+  infoHtml += '<div class="i-row"><span class="i-lbl">Date of Birth</span><span class="i-val">' + (p.birth_date||'-') + '</span></div>';
+  infoHtml += '<div class="i-row"><span class="i-lbl">Phone</span><span class="i-val">' + (p.phone||'-') + '</span></div>';
+  infoHtml += '<div class="i-row"><span class="i-lbl">City</span><span class="i-val">' + (p.city||'-') + '</span></div>';
+  if (p.notes) infoHtml += '<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">' + p.notes + '</span></div>';
+  document.getElementById('pInfo').innerHTML = infoHtml;
   document.getElementById('vList').innerHTML = '<div class="loader">Loading...</div>';
   const { data } = await db.from('visits').select('*').eq('patient_id', id).order('created_at', { ascending: false });
   visits = data || [];
-  renderVisits();
+  renderV();
 }
 
-function renderVisits() {
+function renderV() {
   const el = document.getElementById('vList');
   if (!visits.length) { el.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>'; return; }
-  el.innerHTML = visits.map(v=>
-    <div class="v-card " onclick="selVisit('')">
-      <div class="v-type"></div>
-      <div class="v-region"></div>
-      <div class="v-date"></div>
-    </div>).join('');
+  let html = '';
+  visits.forEach(function(v) {
+    const cls = v.id === selVid ? 'on' : '';
+    html += '<div class="v-card ' + cls + '" onclick="selVisit(\'' + v.id + '\')">';
+    html += '<div class="v-type">' + (v.visit_type||'Visit') + '</div>';
+    html += '<div class="v-region">' + (v.region||'') + '</div>';
+    html += '<div class="v-date">' + (v.visit_date||'') + '</div></div>';
+  });
+  el.innerHTML = html;
 }
 
 async function selVisit(id) {
   selVid = id;
-  renderVisits();
-  const v = visits.find(x => x.id===id);
+  renderV();
+  const v = visits.find(function(x) { return x.id === id; });
   document.getElementById('vDetail').style.display = 'block';
-  document.getElementById('vInfo').innerHTML = [
-    ['Type', v.visit_type||'-'],
-    ['Region', v.region||'-'],
-    ['Date', v.visit_date||'-']
-  ].map(([l,v2])=><div class="i-row"><span class="i-lbl"></span><span class="i-val"></span></div>).join('');
+  let vi = '';
+  vi += '<div class="i-row"><span class="i-lbl">Type</span><span class="i-val">' + (v.visit_type||'-') + '</span></div>';
+  vi += '<div class="i-row"><span class="i-lbl">Region</span><span class="i-val">' + (v.region||'-') + '</span></div>';
+  vi += '<div class="i-row"><span class="i-lbl">Date</span><span class="i-val">' + (v.visit_date||'-') + '</span></div>';
+  document.getElementById('vInfo').innerHTML = vi;
   if (v.notes) {
     document.getElementById('notesWrap').style.display = 'block';
     document.getElementById('vNotes').textContent = v.notes;
   } else { document.getElementById('notesWrap').style.display = 'none'; }
-
   const { data: photos } = await db.from('photos').select('*').eq('visit_id', id).order('angle_index');
   if (photos && photos.length) {
     document.getElementById('phWrap').style.display = 'block';
-    document.getElementById('phGrid').innerHTML = photos.map(p=>
-      <div class="ph-card">
-        <img src="" onclick="openLb('')"/>
-        <div class="ph-lbl"></div>
-      </div>).join('');
+    let ph = '';
+    photos.forEach(function(p) {
+      ph += '<div class="ph-card"><img src="' + p.file_path + '" onclick="openLb(\'' + p.file_path + '\')"/>';
+      ph += '<div class="ph-lbl">' + (AL[p.angle_index]||'Photo') + '</div></div>';
+    });
+    document.getElementById('phGrid').innerHTML = ph;
   } else { document.getElementById('phWrap').style.display = 'none'; }
-
   const { data: docs } = await db.from('documents').select('*').eq('visit_id', id);
-  showDocs('kartWrap','kartGrid',(docs||[]).filter(d=>d.doc_type==='kart'));
-  showDocs('onamWrap','onamGrid',(docs||[]).filter(d=>d.doc_type==='onam'));
-  showDocs('barkodWrap','barkodGrid',(docs||[]).filter(d=>d.doc_type==='barkod'));
+  showDocs('kartWrap', 'kartGrid', (docs||[]).filter(function(d) { return d.doc_type === 'kart'; }));
+  showDocs('onamWrap', 'onamGrid', (docs||[]).filter(function(d) { return d.doc_type === 'onam'; }));
+  showDocs('barkodWrap', 'barkodGrid', (docs||[]).filter(function(d) { return d.doc_type === 'barkod'; }));
 }
 
 function showDocs(wid, gid, docs) {
-  if (!docs.length) { document.getElementById(wid).style.display='none'; return; }
+  if (!docs.length) { document.getElementById(wid).style.display = 'none'; return; }
   document.getElementById(wid).style.display = 'block';
-  document.getElementById(gid).innerHTML = docs.map((d,i)=>
-    <div class="doc-card">
-      <img src="" onclick="openLb('')"/>
-    </div>).join('');
+  let html = '';
+  docs.forEach(function(d) {
+    html += '<div class="doc-card"><img src="' + d.file_path + '" onclick="openLb(\'' + d.file_path + '\')"/></div>';
+  });
+  document.getElementById(gid).innerHTML = html;
 }
 
-function openLb(src) { document.getElementById('lbImg').src=src; document.getElementById('lb').classList.add('on'); }
+function openLb(src) { document.getElementById('lbImg').src = src; document.getElementById('lb').classList.add('on'); }
 function closeLb() { document.getElementById('lb').classList.remove('on'); }
 
 async function dlJSON() {
   const { data: ps } = await db.from('patients').select('*').eq('clinic_id', cid);
   const all = [];
-  for (const p of ps||[]) {
+  for (let i = 0; i < (ps||[]).length; i++) {
+    const p = ps[i];
     const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
     const vd = [];
-    for (const v of vs||[]) {
+    for (let j = 0; j < (vs||[]).length; j++) {
+      const v = vs[j];
       const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
       const { data: dc } = await db.from('documents').select('*').eq('visit_id', v.id);
-      vd.push({ ...v, photos: ph||[], documents: dc||[] });
+      vd.push(Object.assign({}, v, { photos: ph||[], documents: dc||[] }));
     }
-    all.push({ ...p, visits: vd });
+    all.push(Object.assign({}, p, { visits: vd }));
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify({ date: new Date().toISOString(), patients: all }, null, 2)], { type: 'application/json' }));
-  a.download = 'aafc_'+new Date().toISOString().split('T')[0]+'.json';
+  a.download = 'aafc_' + new Date().toISOString().split('T')[0] + '.json';
   a.click();
 }
 
 async function dlCSV() {
   const { data: ps } = await db.from('patients').select('id,name,surname').eq('clinic_id', cid);
   const rows = ['Patient,Surname,Visit Date,Region,Photo URL'];
-  for (const p of ps||[]) {
+  for (let i = 0; i < (ps||[]).length; i++) {
+    const p = ps[i];
     const { data: vs } = await db.from('visits').select('*').eq('patient_id', p.id);
-    for (const v of vs||[]) {
+    for (let j = 0; j < (vs||[]).length; j++) {
+      const v = vs[j];
       const { data: ph } = await db.from('photos').select('*').eq('visit_id', v.id);
-      for (const x of ph||[]) rows.push([p.name,p.surname||'',v.visit_date||'',v.region||'',x.file_path].join(','));
+      for (let k = 0; k < (ph||[]).length; k++) {
+        rows.push([p.name, p.surname||'', v.visit_date||'', v.region||'', ph[k].file_path].join(','));
+      }
     }
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
-  a.download = 'aafc_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.download = 'aafc_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
 }
 </script>

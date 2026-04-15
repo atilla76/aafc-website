@@ -270,7 +270,47 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
+async function downloadJSON() {
+  const { data: patients } = await db.from('patients').select('*').eq('clinic_id', clinicId);
+  const allData = [];
+  for (const p of patients || []) {
+    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
+    const visitsWithData = [];
+    for (const v of visits || []) {
+      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
+      const { data: docs } = await db.from('documents').select('*').eq('visit_id', v.id);
+      visitsWithData.push({ ...v, photos: photos || [], documents: docs || [] });
+    }
+    allData.push({ ...p, visits: visitsWithData });
+  }
+  const json = JSON.stringify({ export_date: new Date().toISOString(), patients: allData }, null, 2);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = 'aafc_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+async function downloadCSV() {
+  const { data: patients } = await db.from('patients').select('id, name, surname').eq('clinic_id', clinicId);
+  const rows = ['Patient Name,Patient Surname,Visit Date,Region,Photo URL'];
+  for (const p of patients || []) {
+    const { data: visits } = await db.from('visits').select('*').eq('patient_id', p.id);
+    for (const v of visits || []) {
+      const { data: photos } = await db.from('photos').select('*').eq('visit_id', v.id);
+      for (const ph of photos || []) {
+        rows.push([p.name, p.surname||'', v.visit_date||'', v.region||'', ph.file_path].join(','));
+      }
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
+  a.download = 'aafc_photos_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
 init();
 </script>
 </body>
 </html>
+
+

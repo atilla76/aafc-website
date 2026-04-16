@@ -10,11 +10,11 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1C1929;color:#F5F1EB;height:100vh;overflow:hidden}
-.login-wrap{display:flex;align-items:center;justify-content:center;height:100vh}
-.login-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:20px;padding:40px;width:100%;max-width:400px}
+.lw{display:flex;align-items:center;justify-content:center;height:100vh}
+.lb2{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:20px;padding:40px;width:100%;max-width:400px}
 .logo{font-size:24px;font-weight:600;color:#B89A6A;letter-spacing:2px;margin-bottom:8px}
-.login-box h2{font-size:22px;font-weight:400;margin-bottom:6px}
-.login-box p{color:rgba(245,241,235,0.4);font-size:14px;margin-bottom:28px}
+.lb2 h2{font-size:22px;font-weight:400;margin-bottom:6px}
+.lb2 p{color:rgba(245,241,235,0.4);font-size:14px;margin-bottom:28px}
 .lbl{display:block;font-size:11px;color:rgba(245,241,235,0.5);margin-bottom:6px}
 .inp{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:10px;padding:12px 14px;color:#F5F1EB;font-size:14px;margin-bottom:14px;outline:none}
 .inp:focus{border-color:rgba(184,154,106,0.4)}
@@ -24,85 +24,86 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .app{display:none;height:100vh;flex-direction:column}
 .app.on{display:flex}
 .banner{background:rgba(184,154,106,0.08);border-bottom:1px solid rgba(184,154,106,0.15);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.banner-text{font-size:12px;color:rgba(245,241,235,0.5)}
-.banner-text strong{color:#B89A6A}
-.banner-btns{display:flex;gap:6px}
-.btn-b{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
-.btn-zip{background:rgba(108,99,168,0.2);color:#9B8FD4;border:1px solid rgba(108,99,168,0.3)}
-.btn-html{background:rgba(29,158,117,0.2);color:#1D9E75;border:1px solid rgba(29,158,117,0.3)}
-.btn-json{background:rgba(184,154,106,0.2);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
-.btn-csv{background:rgba(245,241,235,0.06);color:rgba(245,241,235,0.5);border:1px solid rgba(245,241,235,0.12)}
-.btn-pdf{background:rgba(224,85,85,0.2);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
+.bt{font-size:12px;color:rgba(245,241,235,0.5)}
+.bt strong{color:#B89A6A}
+.bts{display:flex;gap:6px}
+.btn{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
+.bzip{background:rgba(108,99,168,0.2);color:#9B8FD4;border:1px solid rgba(108,99,168,0.3)}
+.bhtml{background:rgba(29,158,117,0.2);color:#1D9E75;border:1px solid rgba(29,158,117,0.3)}
+.bjson{background:rgba(184,154,106,0.2);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
+.bcsv{background:rgba(245,241,235,0.06);color:rgba(245,241,235,0.5);border:1px solid rgba(245,241,235,0.12)}
+.bpdf{background:rgba(224,85,85,0.2);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
+.bedit{background:rgba(184,154,106,0.15);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
+.bdel{background:rgba(224,85,85,0.15);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
 .layout{display:flex;flex:1;overflow:hidden}
-.sidebar{width:280px;min-width:280px;background:rgba(245,241,235,0.03);border-right:1px solid rgba(245,241,235,0.08);display:flex;flex-direction:column}
-.s-head{padding:12px 16px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
-.s-logo{font-size:16px;font-weight:600;color:#B89A6A;letter-spacing:2px}
-.btn-out{background:none;border:1px solid rgba(245,241,235,0.15);color:rgba(245,241,235,0.5);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+.sb{width:280px;min-width:280px;background:rgba(245,241,235,0.03);border-right:1px solid rgba(245,241,235,0.08);display:flex;flex-direction:column}
+.sh{padding:12px 16px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
+.sl{font-size:16px;font-weight:600;color:#B89A6A;letter-spacing:2px}
+.bout{background:none;border:1px solid rgba(245,241,235,0.15);color:rgba(245,241,235,0.5);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(245,241,235,0.06);border-bottom:1px solid rgba(245,241,235,0.08)}
 .stat{background:#1C1929;padding:10px 14px}
 .stat .n{font-size:20px;font-weight:600;color:#B89A6A}
 .stat .l{font-size:10px;color:rgba(245,241,235,0.4);margin-top:2px}
-.s-search{padding:10px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;gap:6px}
-.s-search input{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.1);border-radius:8px;padding:8px 12px;color:#F5F1EB;font-size:13px;outline:none}
-.btn-add{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
-.p-list{flex:1;overflow-y:auto}
-.p-item{padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(245,241,235,0.04)}
-.p-item:hover{background:rgba(245,241,235,0.04)}
-.p-item.on{background:rgba(184,154,106,0.1);border-left:3px solid #B89A6A}
-.p-name{font-size:14px;font-weight:500}
-.p-meta{font-size:11px;color:rgba(245,241,235,0.4);margin-top:2px}
+.ss{padding:10px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;gap:6px}
+.ss input{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.1);border-radius:8px;padding:8px 12px;color:#F5F1EB;font-size:13px;outline:none}
+.badd{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
+.pl{flex:1;overflow-y:auto}
+.pi{padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(245,241,235,0.04)}
+.pi:hover{background:rgba(245,241,235,0.04)}
+.pi.on{background:rgba(184,154,106,0.1);border-left:3px solid #B89A6A}
+.pn{font-size:14px;font-weight:500}
+.pm{font-size:11px;color:rgba(245,241,235,0.4);margin-top:2px}
 .main{flex:1;overflow-y:auto}
-.m-head{padding:16px 24px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
-.m-head h2{font-size:20px;font-weight:400}
-.m-head .sub{font-size:13px;color:rgba(245,241,235,0.4);margin-top:4px}
-.m-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.m-body{padding:20px 24px}
+.mh{padding:16px 24px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
+.mh h2{font-size:20px;font-weight:400}
+.mh .sub{font-size:13px;color:rgba(245,241,235,0.4);margin-top:4px}
+.mbs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.mb{padding:20px 24px}
 .empty{display:flex;align-items:center;justify-content:center;height:80vh;color:rgba(245,241,235,0.3);font-size:14px}
 .sec{font-size:10px;color:rgba(245,241,235,0.4);letter-spacing:0.5px;margin:18px 0 8px}
 .sec:first-child{margin-top:0}
-.info-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
-.i-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(245,241,235,0.06);font-size:13px}
-.i-row:last-child{border:none}
-.i-lbl{color:rgba(245,241,235,0.4)}
-.i-val{color:#F5F1EB;font-weight:500}
-.v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.v-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;cursor:pointer}
-.v-card:hover{border-color:rgba(184,154,106,0.3)}
-.v-card.on{border-color:#B89A6A;background:rgba(184,154,106,0.08)}
-.v-type{font-size:10px;font-weight:600;color:#B89A6A;margin-bottom:4px}
-.v-region{font-size:14px;font-weight:500;margin-bottom:3px}
-.v-date{font-size:11px;color:rgba(245,241,235,0.4)}
-.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.ph-card{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
-.ph-card img{width:100%;aspect-ratio:3/4;object-fit:cover;cursor:pointer;display:block}
-.ph-card img:hover{opacity:0.85}
-.ph-lbl{padding:5px 8px;font-size:10px;color:rgba(245,241,235,0.5)}
-.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.doc-card{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
-.doc-card img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block}
-.doc-card img:hover{opacity:0.85}
-.notes-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
-.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
-.compare-side{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
-.compare-side h4{font-size:11px;color:rgba(245,241,235,0.4);margin-bottom:10px;letter-spacing:0.5px}
-.compare-side select{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none;margin-bottom:10px}
-.cmp-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
-.cmp-photos img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;cursor:pointer}
-.cmp-photos .al{font-size:9px;color:rgba(245,241,235,0.3);text-align:center;margin-top:2px}
+.ibox{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
+.ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(245,241,235,0.06);font-size:13px}
+.ir:last-child{border:none}
+.il{color:rgba(245,241,235,0.4)}
+.iv{color:#F5F1EB;font-weight:500}
+.vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.vc{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;cursor:pointer}
+.vc:hover{border-color:rgba(184,154,106,0.3)}
+.vc.on{border-color:#B89A6A;background:rgba(184,154,106,0.08)}
+.vt{font-size:10px;font-weight:600;color:#B89A6A;margin-bottom:4px}
+.vr{font-size:14px;font-weight:500;margin-bottom:3px}
+.vd{font-size:11px;color:rgba(245,241,235,0.4)}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.pc{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
+.pc img{width:100%;aspect-ratio:3/4;object-fit:cover;cursor:pointer;display:block}
+.pc img:hover{opacity:0.85}
+.plb{padding:5px 8px;font-size:10px;color:rgba(245,241,235,0.5)}
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.dc{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
+.dc img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block}
+.dc img:hover{opacity:0.85}
+.nb{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
+.cw{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
+.cs{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
+.cs h4{font-size:11px;color:rgba(245,241,235,0.4);margin-bottom:10px;letter-spacing:0.5px}
+.cs select{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none;margin-bottom:10px}
+.cp{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+.cp img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;cursor:pointer}
+.cp .al{font-size:9px;color:rgba(245,241,235,0.3);text-align:center;margin-top:2px}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center}
 .modal.on{display:flex}
-.modal-box{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
-.modal-box h3{font-size:18px;font-weight:400;margin-bottom:20px}
+.mbox{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
+.mbox h3{font-size:18px;font-weight:400;margin-bottom:20px}
 .mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none}
 .mi:focus{border-color:rgba(184,154,106,0.4)}
-.modal-btns{display:flex;gap:10px;margin-top:8px}
-.btn-save{flex:1;background:#B89A6A;border:none;border-radius:8px;padding:12px;color:#1C1929;font-size:14px;font-weight:600;cursor:pointer}
-.btn-cancel{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:12px;color:rgba(245,241,235,0.6);font-size:14px;cursor:pointer}
-.btn-del{background:rgba(224,85,85,0.15);border:1px solid rgba(224,85,85,0.3);color:#E05555;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px}
-.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center}
-.lb.on{display:flex}
-.lb img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
-.lb-x{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px}
+.mbt{display:flex;gap:10px;margin-top:8px}
+.bsave{flex:1;background:#B89A6A;border:none;border-radius:8px;padding:12px;color:#1C1929;font-size:14px;font-weight:600;cursor:pointer}
+.bcancel{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:12px;color:rgba(245,241,235,0.6);font-size:14px;cursor:pointer}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center}
+.lightbox.on{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
+.lbx{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px}
 .loader{padding:30px;text-align:center;color:rgba(245,241,235,0.3);font-size:13px}
 .prog{position:fixed;bottom:20px;right:20px;background:#1C1929;border:1px solid rgba(184,154,106,0.3);border-radius:12px;padding:12px 20px;font-size:13px;color:#B89A6A;display:none;z-index:100}
 ::-webkit-scrollbar{width:4px}
@@ -111,8 +112,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 </head>
 <body>
 
-<div class="login-wrap" id="loginWrap">
-  <div class="login-box">
+<div class="lw" id="loginWrap">
+  <div class="lb2">
     <div class="logo">AAFC</div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
@@ -127,19 +128,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="app" id="app">
   <div class="banner">
-    <div class="banner-text"><strong>Backup & Export</strong> — Download all clinic data including photos</div>
-    <div class="banner-btns">
-      <button class="btn-b btn-zip" onclick="dlZIP()">ZIP (with photos)</button>
-      <button class="btn-b btn-html" onclick="dlHTML()">HTML Report</button>
-      <button class="btn-b btn-json" onclick="dlJSON()">JSON</button>
-      <button class="btn-b btn-csv" onclick="dlCSV()">CSV</button>
+    <div class="bt"><strong>Backup and Export</strong> — Download all clinic data including photos</div>
+    <div class="bts">
+      <button class="btn bzip" onclick="dlZIP()">ZIP with photos</button>
+      <button class="btn bhtml" onclick="dlHTML()">HTML Report</button>
+      <button class="btn bjson" onclick="dlJSON()">JSON</button>
+      <button class="btn bcsv" onclick="dlCSV()">CSV</button>
     </div>
   </div>
   <div class="layout">
-    <div class="sidebar">
-      <div class="s-head">
-        <span class="s-logo">AAFC</span>
-        <button class="btn-out" onclick="doLogout()">Sign Out</button>
+    <div class="sb">
+      <div class="sh">
+        <span class="sl">AAFC</span>
+        <button class="bout" onclick="doLogout()">Sign Out</button>
       </div>
       <div class="stats">
         <div class="stat"><div class="n" id="stP">0</div><div class="l">Patients</div></div>
@@ -147,55 +148,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="stat"><div class="n" id="stPh">0</div><div class="l">Photos</div></div>
         <div class="stat"><div class="n" id="stD">0</div><div class="l">Documents</div></div>
       </div>
-      <div class="s-search">
+      <div class="ss">
         <input type="text" id="srch" placeholder="Search patients..." oninput="filterP()"/>
-        <button class="btn-add" onclick="openAdd()">+ Add</button>
+        <button class="badd" onclick="openAdd()">+ Add</button>
       </div>
-      <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
+      <div class="pl" id="pList"><div class="loader">Loading...</div></div>
     </div>
     <div class="main">
       <div class="empty" id="emptyMsg">Select a patient</div>
       <div id="pDetail" style="display:none">
-        <div class="m-head">
+        <div class="mh">
           <div><h2 id="dName"></h2><div class="sub" id="dMeta"></div></div>
-          <div class="m-btns">
-            <button class="btn-b btn-zip" onclick="dlPtZIP()">ZIP</button>
-            <button class="btn-b btn-html" onclick="dlPtHTML()">HTML</button>
-            <button class="btn-b btn-json" onclick="openEdit()">Edit</button>
-            <button class="btn-del" onclick="delPatient()">Delete</button>
+          <div class="mbs">
+            <button class="btn bzip" onclick="dlPtZIP()">ZIP</button>
+            <button class="btn bhtml" onclick="dlPtHTML()">HTML</button>
+            <button class="btn bedit" onclick="openEdit()">Edit</button>
+            <button class="btn bdel" onclick="delPt()">Delete</button>
           </div>
         </div>
-        <div class="m-body">
+        <div class="mb">
           <div class="sec">PATIENT INFO</div>
-          <div class="info-box" id="pInfo"></div>
+          <div class="ibox" id="pInfo"></div>
 
           <div class="sec">BEFORE / AFTER COMPARISON</div>
-          <div class="compare-wrap">
-            <div class="compare-side">
+          <div class="cw">
+            <div class="cs">
               <h4>BEFORE</h4>
               <select id="cV1" onchange="loadCmp()"><option value="">Select visit</option></select>
-              <div class="cmp-photos" id="cPh1"></div>
+              <div class="cp" id="cPh1"></div>
             </div>
-            <div class="compare-side">
+            <div class="cs">
               <h4>AFTER</h4>
               <select id="cV2" onchange="loadCmp()"><option value="">Select visit</option></select>
-              <div class="cmp-photos" id="cPh2"></div>
+              <div class="cp" id="cPh2"></div>
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-            <button class="btn-b btn-pdf" onclick="genPDF()">Generate PDF Report</button>
+            <button class="btn bpdf" onclick="genPDF()">Generate PDF Report</button>
           </div>
 
           <div class="sec">VISITS</div>
-          <div class="v-grid" id="vList"></div>
+          <div class="vg" id="vList"></div>
+
           <div id="vDetail" style="display:none">
             <div class="sec">VISIT INFO</div>
-            <div class="info-box" id="vInfo"></div>
-            <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="notes-box" id="vNotes"></div></div>
-            <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="ph-grid" id="phGrid"></div></div>
-            <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="doc-grid" id="kGrid"></div></div>
-            <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="doc-grid" id="oGrid"></div></div>
-            <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="doc-grid" id="bGrid"></div></div>
+            <div class="ibox" id="vInfo"></div>
+            <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="nb" id="vNotes"></div></div>
+            <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
+            <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
+            <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
+            <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="dg" id="bGrid"></div></div>
           </div>
         </div>
       </div>
@@ -204,7 +206,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 </div>
 
 <div class="modal" id="pModal">
-  <div class="modal-box">
+  <div class="mbox">
     <h3 id="mTitle">Add Patient</h3>
     <input class="mi" type="text" id="mName" placeholder="First Name"/>
     <input class="mi" type="text" id="mSur" placeholder="Last Name"/>
@@ -212,15 +214,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <input class="mi" type="tel" id="mPhone" placeholder="Phone"/>
     <input class="mi" type="text" id="mCity" placeholder="City"/>
     <textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="savePt()">Save</button>
+    <div class="mbt">
+      <button class="bcancel" onclick="closeModal()">Cancel</button>
+      <button class="bsave" onclick="savePt()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="lb" id="lb" onclick="closeLb()">
-  <button class="lb-x" onclick="closeLb()">x</button>
+<div class="lightbox" id="lb" onclick="closeLb()">
+  <button class="lbx" onclick="closeLb()">x</button>
   <img id="lbImg" src="" alt=""/>
 </div>
 <div class="prog" id="prog">Preparing...</div>
@@ -246,12 +248,17 @@ async function doLogin(){
   if(!em||!pw){err.style.display='block';err.textContent='Please fill all fields';return;}
   btn.disabled=true;btn.textContent='Signing in...';err.style.display='none';
   var r=await db.auth.signInWithPassword({email:em,password:pw});
-  if(r.error){err.style.display='block';err.textContent='Invalid email or password';btn.disabled=false;btn.textContent='Sign In';}
-  else await showApp(r.data.user);
+  if(r.error){
+    err.style.display='block';err.textContent='Invalid email or password';
+    btn.disabled=false;btn.textContent='Sign In';
+  } else {
+    await showApp(r.data.user);
+  }
 }
 
 async function doLogout(){
-  await db.auth.signOut();cid=null;pts=[];
+  await db.auth.signOut();
+  cid=null;pts=[];
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('app').classList.remove('on');
 }
@@ -264,7 +271,8 @@ async function showApp(user){
   cid=ur.data.clinic_id;
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
   clinic=cr.data||{};
-  await loadPts();await loadStats();
+  await loadPts();
+  await loadStats();
 }
 
 async function loadStats(){
@@ -280,7 +288,8 @@ async function loadStats(){
 
 async function loadPts(){
   var r=await db.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});
-  pts=r.data||[];renderP(pts);
+  pts=r.data||[];
+  renderP(pts);
 }
 
 function renderP(list){
@@ -289,9 +298,9 @@ function renderP(list){
   var h='';
   for(var i=0;i<list.length;i++){
     var p=list[i];
-    h+='<div class="p-item '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
-    h+='<div class="p-name">'+p.name+' '+(p.surname||'')+'</div>';
-    h+='<div class="p-meta">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
+    h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
+    h+='<div class="pn">'+p.name+' '+(p.surname||'')+'</div>';
+    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -311,15 +320,17 @@ async function selP(id){
   document.getElementById('dName').textContent=p.name+' '+(p.surname||'');
   document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
   var ih='';
-  ih+='<div class="i-row"><span class="i-lbl">Name</span><span class="i-val">'+p.name+' '+(p.surname||'')+'</span></div>';
-  ih+='<div class="i-row"><span class="i-lbl">DOB</span><span class="i-val">'+(p.birth_date||'-')+'</span></div>';
-  ih+='<div class="i-row"><span class="i-lbl">Phone</span><span class="i-val">'+(p.phone||'-')+'</span></div>';
-  ih+='<div class="i-row"><span class="i-lbl">City</span><span class="i-val">'+(p.city||'-')+'</span></div>';
-  if(p.notes)ih+='<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">'+p.notes+'</span></div>';
+  ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+p.name+' '+(p.surname||'')+'</span></div>';
+  ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
+  ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone||'-')+'</span></div>';
+  ih+='<div class="ir"><span class="il">City</span><span class="iv">'+(p.city||'-')+'</span></div>';
+  if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+p.notes+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).order('created_at',{ascending:false});
-  vis=vr.data||[];renderV();fillCmp();
+  vis=vr.data||[];
+  renderV();
+  fillCmp();
 }
 
 function fillCmp(){
@@ -351,7 +362,8 @@ async function loadCmp(){
     var h='';
     (r.data||[]).forEach(function(p){
       cPh1[p.angle_index]=p.file_path;
-      h+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
+      h+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      h+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
     document.getElementById('cPh1').innerHTML=h||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
@@ -360,7 +372,8 @@ async function loadCmp(){
     var h2='';
     (r2.data||[]).forEach(function(p){
       cPh2[p.angle_index]=p.file_path;
-      h2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
+      h2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      h2+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
     document.getElementById('cPh2').innerHTML=h2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
@@ -372,10 +385,10 @@ function renderV(){
   var h='';
   for(var i=0;i<vis.length;i++){
     var v=vis[i];
-    h+='<div class="v-card '+(v.id===selVid?'on':'')+'" onclick="selV(\''+v.id+'\')">';
-    h+='<div class="v-type">'+(v.visit_type||'Visit')+'</div>';
-    h+='<div class="v-region">'+(v.region||'')+'</div>';
-    h+='<div class="v-date">'+(v.visit_date||'').split('T')[0]+'</div></div>';
+    h+='<div class="vc '+(v.id===selVid?'on':'')+'" onclick="selV(\''+v.id+'\')">';
+    h+='<div class="vt">'+(v.visit_type||'Visit')+'</div>';
+    h+='<div class="vr">'+(v.region||'')+'</div>';
+    h+='<div class="vd">'+(v.visit_date||'').split('T')[0]+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -385,9 +398,9 @@ async function selV(id){
   var v=vis.find(function(x){return x.id===id;});
   document.getElementById('vDetail').style.display='block';
   var vi='';
-  vi+='<div class="i-row"><span class="i-lbl">Type</span><span class="i-val">'+(v.visit_type||'-')+'</span></div>';
-  vi+='<div class="i-row"><span class="i-lbl">Region</span><span class="i-val">'+(v.region||'-')+'</span></div>';
-  vi+='<div class="i-row"><span class="i-lbl">Date</span><span class="i-val">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
+  vi+='<div class="ir"><span class="il">Type</span><span class="iv">'+(v.visit_type||'-')+'</span></div>';
+  vi+='<div class="ir"><span class="il">Region</span><span class="iv">'+(v.region||'-')+'</span></div>';
+  vi+='<div class="ir"><span class="il">Date</span><span class="iv">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
   document.getElementById('vInfo').innerHTML=vi;
   if(v.notes){document.getElementById('nWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
   else document.getElementById('nWrap').style.display='none';
@@ -396,7 +409,8 @@ async function selV(id){
     document.getElementById('phWrap').style.display='block';
     var ph='';
     pr.data.forEach(function(p){
-      ph+='<div class="ph-card"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="ph-lbl">'+(AL[p.angle_index]||'Photo')+'</div></div>';
+      ph+='<div class="pc"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      ph+='<div class="plb">'+(AL[p.angle_index]||'Photo')+'</div></div>';
     });
     document.getElementById('phGrid').innerHTML=ph;
   } else document.getElementById('phWrap').style.display='none';
@@ -409,32 +423,67 @@ async function selV(id){
 function sDocs(wid,gid,docs){
   if(!docs.length){document.getElementById(wid).style.display='none';return;}
   document.getElementById(wid).style.display='block';
-  var h='';docs.forEach(function(d){h+='<div class="doc-card"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
+  var h='';
+  docs.forEach(function(d){h+='<div class="dc"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
   document.getElementById(gid).innerHTML=h;
 }
 
-function openAdd(){editPid=null;document.getElementById('mTitle').textContent='Add Patient';document.getElementById('mName').value='';document.getElementById('mSur').value='';document.getElementById('mDob').value='';document.getElementById('mPhone').value='';document.getElementById('mCity').value='';document.getElementById('mNotes').value='';document.getElementById('pModal').classList.add('on');}
-function openEdit(){if(!selPt)return;editPid=selPt.id;document.getElementById('mTitle').textContent='Edit Patient';document.getElementById('mName').value=selPt.name||'';document.getElementById('mSur').value=selPt.surname||'';document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];document.getElementById('mPhone').value=selPt.phone||'';document.getElementById('mCity').value=selPt.city||'';document.getElementById('mNotes').value=selPt.notes||'';document.getElementById('pModal').classList.add('on');}
+function openAdd(){
+  editPid=null;
+  document.getElementById('mTitle').textContent='Add Patient';
+  document.getElementById('mName').value='';
+  document.getElementById('mSur').value='';
+  document.getElementById('mDob').value='';
+  document.getElementById('mPhone').value='';
+  document.getElementById('mCity').value='';
+  document.getElementById('mNotes').value='';
+  document.getElementById('pModal').classList.add('on');
+}
+
+function openEdit(){
+  if(!selPt)return;
+  editPid=selPt.id;
+  document.getElementById('mTitle').textContent='Edit Patient';
+  document.getElementById('mName').value=selPt.name||'';
+  document.getElementById('mSur').value=selPt.surname||'';
+  document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];
+  document.getElementById('mPhone').value=selPt.phone||'';
+  document.getElementById('mCity').value=selPt.city||'';
+  document.getElementById('mNotes').value=selPt.notes||'';
+  document.getElementById('pModal').classList.add('on');
+}
+
 function closeModal(){document.getElementById('pModal').classList.remove('on');}
 
 async function savePt(){
   var name=document.getElementById('mName').value.trim();
   if(!name){alert('Name is required');return;}
-  var data={name:name,surname:document.getElementById('mSur').value||null,birth_date:document.getElementById('mDob').value||null,phone:document.getElementById('mPhone').value||null,city:document.getElementById('mCity').value||null,notes:document.getElementById('mNotes').value||null,clinic_id:cid};
+  var data={
+    name:name,
+    surname:document.getElementById('mSur').value||null,
+    birth_date:document.getElementById('mDob').value||null,
+    phone:document.getElementById('mPhone').value||null,
+    city:document.getElementById('mCity').value||null,
+    notes:document.getElementById('mNotes').value||null,
+    clinic_id:cid
+  };
   if(editPid) await db.from('patients').update(data).eq('id',editPid);
   else await db.from('patients').insert(data);
-  closeModal();await loadPts();await loadStats();
-  if(editPid&&selPid===editPid)await selP(selPid);
+  closeModal();
+  await loadPts();
+  await loadStats();
+  if(editPid&&selPid===editPid) await selP(selPid);
 }
 
-async function delPatient(){
+async function delPt(){
   if(!selPt)return;
   if(!confirm('Delete '+selPt.name+'? This cannot be undone.'))return;
   await db.from('patients').delete().eq('id',selPid);
   selPid=null;selPt=null;
   document.getElementById('pDetail').style.display='none';
   document.getElementById('emptyMsg').style.display='flex';
-  await loadPts();await loadStats();
+  await loadPts();
+  await loadStats();
 }
 
 function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('on');}
@@ -442,7 +491,6 @@ function closeLb(){document.getElementById('lb').classList.remove('on');}
 function sp(msg){var el=document.getElementById('prog');el.textContent=msg;el.style.display='block';}
 function hp(){document.getElementById('prog').style.display='none';}
 
-// PDF
 function imgToB64(url){
   return new Promise(function(resolve){
     var img=new Image();
@@ -455,7 +503,7 @@ function imgToB64(url){
       resolve(c.toDataURL('image/jpeg',0.85));
     };
     img.onerror=function(){resolve(null);};
-    img.src=url+'?t='+Date.now();
+    img.src=url+'?nocache='+Date.now();
   });
 }
 
@@ -471,32 +519,54 @@ async function genPDF(){
   var allU=Object.assign({},cPh1,cPh2);
   var n=0;
   for(var k in allU){
-    if(allU[k]){sp('Loading image '+(++n)+'...');imgC[allU[k]]=await imgToB64(allU[k]);}
+    if(allU[k]){
+      sp('Loading image '+(++n)+'...');
+      imgC[allU[k]]=await imgToB64(allU[k]);
+    }
   }
 
   var logoB=null;
-  if(clinic.logo_url){sp('Loading logo...');logoB=await imgToB64(clinic.logo_url);}
+  if(clinic.logo_url){
+    sp('Loading logo...');
+    logoB=await imgToB64(clinic.logo_url);
+  }
 
   var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
-  var PW=595,PH=842,M=28,UW=PW-M*2;
-  var HDR=104,FTR=32,CG=8,RG=10,LH=18;
+  var PW=595,PH=842;
+  var M=28,UW=PW-M*2;
+  var HDR=106,FTR=36,CG=8,RG=8,LH=20;
 
   function dHdr(d){
     var y=M;
-    if(clinic.name){d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);d.text(clinic.name,M,y+16);}
-    if(clinic.doctor){d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);d.text(clinic.doctor,M,y+30);}
-    if(clinic.speciality){d.setFontSize(9);d.setTextColor(180,0,0);d.text(clinic.speciality,M,y+44);}
+    if(clinic.name){
+      d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);
+      d.text(clinic.name,M,y+16);
+    }
+    if(clinic.doctor){
+      d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
+      d.text(clinic.doctor,M,y+30);
+    }
+    if(clinic.speciality){
+      d.setFontSize(9);d.setTextColor(180,0,0);
+      d.text(clinic.speciality,M,y+44);
+    }
     if(logoB){try{d.addImage(logoB,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
     d.setDrawColor(200,200,200);d.line(M,y+54,PW-M,y+54);
-    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);d.text('PATIENT',M,y+66);
-    d.setFontSize(11);d.setFont('helvetica','bold');d.setTextColor(30,30,30);d.text(pName,M,y+78);
+    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
+    d.text('PATIENT',M,y+66);
+    d.setFontSize(11);d.setFont('helvetica','bold');d.setTextColor(30,30,30);
+    d.text(pName,M,y+78);
     var p=selPt;
-    if(p.birth_date){d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);}
-    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);d.text('VISIT',PW/2,y+66);
+    if(p.birth_date){
+      d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
+      d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);
+    }
+    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
+    d.text('VISIT',PW/2,y+66);
     d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
     if(cVis1)d.text('Before: '+(cVis1.visit_date||'').split('T')[0]+' - '+(cVis1.region||''),PW/2,y+78);
     if(cVis2)d.text('After: '+(cVis2.visit_date||'').split('T')[0]+' - '+(cVis2.region||''),PW/2,y+90);
-    d.setDrawColor(200,200,200);d.line(M,y+98,PW-M,y+98);
+    d.setDrawColor(200,200,200);d.line(M,y+100,PW-M,y+100);
   }
 
   function dFtr(d){
@@ -505,20 +575,25 @@ async function genPDF(){
     d.setFontSize(7);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
     if(clinic.phone)d.text(clinic.phone,M,y+16);
     if(clinic.address)d.text(clinic.address,PW/2,y+16,{align:'center'});
-  
-    function dPage(d,idxs,lbls){
+    if(clinic.instagram)d.text(clinic.instagram,PW-M,y+16,{align:'right'});
+  }
+
+  function dPage(d,idxs,lbls){
     var n2=idxs.length;
-    var gaps=n2>1?(n2-1)*(RG+LH):LH;
-    var availH=PH-M*2-HDR-FTR-gaps-40;
+    var totalLabelSpace=n2*LH;
+    var totalGaps=n2>1?(n2-1)*RG:0;
+    var availH=PH-M*2-HDR-FTR-totalLabelSpace-totalGaps-16;
     var pH=availH/n2;
     var pW=Math.min(pH*3/4,(UW-CG)/2);
     pH=pW*4/3;
     var sx=M+(UW-pW*2-CG)/2;
-    var sy=M+HDR+6;
-    dHdr(d);dFtr(d);
+    var sy=M+HDR+4;
+    dHdr(d);
+    dFtr(d);
     for(var i=0;i<n2;i++){
       var ai=idxs[i];
-      var u1=cPh1[ai];var u2=cPh2[ai];
+      var u1=cPh1[ai];
+      var u2=cPh2[ai];
       var iy=sy+i*(pH+RG+LH);
       if(u1&&imgC[u1]){try{d.addImage(imgC[u1],'JPEG',sx,iy,pW,pH,'','FAST');}catch(e){d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}}
       else{d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}
@@ -532,20 +607,26 @@ async function genPDF(){
     }
   }
 
-  sp('Generating page 1...');dPage(doc,[0],['Front']);
-  sp('Generating page 2...');doc.addPage();dPage(doc,[1,3],['Left 45','Right 45']);
-  sp('Generating page 3...');doc.addPage();dPage(doc,[2,4],['Left Profile','Right Profile']);
+  sp('Generating page 1...');
+  dPage(doc,[0],['Front']);
+  sp('Generating page 2...');
+  doc.addPage();
+  dPage(doc,[1,3],['Left 45','Right 45']);
+  sp('Generating page 3...');
+  doc.addPage();
+  dPage(doc,[2,4],['Left Profile','Right Profile']);
 
   var fn=pName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
-  doc.save(fn);hp();
+  doc.save(fn);
+  hp();
 }
 
-// Export functions
 async function fetchAll(){
   var r=await db.from('patients').select('*').eq('clinic_id',cid);
   var all=[];
   for(var i=0;i<(r.data||[]).length;i++){
-    var p=r.data[i];var vr=await db.from('visits').select('*').eq('patient_id',p.id);
+    var p=r.data[i];
+    var vr=await db.from('visits').select('*').eq('patient_id',p.id);
     var vd=[];
     for(var j=0;j<(vr.data||[]).length;j++){
       var v=vr.data[j];
@@ -574,12 +655,19 @@ async function fetchPt(pid){
 async function mkZIP(all,fn){
   var zip=new JSZip();var t=0;
   for(var i=0;i<all.length;i++){
-    var p=all[i];var f=zip.folder(p.name+'_'+(p.surname||''));
+    var p=all[i];
+    var f=zip.folder(p.name+'_'+(p.surname||''));
     f.file('info.json',JSON.stringify({name:p.name,surname:p.surname,birth_date:p.birth_date,phone:p.phone,city:p.city},null,2));
     for(var j=0;j<p.visits.length;j++){
-      var v=p.visits[j];var vf=f.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
-      for(var k=0;k<v.photos.length;k++){sp('Downloading '+(++t)+'...');try{var rb=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await rb.blob());}catch(e){}}
-      for(var k=0;k<v.documents.length;k++){try{var rb=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await rb.blob());}catch(e){}}
+      var v=p.visits[j];
+      var vf=f.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
+      for(var k=0;k<v.photos.length;k++){
+        sp('Downloading photo '+(++t)+'...');
+        try{var rb=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await rb.blob());}catch(e){}
+      }
+      for(var k=0;k<v.documents.length;k++){
+        try{var rb=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await rb.blob());}catch(e){}
+      }
     }
   }
   sp('Creating ZIP...');
@@ -588,21 +676,29 @@ async function mkZIP(all,fn){
 }
 
 async function mkHTML(all,fn){
-  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title><style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.pt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.inf{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.vs{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.phs{display:flex;flex-wrap:wrap;gap:8px}.phs img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lb{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style></head><body>';
-  h+='<h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
+  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title>';
+  h+='<style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.pt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.inf{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.vs{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.phs{display:flex;flex-wrap:wrap;gap:8px}.phs img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lb{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style>';
+  h+='</head><body><h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
   for(var i=0;i<all.length;i++){
     var p=all[i];
     h+='<div class="pt"><h2>'+p.name+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       h+='<div class="vs"><h3>'+(v.visit_type||'Visit')+' - '+(v.region||'')+' - '+(v.visit_date||'').split('T')[0]+'</h3>';
-      if(v.photos.length){h+='<div class="phs">';for(var k=0;k<v.photos.length;k++)h+='<div><img src="'+v.photos[k].file_path+'"/><div class="lb">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';h+='</div>';}
+      if(v.photos.length){
+        h+='<div class="phs">';
+        for(var k=0;k<v.photos.length;k++)h+='<div><img src="'+v.photos[k].file_path+'"/><div class="lb">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';
+        h+='</div>';
+      }
       h+='</div>';
     }
     h+='</div>';
   }
   h+='</body></html>';
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download=fn+'.html';a.click();
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));
+  a.download=fn+'.html';
+  a.click();
 }
 
 async function dlZIP(){sp('Fetching...');var a=await fetchAll();await mkZIP(a,'aafc_all_'+new Date().toISOString().split('T')[0]);hp();}

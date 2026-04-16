@@ -505,13 +505,11 @@ async function genPDF(){
     d.setFontSize(7);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
     if(clinic.phone)d.text(clinic.phone,M,y+16);
     if(clinic.address)d.text(clinic.address,PW/2,y+16,{align:'center'});
-    if(clinic.instagram)d.text(clinic.instagram,PW-M,y+16,{align:'right'});
-  }
-
-  function dPage(d,idxs,lbls){
+  
+    function dPage(d,idxs,lbls){
     var n2=idxs.length;
     var gaps=n2>1?(n2-1)*(RG+LH):LH;
-    var availH=PH-M*2-HDR-FTR-gaps-8;
+    var availH=PH-M*2-HDR-FTR-gaps-24;
     var pH=availH/n2;
     var pW=Math.min(pH*3/4,(UW-CG)/2);
     pH=pW*4/3;

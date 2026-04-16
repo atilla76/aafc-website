@@ -32,6 +32,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .btn-html { background:rgba(29,158,117,0.2); color:#1D9E75; border:1px solid rgba(29,158,117,0.3); }
 .btn-json { background:rgba(184,154,106,0.2); color:#B89A6A; border:1px solid rgba(184,154,106,0.3); }
 .btn-csv { background:rgba(245,241,235,0.06); color:rgba(245,241,235,0.5); border:1px solid rgba(245,241,235,0.12); }
+.btn-pdf { background:rgba(224,85,85,0.2); color:#E05555; border:1px solid rgba(224,85,85,0.3); }
 .layout { display:flex; flex:1; overflow:hidden; }
 .sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
 .s-head { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
@@ -54,7 +55,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .m-head { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
 .m-head h2 { font-size:20px; font-weight:400; }
 .m-head .sub { font-size:13px; color:rgba(245,241,235,0.4); margin-top:4px; }
-.m-btns { display:flex; gap:6px; }
+.m-btns { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 .m-body { padding:20px 24px; }
 .empty { display:flex; align-items:center; justify-content:center; height:80vh; color:rgba(245,241,235,0.3); font-size:14px; }
 .sec { font-size:10px; color:rgba(245,241,235,0.4); letter-spacing:0.5px; margin:18px 0 8px; }
@@ -81,14 +82,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .doc-card img { width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer; display:block; }
 .doc-card img:hover { opacity:0.85; }
 .notes-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; font-size:13px; color:rgba(245,241,235,0.7); line-height:1.6; }
-/* Compare */
-.compare-wrap { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.compare-wrap { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px; }
 .compare-side { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; }
-.compare-side h4 { font-size:12px; color:rgba(245,241,235,0.5); margin-bottom:10px; }
+.compare-side h4 { font-size:11px; color:rgba(245,241,235,0.4); margin-bottom:10px; letter-spacing:0.5px; }
 .compare-side select { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:8px; padding:8px 10px; color:#F5F1EB; font-size:13px; outline:none; margin-bottom:10px; }
-.compare-photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:6px; }
+.compare-photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:6px; }
 .compare-photos img { width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:6px; cursor:pointer; }
-/* Modal */
+.compare-photos .ang-lbl { font-size:9px; color:rgba(245,241,235,0.3); text-align:center; margin-top:2px; }
 .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center; }
 .modal.on { display:flex; }
 .modal-box { background:#1C1929; border:1px solid rgba(245,241,235,0.1); border-radius:16px; padding:28px; width:100%; max-width:440px; }
@@ -99,7 +99,6 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 .btn-save { flex:1; background:#B89A6A; border:none; border-radius:8px; padding:12px; color:#1C1929; font-size:14px; font-weight:600; cursor:pointer; }
 .btn-cancel { flex:1; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:8px; padding:12px; color:rgba(245,241,235,0.6); font-size:14px; cursor:pointer; }
 .btn-del { background:rgba(224,85,85,0.15); border:1px solid rgba(224,85,85,0.3); color:#E05555; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:12px; }
-/* Lightbox */
 .lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center; }
 .lb.on { display:flex; }
 .lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
@@ -165,7 +164,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
           <div class="m-btns">
             <button class="btn-b btn-zip" onclick="dlPatientZIP()">ZIP</button>
             <button class="btn-b btn-html" onclick="dlPatientHTML()">HTML</button>
-            <button class="btn-b btn-json" style="font-size:11px;padding:6px 10px" onclick="openEditPatient()">Edit</button>
+            <button class="btn-b btn-json" onclick="openEditPatient()">Edit</button>
             <button class="btn-del" onclick="deletePatient()">Delete</button>
           </div>
         </div>
@@ -174,9 +173,6 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
           <div class="info-box" id="pInfo"></div>
 
           <div class="sec">BEFORE / AFTER COMPARISON</div>
-          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-            <button class="btn-b btn-html" onclick="generateComparePDF()">Generate PDF Report</button>
-          </div>
           <div class="compare-wrap">
             <div class="compare-side">
               <h4>BEFORE</h4>
@@ -188,6 +184,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
               <select id="cmpV2" onchange="loadCompare()"><option value="">Select visit</option></select>
               <div class="compare-photos" id="cmpPh2"></div>
             </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+            <button class="btn-b btn-pdf" onclick="generatePDF()">Generate PDF Report</button>
           </div>
 
           <div class="sec">VISITS</div>
@@ -222,13 +221,12 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
   </div>
 </div>
 
-<!-- Add/Edit Patient Modal -->
 <div class="modal" id="patientModal">
   <div class="modal-box">
     <h3 id="modalTitle">Add Patient</h3>
     <input class="modal-inp" type="text" id="mName" placeholder="First Name"/>
     <input class="modal-inp" type="text" id="mSurname" placeholder="Last Name"/>
-    <input class="modal-inp" type="date" id="mBirth" placeholder="Date of Birth"/>
+    <input class="modal-inp" type="date" id="mBirth"/>
     <input class="modal-inp" type="tel" id="mPhone" placeholder="Phone"/>
     <input class="modal-inp" type="text" id="mCity" placeholder="City"/>
     <textarea class="modal-inp" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
@@ -246,15 +244,16 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
 <div class="progress" id="progress">Preparing...</div>
 
 <script>
-const SB_URL = 'https://hugxacklprzujswtaike.supabase.co';
-const SB_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
-const db = supabase.createClient(SB_URL, SB_KEY);
-const AL = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
-let cid = null, patients = [], selPid = null, selVid = null, visits = [], selPatientObj = null, editingPid = null;
+var SB_URL = 'https://hugxacklprzujswtaike.supabase.co';
+var SB_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+var db = supabase.createClient(SB_URL, SB_KEY);
+var AL = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
+var cid = null, patients = [], selPid = null, selVid = null, visits = [], selPatientObj = null, editingPid = null;
+var cmpPhotos1 = {}, cmpPhotos2 = {}, cmpVisit1 = null, cmpVisit2 = null, clinicData = null;
 
 window.onload = async function() {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) await showApp(session.user);
+  var res = await db.auth.getSession();
+  if (res.data.session) await showApp(res.data.session.user);
 };
 
 async function doLogin() {
@@ -266,226 +265,347 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = 'Signing in...'; err.style.display = 'none';
   var res = await db.auth.signInWithPassword({ email: email, password: pass });
   if (res.error) {
-    err.style.display = 'block'; err.textContent = 'Invalid email or password';
-    btn.disabled = false; btn.textContent = 'Sign In';
+    err.style.display='block'; err.textContent='Invalid email or password';
+    btn.disabled=false; btn.textContent='Sign In';
   } else { await showApp(res.data.user); }
 }
 
 async function doLogout() {
   await db.auth.signOut();
-  cid = null; patients = [];
-  document.getElementById('loginWrap').style.display = 'flex';
+  cid=null; patients=[];
+  document.getElementById('loginWrap').style.display='flex';
   document.getElementById('app').classList.remove('on');
 }
 
 async function showApp(user) {
-  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('loginWrap').style.display='none';
   document.getElementById('app').classList.add('on');
   var res = await db.from('users').select('clinic_id').eq('auth_id', user.id).single();
   if (!res.data) { alert('User not found'); return; }
   cid = res.data.clinic_id;
+  var cr = await db.from('clinic').select('*').eq('id', cid).single();
+  clinicData = cr.data || {};
   await loadPatients();
   await loadStats();
 }
 
 async function loadStats() {
-  var pc = await db.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
-  var vc = await db.from('visits').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
-  var phc = await db.from('photos').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
-  var dc = await db.from('documents').select('*', { count: 'exact', head: true }).eq('clinic_id', cid);
-  document.getElementById('statP').textContent = pc.count || 0;
-  document.getElementById('statV').textContent = vc.count || 0;
-  document.getElementById('statPh').textContent = phc.count || 0;
-  document.getElementById('statD').textContent = dc.count || 0;
+  var pc = await db.from('patients').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var vc = await db.from('visits').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var phc = await db.from('photos').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var dc = await db.from('documents').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  document.getElementById('statP').textContent = pc.count||0;
+  document.getElementById('statV').textContent = vc.count||0;
+  document.getElementById('statPh').textContent = phc.count||0;
+  document.getElementById('statD').textContent = dc.count||0;
 }
 
 async function loadPatients() {
-  var res = await db.from('patients').select('*').eq('clinic_id', cid).order('created_at', { ascending: false });
-  patients = res.data || [];
+  var res = await db.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});
+  patients = res.data||[];
   renderP(patients);
 }
 
 function renderP(list) {
   var el = document.getElementById('pList');
-  if (!list.length) { el.innerHTML = '<div class="loader">No patients</div>'; return; }
-  var html = '';
-  for (var i = 0; i < list.length; i++) {
-    var p = list[i];
-    var cls = p.id === selPid ? 'on' : '';
-    var meta = [p.birth_date, p.phone].filter(Boolean).join(' · ');
-    html += '<div class="p-item ' + cls + '" onclick="selP(\'' + p.id + '\')">';
-    html += '<div class="p-name">' + p.name + ' ' + (p.surname||'') + '</div>';
-    html += '<div class="p-meta">' + meta + '</div></div>';
+  if (!list.length) { el.innerHTML='<div class="loader">No patients</div>'; return; }
+  var html='';
+  for (var i=0;i<list.length;i++) {
+    var p=list[i];
+    var cls=p.id===selPid?'on':'';
+    html+='<div class="p-item '+cls+'" onclick="selP(\''+p.id+'\')">';
+    html+='<div class="p-name">'+p.name+' '+(p.surname||'')+'</div>';
+    html+='<div class="p-meta">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
   }
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
 function filterP() {
-  var q = document.getElementById('search').value.toLowerCase();
-  renderP(patients.filter(function(p) { return (p.name+' '+(p.surname||'')).toLowerCase().includes(q); }));
+  var q=document.getElementById('search').value.toLowerCase();
+  renderP(patients.filter(function(p){return(p.name+' '+(p.surname||'')).toLowerCase().includes(q);}));
 }
 
 async function selP(id) {
-  selPid = id; selVid = null;
-  filterP();
-  selPatientObj = patients.find(function(x) { return x.id === id; });
-  var p = selPatientObj;
-  document.getElementById('emptyMsg').style.display = 'none';
-  document.getElementById('pDetail').style.display = 'block';
-  document.getElementById('vDetail').style.display = 'none';
-  document.getElementById('dName').textContent = p.name + ' ' + (p.surname||'');
-  document.getElementById('dMeta').textContent = [p.birth_date, p.phone, p.city].filter(Boolean).join(' · ');
-  var ih = '';
-  ih += '<div class="i-row"><span class="i-lbl">Name</span><span class="i-val">' + p.name + ' ' + (p.surname||'') + '</span></div>';
-  ih += '<div class="i-row"><span class="i-lbl">Date of Birth</span><span class="i-val">' + (p.birth_date||'-') + '</span></div>';
-  ih += '<div class="i-row"><span class="i-lbl">Phone</span><span class="i-val">' + (p.phone||'-') + '</span></div>';
-  ih += '<div class="i-row"><span class="i-lbl">City</span><span class="i-val">' + (p.city||'-') + '</span></div>';
-  if (p.notes) ih += '<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">' + p.notes + '</span></div>';
-  document.getElementById('pInfo').innerHTML = ih;
-  document.getElementById('vList').innerHTML = '<div class="loader">Loading...</div>';
-  var vres = await db.from('visits').select('*').eq('patient_id', id).order('created_at', { ascending: false });
-  visits = vres.data || [];
+  selPid=id; selVid=null; filterP();
+  selPatientObj=patients.find(function(x){return x.id===id;});
+  var p=selPatientObj;
+  document.getElementById('emptyMsg').style.display='none';
+  document.getElementById('pDetail').style.display='block';
+  document.getElementById('vDetail').style.display='none';
+  document.getElementById('dName').textContent=p.name+' '+(p.surname||'');
+  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
+  var ih='';
+  ih+='<div class="i-row"><span class="i-lbl">Name</span><span class="i-val">'+p.name+' '+(p.surname||'')+'</span></div>';
+  ih+='<div class="i-row"><span class="i-lbl">Date of Birth</span><span class="i-val">'+(p.birth_date||'-')+'</span></div>';
+  ih+='<div class="i-row"><span class="i-lbl">Phone</span><span class="i-val">'+(p.phone||'-')+'</span></div>';
+  ih+='<div class="i-row"><span class="i-lbl">City</span><span class="i-val">'+(p.city||'-')+'</span></div>';
+  if(p.notes) ih+='<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">'+p.notes+'</span></div>';
+  document.getElementById('pInfo').innerHTML=ih;
+  document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
+  var vr=await db.from('visits').select('*').eq('patient_id',id).order('created_at',{ascending:false});
+  visits=vr.data||[];
   renderV();
-  fillCompareSelects();
+  fillCompare();
 }
 
-function fillCompareSelects() {
-  var opts = '<option value="">Select visit</option>';
-  for (var i = 0; i < visits.length; i++) {
-    var v = visits[i];
-    opts += '<option value="' + v.id + '">' + (v.visit_date||'').split('T')[0] + ' - ' + (v.region||'') + '</option>';
+function fillCompare() {
+  var opts='<option value="">Select visit</option>';
+  for(var i=0;i<visits.length;i++){
+    var v=visits[i];
+    opts+='<option value="'+v.id+'">'+(v.visit_date||'').split('T')[0]+' - '+(v.region||'')+'</option>';
   }
-  document.getElementById('cmpV1').innerHTML = opts;
-  document.getElementById('cmpV2').innerHTML = opts;
-  document.getElementById('cmpPh1').innerHTML = '';
-  document.getElementById('cmpPh2').innerHTML = '';
-  if (visits.length >= 2) {
-    document.getElementById('cmpV1').value = visits[visits.length-1].id;
-    document.getElementById('cmpV2').value = visits[0].id;
+  document.getElementById('cmpV1').innerHTML=opts;
+  document.getElementById('cmpV2').innerHTML=opts;
+  document.getElementById('cmpPh1').innerHTML='';
+  document.getElementById('cmpPh2').innerHTML='';
+  cmpPhotos1={}; cmpPhotos2={}; cmpVisit1=null; cmpVisit2=null;
+  if(visits.length>=2){
+    document.getElementById('cmpV1').value=visits[visits.length-1].id;
+    document.getElementById('cmpV2').value=visits[0].id;
     loadCompare();
   }
 }
 
 async function loadCompare() {
-  var v1 = document.getElementById('cmpV1').value;
-  var v2 = document.getElementById('cmpV2').value;
-  if (v1) {
-    var r = await db.from('photos').select('*').eq('visit_id', v1).order('angle_index');
-    var html = '';
-    (r.data||[]).forEach(function(p) {
-      html += '<div><img src="' + p.file_path + '" onclick="openLb(\'' + p.file_path + '\')"/>';
-      html += '<div style="font-size:10px;color:rgba(245,241,235,0.4);text-align:center;margin-top:3px">' + (AL[p.angle_index]||'') + '</div></div>';
+  var v1id=document.getElementById('cmpV1').value;
+  var v2id=document.getElementById('cmpV2').value;
+  cmpVisit1=v1id?visits.find(function(x){return x.id===v1id;}):null;
+  cmpVisit2=v2id?visits.find(function(x){return x.id===v2id;}):null;
+  cmpPhotos1={}; cmpPhotos2={};
+
+  if(v1id){
+    var r=await db.from('photos').select('*').eq('visit_id',v1id).order('angle_index');
+    (r.data||[]).forEach(function(ph){cmpPhotos1[ph.angle_index]=ph.file_path;});
+    var html='';
+    (r.data||[]).forEach(function(p){
+      html+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      html+='<div class="ang-lbl">'+(AL[p.angle_index]||'')+'</div></div>';
     });
-    document.getElementById('cmpPh1').innerHTML = html || '<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+    document.getElementById('cmpPh1').innerHTML=html||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
-  if (v2) {
-    var r2 = await db.from('photos').select('*').eq('visit_id', v2).order('angle_index');
-    var html2 = '';
-    (r2.data||[]).forEach(function(p) {
-      html2 += '<div><img src="' + p.file_path + '" onclick="openLb(\'' + p.file_path + '\')"/>';
-      html2 += '<div style="font-size:10px;color:rgba(245,241,235,0.4);text-align:center;margin-top:3px">' + (AL[p.angle_index]||'') + '</div></div>';
+
+  if(v2id){
+    var r2=await db.from('photos').select('*').eq('visit_id',v2id).order('angle_index');
+    (r2.data||[]).forEach(function(ph){cmpPhotos2[ph.angle_index]=ph.file_path;});
+    var html2='';
+    (r2.data||[]).forEach(function(p){
+      html2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      html2+='<div class="ang-lbl">'+(AL[p.angle_index]||'')+'</div></div>';
     });
-    document.getElementById('cmpPh2').innerHTML = html2 || '<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+    document.getElementById('cmpPh2').innerHTML=html2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
 }
 
 function renderV() {
-  var el = document.getElementById('vList');
-  if (!visits.length) { el.innerHTML = '<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>'; return; }
-  var html = '';
-  for (var i = 0; i < visits.length; i++) {
-    var v = visits[i];
-    var cls = v.id === selVid ? 'on' : '';
-    html += '<div class="v-card ' + cls + '" onclick="selV(\'' + v.id + '\')">';
-    html += '<div class="v-type">' + (v.visit_type||'Visit') + '</div>';
-    html += '<div class="v-region">' + (v.region||'') + '</div>';
-    html += '<div class="v-date">' + (v.visit_date||'').split('T')[0] + '</div></div>';
+  var el=document.getElementById('vList');
+  if(!visits.length){el.innerHTML='<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>';return;}
+  var html='';
+  for(var i=0;i<visits.length;i++){
+    var v=visits[i];
+    var cls=v.id===selVid?'on':'';
+    html+='<div class="v-card '+cls+'" onclick="selV(\''+v.id+'\')">';
+    html+='<div class="v-type">'+(v.visit_type||'Visit')+'</div>';
+    html+='<div class="v-region">'+(v.region||'')+'</div>';
+    html+='<div class="v-date">'+(v.visit_date||'').split('T')[0]+'</div></div>';
   }
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
 async function selV(id) {
-  selVid = id;
-  renderV();
-  var v = visits.find(function(x) { return x.id === id; });
-  document.getElementById('vDetail').style.display = 'block';
-  var vi = '';
-  vi += '<div class="i-row"><span class="i-lbl">Type</span><span class="i-val">' + (v.visit_type||'-') + '</span></div>';
-  vi += '<div class="i-row"><span class="i-lbl">Region</span><span class="i-val">' + (v.region||'-') + '</span></div>';
-  vi += '<div class="i-row"><span class="i-lbl">Date</span><span class="i-val">' + (v.visit_date||'-').split('T')[0] + '</span></div>';
-  document.getElementById('vInfo').innerHTML = vi;
-  if (v.notes) {
-    document.getElementById('notesWrap').style.display = 'block';
-    document.getElementById('vNotes').textContent = v.notes;
-  } else { document.getElementById('notesWrap').style.display = 'none'; }
-  var phr = await db.from('photos').select('*').eq('visit_id', id).order('angle_index');
-  if (phr.data && phr.data.length) {
-    document.getElementById('phWrap').style.display = 'block';
-    var ph = '';
-    phr.data.forEach(function(p) {
-      ph += '<div class="ph-card"><img src="' + p.file_path + '" onclick="openLb(\'' + p.file_path + '\')"/>';
-      ph += '<div class="ph-lbl">' + (AL[p.angle_index]||'Photo') + '</div></div>';
+  selVid=id; renderV();
+  var v=visits.find(function(x){return x.id===id;});
+  document.getElementById('vDetail').style.display='block';
+  var vi='';
+  vi+='<div class="i-row"><span class="i-lbl">Type</span><span class="i-val">'+(v.visit_type||'-')+'</span></div>';
+  vi+='<div class="i-row"><span class="i-lbl">Region</span><span class="i-val">'+(v.region||'-')+'</span></div>';
+  vi+='<div class="i-row"><span class="i-lbl">Date</span><span class="i-val">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
+  document.getElementById('vInfo').innerHTML=vi;
+  if(v.notes){document.getElementById('notesWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
+  else{document.getElementById('notesWrap').style.display='none';}
+  var phr=await db.from('photos').select('*').eq('visit_id',id).order('angle_index');
+  if(phr.data&&phr.data.length){
+    document.getElementById('phWrap').style.display='block';
+    var ph='';
+    phr.data.forEach(function(p){
+      ph+='<div class="ph-card"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+      ph+='<div class="ph-lbl">'+(AL[p.angle_index]||'Photo')+'</div></div>';
     });
-    document.getElementById('phGrid').innerHTML = ph;
-  } else { document.getElementById('phWrap').style.display = 'none'; }
-  var dr = await db.from('documents').select('*').eq('visit_id', id);
+    document.getElementById('phGrid').innerHTML=ph;
+  } else{document.getElementById('phWrap').style.display='none';}
+  var dr=await db.from('documents').select('*').eq('visit_id',id);
   showDocs('kartWrap','kartGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
   showDocs('onamWrap','onamGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
   showDocs('barkodWrap','barkodGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
 }
 
-function showDocs(wid, gid, docs) {
-  if (!docs.length) { document.getElementById(wid).style.display='none'; return; }
-  document.getElementById(wid).style.display = 'block';
-  var html = '';
-  docs.forEach(function(d) { html += '<div class="doc-card"><img src="' + d.file_path + '" onclick="openLb(\'' + d.file_path + '\')"/></div>'; });
-  document.getElementById(gid).innerHTML = html;
+function showDocs(wid,gid,docs){
+  if(!docs.length){document.getElementById(wid).style.display='none';return;}
+  document.getElementById(wid).style.display='block';
+  var html='';
+  docs.forEach(function(d){html+='<div class="doc-card"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
+  document.getElementById(gid).innerHTML=html;
 }
 
-function openAddPatient() { editingPid = null; document.getElementById('modalTitle').textContent = 'Add Patient'; document.getElementById('mName').value=''; document.getElementById('mSurname').value=''; document.getElementById('mBirth').value=''; document.getElementById('mPhone').value=''; document.getElementById('mCity').value=''; document.getElementById('mNotes').value=''; document.getElementById('patientModal').classList.add('on'); }
-function openEditPatient() { if (!selPatientObj) return; editingPid = selPatientObj.id; document.getElementById('modalTitle').textContent = 'Edit Patient'; document.getElementById('mName').value=selPatientObj.name||''; document.getElementById('mSurname').value=selPatientObj.surname||''; document.getElementById('mBirth').value=(selPatientObj.birth_date||'').split('T')[0]; document.getElementById('mPhone').value=selPatientObj.phone||''; document.getElementById('mCity').value=selPatientObj.city||''; document.getElementById('mNotes').value=selPatientObj.notes||''; document.getElementById('patientModal').classList.add('on'); }
-function closeModal() { document.getElementById('patientModal').classList.remove('on'); }
+function openAddPatient(){editingPid=null;document.getElementById('modalTitle').textContent='Add Patient';document.getElementById('mName').value='';document.getElementById('mSurname').value='';document.getElementById('mBirth').value='';document.getElementById('mPhone').value='';document.getElementById('mCity').value='';document.getElementById('mNotes').value='';document.getElementById('patientModal').classList.add('on');}
+function openEditPatient(){if(!selPatientObj)return;editingPid=selPatientObj.id;document.getElementById('modalTitle').textContent='Edit Patient';document.getElementById('mName').value=selPatientObj.name||'';document.getElementById('mSurname').value=selPatientObj.surname||'';document.getElementById('mBirth').value=(selPatientObj.birth_date||'').split('T')[0];document.getElementById('mPhone').value=selPatientObj.phone||'';document.getElementById('mCity').value=selPatientObj.city||'';document.getElementById('mNotes').value=selPatientObj.notes||'';document.getElementById('patientModal').classList.add('on');}
+function closeModal(){document.getElementById('patientModal').classList.remove('on');}
 
-async function savePatient() {
-  var name = document.getElementById('mName').value.trim();
-  var surname = document.getElementById('mSurname').value.trim();
-  if (!name) { alert('Name is required'); return; }
-  var data = { name: name, surname: surname, birth_date: document.getElementById('mBirth').value||null, phone: document.getElementById('mPhone').value||null, city: document.getElementById('mCity').value||null, notes: document.getElementById('mNotes').value||null, clinic_id: cid };
-  if (editingPid) {
-    await db.from('patients').update(data).eq('id', editingPid);
-  } else {
-    await db.from('patients').insert(data);
+async function savePatient(){
+  var name=document.getElementById('mName').value.trim();
+  if(!name){alert('Name is required');return;}
+  var data={name:name,surname:document.getElementById('mSurname').value||null,birth_date:document.getElementById('mBirth').value||null,phone:document.getElementById('mPhone').value||null,city:document.getElementById('mCity').value||null,notes:document.getElementById('mNotes').value||null,clinic_id:cid};
+  if(editingPid){await db.from('patients').update(data).eq('id',editingPid);}
+  else{await db.from('patients').insert(data);}
+  closeModal();await loadPatients();await loadStats();
+  if(editingPid&&selPid===editingPid)await selP(selPid);
+}
+
+async function deletePatient(){
+  if(!selPatientObj)return;
+  if(!confirm('Delete '+selPatientObj.name+'? This cannot be undone.'))return;
+  await db.from('patients').delete().eq('id',selPid);
+  selPid=null;selPatientObj=null;
+  document.getElementById('pDetail').style.display='none';
+  document.getElementById('emptyMsg').style.display='flex';
+  await loadPatients();await loadStats();
+}
+
+function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('on');}
+function closeLb(){document.getElementById('lb').classList.remove('on');}
+function showProg(msg){var el=document.getElementById('progress');el.textContent=msg;el.style.display='block';}
+function hideProg(){document.getElementById('progress').style.display='none';}
+
+// PDF GENERATION
+async function generatePDF() {
+  if(!selPatientObj){alert('Please select a patient');return;}
+  var v1id=document.getElementById('cmpV1').value;
+  var v2id=document.getElementById('cmpV2').value;
+  if(!v1id&&!v2id){alert('Please select at least one visit');return;}
+  showProg('Loading images...');
+
+  var p=selPatientObj;
+  var patientName=p.name+' '+(p.surname||'');
+  var clinic=clinicData||{};
+
+  async function toBase64(url){
+    try{
+      var r=await fetch(url);
+      var blob=await r.blob();
+      return new Promise(function(resolve){
+        var reader=new FileReader();
+        reader.onloadend=function(){resolve(reader.result);};
+        reader.readAsDataURL(blob);
+      });
+    }catch(e){return null;}
   }
-  closeModal();
-  await loadPatients();
-  await loadStats();
-  if (editingPid && selPid === editingPid) await selP(selPid);
+
+  var imgCache={};
+  var allPhotos=Object.assign({},cmpPhotos1,cmpPhotos2);
+  var idx=0;
+  for(var k in allPhotos){
+    showProg('Loading images '+(++idx)+'...');
+    if(allPhotos[k])imgCache[allPhotos[k]]=await toBase64(allPhotos[k]);
+  }
+
+  var logoB64=null;
+  if(clinic.logo_url){showProg('Loading logo...');logoB64=await toBase64(clinic.logo_url);}
+
+  var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
+  var PW=595,PH=842,M=24,UW=PW-M*2;
+  var HDR=100,FTR=30,COLG=8,ROWG=8,LBLH=18;
+
+  function drawHeader(d){
+    var y=M;
+    d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);
+    if(clinic.name)d.text(clinic.name,M,y+16);
+    d.setFontSize(10);d.setFont('helvetica','normal');
+    if(clinic.doctor)d.text(clinic.doctor,M,y+30);
+    d.setFontSize(9);d.setTextColor(180,0,0);
+    if(clinic.speciality)d.text(clinic.speciality,M,y+44);
+    if(logoB64){try{d.addImage(logoB64,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
+    d.setDrawColor(200,200,200);d.line(M,y+52,PW-M,y+52);
+    d.setFontSize(7);d.setTextColor(150,150,150);d.setFont('helvetica','bold');
+    d.text('PATIENT',M,y+64);
+    d.setFontSize(11);d.setTextColor(40,40,40);d.setFont('helvetica','bold');
+    d.text(patientName,M,y+76);
+    d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
+    if(p.birth_date)d.text('DOB: '+p.birth_date.split('T')[0],M,y+88);
+    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
+    d.text('VISIT',PW/2,y+64);
+    d.setFontSize(8);d.setFont('helvetica','normal');
+    if(cmpVisit1)d.text('Before: '+(cmpVisit1.visit_date||'').split('T')[0]+' - '+(cmpVisit1.region||''),PW/2,y+76);
+    if(cmpVisit2)d.text('After: '+(cmpVisit2.visit_date||'').split('T')[0]+' - '+(cmpVisit2.region||''),PW/2,y+88);
+    d.setDrawColor(200,200,200);d.line(M,y+96,PW-M,y+96);
+  }
+
+  function drawFooter(d){
+    var y=PH-M-FTR;
+    d.setDrawColor(200,200,200);d.line(M,y,PW-M,y);
+    d.setFontSize(7);d.setTextColor(200,0,0);d.setFont('helvetica','normal');
+    var parts=[clinic.phone,clinic.address,clinic.instagram].filter(Boolean);
+    if(parts.length)d.text(parts.join('   '),M,y+14);
+  }
+
+  function drawPage(d,indices,labels){
+    var n=indices.length;
+    var totalGaps=n>1?(n-1)*(ROWG+LBLH):LBLH;
+    var availH=PH-M*2-HDR-FTR-totalGaps-16;
+    var photoH=availH/n;
+    var photoW=Math.min(photoH*3/4,(UW-COLG)/2);
+    photoH=photoW*4/3;
+    var startX=M+(UW-photoW*2-COLG)/2;
+    var startY=M+HDR+4;
+
+    drawHeader(d);
+    drawFooter(d);
+
+    for(var i=0;i<n;i++){
+      var ai=indices[i];
+      var url1=cmpPhotos1[ai];
+      var url2=cmpPhotos2[ai];
+      var y=startY+i*(photoH+ROWG+LBLH);
+
+      // Before foto
+      if(url1&&imgCache[url1]){try{d.addImage(imgCache[url1],'JPEG',startX,y,photoW,photoH,'','FAST');}catch(e){d.setFillColor(230,230,230);d.rect(startX,y,photoW,photoH,'F');}}
+      else{d.setFillColor(230,230,230);d.rect(startX,y,photoW,photoH,'F');}
+
+      // After foto
+      if(url2&&imgCache[url2]){try{d.addImage(imgCache[url2],'JPEG',startX+photoW+COLG,y,photoW,photoH,'','FAST');}catch(e){d.setFillColor(230,230,230);d.rect(startX+photoW+COLG,y,photoW,photoH,'F');}}
+      else{d.setFillColor(230,230,230);d.rect(startX+photoW+COLG,y,photoW,photoH,'F');}
+
+      // Etiketler
+      var ly=y+photoH+12;
+      d.setFontSize(8);d.setFont('helvetica','bold');
+      d.setTextColor(120,120,120);d.text('Before',startX,ly);
+      d.setTextColor(40,40,40);d.text(labels[i],startX+photoW+COLG/2,ly,{align:'center'});
+      d.setTextColor(120,120,120);d.text('After',startX+photoW*2+COLG,ly,{align:'right'});
+    }
+  }
+
+  showProg('Generating PDF page 1...');
+  drawPage(doc,[0],['Front']);
+
+  showProg('Generating PDF page 2...');
+  doc.addPage();
+  drawPage(doc,[1,3],['Left 45','Right 45']);
+
+  showProg('Generating PDF page 3...');
+  doc.addPage();
+  drawPage(doc,[2,4],['Left Profile','Right Profile']);
+
+  var fname=patientName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
+  doc.save(fname);
+  hideProg();
 }
 
-async function deletePatient() {
-  if (!selPatientObj) return;
-  if (!confirm('Delete ' + selPatientObj.name + '? This cannot be undone.')) return;
-  await db.from('patients').delete().eq('id', selPid);
-  selPid = null; selPatientObj = null;
-  document.getElementById('pDetail').style.display = 'none';
-  document.getElementById('emptyMsg').style.display = 'flex';
-  await loadPatients();
-  await loadStats();
-}
-
-function openLb(src) { document.getElementById('lbImg').src=src; document.getElementById('lb').classList.add('on'); }
-function closeLb() { document.getElementById('lb').classList.remove('on'); }
-function showProg(msg) { var el=document.getElementById('progress'); el.textContent=msg; el.style.display='block'; }
-function hideProg() { document.getElementById('progress').style.display='none'; }
-
-async function fetchAll() {
-  var res = await db.from('patients').select('*').eq('clinic_id', cid);
-  var all = [];
-  for (var i=0;i<(res.data||[]).length;i++) {
+async function fetchAll(){
+  var res=await db.from('patients').select('*').eq('clinic_id',cid);
+  var all=[];
+  for(var i=0;i<(res.data||[]).length;i++){
     var p=res.data[i];
     var vr=await db.from('visits').select('*').eq('patient_id',p.id);
     var vd=[];
-    for (var j=0;j<(vr.data||[]).length;j++) {
+    for(var j=0;j<(vr.data||[]).length;j++){
       var v=vr.data[j];
       var ph=await db.from('photos').select('*').eq('visit_id',v.id);
       var dc=await db.from('documents').select('*').eq('visit_id',v.id);
@@ -496,11 +616,11 @@ async function fetchAll() {
   return all;
 }
 
-async function fetchPatient(pid) {
+async function fetchPatient(pid){
   var p=patients.find(function(x){return x.id===pid;});
   var vr=await db.from('visits').select('*').eq('patient_id',pid);
   var vd=[];
-  for (var j=0;j<(vr.data||[]).length;j++) {
+  for(var j=0;j<(vr.data||[]).length;j++){
     var v=vr.data[j];
     var ph=await db.from('photos').select('*').eq('visit_id',v.id);
     var dc=await db.from('documents').select('*').eq('visit_id',v.id);
@@ -509,50 +629,40 @@ async function fetchPatient(pid) {
   return [Object.assign({},p,{visits:vd})];
 }
 
-async function makeZIP(allData, fname) {
-  var zip=new JSZip(); var total=0;
-  for (var i=0;i<allData.length;i++) {
+async function makeZIP(allData,fname){
+  var zip=new JSZip();var total=0;
+  for(var i=0;i<allData.length;i++){
     var p=allData[i];
     var folder=zip.folder(p.name+'_'+(p.surname||''));
     folder.file('info.json',JSON.stringify({name:p.name,surname:p.surname,birth_date:p.birth_date,phone:p.phone,city:p.city},null,2));
-    for (var j=0;j<p.visits.length;j++) {
+    for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       var vf=folder.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
-      for (var k=0;k<v.photos.length;k++) {
-        showProg('Downloading photos... '+(++total));
-        try { var r=await fetch(v.photos[k].file_path); vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await r.blob()); } catch(e){}
-      }
-      for (var k=0;k<v.documents.length;k++) {
-        try { var r=await fetch(v.documents[k].file_path); vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await r.blob()); } catch(e){}
-      }
+      for(var k=0;k<v.photos.length;k++){showProg('Downloading photos... '+(++total));try{var r=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await r.blob());}catch(e){}}
+      for(var k=0;k<v.documents.length;k++){try{var r=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await r.blob());}catch(e){}}
     }
   }
   showProg('Creating ZIP...');
   var blob=await zip.generateAsync({type:'blob'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname+'.zip'; a.click();
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname+'.zip';a.click();
 }
 
-async function makeHTML(allData, fname) {
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title>';
-  html+='<style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.patient{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.info{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.visit{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.photos{display:flex;flex-wrap:wrap;gap:8px}.photos img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lbl{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style></head><body>';
+async function makeHTML(allData,fname){
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title><style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.patient{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.info{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.visit{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.photos{display:flex;flex-wrap:wrap;gap:8px}.photos img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lbl{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style></head><body>';
   html+='<h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
-  for (var i=0;i<allData.length;i++) {
+  for(var i=0;i<allData.length;i++){
     var p=allData[i];
     html+='<div class="patient"><h2>'+p.name+' '+(p.surname||'')+'</h2><div class="info">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
-    for (var j=0;j<p.visits.length;j++) {
+    for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       html+='<div class="visit"><h3>'+(v.visit_type||'Visit')+' — '+(v.region||'')+' — '+(v.visit_date||'').split('T')[0]+'</h3>';
-      if (v.photos.length) {
-        html+='<div class="photos">';
-        for (var k=0;k<v.photos.length;k++) html+='<div><img src="'+v.photos[k].file_path+'"/><div class="lbl">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';
-        html+='</div>';
-      }
+      if(v.photos.length){html+='<div class="photos">';for(var k=0;k<v.photos.length;k++)html+='<div><img src="'+v.photos[k].file_path+'"/><div class="lbl">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';html+='</div>';}
       html+='</div>';
     }
     html+='</div>';
   }
   html+='</body></html>';
-  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'})); a.download=fname+'.html'; a.click();
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=fname+'.html';a.click();
 }
 
 async function dlZIP(){showProg('Fetching data...');var all=await fetchAll();await makeZIP(all,'aafc_all_'+new Date().toISOString().split('T')[0]);hideProg();}
@@ -560,145 +670,7 @@ async function dlHTML(){showProg('Fetching data...');var all=await fetchAll();aw
 async function dlPatientZIP(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeZIP(all,'aafc_'+n);hideProg();}
 async function dlPatientHTML(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeHTML(all,'aafc_'+n+'_report');hideProg();}
 async function dlJSON(){showProg('Fetching...');var all=await fetchAll();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:all},null,2)],{type:'application/json'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';a.click();hideProg();}
-async function generateComparePDF() {
-  var v1id = document.getElementById('cmpV1').value;
-  var v2id = document.getElementById('cmpV2').value;
-  if (!v1id && !v2id) { alert('Please select at least one visit'); return; }
-  showProg('Generating PDF...');
-  var p = selPatientObj;
-  var patientName = p.name + ' ' + (p.surname||'');
-
-  // Klinik bilgisi
-  var clinicRes = await db.from('clinic').select('*').eq('id', cid).single();
-  var clinic = clinicRes.data || {};
-
-  // Fotograflari yukle
-  var photos1 = {};
-  var photos2 = {};
-  if (v1id) {
-    var r = await db.from('photos').select('*').eq('visit_id', v1id).order('angle_index');
-    (r.data||[]).forEach(function(ph) { photos1[ph.angle_index] = ph.file_path; });
-  }
-  if (v2id) {
-    var r2 = await db.from('photos').select('*').eq('visit_id', v2id).order('angle_index');
-    (r2.data||[]).forEach(function(ph) { photos2[ph.angle_index] = ph.file_path; });
-  }
-
-  // Visit bilgileri
-  var visit1 = v1id ? visits.find(function(x){return x.id===v1id;}) : null;
-  var visit2 = v2id ? visits.find(function(x){return x.id===v2id;}) : null;
-
-  // Base64 donustur
-  async function toBase64(url) {
-    try {
-      var r = await fetch(url);
-      var blob = await r.blob();
-      return new Promise(function(res) {
-        var reader = new FileReader();
-        reader.onloadend = function() { res(reader.result); };
-        reader.readAsDataURL(blob);
-      });
-    } catch(e) { return null; }
-  }
-
-  var imgCache = {};
-  var allUrls = Object.assign({}, photos1, photos2);
-  for (var idx in allUrls) {
-    showProg('Loading images... ' + idx);
-    imgCache[allUrls[idx]] = await toBase64(allUrls[idx]);
-  }
-
-  var logoBase64 = null;
-  if (clinic.logo_url) logoBase64 = await toBase64(clinic.logo_url);
-
-  var doc = new jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-  var pw = 595, ph = 842;
-  var margin = 24;
-  var usableW = pw - margin*2;
-  var headerH = 100, footerH = 24;
-
-  function drawHeader(doc) {
-    var y = margin;
-    if (clinic.name) { doc.setFontSize(16); doc.setTextColor(200,0,0); doc.setFont('helvetica','bold'); doc.text(clinic.name, margin, y+16); }
-    if (clinic.doctor) { doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.text(clinic.doctor, margin, y+32); }
-    if (clinic.speciality) { doc.setFontSize(9); doc.setTextColor(150,0,0); doc.text(clinic.speciality, margin, y+46); }
-    if (logoBase64) { try { doc.addImage(logoBase64, 'JPEG', pw-margin-46, y, 46, 46, '', 'FAST'); } catch(e){} }
-    doc.setDrawColor(200,200,200); doc.line(margin, y+55, pw-margin, y+55);
-    doc.setTextColor(150,150,150); doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('PATIENT', margin, y+68);
-    doc.setTextColor(245,241,235); doc.setFontSize(11); doc.setFont('helvetica','bold');
-    doc.text(patientName, margin, y+80);
-    if (p.birth_date) { doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150); doc.text('DOB: '+p.birth_date.split('T')[0], margin, y+90); }
-    doc.setTextColor(150,150,150); doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('VISIT', pw/2, y+68);
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    if (visit1) doc.text('Before: '+(visit1.visit_date||'').split('T')[0]+' - '+(visit1.region||''), pw/2, y+80);
-    if (visit2) doc.text('After: '+(visit2.visit_date||'').split('T')[0]+' - '+(visit2.region||''), pw/2, y+90);
-    doc.setDrawColor(200,200,200); doc.line(margin, y+96, pw-margin, y+96);
-  }
-
-  function drawFooter(doc) {
-    var y = ph - margin - footerH;
-    doc.setDrawColor(200,200,200); doc.line(margin, y, pw-margin, y);
-    doc.setFontSize(7); doc.setTextColor(200,0,0); doc.setFont('helvetica','normal');
-    var parts = [clinic.phone, clinic.address, clinic.instagram].filter(Boolean);
-    if (parts.length) doc.text(parts.join('   '), margin, y+12);
-  }
-
-  function drawPair(doc, pageIndices, pageLabels) {
-    var n = pageIndices.length;
-    var rowGap = 6, labelH2 = 14, colGap = 8;
-    var gaps = n > 1 ? (n-1)*(rowGap+labelH2) : labelH2;
-    var photoAreaH = ph - margin*2 - headerH - footerH - gaps;
-    var photoH = photoAreaH / n;
-    var photoW = Math.min(photoH * 3/4, (usableW - colGap) / 2);
-    photoH = photoW * 4/3;
-    var startX = margin + (usableW - photoW*2 - colGap) / 2;
-    var startY = margin + headerH;
-
-    drawHeader(doc);
-    drawFooter(doc);
-
-    for (var i=0; i<n; i++) {
-      var idx = pageIndices[i];
-      var url1 = photos1[idx];
-      var url2 = photos2[idx];
-      var y = startY + i*(photoH+rowGap+labelH2);
-
-      if (url1 && imgCache[url1]) { try { doc.addImage(imgCache[url1],'JPEG',startX,y,photoW,photoH,'','FAST'); } catch(e){} }
-      else { doc.setFillColor(40,40,40); doc.rect(startX,y,photoW,photoH,'F'); }
-
-      if (url2 && imgCache[url2]) { try { doc.addImage(imgCache[url2],'JPEG',startX+photoW+colGap,y,photoW,photoH,'','FAST'); } catch(e){} }
-      else { doc.setFillColor(40,40,40); doc.rect(startX+photoW+colGap,y,photoW,photoH,'F'); }
-
-      doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','bold');
-      doc.text('Before', startX, y+photoH+10);
-      doc.setTextColor(245,241,235);
-      doc.text(pageLabels[i], startX+photoW/2, y+photoH+10, {align:'center'});
-      doc.setTextColor(150,150,150);
-      doc.text('After', startX+photoW+colGap+photoW, y+photoH+10, {align:'right'});
-    }
-  }
-
-  // Sayfa 1: On Yuz (0)
-  drawPair(doc, [0], ['Front']);
-
-  // Sayfa 2: Sol 45 + Sag 45
-  doc.addPage();
-  drawPair(doc, [1,3], ['Left 45', 'Right 45']);
-
-  // Sayfa 3: Sol Profil + Sag Profil
-  doc.addPage();
-  drawPair(doc, [2,4], ['Left Profile', 'Right Profile']);
-
-  var fname = patientName.replace(/\s/g,'_') + '_report_' + new Date().toISOString().split('T')[0] + '.pdf';
-  doc.save(fname);
-  hideProg();
-}
-
 async function dlCSV(){showProg('Fetching...');var all=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo URL'];for(var i=0;i<all.length;i++){var p=all[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';a.click();hideProg();}
 </script>
 </body>
 </html>
-
-

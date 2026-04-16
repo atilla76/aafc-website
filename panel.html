@@ -6,6 +6,7 @@
 <title>AAFC Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#1C1929; color:#F5F1EB; height:100vh; overflow:hidden; }
@@ -173,6 +174,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
           <div class="info-box" id="pInfo"></div>
 
           <div class="sec">BEFORE / AFTER COMPARISON</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+            <button class="btn-b btn-html" onclick="generateComparePDF()">Generate PDF Report</button>
+          </div>
           <div class="compare-wrap">
             <div class="compare-side">
               <h4>BEFORE</h4>
@@ -556,7 +560,145 @@ async function dlHTML(){showProg('Fetching data...');var all=await fetchAll();aw
 async function dlPatientZIP(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeZIP(all,'aafc_'+n);hideProg();}
 async function dlPatientHTML(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeHTML(all,'aafc_'+n+'_report');hideProg();}
 async function dlJSON(){showProg('Fetching...');var all=await fetchAll();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:all},null,2)],{type:'application/json'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';a.click();hideProg();}
+async function generateComparePDF() {
+  var v1id = document.getElementById('cmpV1').value;
+  var v2id = document.getElementById('cmpV2').value;
+  if (!v1id && !v2id) { alert('Please select at least one visit'); return; }
+  showProg('Generating PDF...');
+  var p = selPatientObj;
+  var patientName = p.name + ' ' + (p.surname||'');
+
+  // Klinik bilgisi
+  var clinicRes = await db.from('clinic').select('*').eq('id', cid).single();
+  var clinic = clinicRes.data || {};
+
+  // Fotograflari yukle
+  var photos1 = {};
+  var photos2 = {};
+  if (v1id) {
+    var r = await db.from('photos').select('*').eq('visit_id', v1id).order('angle_index');
+    (r.data||[]).forEach(function(ph) { photos1[ph.angle_index] = ph.file_path; });
+  }
+  if (v2id) {
+    var r2 = await db.from('photos').select('*').eq('visit_id', v2id).order('angle_index');
+    (r2.data||[]).forEach(function(ph) { photos2[ph.angle_index] = ph.file_path; });
+  }
+
+  // Visit bilgileri
+  var visit1 = v1id ? visits.find(function(x){return x.id===v1id;}) : null;
+  var visit2 = v2id ? visits.find(function(x){return x.id===v2id;}) : null;
+
+  // Base64 donustur
+  async function toBase64(url) {
+    try {
+      var r = await fetch(url);
+      var blob = await r.blob();
+      return new Promise(function(res) {
+        var reader = new FileReader();
+        reader.onloadend = function() { res(reader.result); };
+        reader.readAsDataURL(blob);
+      });
+    } catch(e) { return null; }
+  }
+
+  var imgCache = {};
+  var allUrls = Object.assign({}, photos1, photos2);
+  for (var idx in allUrls) {
+    showProg('Loading images... ' + idx);
+    imgCache[allUrls[idx]] = await toBase64(allUrls[idx]);
+  }
+
+  var logoBase64 = null;
+  if (clinic.logo_url) logoBase64 = await toBase64(clinic.logo_url);
+
+  var doc = new jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+  var pw = 595, ph = 842;
+  var margin = 24;
+  var usableW = pw - margin*2;
+  var headerH = 100, footerH = 24;
+
+  function drawHeader(doc) {
+    var y = margin;
+    if (clinic.name) { doc.setFontSize(16); doc.setTextColor(200,0,0); doc.setFont('helvetica','bold'); doc.text(clinic.name, margin, y+16); }
+    if (clinic.doctor) { doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.text(clinic.doctor, margin, y+32); }
+    if (clinic.speciality) { doc.setFontSize(9); doc.setTextColor(150,0,0); doc.text(clinic.speciality, margin, y+46); }
+    if (logoBase64) { try { doc.addImage(logoBase64, 'JPEG', pw-margin-46, y, 46, 46, '', 'FAST'); } catch(e){} }
+    doc.setDrawColor(200,200,200); doc.line(margin, y+55, pw-margin, y+55);
+    doc.setTextColor(150,150,150); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('PATIENT', margin, y+68);
+    doc.setTextColor(245,241,235); doc.setFontSize(11); doc.setFont('helvetica','bold');
+    doc.text(patientName, margin, y+80);
+    if (p.birth_date) { doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150); doc.text('DOB: '+p.birth_date.split('T')[0], margin, y+90); }
+    doc.setTextColor(150,150,150); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('VISIT', pw/2, y+68);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    if (visit1) doc.text('Before: '+(visit1.visit_date||'').split('T')[0]+' - '+(visit1.region||''), pw/2, y+80);
+    if (visit2) doc.text('After: '+(visit2.visit_date||'').split('T')[0]+' - '+(visit2.region||''), pw/2, y+90);
+    doc.setDrawColor(200,200,200); doc.line(margin, y+96, pw-margin, y+96);
+  }
+
+  function drawFooter(doc) {
+    var y = ph - margin - footerH;
+    doc.setDrawColor(200,200,200); doc.line(margin, y, pw-margin, y);
+    doc.setFontSize(7); doc.setTextColor(200,0,0); doc.setFont('helvetica','normal');
+    var parts = [clinic.phone, clinic.address, clinic.instagram].filter(Boolean);
+    if (parts.length) doc.text(parts.join('   '), margin, y+12);
+  }
+
+  function drawPair(doc, pageIndices, pageLabels) {
+    var n = pageIndices.length;
+    var rowGap = 6, labelH2 = 14, colGap = 8;
+    var gaps = n > 1 ? (n-1)*(rowGap+labelH2) : labelH2;
+    var photoAreaH = ph - margin*2 - headerH - footerH - gaps;
+    var photoH = photoAreaH / n;
+    var photoW = Math.min(photoH * 3/4, (usableW - colGap) / 2);
+    photoH = photoW * 4/3;
+    var startX = margin + (usableW - photoW*2 - colGap) / 2;
+    var startY = margin + headerH;
+
+    drawHeader(doc);
+    drawFooter(doc);
+
+    for (var i=0; i<n; i++) {
+      var idx = pageIndices[i];
+      var url1 = photos1[idx];
+      var url2 = photos2[idx];
+      var y = startY + i*(photoH+rowGap+labelH2);
+
+      if (url1 && imgCache[url1]) { try { doc.addImage(imgCache[url1],'JPEG',startX,y,photoW,photoH,'','FAST'); } catch(e){} }
+      else { doc.setFillColor(40,40,40); doc.rect(startX,y,photoW,photoH,'F'); }
+
+      if (url2 && imgCache[url2]) { try { doc.addImage(imgCache[url2],'JPEG',startX+photoW+colGap,y,photoW,photoH,'','FAST'); } catch(e){} }
+      else { doc.setFillColor(40,40,40); doc.rect(startX+photoW+colGap,y,photoW,photoH,'F'); }
+
+      doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','bold');
+      doc.text('Before', startX, y+photoH+10);
+      doc.setTextColor(245,241,235);
+      doc.text(pageLabels[i], startX+photoW/2, y+photoH+10, {align:'center'});
+      doc.setTextColor(150,150,150);
+      doc.text('After', startX+photoW+colGap+photoW, y+photoH+10, {align:'right'});
+    }
+  }
+
+  // Sayfa 1: On Yuz (0)
+  drawPair(doc, [0], ['Front']);
+
+  // Sayfa 2: Sol 45 + Sag 45
+  doc.addPage();
+  drawPair(doc, [1,3], ['Left 45', 'Right 45']);
+
+  // Sayfa 3: Sol Profil + Sag Profil
+  doc.addPage();
+  drawPair(doc, [2,4], ['Left Profile', 'Right Profile']);
+
+  var fname = patientName.replace(/\s/g,'_') + '_report_' + new Date().toISOString().split('T')[0] + '.pdf';
+  doc.save(fname);
+  hideProg();
+}
+
 async function dlCSV(){showProg('Fetching...');var all=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo URL'];for(var i=0;i<all.length;i++){var p=all[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';a.click();hideProg();}
 </script>
 </body>
 </html>
+
+

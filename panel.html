@@ -8,105 +8,105 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#1C1929; color:#F5F1EB; height:100vh; overflow:hidden; }
-.login-wrap { display:flex; align-items:center; justify-content:center; height:100vh; }
-.login-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:20px; padding:40px; width:100%; max-width:400px; }
-.logo { font-size:24px; font-weight:600; color:#B89A6A; letter-spacing:2px; margin-bottom:8px; }
-.login-box h2 { font-size:22px; font-weight:400; margin-bottom:6px; }
-.login-box p { color:rgba(245,241,235,0.4); font-size:14px; margin-bottom:28px; }
-.lbl { display:block; font-size:11px; color:rgba(245,241,235,0.5); margin-bottom:6px; }
-.inp { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:10px; padding:12px 14px; color:#F5F1EB; font-size:14px; margin-bottom:14px; outline:none; }
-.inp:focus { border-color:rgba(184,154,106,0.4); }
-.btn-login { width:100%; background:#B89A6A; border:none; border-radius:10px; padding:14px; color:#1C1929; font-size:15px; font-weight:600; cursor:pointer; }
-.btn-login:disabled { opacity:0.5; }
-.err { color:#E05555; font-size:13px; margin-top:8px; display:none; }
-.app { display:none; height:100vh; flex-direction:column; }
-.app.on { display:flex; }
-.banner { background:rgba(184,154,106,0.08); border-bottom:1px solid rgba(184,154,106,0.15); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.banner-text { font-size:12px; color:rgba(245,241,235,0.5); }
-.banner-text strong { color:#B89A6A; }
-.banner-btns { display:flex; gap:6px; }
-.btn-b { padding:6px 12px; border-radius:7px; cursor:pointer; font-size:11px; font-weight:500; }
-.btn-zip { background:rgba(108,99,168,0.2); color:#9B8FD4; border:1px solid rgba(108,99,168,0.3); }
-.btn-html { background:rgba(29,158,117,0.2); color:#1D9E75; border:1px solid rgba(29,158,117,0.3); }
-.btn-json { background:rgba(184,154,106,0.2); color:#B89A6A; border:1px solid rgba(184,154,106,0.3); }
-.btn-csv { background:rgba(245,241,235,0.06); color:rgba(245,241,235,0.5); border:1px solid rgba(245,241,235,0.12); }
-.btn-pdf { background:rgba(224,85,85,0.2); color:#E05555; border:1px solid rgba(224,85,85,0.3); }
-.layout { display:flex; flex:1; overflow:hidden; }
-.sidebar { width:280px; min-width:280px; background:rgba(245,241,235,0.03); border-right:1px solid rgba(245,241,235,0.08); display:flex; flex-direction:column; }
-.s-head { padding:12px 16px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
-.s-logo { font-size:16px; font-weight:600; color:#B89A6A; letter-spacing:2px; }
-.btn-out { background:none; border:1px solid rgba(245,241,235,0.15); color:rgba(245,241,235,0.5); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; }
-.stats { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(245,241,235,0.06); border-bottom:1px solid rgba(245,241,235,0.08); }
-.stat { background:#1C1929; padding:10px 14px; }
-.stat .n { font-size:20px; font-weight:600; color:#B89A6A; }
-.stat .l { font-size:10px; color:rgba(245,241,235,0.4); margin-top:2px; }
-.s-search { padding:10px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; gap:6px; }
-.s-search input { flex:1; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.1); border-radius:8px; padding:8px 12px; color:#F5F1EB; font-size:13px; outline:none; }
-.btn-add { background:rgba(184,154,106,0.2); border:1px solid rgba(184,154,106,0.3); color:#B89A6A; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:13px; white-space:nowrap; }
-.p-list { flex:1; overflow-y:auto; }
-.p-item { padding:11px 16px; cursor:pointer; border-bottom:1px solid rgba(245,241,235,0.04); }
-.p-item:hover { background:rgba(245,241,235,0.04); }
-.p-item.on { background:rgba(184,154,106,0.1); border-left:3px solid #B89A6A; }
-.p-name { font-size:14px; font-weight:500; }
-.p-meta { font-size:11px; color:rgba(245,241,235,0.4); margin-top:2px; }
-.main { flex:1; overflow-y:auto; }
-.m-head { padding:16px 24px; border-bottom:1px solid rgba(245,241,235,0.08); display:flex; align-items:center; justify-content:space-between; }
-.m-head h2 { font-size:20px; font-weight:400; }
-.m-head .sub { font-size:13px; color:rgba(245,241,235,0.4); margin-top:4px; }
-.m-btns { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-.m-body { padding:20px 24px; }
-.empty { display:flex; align-items:center; justify-content:center; height:80vh; color:rgba(245,241,235,0.3); font-size:14px; }
-.sec { font-size:10px; color:rgba(245,241,235,0.4); letter-spacing:0.5px; margin:18px 0 8px; }
-.sec:first-child { margin-top:0; }
-.info-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; }
-.i-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(245,241,235,0.06); font-size:13px; }
-.i-row:last-child { border:none; }
-.i-lbl { color:rgba(245,241,235,0.4); }
-.i-val { color:#F5F1EB; font-weight:500; }
-.v-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
-.v-card { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; cursor:pointer; }
-.v-card:hover { border-color:rgba(184,154,106,0.3); }
-.v-card.on { border-color:#B89A6A; background:rgba(184,154,106,0.08); }
-.v-type { font-size:10px; font-weight:600; color:#B89A6A; margin-bottom:4px; }
-.v-region { font-size:14px; font-weight:500; margin-bottom:3px; }
-.v-date { font-size:11px; color:rgba(245,241,235,0.4); }
-.ph-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
-.ph-card { border-radius:10px; overflow:hidden; background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); }
-.ph-card img { width:100%; aspect-ratio:3/4; object-fit:cover; cursor:pointer; display:block; }
-.ph-card img:hover { opacity:0.85; }
-.ph-lbl { padding:5px 8px; font-size:10px; color:rgba(245,241,235,0.5); }
-.doc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
-.doc-card { border-radius:10px; overflow:hidden; background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); }
-.doc-card img { width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer; display:block; }
-.doc-card img:hover { opacity:0.85; }
-.notes-box { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; font-size:13px; color:rgba(245,241,235,0.7); line-height:1.6; }
-.compare-wrap { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px; }
-.compare-side { background:rgba(245,241,235,0.04); border:1px solid rgba(245,241,235,0.08); border-radius:12px; padding:14px; }
-.compare-side h4 { font-size:11px; color:rgba(245,241,235,0.4); margin-bottom:10px; letter-spacing:0.5px; }
-.compare-side select { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:8px; padding:8px 10px; color:#F5F1EB; font-size:13px; outline:none; margin-bottom:10px; }
-.compare-photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:6px; }
-.compare-photos img { width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:6px; cursor:pointer; }
-.compare-photos .ang-lbl { font-size:9px; color:rgba(245,241,235,0.3); text-align:center; margin-top:2px; }
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center; }
-.modal.on { display:flex; }
-.modal-box { background:#1C1929; border:1px solid rgba(245,241,235,0.1); border-radius:16px; padding:28px; width:100%; max-width:440px; }
-.modal-box h3 { font-size:18px; font-weight:400; margin-bottom:20px; }
-.modal-inp { width:100%; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:8px; padding:10px 12px; color:#F5F1EB; font-size:13px; margin-bottom:12px; outline:none; }
-.modal-inp:focus { border-color:rgba(184,154,106,0.4); }
-.modal-btns { display:flex; gap:10px; margin-top:8px; }
-.btn-save { flex:1; background:#B89A6A; border:none; border-radius:8px; padding:12px; color:#1C1929; font-size:14px; font-weight:600; cursor:pointer; }
-.btn-cancel { flex:1; background:rgba(245,241,235,0.06); border:1px solid rgba(245,241,235,0.12); border-radius:8px; padding:12px; color:rgba(245,241,235,0.6); font-size:14px; cursor:pointer; }
-.btn-del { background:rgba(224,85,85,0.15); border:1px solid rgba(224,85,85,0.3); color:#E05555; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:12px; }
-.lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center; }
-.lb.on { display:flex; }
-.lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
-.lb-x { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; }
-.loader { padding:30px; text-align:center; color:rgba(245,241,235,0.3); font-size:13px; }
-.progress { position:fixed; bottom:20px; right:20px; background:#1C1929; border:1px solid rgba(184,154,106,0.3); border-radius:12px; padding:12px 20px; font-size:13px; color:#B89A6A; display:none; z-index:100; }
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-thumb { background:rgba(245,241,235,0.15); border-radius:2px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1C1929;color:#F5F1EB;height:100vh;overflow:hidden}
+.login-wrap{display:flex;align-items:center;justify-content:center;height:100vh}
+.login-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:20px;padding:40px;width:100%;max-width:400px}
+.logo{font-size:24px;font-weight:600;color:#B89A6A;letter-spacing:2px;margin-bottom:8px}
+.login-box h2{font-size:22px;font-weight:400;margin-bottom:6px}
+.login-box p{color:rgba(245,241,235,0.4);font-size:14px;margin-bottom:28px}
+.lbl{display:block;font-size:11px;color:rgba(245,241,235,0.5);margin-bottom:6px}
+.inp{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:10px;padding:12px 14px;color:#F5F1EB;font-size:14px;margin-bottom:14px;outline:none}
+.inp:focus{border-color:rgba(184,154,106,0.4)}
+.btn-login{width:100%;background:#B89A6A;border:none;border-radius:10px;padding:14px;color:#1C1929;font-size:15px;font-weight:600;cursor:pointer}
+.btn-login:disabled{opacity:0.5}
+.err{color:#E05555;font-size:13px;margin-top:8px;display:none}
+.app{display:none;height:100vh;flex-direction:column}
+.app.on{display:flex}
+.banner{background:rgba(184,154,106,0.08);border-bottom:1px solid rgba(184,154,106,0.15);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.banner-text{font-size:12px;color:rgba(245,241,235,0.5)}
+.banner-text strong{color:#B89A6A}
+.banner-btns{display:flex;gap:6px}
+.btn-b{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
+.btn-zip{background:rgba(108,99,168,0.2);color:#9B8FD4;border:1px solid rgba(108,99,168,0.3)}
+.btn-html{background:rgba(29,158,117,0.2);color:#1D9E75;border:1px solid rgba(29,158,117,0.3)}
+.btn-json{background:rgba(184,154,106,0.2);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
+.btn-csv{background:rgba(245,241,235,0.06);color:rgba(245,241,235,0.5);border:1px solid rgba(245,241,235,0.12)}
+.btn-pdf{background:rgba(224,85,85,0.2);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:280px;min-width:280px;background:rgba(245,241,235,0.03);border-right:1px solid rgba(245,241,235,0.08);display:flex;flex-direction:column}
+.s-head{padding:12px 16px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
+.s-logo{font-size:16px;font-weight:600;color:#B89A6A;letter-spacing:2px}
+.btn-out{background:none;border:1px solid rgba(245,241,235,0.15);color:rgba(245,241,235,0.5);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(245,241,235,0.06);border-bottom:1px solid rgba(245,241,235,0.08)}
+.stat{background:#1C1929;padding:10px 14px}
+.stat .n{font-size:20px;font-weight:600;color:#B89A6A}
+.stat .l{font-size:10px;color:rgba(245,241,235,0.4);margin-top:2px}
+.s-search{padding:10px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;gap:6px}
+.s-search input{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.1);border-radius:8px;padding:8px 12px;color:#F5F1EB;font-size:13px;outline:none}
+.btn-add{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
+.p-list{flex:1;overflow-y:auto}
+.p-item{padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(245,241,235,0.04)}
+.p-item:hover{background:rgba(245,241,235,0.04)}
+.p-item.on{background:rgba(184,154,106,0.1);border-left:3px solid #B89A6A}
+.p-name{font-size:14px;font-weight:500}
+.p-meta{font-size:11px;color:rgba(245,241,235,0.4);margin-top:2px}
+.main{flex:1;overflow-y:auto}
+.m-head{padding:16px 24px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
+.m-head h2{font-size:20px;font-weight:400}
+.m-head .sub{font-size:13px;color:rgba(245,241,235,0.4);margin-top:4px}
+.m-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.m-body{padding:20px 24px}
+.empty{display:flex;align-items:center;justify-content:center;height:80vh;color:rgba(245,241,235,0.3);font-size:14px}
+.sec{font-size:10px;color:rgba(245,241,235,0.4);letter-spacing:0.5px;margin:18px 0 8px}
+.sec:first-child{margin-top:0}
+.info-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
+.i-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(245,241,235,0.06);font-size:13px}
+.i-row:last-child{border:none}
+.i-lbl{color:rgba(245,241,235,0.4)}
+.i-val{color:#F5F1EB;font-weight:500}
+.v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.v-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;cursor:pointer}
+.v-card:hover{border-color:rgba(184,154,106,0.3)}
+.v-card.on{border-color:#B89A6A;background:rgba(184,154,106,0.08)}
+.v-type{font-size:10px;font-weight:600;color:#B89A6A;margin-bottom:4px}
+.v-region{font-size:14px;font-weight:500;margin-bottom:3px}
+.v-date{font-size:11px;color:rgba(245,241,235,0.4)}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.ph-card{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
+.ph-card img{width:100%;aspect-ratio:3/4;object-fit:cover;cursor:pointer;display:block}
+.ph-card img:hover{opacity:0.85}
+.ph-lbl{padding:5px 8px;font-size:10px;color:rgba(245,241,235,0.5)}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.doc-card{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
+.doc-card img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block}
+.doc-card img:hover{opacity:0.85}
+.notes-box{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
+.compare-side{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
+.compare-side h4{font-size:11px;color:rgba(245,241,235,0.4);margin-bottom:10px;letter-spacing:0.5px}
+.compare-side select{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none;margin-bottom:10px}
+.cmp-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+.cmp-photos img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;cursor:pointer}
+.cmp-photos .al{font-size:9px;color:rgba(245,241,235,0.3);text-align:center;margin-top:2px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center}
+.modal.on{display:flex}
+.modal-box{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
+.modal-box h3{font-size:18px;font-weight:400;margin-bottom:20px}
+.mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none}
+.mi:focus{border-color:rgba(184,154,106,0.4)}
+.modal-btns{display:flex;gap:10px;margin-top:8px}
+.btn-save{flex:1;background:#B89A6A;border:none;border-radius:8px;padding:12px;color:#1C1929;font-size:14px;font-weight:600;cursor:pointer}
+.btn-cancel{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:12px;color:rgba(245,241,235,0.6);font-size:14px;cursor:pointer}
+.btn-del{background:rgba(224,85,85,0.15);border:1px solid rgba(224,85,85,0.3);color:#E05555;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px}
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center}
+.lb.on{display:flex}
+.lb img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
+.lb-x{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px}
+.loader{padding:30px;text-align:center;color:rgba(245,241,235,0.3);font-size:13px}
+.prog{position:fixed;bottom:20px;right:20px;background:#1C1929;border:1px solid rgba(184,154,106,0.3);border-radius:12px;padding:12px 20px;font-size:13px;color:#B89A6A;display:none;z-index:100}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(245,241,235,0.15);border-radius:2px}
 </style>
 </head>
 <body>
@@ -142,14 +142,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
         <button class="btn-out" onclick="doLogout()">Sign Out</button>
       </div>
       <div class="stats">
-        <div class="stat"><div class="n" id="statP">0</div><div class="l">Patients</div></div>
-        <div class="stat"><div class="n" id="statV">0</div><div class="l">Visits</div></div>
-        <div class="stat"><div class="n" id="statPh">0</div><div class="l">Photos</div></div>
-        <div class="stat"><div class="n" id="statD">0</div><div class="l">Documents</div></div>
+        <div class="stat"><div class="n" id="stP">0</div><div class="l">Patients</div></div>
+        <div class="stat"><div class="n" id="stV">0</div><div class="l">Visits</div></div>
+        <div class="stat"><div class="n" id="stPh">0</div><div class="l">Photos</div></div>
+        <div class="stat"><div class="n" id="stD">0</div><div class="l">Documents</div></div>
       </div>
       <div class="s-search">
-        <input type="text" id="search" placeholder="Search patients..." oninput="filterP()"/>
-        <button class="btn-add" onclick="openAddPatient()">+ Add</button>
+        <input type="text" id="srch" placeholder="Search patients..." oninput="filterP()"/>
+        <button class="btn-add" onclick="openAdd()">+ Add</button>
       </div>
       <div class="p-list" id="pList"><div class="loader">Loading...</div></div>
     </div>
@@ -157,15 +157,12 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
       <div class="empty" id="emptyMsg">Select a patient</div>
       <div id="pDetail" style="display:none">
         <div class="m-head">
-          <div>
-            <h2 id="dName"></h2>
-            <div class="sub" id="dMeta"></div>
-          </div>
+          <div><h2 id="dName"></h2><div class="sub" id="dMeta"></div></div>
           <div class="m-btns">
-            <button class="btn-b btn-zip" onclick="dlPatientZIP()">ZIP</button>
-            <button class="btn-b btn-html" onclick="dlPatientHTML()">HTML</button>
-            <button class="btn-b btn-json" onclick="openEditPatient()">Edit</button>
-            <button class="btn-del" onclick="deletePatient()">Delete</button>
+            <button class="btn-b btn-zip" onclick="dlPtZIP()">ZIP</button>
+            <button class="btn-b btn-html" onclick="dlPtHTML()">HTML</button>
+            <button class="btn-b btn-json" onclick="openEdit()">Edit</button>
+            <button class="btn-del" onclick="delPatient()">Delete</button>
           </div>
         </div>
         <div class="m-body">
@@ -176,17 +173,17 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
           <div class="compare-wrap">
             <div class="compare-side">
               <h4>BEFORE</h4>
-              <select id="cmpV1" onchange="loadCompare()"><option value="">Select visit</option></select>
-              <div class="compare-photos" id="cmpPh1"></div>
+              <select id="cV1" onchange="loadCmp()"><option value="">Select visit</option></select>
+              <div class="cmp-photos" id="cPh1"></div>
             </div>
             <div class="compare-side">
               <h4>AFTER</h4>
-              <select id="cmpV2" onchange="loadCompare()"><option value="">Select visit</option></select>
-              <div class="compare-photos" id="cmpPh2"></div>
+              <select id="cV2" onchange="loadCmp()"><option value="">Select visit</option></select>
+              <div class="cmp-photos" id="cPh2"></div>
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-            <button class="btn-b btn-pdf" onclick="generatePDF()">Generate PDF Report</button>
+            <button class="btn-b btn-pdf" onclick="genPDF()">Generate PDF Report</button>
           </div>
 
           <div class="sec">VISITS</div>
@@ -194,26 +191,11 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
           <div id="vDetail" style="display:none">
             <div class="sec">VISIT INFO</div>
             <div class="info-box" id="vInfo"></div>
-            <div id="notesWrap" style="display:none">
-              <div class="sec">NOTES</div>
-              <div class="notes-box" id="vNotes"></div>
-            </div>
-            <div id="phWrap" style="display:none">
-              <div class="sec">PHOTOS</div>
-              <div class="ph-grid" id="phGrid"></div>
-            </div>
-            <div id="kartWrap" style="display:none">
-              <div class="sec">TREATMENT CARD</div>
-              <div class="doc-grid" id="kartGrid"></div>
-            </div>
-            <div id="onamWrap" style="display:none">
-              <div class="sec">PATIENT CONSENT</div>
-              <div class="doc-grid" id="onamGrid"></div>
-            </div>
-            <div id="barkodWrap" style="display:none">
-              <div class="sec">PRODUCT BARCODE</div>
-              <div class="doc-grid" id="barkodGrid"></div>
-            </div>
+            <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="notes-box" id="vNotes"></div></div>
+            <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="ph-grid" id="phGrid"></div></div>
+            <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="doc-grid" id="kGrid"></div></div>
+            <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="doc-grid" id="oGrid"></div></div>
+            <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="doc-grid" id="bGrid"></div></div>
           </div>
         </div>
       </div>
@@ -221,18 +203,18 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
   </div>
 </div>
 
-<div class="modal" id="patientModal">
+<div class="modal" id="pModal">
   <div class="modal-box">
-    <h3 id="modalTitle">Add Patient</h3>
-    <input class="modal-inp" type="text" id="mName" placeholder="First Name"/>
-    <input class="modal-inp" type="text" id="mSurname" placeholder="Last Name"/>
-    <input class="modal-inp" type="date" id="mBirth"/>
-    <input class="modal-inp" type="tel" id="mPhone" placeholder="Phone"/>
-    <input class="modal-inp" type="text" id="mCity" placeholder="City"/>
-    <textarea class="modal-inp" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
+    <h3 id="mTitle">Add Patient</h3>
+    <input class="mi" type="text" id="mName" placeholder="First Name"/>
+    <input class="mi" type="text" id="mSur" placeholder="Last Name"/>
+    <input class="mi" type="date" id="mDob"/>
+    <input class="mi" type="tel" id="mPhone" placeholder="Phone"/>
+    <input class="mi" type="text" id="mCity" placeholder="City"/>
+    <textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="savePatient()">Save</button>
+      <button class="btn-save" onclick="savePt()">Save</button>
     </div>
   </div>
 </div>
@@ -241,94 +223,88 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; backg
   <button class="lb-x" onclick="closeLb()">x</button>
   <img id="lbImg" src="" alt=""/>
 </div>
-<div class="progress" id="progress">Preparing...</div>
+<div class="prog" id="prog">Preparing...</div>
 
 <script>
-var SB_URL = 'https://hugxacklprzujswtaike.supabase.co';
-var SB_KEY = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
-var db = supabase.createClient(SB_URL, SB_KEY);
-var AL = ['Front','Left 45','Left Profile','Right 45','Right Profile'];
-var cid = null, patients = [], selPid = null, selVid = null, visits = [], selPatientObj = null, editingPid = null;
-var cmpPhotos1 = {}, cmpPhotos2 = {}, cmpVisit1 = null, cmpVisit2 = null, clinicData = null;
+var SU='https://hugxacklprzujswtaike.supabase.co';
+var SK='sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+var db=supabase.createClient(SU,SK);
+var AL=['Front','Left 45','Left Profile','Right 45','Right Profile'];
+var cid=null,pts=[],selPid=null,selVid=null,vis=[],selPt=null,editPid=null,clinic={};
+var cPh1={},cPh2={},cVis1=null,cVis2=null;
 
-window.onload = async function() {
-  var res = await db.auth.getSession();
-  if (res.data.session) await showApp(res.data.session.user);
+window.onload=async function(){
+  var r=await db.auth.getSession();
+  if(r.data.session) await showApp(r.data.session.user);
 };
 
-async function doLogin() {
-  var email = document.getElementById('iEmail').value.trim();
-  var pass = document.getElementById('iPass').value;
-  var btn = document.getElementById('btnLogin');
-  var err = document.getElementById('loginErr');
-  if (!email || !pass) { err.style.display='block'; err.textContent='Please fill all fields'; return; }
-  btn.disabled = true; btn.textContent = 'Signing in...'; err.style.display = 'none';
-  var res = await db.auth.signInWithPassword({ email: email, password: pass });
-  if (res.error) {
-    err.style.display='block'; err.textContent='Invalid email or password';
-    btn.disabled=false; btn.textContent='Sign In';
-  } else { await showApp(res.data.user); }
+async function doLogin(){
+  var em=document.getElementById('iEmail').value.trim();
+  var pw=document.getElementById('iPass').value;
+  var btn=document.getElementById('btnLogin');
+  var err=document.getElementById('loginErr');
+  if(!em||!pw){err.style.display='block';err.textContent='Please fill all fields';return;}
+  btn.disabled=true;btn.textContent='Signing in...';err.style.display='none';
+  var r=await db.auth.signInWithPassword({email:em,password:pw});
+  if(r.error){err.style.display='block';err.textContent='Invalid email or password';btn.disabled=false;btn.textContent='Sign In';}
+  else await showApp(r.data.user);
 }
 
-async function doLogout() {
-  await db.auth.signOut();
-  cid=null; patients=[];
+async function doLogout(){
+  await db.auth.signOut();cid=null;pts=[];
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('app').classList.remove('on');
 }
 
-async function showApp(user) {
+async function showApp(user){
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('app').classList.add('on');
-  var res = await db.from('users').select('clinic_id').eq('auth_id', user.id).single();
-  if (!res.data) { alert('User not found'); return; }
-  cid = res.data.clinic_id;
-  var cr = await db.from('clinic').select('*').eq('id', cid).single();
-  clinicData = cr.data || {};
-  await loadPatients();
-  await loadStats();
+  var ur=await db.from('users').select('clinic_id').eq('auth_id',user.id).single();
+  if(!ur.data){alert('User not found');return;}
+  cid=ur.data.clinic_id;
+  var cr=await db.from('clinic').select('*').eq('id',cid).single();
+  clinic=cr.data||{};
+  await loadPts();await loadStats();
 }
 
-async function loadStats() {
-  var pc = await db.from('patients').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var vc = await db.from('visits').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var phc = await db.from('photos').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var dc = await db.from('documents').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  document.getElementById('statP').textContent = pc.count||0;
-  document.getElementById('statV').textContent = vc.count||0;
-  document.getElementById('statPh').textContent = phc.count||0;
-  document.getElementById('statD').textContent = dc.count||0;
+async function loadStats(){
+  var pc=await db.from('patients').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var vc=await db.from('visits').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var ph=await db.from('photos').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var dc=await db.from('documents').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  document.getElementById('stP').textContent=pc.count||0;
+  document.getElementById('stV').textContent=vc.count||0;
+  document.getElementById('stPh').textContent=ph.count||0;
+  document.getElementById('stD').textContent=dc.count||0;
 }
 
-async function loadPatients() {
-  var res = await db.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});
-  patients = res.data||[];
-  renderP(patients);
+async function loadPts(){
+  var r=await db.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});
+  pts=r.data||[];renderP(pts);
 }
 
-function renderP(list) {
-  var el = document.getElementById('pList');
-  if (!list.length) { el.innerHTML='<div class="loader">No patients</div>'; return; }
-  var html='';
-  for (var i=0;i<list.length;i++) {
+function renderP(list){
+  var el=document.getElementById('pList');
+  if(!list.length){el.innerHTML='<div class="loader">No patients</div>';return;}
+  var h='';
+  for(var i=0;i<list.length;i++){
     var p=list[i];
-    var cls=p.id===selPid?'on':'';
-    html+='<div class="p-item '+cls+'" onclick="selP(\''+p.id+'\')">';
-    html+='<div class="p-name">'+p.name+' '+(p.surname||'')+'</div>';
-    html+='<div class="p-meta">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
+    h+='<div class="p-item '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
+    h+='<div class="p-name">'+p.name+' '+(p.surname||'')+'</div>';
+    h+='<div class="p-meta">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
   }
-  el.innerHTML=html;
+  el.innerHTML=h;
 }
 
-function filterP() {
-  var q=document.getElementById('search').value.toLowerCase();
-  renderP(patients.filter(function(p){return(p.name+' '+(p.surname||'')).toLowerCase().includes(q);}));
+function filterP(){
+  var q=document.getElementById('srch').value.toLowerCase();
+  renderP(pts.filter(function(p){return(p.name+' '+(p.surname||'')).toLowerCase().includes(q);}));
 }
 
-async function selP(id) {
-  selPid=id; selVid=null; filterP();
-  selPatientObj=patients.find(function(x){return x.id===id;});
-  var p=selPatientObj;
+async function selP(id){
+  selPid=id;selVid=null;filterP();
+  selPt=pts.find(function(x){return x.id===id;});
+  var p=selPt;
   document.getElementById('emptyMsg').style.display='none';
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
@@ -336,274 +312,242 @@ async function selP(id) {
   document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
   var ih='';
   ih+='<div class="i-row"><span class="i-lbl">Name</span><span class="i-val">'+p.name+' '+(p.surname||'')+'</span></div>';
-  ih+='<div class="i-row"><span class="i-lbl">Date of Birth</span><span class="i-val">'+(p.birth_date||'-')+'</span></div>';
+  ih+='<div class="i-row"><span class="i-lbl">DOB</span><span class="i-val">'+(p.birth_date||'-')+'</span></div>';
   ih+='<div class="i-row"><span class="i-lbl">Phone</span><span class="i-val">'+(p.phone||'-')+'</span></div>';
   ih+='<div class="i-row"><span class="i-lbl">City</span><span class="i-val">'+(p.city||'-')+'</span></div>';
-  if(p.notes) ih+='<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">'+p.notes+'</span></div>';
+  if(p.notes)ih+='<div class="i-row"><span class="i-lbl">Notes</span><span class="i-val">'+p.notes+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).order('created_at',{ascending:false});
-  visits=vr.data||[];
-  renderV();
-  fillCompare();
+  vis=vr.data||[];renderV();fillCmp();
 }
 
-function fillCompare() {
+function fillCmp(){
   var opts='<option value="">Select visit</option>';
-  for(var i=0;i<visits.length;i++){
-    var v=visits[i];
+  for(var i=0;i<vis.length;i++){
+    var v=vis[i];
     opts+='<option value="'+v.id+'">'+(v.visit_date||'').split('T')[0]+' - '+(v.region||'')+'</option>';
   }
-  document.getElementById('cmpV1').innerHTML=opts;
-  document.getElementById('cmpV2').innerHTML=opts;
-  document.getElementById('cmpPh1').innerHTML='';
-  document.getElementById('cmpPh2').innerHTML='';
-  cmpPhotos1={}; cmpPhotos2={}; cmpVisit1=null; cmpVisit2=null;
-  if(visits.length>=2){
-    document.getElementById('cmpV1').value=visits[visits.length-1].id;
-    document.getElementById('cmpV2').value=visits[0].id;
-    loadCompare();
+  document.getElementById('cV1').innerHTML=opts;
+  document.getElementById('cV2').innerHTML=opts;
+  document.getElementById('cPh1').innerHTML='';
+  document.getElementById('cPh2').innerHTML='';
+  cPh1={};cPh2={};cVis1=null;cVis2=null;
+  if(vis.length>=2){
+    document.getElementById('cV1').value=vis[vis.length-1].id;
+    document.getElementById('cV2').value=vis[0].id;
+    loadCmp();
   }
 }
 
-async function loadCompare() {
-  var v1id=document.getElementById('cmpV1').value;
-  var v2id=document.getElementById('cmpV2').value;
-  cmpVisit1=v1id?visits.find(function(x){return x.id===v1id;}):null;
-  cmpVisit2=v2id?visits.find(function(x){return x.id===v2id;}):null;
-  cmpPhotos1={}; cmpPhotos2={};
-
-  if(v1id){
-    var r=await db.from('photos').select('*').eq('visit_id',v1id).order('angle_index');
-    (r.data||[]).forEach(function(ph){cmpPhotos1[ph.angle_index]=ph.file_path;});
-    var html='';
+async function loadCmp(){
+  var v1=document.getElementById('cV1').value;
+  var v2=document.getElementById('cV2').value;
+  cVis1=v1?vis.find(function(x){return x.id===v1;}):null;
+  cVis2=v2?vis.find(function(x){return x.id===v2;}):null;
+  cPh1={};cPh2={};
+  if(v1){
+    var r=await db.from('photos').select('*').eq('visit_id',v1).order('angle_index');
+    var h='';
     (r.data||[]).forEach(function(p){
-      html+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
-      html+='<div class="ang-lbl">'+(AL[p.angle_index]||'')+'</div></div>';
+      cPh1[p.angle_index]=p.file_path;
+      h+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
-    document.getElementById('cmpPh1').innerHTML=html||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+    document.getElementById('cPh1').innerHTML=h||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
-
-  if(v2id){
-    var r2=await db.from('photos').select('*').eq('visit_id',v2id).order('angle_index');
-    (r2.data||[]).forEach(function(ph){cmpPhotos2[ph.angle_index]=ph.file_path;});
-    var html2='';
+  if(v2){
+    var r2=await db.from('photos').select('*').eq('visit_id',v2).order('angle_index');
+    var h2='';
     (r2.data||[]).forEach(function(p){
-      html2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
-      html2+='<div class="ang-lbl">'+(AL[p.angle_index]||'')+'</div></div>';
+      cPh2[p.angle_index]=p.file_path;
+      h2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
-    document.getElementById('cmpPh2').innerHTML=html2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+    document.getElementById('cPh2').innerHTML=h2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
 }
 
-function renderV() {
+function renderV(){
   var el=document.getElementById('vList');
-  if(!visits.length){el.innerHTML='<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>';return;}
-  var html='';
-  for(var i=0;i<visits.length;i++){
-    var v=visits[i];
-    var cls=v.id===selVid?'on':'';
-    html+='<div class="v-card '+cls+'" onclick="selV(\''+v.id+'\')">';
-    html+='<div class="v-type">'+(v.visit_type||'Visit')+'</div>';
-    html+='<div class="v-region">'+(v.region||'')+'</div>';
-    html+='<div class="v-date">'+(v.visit_date||'').split('T')[0]+'</div></div>';
+  if(!vis.length){el.innerHTML='<div style="color:rgba(245,241,235,0.3);font-size:13px">No visits</div>';return;}
+  var h='';
+  for(var i=0;i<vis.length;i++){
+    var v=vis[i];
+    h+='<div class="v-card '+(v.id===selVid?'on':'')+'" onclick="selV(\''+v.id+'\')">';
+    h+='<div class="v-type">'+(v.visit_type||'Visit')+'</div>';
+    h+='<div class="v-region">'+(v.region||'')+'</div>';
+    h+='<div class="v-date">'+(v.visit_date||'').split('T')[0]+'</div></div>';
   }
-  el.innerHTML=html;
+  el.innerHTML=h;
 }
 
-async function selV(id) {
-  selVid=id; renderV();
-  var v=visits.find(function(x){return x.id===id;});
+async function selV(id){
+  selVid=id;renderV();
+  var v=vis.find(function(x){return x.id===id;});
   document.getElementById('vDetail').style.display='block';
   var vi='';
   vi+='<div class="i-row"><span class="i-lbl">Type</span><span class="i-val">'+(v.visit_type||'-')+'</span></div>';
   vi+='<div class="i-row"><span class="i-lbl">Region</span><span class="i-val">'+(v.region||'-')+'</span></div>';
   vi+='<div class="i-row"><span class="i-lbl">Date</span><span class="i-val">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
   document.getElementById('vInfo').innerHTML=vi;
-  if(v.notes){document.getElementById('notesWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
-  else{document.getElementById('notesWrap').style.display='none';}
-  var phr=await db.from('photos').select('*').eq('visit_id',id).order('angle_index');
-  if(phr.data&&phr.data.length){
+  if(v.notes){document.getElementById('nWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
+  else document.getElementById('nWrap').style.display='none';
+  var pr=await db.from('photos').select('*').eq('visit_id',id).order('angle_index');
+  if(pr.data&&pr.data.length){
     document.getElementById('phWrap').style.display='block';
     var ph='';
-    phr.data.forEach(function(p){
-      ph+='<div class="ph-card"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
-      ph+='<div class="ph-lbl">'+(AL[p.angle_index]||'Photo')+'</div></div>';
+    pr.data.forEach(function(p){
+      ph+='<div class="ph-card"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/><div class="ph-lbl">'+(AL[p.angle_index]||'Photo')+'</div></div>';
     });
     document.getElementById('phGrid').innerHTML=ph;
-  } else{document.getElementById('phWrap').style.display='none';}
+  } else document.getElementById('phWrap').style.display='none';
   var dr=await db.from('documents').select('*').eq('visit_id',id);
-  showDocs('kartWrap','kartGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
-  showDocs('onamWrap','onamGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
-  showDocs('barkodWrap','barkodGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
+  sDocs('kWrap','kGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
+  sDocs('oWrap','oGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
+  sDocs('bWrap','bGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
 }
 
-function showDocs(wid,gid,docs){
+function sDocs(wid,gid,docs){
   if(!docs.length){document.getElementById(wid).style.display='none';return;}
   document.getElementById(wid).style.display='block';
-  var html='';
-  docs.forEach(function(d){html+='<div class="doc-card"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
-  document.getElementById(gid).innerHTML=html;
+  var h='';docs.forEach(function(d){h+='<div class="doc-card"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
+  document.getElementById(gid).innerHTML=h;
 }
 
-function openAddPatient(){editingPid=null;document.getElementById('modalTitle').textContent='Add Patient';document.getElementById('mName').value='';document.getElementById('mSurname').value='';document.getElementById('mBirth').value='';document.getElementById('mPhone').value='';document.getElementById('mCity').value='';document.getElementById('mNotes').value='';document.getElementById('patientModal').classList.add('on');}
-function openEditPatient(){if(!selPatientObj)return;editingPid=selPatientObj.id;document.getElementById('modalTitle').textContent='Edit Patient';document.getElementById('mName').value=selPatientObj.name||'';document.getElementById('mSurname').value=selPatientObj.surname||'';document.getElementById('mBirth').value=(selPatientObj.birth_date||'').split('T')[0];document.getElementById('mPhone').value=selPatientObj.phone||'';document.getElementById('mCity').value=selPatientObj.city||'';document.getElementById('mNotes').value=selPatientObj.notes||'';document.getElementById('patientModal').classList.add('on');}
-function closeModal(){document.getElementById('patientModal').classList.remove('on');}
+function openAdd(){editPid=null;document.getElementById('mTitle').textContent='Add Patient';document.getElementById('mName').value='';document.getElementById('mSur').value='';document.getElementById('mDob').value='';document.getElementById('mPhone').value='';document.getElementById('mCity').value='';document.getElementById('mNotes').value='';document.getElementById('pModal').classList.add('on');}
+function openEdit(){if(!selPt)return;editPid=selPt.id;document.getElementById('mTitle').textContent='Edit Patient';document.getElementById('mName').value=selPt.name||'';document.getElementById('mSur').value=selPt.surname||'';document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];document.getElementById('mPhone').value=selPt.phone||'';document.getElementById('mCity').value=selPt.city||'';document.getElementById('mNotes').value=selPt.notes||'';document.getElementById('pModal').classList.add('on');}
+function closeModal(){document.getElementById('pModal').classList.remove('on');}
 
-async function savePatient(){
+async function savePt(){
   var name=document.getElementById('mName').value.trim();
   if(!name){alert('Name is required');return;}
-  var data={name:name,surname:document.getElementById('mSurname').value||null,birth_date:document.getElementById('mBirth').value||null,phone:document.getElementById('mPhone').value||null,city:document.getElementById('mCity').value||null,notes:document.getElementById('mNotes').value||null,clinic_id:cid};
-  if(editingPid){await db.from('patients').update(data).eq('id',editingPid);}
-  else{await db.from('patients').insert(data);}
-  closeModal();await loadPatients();await loadStats();
-  if(editingPid&&selPid===editingPid)await selP(selPid);
+  var data={name:name,surname:document.getElementById('mSur').value||null,birth_date:document.getElementById('mDob').value||null,phone:document.getElementById('mPhone').value||null,city:document.getElementById('mCity').value||null,notes:document.getElementById('mNotes').value||null,clinic_id:cid};
+  if(editPid) await db.from('patients').update(data).eq('id',editPid);
+  else await db.from('patients').insert(data);
+  closeModal();await loadPts();await loadStats();
+  if(editPid&&selPid===editPid)await selP(selPid);
 }
 
-async function deletePatient(){
-  if(!selPatientObj)return;
-  if(!confirm('Delete '+selPatientObj.name+'? This cannot be undone.'))return;
+async function delPatient(){
+  if(!selPt)return;
+  if(!confirm('Delete '+selPt.name+'? This cannot be undone.'))return;
   await db.from('patients').delete().eq('id',selPid);
-  selPid=null;selPatientObj=null;
+  selPid=null;selPt=null;
   document.getElementById('pDetail').style.display='none';
   document.getElementById('emptyMsg').style.display='flex';
-  await loadPatients();await loadStats();
+  await loadPts();await loadStats();
 }
 
 function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('on');}
 function closeLb(){document.getElementById('lb').classList.remove('on');}
-function showProg(msg){var el=document.getElementById('progress');el.textContent=msg;el.style.display='block';}
-function hideProg(){document.getElementById('progress').style.display='none';}
+function sp(msg){var el=document.getElementById('prog');el.textContent=msg;el.style.display='block';}
+function hp(){document.getElementById('prog').style.display='none';}
 
-// PDF GENERATION
-async function generatePDF() {
-  if(!selPatientObj){alert('Please select a patient');return;}
-  var v1id=document.getElementById('cmpV1').value;
-  var v2id=document.getElementById('cmpV2').value;
-  if(!v1id&&!v2id){alert('Please select at least one visit');return;}
-  showProg('Loading images...');
+// PDF
+function imgToB64(url){
+  return new Promise(function(resolve){
+    var img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=function(){
+      var c=document.createElement('canvas');
+      c.width=img.width;c.height=img.height;
+      var ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0);
+      resolve(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=function(){resolve(null);};
+    img.src=url+'?t='+Date.now();
+  });
+}
 
-  var p=selPatientObj;
-  var patientName=p.name+' '+(p.surname||'');
-  var clinic=clinicData||{};
+async function genPDF(){
+  if(!selPt){alert('Please select a patient');return;}
+  var v1=document.getElementById('cV1').value;
+  var v2=document.getElementById('cV2').value;
+  if(!v1&&!v2){alert('Please select at least one visit');return;}
+  sp('Loading images...');
 
-  async function toBase64(url){
-    try{
-      var r=await fetch(url);
-      var blob=await r.blob();
-      return new Promise(function(resolve){
-        var reader=new FileReader();
-        reader.onloadend=function(){resolve(reader.result);};
-        reader.readAsDataURL(blob);
-      });
-    }catch(e){return null;}
+  var pName=selPt.name+' '+(selPt.surname||'');
+  var imgC={};
+  var allU=Object.assign({},cPh1,cPh2);
+  var n=0;
+  for(var k in allU){
+    if(allU[k]){sp('Loading image '+(++n)+'...');imgC[allU[k]]=await imgToB64(allU[k]);}
   }
 
-  var imgCache={};
-  var allPhotos=Object.assign({},cmpPhotos1,cmpPhotos2);
-  var idx=0;
-  for(var k in allPhotos){
-    showProg('Loading images '+(++idx)+'...');
-    if(allPhotos[k])imgCache[allPhotos[k]]=await toBase64(allPhotos[k]);
-  }
-
-  var logoB64=null;
-  if(clinic.logo_url){showProg('Loading logo...');logoB64=await toBase64(clinic.logo_url);}
+  var logoB=null;
+  if(clinic.logo_url){sp('Loading logo...');logoB=await imgToB64(clinic.logo_url);}
 
   var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
-  var PW=595,PH=842,M=24,UW=PW-M*2;
-  var HDR=100,FTR=30,COLG=8,ROWG=8,LBLH=18;
+  var PW=595,PH=842,M=28,UW=PW-M*2;
+  var HDR=104,FTR=32,CG=8,RG=10,LH=18;
 
-  function Header(d){
+  function dHdr(d){
     var y=M;
-    d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);
-    if(clinic.name)d.text(clinic.name,M,y+16);
-    d.setFontSize(10);d.setFont('helvetica','normal');
-    if(clinic.doctor)d.text(clinic.doctor,M,y+30);
-    d.setFontSize(9);d.setTextColor(180,0,0);
-    if(clinic.speciality)d.text(clinic.speciality,M,y+44);
-    if(logoB64){try{d.addImage(logoB64,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
-    d.setDrawColor(200,200,200);d.line(M,y+52,PW-M,y+52);
-    d.setFontSize(7);d.setTextColor(150,150,150);d.setFont('helvetica','bold');
-    d.text('PATIENT',M,y+64);
-    d.setFontSize(11);d.setTextColor(40,40,40);d.setFont('helvetica','bold');
-    d.text(patientName,M,y+76);
+    if(clinic.name){d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);d.text(clinic.name,M,y+16);}
+    if(clinic.doctor){d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);d.text(clinic.doctor,M,y+30);}
+    if(clinic.speciality){d.setFontSize(9);d.setTextColor(180,0,0);d.text(clinic.speciality,M,y+44);}
+    if(logoB){try{d.addImage(logoB,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
+    d.setDrawColor(200,200,200);d.line(M,y+54,PW-M,y+54);
+    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);d.text('PATIENT',M,y+66);
+    d.setFontSize(11);d.setFont('helvetica','bold');d.setTextColor(30,30,30);d.text(pName,M,y+78);
+    var p=selPt;
+    if(p.birth_date){d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);}
+    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);d.text('VISIT',PW/2,y+66);
     d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
-    if(p.birth_date)d.text('DOB: '+p.birth_date.split('T')[0],M,y+88);
-    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
-    d.text('VISIT',PW/2,y+64);
-    d.setFontSize(8);d.setFont('helvetica','normal');
-    if(cmpVisit1)d.text('Before: '+(cmpVisit1.visit_date||'').split('T')[0]+' - '+(cmpVisit1.region||''),PW/2,y+76);
-    if(cmpVisit2)d.text('After: '+(cmpVisit2.visit_date||'').split('T')[0]+' - '+(cmpVisit2.region||''),PW/2,y+88);
-    d.setDrawColor(200,200,200);d.line(M,y+96,PW-M,y+96);
+    if(cVis1)d.text('Before: '+(cVis1.visit_date||'').split('T')[0]+' - '+(cVis1.region||''),PW/2,y+78);
+    if(cVis2)d.text('After: '+(cVis2.visit_date||'').split('T')[0]+' - '+(cVis2.region||''),PW/2,y+90);
+    d.setDrawColor(200,200,200);d.line(M,y+98,PW-M,y+98);
   }
 
-  function drawFooter(d){
+  function dFtr(d){
     var y=PH-M-FTR;
     d.setDrawColor(200,200,200);d.line(M,y,PW-M,y);
-    d.setFontSize(7);d.setTextColor(200,0,0);d.setFont('helvetica','normal');
-    if(clinic.phone) d.text(clinic.phone, M, y+14);
-    if(clinic.address) d.text(clinic.address, PW/2, y+14, {align:'center'});
-    if(clinic.instagram) d.text(clinic.instagram, PW-M, y+14, {align:'right'});
+    d.setFontSize(7);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
+    if(clinic.phone)d.text(clinic.phone,M,y+16);
+    if(clinic.address)d.text(clinic.address,PW/2,y+16,{align:'center'});
+    if(clinic.instagram)d.text(clinic.instagram,PW-M,y+16,{align:'right'});
   }
-  function drawPage(d,indices,labels){
-    var n=indices.length;
-    var totalGaps=n>1?(n-1)*(ROWG+LBLH):LBLH;
-    var availH=PH-M*2-HDR-FTR-totalGaps-16;
-    var photoH=availH/n;
-    var photoW=Math.min(photoH*3/4,(UW-COLG)/2);
-    photoH=photoW*4/3;
-    var startX=M+(UW-photoW*2-COLG)/2;
-    var startY=M+HDR+4;
 
-    drawHeader(d);
-    drawFooter(d);
-
-    for(var i=0;i<n;i++){
-      var ai=indices[i];
-      var url1=cmpPhotos1[ai];
-      var url2=cmpPhotos2[ai];
-      var y=startY+i*(photoH+ROWG+LBLH);
-
-      // Before foto
-      if(url1&&imgCache[url1]){try{d.addImage(imgCache[url1],'JPEG',startX,y,photoW,photoH,'','FAST');}catch(e){d.setFillColor(230,230,230);d.rect(startX,y,photoW,photoH,'F');}}
-      else{d.setFillColor(230,230,230);d.rect(startX,y,photoW,photoH,'F');}
-
-      // After foto
-      if(url2&&imgCache[url2]){try{d.addImage(imgCache[url2],'JPEG',startX+photoW+COLG,y,photoW,photoH,'','FAST');}catch(e){d.setFillColor(230,230,230);d.rect(startX+photoW+COLG,y,photoW,photoH,'F');}}
-      else{d.setFillColor(230,230,230);d.rect(startX+photoW+COLG,y,photoW,photoH,'F');}
-
-      // Etiketler
-      var ly=y+photoH+12;
+  function dPage(d,idxs,lbls){
+    var n2=idxs.length;
+    var gaps=n2>1?(n2-1)*(RG+LH):LH;
+    var availH=PH-M*2-HDR-FTR-gaps-8;
+    var pH=availH/n2;
+    var pW=Math.min(pH*3/4,(UW-CG)/2);
+    pH=pW*4/3;
+    var sx=M+(UW-pW*2-CG)/2;
+    var sy=M+HDR+6;
+    dHdr(d);dFtr(d);
+    for(var i=0;i<n2;i++){
+      var ai=idxs[i];
+      var u1=cPh1[ai];var u2=cPh2[ai];
+      var iy=sy+i*(pH+RG+LH);
+      if(u1&&imgC[u1]){try{d.addImage(imgC[u1],'JPEG',sx,iy,pW,pH,'','FAST');}catch(e){d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}}
+      else{d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}
+      if(u2&&imgC[u2]){try{d.addImage(imgC[u2],'JPEG',sx+pW+CG,iy,pW,pH,'','FAST');}catch(e){d.setFillColor(220,220,220);d.rect(sx+pW+CG,iy,pW,pH,'F');}}
+      else{d.setFillColor(220,220,220);d.rect(sx+pW+CG,iy,pW,pH,'F');}
+      var ly=iy+pH+12;
       d.setFontSize(8);d.setFont('helvetica','bold');
-      d.setTextColor(120,120,120);d.text('Before',startX,ly);
-      d.setTextColor(40,40,40);d.text(labels[i],startX+photoW+COLG/2,ly,{align:'center'});
-      d.setTextColor(120,120,120);d.text('After',startX+photoW*2+COLG,ly,{align:'right'});
+      d.setTextColor(120,120,120);d.text('Before',sx,ly);
+      d.setTextColor(40,40,40);d.text(lbls[i],sx+pW+CG/2,ly,{align:'center'});
+      d.setTextColor(120,120,120);d.text('After',sx+pW*2+CG,ly,{align:'right'});
     }
   }
 
-  showProg('Generating PDF page 1...');
-  drawPage(doc,[0],['Front']);
+  sp('Generating page 1...');dPage(doc,[0],['Front']);
+  sp('Generating page 2...');doc.addPage();dPage(doc,[1,3],['Left 45','Right 45']);
+  sp('Generating page 3...');doc.addPage();dPage(doc,[2,4],['Left Profile','Right Profile']);
 
-  showProg('Generating PDF page 2...');
-  doc.addPage();
-  drawPage(doc,[1,3],['Left 45','Right 45']);
-
-  showProg('Generating PDF page 3...');
-  doc.addPage();
-  drawPage(doc,[2,4],['Left Profile','Right Profile']);
-
-  var fname=patientName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
-  doc.save(fname);
-  hideProg();
+  var fn=pName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
+  doc.save(fn);hp();
 }
 
+// Export functions
 async function fetchAll(){
-  var res=await db.from('patients').select('*').eq('clinic_id',cid);
+  var r=await db.from('patients').select('*').eq('clinic_id',cid);
   var all=[];
-  for(var i=0;i<(res.data||[]).length;i++){
-    var p=res.data[i];
-    var vr=await db.from('visits').select('*').eq('patient_id',p.id);
+  for(var i=0;i<(r.data||[]).length;i++){
+    var p=r.data[i];var vr=await db.from('visits').select('*').eq('patient_id',p.id);
     var vd=[];
     for(var j=0;j<(vr.data||[]).length;j++){
       var v=vr.data[j];
@@ -616,8 +560,8 @@ async function fetchAll(){
   return all;
 }
 
-async function fetchPatient(pid){
-  var p=patients.find(function(x){return x.id===pid;});
+async function fetchPt(pid){
+  var p=pts.find(function(x){return x.id===pid;});
   var vr=await db.from('visits').select('*').eq('patient_id',pid);
   var vd=[];
   for(var j=0;j<(vr.data||[]).length;j++){
@@ -629,48 +573,46 @@ async function fetchPatient(pid){
   return [Object.assign({},p,{visits:vd})];
 }
 
-async function makeZIP(allData,fname){
-  var zip=new JSZip();var total=0;
-  for(var i=0;i<allData.length;i++){
-    var p=allData[i];
-    var folder=zip.folder(p.name+'_'+(p.surname||''));
-    folder.file('info.json',JSON.stringify({name:p.name,surname:p.surname,birth_date:p.birth_date,phone:p.phone,city:p.city},null,2));
+async function mkZIP(all,fn){
+  var zip=new JSZip();var t=0;
+  for(var i=0;i<all.length;i++){
+    var p=all[i];var f=zip.folder(p.name+'_'+(p.surname||''));
+    f.file('info.json',JSON.stringify({name:p.name,surname:p.surname,birth_date:p.birth_date,phone:p.phone,city:p.city},null,2));
     for(var j=0;j<p.visits.length;j++){
-      var v=p.visits[j];
-      var vf=folder.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
-      for(var k=0;k<v.photos.length;k++){showProg('Downloading photos... '+(++total));try{var r=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await r.blob());}catch(e){}}
-      for(var k=0;k<v.documents.length;k++){try{var r=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await r.blob());}catch(e){}}
+      var v=p.visits[j];var vf=f.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
+      for(var k=0;k<v.photos.length;k++){sp('Downloading '+(++t)+'...');try{var rb=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await rb.blob());}catch(e){}}
+      for(var k=0;k<v.documents.length;k++){try{var rb=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await rb.blob());}catch(e){}}
     }
   }
-  showProg('Creating ZIP...');
+  sp('Creating ZIP...');
   var blob=await zip.generateAsync({type:'blob'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname+'.zip';a.click();
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn+'.zip';a.click();
 }
 
-async function makeHTML(allData,fname){
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title><style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.patient{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.info{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.visit{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.photos{display:flex;flex-wrap:wrap;gap:8px}.photos img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lbl{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style></head><body>';
-  html+='<h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
-  for(var i=0;i<allData.length;i++){
-    var p=allData[i];
-    html+='<div class="patient"><h2>'+p.name+' '+(p.surname||'')+'</h2><div class="info">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
+async function mkHTML(all,fn){
+  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title><style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.pt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.inf{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.vs{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.phs{display:flex;flex-wrap:wrap;gap:8px}.phs img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lb{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style></head><body>';
+  h+='<h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
+  for(var i=0;i<all.length;i++){
+    var p=all[i];
+    h+='<div class="pt"><h2>'+p.name+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
-      html+='<div class="visit"><h3>'+(v.visit_type||'Visit')+' — '+(v.region||'')+' — '+(v.visit_date||'').split('T')[0]+'</h3>';
-      if(v.photos.length){html+='<div class="photos">';for(var k=0;k<v.photos.length;k++)html+='<div><img src="'+v.photos[k].file_path+'"/><div class="lbl">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';html+='</div>';}
-      html+='</div>';
+      h+='<div class="vs"><h3>'+(v.visit_type||'Visit')+' - '+(v.region||'')+' - '+(v.visit_date||'').split('T')[0]+'</h3>';
+      if(v.photos.length){h+='<div class="phs">';for(var k=0;k<v.photos.length;k++)h+='<div><img src="'+v.photos[k].file_path+'"/><div class="lb">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';h+='</div>';}
+      h+='</div>';
     }
-    html+='</div>';
+    h+='</div>';
   }
-  html+='</body></html>';
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=fname+'.html';a.click();
+  h+='</body></html>';
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download=fn+'.html';a.click();
 }
 
-async function dlZIP(){showProg('Fetching data...');var all=await fetchAll();await makeZIP(all,'aafc_all_'+new Date().toISOString().split('T')[0]);hideProg();}
-async function dlHTML(){showProg('Fetching data...');var all=await fetchAll();await makeHTML(all,'aafc_report_'+new Date().toISOString().split('T')[0]);hideProg();}
-async function dlPatientZIP(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeZIP(all,'aafc_'+n);hideProg();}
-async function dlPatientHTML(){if(!selPid)return;showProg('Fetching data...');var all=await fetchPatient(selPid);var n=(selPatientObj.name+'_'+(selPatientObj.surname||'')).replace(/\s/g,'_');await makeHTML(all,'aafc_'+n+'_report');hideProg();}
-async function dlJSON(){showProg('Fetching...');var all=await fetchAll();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:all},null,2)],{type:'application/json'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';a.click();hideProg();}
-async function dlCSV(){showProg('Fetching...');var all=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo URL'];for(var i=0;i<all.length;i++){var p=all[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';a.click();hideProg();}
+async function dlZIP(){sp('Fetching...');var a=await fetchAll();await mkZIP(a,'aafc_all_'+new Date().toISOString().split('T')[0]);hp();}
+async function dlHTML(){sp('Fetching...');var a=await fetchAll();await mkHTML(a,'aafc_report_'+new Date().toISOString().split('T')[0]);hp();}
+async function dlPtZIP(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=(selPt.name+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkZIP(a,'aafc_'+n);hp();}
+async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=(selPt.name+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();}
+async function dlJSON(){sp('Fetching...');var a=await fetchAll();var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';el.click();hp();}
+async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo URL'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
 </script>
 </body>
 </html>

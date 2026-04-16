@@ -514,7 +514,7 @@ async function generatePDF() {
   var PW=595,PH=842,M=24,UW=PW-M*2;
   var HDR=100,FTR=30,COLG=8,ROWG=8,LBLH=18;
 
-  function drawHeader(d){
+  function Header(d){
     var y=M;
     d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);
     if(clinic.name)d.text(clinic.name,M,y+16);
@@ -542,10 +542,10 @@ async function generatePDF() {
     var y=PH-M-FTR;
     d.setDrawColor(200,200,200);d.line(M,y,PW-M,y);
     d.setFontSize(7);d.setTextColor(200,0,0);d.setFont('helvetica','normal');
-    var parts=[clinic.phone,clinic.address,clinic.instagram].filter(Boolean);
-    if(parts.length)d.text(parts.join('   '),M,y+14);
+    if(clinic.phone) d.text(clinic.phone, M, y+14);
+    if(clinic.address) d.text(clinic.address, PW/2, y+14, {align:'center'});
+    if(clinic.instagram) d.text(clinic.instagram, PW-M, y+14, {align:'right'});
   }
-
   function drawPage(d,indices,labels){
     var n=indices.length;
     var totalGaps=n>1?(n-1)*(ROWG+LBLH):LBLH;

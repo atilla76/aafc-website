@@ -3,51 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AAFC - Aesthetic Archive for Clinics</title>
-<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'>
+<title>AAFC — Aesthetic Archive for Clinics</title>
+<meta name="description" content="Professional photo and patient archive app for aesthetic clinics, plastic surgeons, dermatologists, and ENT specialists.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; }
-  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.1); }
-  .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 2px; }
-  .nav-links a { color: rgba(245,241,235,0.6); text-decoration: none; margin-left: 32px; font-size: 14px; transition: color 0.2s; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { text-decoration: none; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); position: sticky; top: 0; background: rgba(28,25,41,0.92); backdrop-filter: blur(12px); z-index: 100; }
+  .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 3px; }
+  .nav-links a { color: rgba(245,241,235,0.6); margin-left: 32px; font-size: 14px; transition: color 0.2s; }
   .nav-links a:hover { color: #F5F1EB; }
-  .hero { text-align: center; padding: 100px 20px 80px; }
-  .hero h1 { font-size: 52px; font-weight: 300; color: #F5F1EB; line-height: 1.2; margin-bottom: 20px; }
-  .hero h1 span { color: #B89A6A; font-weight: 600; }
-  .hero p { font-size: 18px; color: rgba(245,241,235,0.6); max-width: 560px; margin: 0 auto 40px; line-height: 1.7; }
-  .badges { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
-  .badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.2s; }
-  .badge:hover { background: rgba(184,154,106,0.2); }
-  .badge svg { width: 20px; height: 20px; }
-  .features { padding: 80px 60px; max-width: 1100px; margin: 0 auto; }
-  .features h2 { text-align: center; font-size: 32px; font-weight: 400; margin-bottom: 16px; }
-  .features .sub { text-align: center; color: rgba(245,241,235,0.5); font-size: 15px; margin-bottom: 56px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-  .card { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 16px; padding: 28px; }
-  .icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px; }
-  .icon-purple { background: rgba(108,99,168,0.2); }
-  .icon-gold { background: rgba(184,154,106,0.2); }
-  .icon-teal { background: rgba(29,158,117,0.2); }
-  .card h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
-  .card p { font-size: 14px; color: rgba(245,241,235,0.5); line-height: 1.6; }
-  .specialties { padding: 60px; background: rgba(245,241,235,0.02); border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); }
-  .specialties h2 { text-align: center; font-size: 28px; font-weight: 400; margin-bottom: 40px; }
-  .spec-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 700px; margin: 0 auto; }
-  .spec { background: rgba(245,241,235,0.06); border: 1px solid rgba(245,241,235,0.1); border-radius: 100px; padding: 10px 20px; font-size: 14px; color: rgba(245,241,235,0.7); }
-  .cta { text-align: center; padding: 80px 20px; }
-  .cta h2 { font-size: 36px; font-weight: 300; margin-bottom: 16px; }
-  .cta p { color: rgba(245,241,235,0.5); margin-bottom: 36px; font-size: 16px; }
-  footer { border-top: 1px solid rgba(245,241,235,0.08); padding: 32px 60px; display: flex; justify-content: space-between; align-items: center; }
-  footer p { font-size: 13px; color: rgba(245,241,235,0.3); }
-  footer a { font-size: 13px; color: rgba(245,241,235,0.4); text-decoration: none; }
-  footer a:hover { color: #F5F1EB; }
-  @media (max-width: 600px) {
+  .nav-links .login-btn { background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 8px 20px; border-radius: 8px; }
+  .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; max-width: 1200px; margin: 0 auto; padding: 80px 60px 100px; align-items: center; }
+  .hero-text h1 { font-size: 56px; font-weight: 300; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px; }
+  .hero-text h1 span { color: #B89A6A; font-weight: 600; }
+  .hero-text p { font-size: 18px; color: rgba(245,241,235,0.65); max-width: 480px; margin-bottom: 36px; line-height: 1.7; }
+  .badges { display: flex; gap: 14px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 12px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 14px 24px; border-radius: 12px; font-size: 15px; font-weight: 500; transition: all 0.2s; }
+  .badge:hover { background: rgba(184,154,106,0.22); transform: translateY(-1px); }
+  .badge-secondary { background: transparent; border-color: rgba(245,241,235,0.2); color: rgba(245,241,235,0.8); }
+  .hero-visual { display: flex; justify-content: center; align-items: center; position: relative; }
+  .phone-frame { width: 280px; aspect-ratio: 9/19.5; background: #0a0a14; border-radius: 38px; border: 4px solid #2a2738; padding: 8px; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,154,106,0.15); }
+  .phone-frame::before { content: ''; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px; background: #0a0a14; border-radius: 14px; z-index: 2; }
+  .phone-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 32px; display: block; }
+  .hero-glow { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(184,154,106,0.15) 0%, transparent 60%); filter: blur(40px); pointer-events: none; z-index: -1; }
+  .trust { border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); padding: 40px 20px; text-align: center; background: rgba(245,241,235,0.02); }
+  .trust p { color: rgba(245,241,235,0.4); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+  .spec-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 800px; margin: 0 auto; }
+  .spec { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 100px; padding: 10px 22px; font-size: 14px; color: rgba(245,241,235,0.75); }
+  .screenshot-section { padding: 100px 60px; max-width: 1200px; margin: 0 auto; }
+  .screenshot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 100px; }
+  .screenshot-row:last-child { margin-bottom: 0; }
+  .screenshot-row.reverse > div:first-child { order: 2; }
+  .screenshot-text .label { color: #B89A6A; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; display: block; }
+  .screenshot-text h2 { font-size: 36px; font-weight: 400; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
+  .screenshot-text p { font-size: 17px; color: rgba(245,241,235,0.65); line-height: 1.7; margin-bottom: 20px; }
+  .screenshot-text ul { list-style: none; padding: 0; }
+  .screenshot-text li { color: rgba(245,241,235,0.7); padding: 6px 0; display: flex; align-items: center; gap: 10px; font-size: 15px; }
+  .screenshot-text li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #B89A6A; }
+  .screenshot-image { display: flex; justify-content: center; }
+  .screenshot-image img { max-width: 320px; width: 100%; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .pricing { padding: 100px 60px; max-width: 700px; margin: 0 auto; text-align: center; }
+  .pricing > h2 { font-size: 40px; font-weight: 300; margin-bottom: 12px; }
+  .pricing > p { color: rgba(245,241,235,0.5); margin-bottom: 48px; font-size: 16px; }
+  .price-card { background: linear-gradient(135deg, rgba(184,154,106,0.08), rgba(184,154,106,0.02)); border: 1px solid rgba(184,154,106,0.3); border-radius: 20px; padding: 48px 40px; position: relative; text-align: left; }
+  .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #B89A6A; color: #1C1929; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .price-card h3 { font-size: 24px; font-weight: 500; margin-bottom: 6px; }
+  .price-card .tagline { color: rgba(245,241,235,0.55); font-size: 15px; margin-bottom: 28px; }
+  .price-amount { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .price-amount .amount { font-size: 48px; font-weight: 600; color: #B89A6A; }
+  .price-amount .period { color: rgba(245,241,235,0.5); font-size: 16px; }
+  .price-trial { color: rgba(245,241,235,0.7); font-size: 14px; margin-bottom: 28px; }
+  .price-features { list-style: none; padding: 0; margin: 28px 0; border-top: 1px solid rgba(245,241,235,0.08); padding-top: 28px; }
+  .price-features li { padding: 8px 0; color: rgba(245,241,235,0.85); font-size: 15px; display: flex; align-items: center; gap: 12px; }
+  .price-features li i { color: #B89A6A; font-size: 14px; width: 20px; }
+  .price-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .faq { padding: 100px 60px; max-width: 800px; margin: 0 auto; }
+  .faq h2 { text-align: center; font-size: 36px; font-weight: 400; margin-bottom: 16px; }
+  .faq > p { text-align: center; color: rgba(245,241,235,0.5); margin-bottom: 56px; }
+  .faq-item { border-bottom: 1px solid rgba(245,241,235,0.08); padding: 24px 0; }
+  .faq-item summary { cursor: pointer; font-size: 17px; font-weight: 500; list-style: none; display: flex; justify-content: space-between; align-items: center; transition: color 0.2s; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; font-size: 24px; color: #B89A6A; transition: transform 0.2s; }
+  .faq-item[open] summary::after { content: '−'; }
+  .faq-item summary:hover { color: #B89A6A; }
+  .faq-item p { margin-top: 14px; color: rgba(245,241,235,0.65); font-size: 15px; line-height: 1.7; }
+  .cta-final { text-align: center; padding: 100px 20px; background: rgba(245,241,235,0.02); border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); }
+  .cta-final h2 { font-size: 40px; font-weight: 300; margin-bottom: 16px; }
+  .cta-final p { color: rgba(245,241,235,0.55); margin-bottom: 36px; font-size: 17px; }
+  .cta-final .badges { justify-content: center; }
+  footer { padding: 48px 60px 32px; max-width: 1200px; margin: 0 auto; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .footer-brand .logo { margin-bottom: 12px; }
+  .footer-brand p { color: rgba(245,241,235,0.5); font-size: 14px; line-height: 1.6; max-width: 280px; }
+  .footer-col h4 { color: #F5F1EB; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .footer-col a { display: block; color: rgba(245,241,235,0.5); font-size: 14px; padding: 4px 0; transition: color 0.2s; }
+  .footer-col a:hover { color: #B89A6A; }
+  .footer-bottom { border-top: 1px solid rgba(245,241,235,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-bottom p { color: rgba(245,241,235,0.35); font-size: 13px; }
+  .footer-bottom .vkn { font-size: 12px; color: rgba(245,241,235,0.3); }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 60px 24px 80px; gap: 40px; text-align: center; }
+    .hero-text h1 { font-size: 40px; }
+    .hero-text p { margin-left: auto; margin-right: auto; }
+    .badges { justify-content: center; }
+    .screenshot-row, .screenshot-row.reverse > div:first-child { grid-template-columns: 1fr; gap: 40px; text-align: center; order: 0; }
+    .screenshot-row.reverse > div:first-child { order: 0; }
+    .screenshot-row .screenshot-text ul { display: inline-block; text-align: left; }
+    .screenshot-section { padding: 60px 24px; }
+    .screenshot-row { margin-bottom: 60px; }
+    .screenshot-text h2 { font-size: 28px; }
+    .pricing, .faq { padding: 60px 24px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
     nav { padding: 16px 20px; }
-    .hero h1 { font-size: 34px; }
-    .features { padding: 60px 20px; }
-    .specialties { padding: 60px 20px; }
-    footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
+    .nav-links a { margin-left: 16px; font-size: 13px; }
+    footer { padding: 40px 24px 24px; }
+  }
+  @media (max-width: 500px) {
+    .hero-text h1 { font-size: 32px; }
+    .pricing > h2, .cta-final h2 { font-size: 30px; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .nav-links a:not(.login-btn) { display: none; }
   }
 </style>
 <script>
@@ -59,108 +117,266 @@ if (window.location.search.includes('code=')) {
 <body>
 
 <nav>
-  <div class="logo">AAFC</div>
+  <a href="#" class="logo">AAFC</a>
   <div class="nav-links">
     <a href="#features">Features</a>
-    <a href="#specialties">Specialties</a>
+    <a href="#pricing">Pricing</a>
     <a href="privacy.html">Privacy</a>
-    <a href="panel.html" style="background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 20px;border-radius:8px;">Login</a>
+    <a href="panel.html" class="login-btn">Login</a>
   </div>
 </nav>
 
 <section class="hero">
-  <h1>Clinical Photo &<br><span>Patient Archive App</span></h1>
-  <p>Track your patients' progress over the years. Store photos securely and compare them with ease.</p>
-  <div class="badges">
-    <a href="https://apps.apple.com/app/id123456789" class="badge">
-      <i class='fa-brands fa-apple' style='font-size:20px'></i>
-      App Store
-    </a>
-    <a href="https://play.google.com/store/apps/details?id=com.aafc.aafc" class="badge">
-      <i class='fa-brands fa-google-play' style='font-size:20px'></i>
-      Google Play
-    </a>
+  <div class="hero-glow"></div>
+  <div class="hero-text">
+    <h1>The clinical photo<br>archive for <span>aesthetic professionals</span></h1>
+    <p>Organize patient photos, track progress over years, and generate clinic-branded PDF reports — all from your phone or tablet.</p>
+    <div class="badges">
+      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="phone-frame"><img src="images/aafc_gplay_01.png" alt="AAFC home dashboard"></div>
   </div>
 </section>
 
-<section class="features" id="features">
-  <h2>Everything you need</h2>
-  <p class="sub">All the tools to simplify clinical photo management</p>
-  <div class="grid">
-    <div class="card">
-      <div class="icon icon-purple"><i class='fa-solid fa-folder-open'></i></div>
-      <h3>Patient Archive</h3>
-      <p>Archive all your patients' photos in an organized way. Search instantly by name.</p>
-    </div>
-    <div class="card">
-      <div class="icon icon-gold"><i class='fa-solid fa-images'></i></div>
-      <h3>Before / After Collage</h3>
-      <p>Compare photos from two different visits side by side. Visualize progress and share easily.</p>
-    </div>
-    <div class="card">
-      <div class="icon icon-teal"><i class='fa-solid fa-cloud'></i></div>
-      <h3>Secure Storage</h3>
-      <p>All your photos are stored on a secure cloud server. Back up anytime you want.</p>
-    </div>
-    <div class="card">
-      <div class="icon icon-purple"><i class='fa-solid fa-file-lines'></i></div>
-      <h3>PDF Reports</h3>
-      <p>Save and share patient progress as professional PDF reports.</p>
-    </div>
-    <div class="card">
-      <div class="icon icon-gold"><i class='fa-solid fa-camera'></i></div>
-      <h3>5-Angle Photography</h3>
-      <p>Front, left/right 45°, left/right profile — capture consistent photos from standard angles.</p>
-    </div>
-    <div class="card">
-      <div class="icon icon-teal"><i class='fa-solid fa-users'></i></div>
-      <h3>Multi-User</h3>
-      <p>Access the same patient with your clinic team simultaneously. Secure sharing with role management.</p>
-    </div>
-  </div>
-</section>
-
-<section class="specialties" id="specialties">
-  <h2>Who is it for?</h2>
+<section class="trust">
+  <p>Built for</p>
   <div class="spec-grid">
-    <span class="spec">Medical Aesthetics</span>
     <span class="spec">Plastic Surgery</span>
-    <span class="spec">ENT</span>
     <span class="spec">Dermatology</span>
-    <span class="spec">Aesthetic Clinics</span>
+    <span class="spec">Aesthetic Medicine</span>
+    <span class="spec">ENT</span>
+    <span class="spec">Cosmetic Clinics</span>
   </div>
 </section>
 
-<section class="cta">
-  <h2>Get started today</h2>
-  <p>Download for free on iOS and Android</p>
+<section class="screenshot-section" id="features">
+
+  <div class="screenshot-row">
+    <div class="screenshot-text">
+      <span class="label">Patient Database</span>
+      <h2>All your patients,<br>one tap away</h2>
+      <p>Stop searching your camera roll. Every patient, every visit, organized in a single clean list with instant search.</p>
+      <ul>
+        <li>Fast search by name, surname, or phone</li>
+        <li>Birthday, contact, city in one place</li>
+        <li>Visit count and follow-up tracking</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_02.png" alt="Patient list"></div>
+  </div>
+
+  <div class="screenshot-row reverse">
+    <div class="screenshot-text">
+      <span class="label">Visit Timeline</span>
+      <h2>Track progress<br>visit by visit</h2>
+      <p>See your patient's complete journey at a glance. Initial visits, control follow-ups, and treatment history on a clean timeline.</p>
+      <ul>
+        <li>Body region tagging (face, body, scalp)</li>
+        <li>Visit vs. control follow-up distinction</li>
+        <li>Notes and treatment cards per visit</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_03.png" alt="Patient visit timeline"></div>
+  </div>
+
+  <div class="screenshot-row">
+    <div class="screenshot-text">
+      <span class="label">Before / After</span>
+      <h2>Side-by-side<br>visual comparison</h2>
+      <p>Compare any two visits across standardized angles. The five-angle workflow ensures consistency for true clinical documentation.</p>
+      <ul>
+        <li>Front, left/right 45 degrees, profile</li>
+        <li>Two-visit comparison in seconds</li>
+        <li>Branded export for consultations</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_04.png" alt="Before and after comparison"></div>
+  </div>
+
+  <div class="screenshot-row reverse">
+    <div class="screenshot-text">
+      <span class="label">Branded PDF Reports</span>
+      <h2>Print-ready reports<br>with your clinic brand</h2>
+      <p>Every export carries your clinic logo, address, doctor name, and contact details. Share via system print or messaging.</p>
+      <ul>
+        <li>Auto-formatted multi-page reports</li>
+        <li>Logo plus address on every page</li>
+        <li>Print, share, save to drive</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_05.png" alt="Branded PDF report"></div>
+  </div>
+
+  <div class="screenshot-row">
+    <div class="screenshot-text">
+      <span class="label">Clinic Configuration</span>
+      <h2>Your clinic,<br>fully configured</h2>
+      <p>Storage, users, language, and branding. Everything in one organized control panel.</p>
+      <ul>
+        <li>Cloud storage with automatic backup</li>
+        <li>Multi-language interface</li>
+        <li>Dedicated brand and contact fields</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_07.png" alt="Settings screen"></div>
+  </div>
+
+  <div class="screenshot-row reverse">
+    <div class="screenshot-text">
+      <span class="label">Your Brand</span>
+      <h2>Logo, address, contact<br>on every report</h2>
+      <p>Your clinic identity flows automatically into every PDF and shared photo: clinic name, doctor profile, specialty, contact, and social.</p>
+      <ul>
+        <li>Upload custom clinic logo</li>
+        <li>Doctor name and specialty</li>
+        <li>Phone, Instagram, web link</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_08.png" alt="Clinic brand info"></div>
+  </div>
+
+  <div class="screenshot-row">
+    <div class="screenshot-text">
+      <span class="label">Team Access</span>
+      <h2>Up to 5 team members,<br>role-based access</h2>
+      <p>Add your assistant, partner doctor, or front-desk staff. Each user has scoped permissions to keep records secure.</p>
+      <ul>
+        <li>Admin, editor, and viewer roles</li>
+        <li>Audit-friendly user activity</li>
+        <li>Shared database, separate logins</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_11.png" alt="Multi-user clinic access"></div>
+  </div>
+
+  <div class="screenshot-row reverse">
+    <div class="screenshot-text">
+      <span class="label">Web Access</span>
+      <h2>Access your data<br>from any browser</h2>
+      <p>Need to download a year of records? Open your data on any computer browser as ZIP, HTML, JSON, or CSV.</p>
+      <ul>
+        <li>Encrypted browser-side download</li>
+        <li>Multiple export formats</li>
+        <li>Patient-organized folder structure</li>
+      </ul>
+    </div>
+    <div class="screenshot-image"><img src="images/aafc_gplay_09.png" alt="Web access from browser"></div>
+  </div>
+
+</section>
+
+<section class="pricing" id="pricing">
+  <h2>Simple, transparent pricing</h2>
+  <p>One subscription. All features unlocked. Cancel anytime.</p>
+
+  <div class="price-card">
+    <span class="price-badge">14-Day Free Trial</span>
+    <h3>AAFC Premium</h3>
+    <p class="tagline">Your clinic complete aesthetic archive.</p>
+
+    <div class="price-amount">
+      <span class="amount">$49.99</span>
+      <span class="period">/ month</span>
+    </div>
+    <p class="price-trial">Try free for 14 days. Cancel anytime in your account settings.</p>
+
+    <ul class="price-features">
+      <li><i class="fa-solid fa-check"></i> Unlimited patients</li>
+      <li><i class="fa-solid fa-check"></i> Unlimited photos and visits</li>
+      <li><i class="fa-solid fa-check"></i> Before / after collages</li>
+      <li><i class="fa-solid fa-check"></i> Branded PDF reports</li>
+      <li><i class="fa-solid fa-check"></i> Secure cloud backup</li>
+      <li><i class="fa-solid fa-check"></i> Multi-user clinic access (up to 5)</li>
+      <li><i class="fa-solid fa-check"></i> Web browser data access</li>
+    </ul>
+
+    <div class="price-cta">
+      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:20px"></i>Start free trial - iOS</a>
+      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge badge-secondary"><i class="fa-brands fa-google-play" style="font-size:18px"></i>Start free trial - Android</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <h2>Frequently asked</h2>
+  <p>Everything you need to know about AAFC.</p>
+
+  <details class="faq-item">
+    <summary>Is my patient data secure?</summary>
+    <p>Yes. All photos and patient records are encrypted in transit and at rest. AAFC stores data on Supabase secure infrastructure and never shares it with third parties or advertisers. You can export your full data anytime, and request account deletion via our deletion page.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Who is AAFC for?</summary>
+    <p>AAFC is built for licensed medical professionals: plastic surgeons, dermatologists, ENT specialists, aesthetic doctors, and clinic teams. It is a documentation and archive tool; it does not provide diagnosis or treatment guidance.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does the 14-day free trial auto-renew?</summary>
+    <p>The trial converts to a paid 49.99 USD per month subscription unless you cancel before the trial ends. You can cancel anytime through your App Store or Google Play account settings.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Can I use AAFC with my team?</summary>
+    <p>Yes. The Multi-User Clinic Access feature lets you invite up to 5 team members under your clinic account, each with role-based permissions.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What devices does AAFC support?</summary>
+    <p>AAFC runs on iPhone (iOS 15+), iPad, Android phones and tablets (Android 7+), and Apple Silicon Macs. A web panel is available for data download from any browser.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Do you store photos of identifiable patients?</summary>
+    <p>You decide. AAFC is an archive tool you control. We recommend obtaining patient consent before storing identifiable medical photos, and following your local medical data regulations (KVKK, GDPR, HIPAA, etc.).</p>
+  </details>
+</section>
+
+<section class="cta-final">
+  <h2>Ready to organize your clinical archive?</h2>
+  <p>Join clinics that document with confidence. 14 days free, no card needed to start.</p>
   <div class="badges">
-    <a href="https://apps.apple.com/app/id123456789" class="badge">
-      <i class='fa-brands fa-apple' style='font-size:20px'></i>
-      App Store
-    </a>
-    <a href="https://play.google.com/store/apps/details?id=com.aafc.aafc" class="badge">
-      <i class='fa-brands fa-google-play' style='font-size:20px'></i>
-      Google Play
-    </a>
+    <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
+    <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
   </div>
 </section>
 
 <footer>
-  <p>© 2026 AAFC — Aesthetic Archive for Clinics</p>
-  <div>
-    <a href="privacy.html">Privacy Policy</a>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">AAFC</div>
+      <p>Aesthetic Archive for Clinics. Professional photo and patient archive built for medical professionals.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="panel.html">Web Panel</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="account-deletion.html">Account Deletion</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:support@aafclinic.com">support@aafclinic.com</a>
+      <a href="https://aafclinic.com">aafclinic.com</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>(c) 2026 EDECA Yazilim Ticaret ve Sanayi Limited Sirketi</p>
+    <p class="vkn">Hurriyet Mah. 210. Sk. No: 37 Akhisar/Manisa 45240 - VKN: 2050264942</p>
   </div>
 </footer>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-

@@ -2,411 +2,837 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AAFC — Aesthetic Archive for Clinics</title>
-<meta name="description" content="The all-in-one clinic management for aesthetic medicine. Patient photos, ghost-overlay capture, daily log, appointments, WhatsApp reminders, branded PDF reports.">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AAFC Clinic Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  a { text-decoration: none; }
-  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); position: sticky; top: 0; background: rgba(28,25,41,0.92); backdrop-filter: blur(12px); z-index: 100; }
-  .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 3px; }
-  .nav-links a { color: rgba(245,241,235,0.6); margin-left: 32px; font-size: 14px; transition: color 0.2s; }
-  .nav-links a:hover { color: #F5F1EB; }
-  .nav-links .login-btn { background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 8px 20px; border-radius: 8px; }
-  .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; max-width: 1200px; margin: 0 auto; padding: 80px 60px 100px; align-items: center; }
-  .hero-text h1 { font-size: 56px; font-weight: 300; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px; }
-  .hero-text h1 span { color: #B89A6A; font-weight: 600; }
-  .hero-text p { font-size: 18px; color: rgba(245,241,235,0.65); max-width: 480px; margin-bottom: 36px; line-height: 1.7; }
-  .badges { display: flex; gap: 14px; flex-wrap: wrap; }
-  .badge { display: inline-flex; align-items: center; gap: 12px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; padding: 14px 24px; border-radius: 12px; font-size: 15px; font-weight: 500; transition: all 0.2s; }
-  .badge:hover { background: rgba(184,154,106,0.22); transform: translateY(-1px); }
-  .badge-secondary { background: transparent; border-color: rgba(245,241,235,0.2); color: rgba(245,241,235,0.8); }
-  .hero-visual { display: flex; justify-content: center; align-items: center; position: relative; }
-  .phone-frame { width: 280px; aspect-ratio: 9/19.5; background: #0a0a14; border-radius: 38px; border: 4px solid #2a2738; padding: 8px; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,154,106,0.15); }
-  .phone-frame::before { content: ''; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px; background: #0a0a14; border-radius: 14px; z-index: 2; }
-  .phone-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 32px; display: block; }
-  .hero-glow { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(184,154,106,0.15) 0%, transparent 60%); filter: blur(40px); pointer-events: none; z-index: -1; }
-  .trust { border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); padding: 40px 20px; text-align: center; background: rgba(245,241,235,0.02); }
-  .trust p { color: rgba(245,241,235,0.4); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
-  .spec-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 800px; margin: 0 auto; }
-  .spec { background: rgba(245,241,235,0.04); border: 1px solid rgba(245,241,235,0.08); border-radius: 100px; padding: 10px 22px; font-size: 14px; color: rgba(245,241,235,0.75); }
-  .screenshot-section { padding: 100px 60px; max-width: 1200px; margin: 0 auto; }
-  .screenshot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 100px; }
-  .screenshot-row:last-child { margin-bottom: 0; }
-  .screenshot-row.reverse > div:first-child { order: 2; }
-  .screenshot-text .label { color: #B89A6A; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; display: block; }
-  .screenshot-text h2 { font-size: 36px; font-weight: 400; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
-  .screenshot-text p { font-size: 17px; color: rgba(245,241,235,0.65); line-height: 1.7; margin-bottom: 20px; }
-  .screenshot-text ul { list-style: none; padding: 0; }
-  .screenshot-text li { color: rgba(245,241,235,0.7); padding: 6px 0; display: flex; align-items: center; gap: 10px; font-size: 15px; }
-  .screenshot-text li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #B89A6A; }
-  .screenshot-image { display: flex; justify-content: center; }
-  .screenshot-image img { max-width: 320px; width: 100%; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-  .pricing { padding: 100px 60px; max-width: 700px; margin: 0 auto; text-align: center; }
-  .pricing > h2 { font-size: 40px; font-weight: 300; margin-bottom: 12px; }
-  .pricing > p { color: rgba(245,241,235,0.5); margin-bottom: 48px; font-size: 16px; }
-  .price-card { background: linear-gradient(135deg, rgba(184,154,106,0.08), rgba(184,154,106,0.02)); border: 1px solid rgba(184,154,106,0.3); border-radius: 20px; padding: 48px 40px; position: relative; text-align: left; }
-  .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #B89A6A; color: #1C1929; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-  .price-card h3 { font-size: 24px; font-weight: 500; margin-bottom: 6px; }
-  .price-card .tagline { color: rgba(245,241,235,0.55); font-size: 15px; margin-bottom: 28px; }
-  .price-amount { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .price-amount .amount { font-size: 48px; font-weight: 600; color: #B89A6A; }
-  .price-amount .period { color: rgba(245,241,235,0.5); font-size: 16px; }
-  .price-trial { color: rgba(245,241,235,0.7); font-size: 14px; margin-bottom: 28px; }
-  .price-features { list-style: none; padding: 0; margin: 28px 0; border-top: 1px solid rgba(245,241,235,0.08); padding-top: 28px; }
-  .price-features li { padding: 8px 0; color: rgba(245,241,235,0.85); font-size: 15px; display: flex; align-items: center; gap: 12px; }
-  .price-features li i { color: #B89A6A; font-size: 14px; width: 20px; }
-  .price-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
-  .faq { padding: 100px 60px; max-width: 800px; margin: 0 auto; }
-  .faq h2 { text-align: center; font-size: 36px; font-weight: 400; margin-bottom: 16px; }
-  .faq > p { text-align: center; color: rgba(245,241,235,0.5); margin-bottom: 56px; }
-  .faq-item { border-bottom: 1px solid rgba(245,241,235,0.08); padding: 24px 0; }
-  .faq-item summary { cursor: pointer; font-size: 17px; font-weight: 500; list-style: none; display: flex; justify-content: space-between; align-items: center; transition: color 0.2s; }
-  .faq-item summary::-webkit-details-marker { display: none; }
-  .faq-item summary::after { content: '+'; font-size: 24px; color: #B89A6A; transition: transform 0.2s; }
-  .faq-item[open] summary::after { content: '−'; }
-  .faq-item summary:hover { color: #B89A6A; }
-  .faq-item p { margin-top: 14px; color: rgba(245,241,235,0.65); font-size: 15px; line-height: 1.7; }
-  .cta-final { text-align: center; padding: 100px 20px; background: rgba(245,241,235,0.02); border-top: 1px solid rgba(245,241,235,0.06); border-bottom: 1px solid rgba(245,241,235,0.06); }
-  .cta-final h2 { font-size: 40px; font-weight: 300; margin-bottom: 16px; }
-  .cta-final p { color: rgba(245,241,235,0.55); margin-bottom: 36px; font-size: 17px; }
-  .cta-final .badges { justify-content: center; }
-  footer { padding: 48px 60px 32px; max-width: 1200px; margin: 0 auto; }
-  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-  .footer-brand .logo { margin-bottom: 12px; }
-  .footer-brand p { color: rgba(245,241,235,0.5); font-size: 14px; line-height: 1.6; max-width: 280px; }
-  .footer-col h4 { color: #F5F1EB; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-  .footer-col a { display: block; color: rgba(245,241,235,0.5); font-size: 14px; padding: 4px 0; transition: color 0.2s; }
-  .footer-col a:hover { color: #B89A6A; }
-  .footer-bottom { border-top: 1px solid rgba(245,241,235,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  .footer-bottom p { color: rgba(245,241,235,0.35); font-size: 13px; }
-  .footer-bottom .vkn { font-size: 12px; color: rgba(245,241,235,0.3); }
-  @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; padding: 60px 24px 80px; gap: 40px; text-align: center; }
-    .hero-text h1 { font-size: 40px; }
-    .hero-text p { margin-left: auto; margin-right: auto; }
-    .badges { justify-content: center; }
-    .screenshot-row, .screenshot-row.reverse > div:first-child { grid-template-columns: 1fr; gap: 40px; text-align: center; order: 0; }
-    .screenshot-row.reverse > div:first-child { order: 0; }
-    .screenshot-row .screenshot-text ul { display: inline-block; text-align: left; }
-    .screenshot-section { padding: 60px 24px; }
-    .screenshot-row { margin-bottom: 60px; }
-    .screenshot-text h2 { font-size: 28px; }
-    .pricing, .faq { padding: 60px 24px; }
-    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
-    nav { padding: 16px 20px; }
-    .nav-links a { margin-left: 16px; font-size: 13px; }
-    footer { padding: 40px 24px 24px; }
-  }
-  @media (max-width: 500px) {
-    .hero-text h1 { font-size: 32px; }
-    .pricing > h2, .cta-final h2 { font-size: 30px; }
-    .footer-grid { grid-template-columns: 1fr; }
-    .nav-links a:not(.login-btn) { display: none; }
-  }
-</style>
-<script>
-if (window.location.search.includes('code=')) {
-  window.location.href = '/reset-password.html' + window.location.search + window.location.hash;
+:root{
+  --ink:#0a0a0f;--ink2:#13131a;--ink3:#1a1a24;--cream:#f5f1eb;--dim:rgba(245,241,235,0.55);
+  --gold:#c9a96e;--gold2:#d4b482;--border:rgba(245,241,235,0.08);
+  --green:#4ade80;--red:#f87171;--purple:#a78bfa;--teal:#5eead4;--blue:#60a5fa;
 }
-</script>
-  <link rel="canonical" href="https://aafclinic.com/" />
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--ink);color:var(--cream);min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+a{color:inherit;text-decoration:none}
+
+/* Login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--ink2);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:400px;width:100%}
+.login-box h1{font-size:28px;font-weight:600;color:var(--gold);margin-bottom:8px;letter-spacing:1px}
+.login-box .sub{color:var(--dim);font-size:13px;margin-bottom:28px}
+.login-box label{display:block;font-size:11px;letter-spacing:1px;color:var(--dim);margin-bottom:6px;text-transform:uppercase}
+.login-box input{width:100%;padding:12px 14px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;color:var(--cream);font-size:14px;margin-bottom:16px}
+.login-box input:focus{outline:none;border-color:var(--gold)}
+.login-box button.primary{width:100%;padding:14px;background:var(--gold);color:var(--ink);border-radius:10px;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin-top:8px}
+.login-box button.primary:hover{background:var(--gold2)}
+.login-box .err{color:var(--red);font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+
+/* App */
+#app{display:none;min-height:100vh}
+.topbar{background:var(--ink2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}
+.brand{font-size:18px;font-weight:600;color:var(--gold);letter-spacing:1px}
+.brand small{display:block;font-size:9px;letter-spacing:2px;color:var(--dim);font-weight:400;margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--dim)}
+.topbar-right button{padding:8px 14px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;font-size:12px}
+.topbar-right button:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Tabs */
+.tabs{background:var(--ink2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px;overflow-x:auto}
+.tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--dim);border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.tab:hover{color:var(--cream)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Content */
+.content{padding:24px;max-width:1400px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+h2.page-title{font-size:22px;font-weight:600;color:var(--cream);margin-bottom:4px}
+.page-sub{color:var(--dim);font-size:13px;margin-bottom:20px}
+
+/* Patient list */
+.search-box{margin-bottom:16px}
+.search-box input{width:100%;padding:12px 14px;background:var(--ink2);border:1px solid var(--border);border-radius:10px;color:var(--cream);font-size:14px}
+.search-box input:focus{outline:none;border-color:var(--gold)}
+
+.pt-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;min-height:600px}
+@media(max-width:900px){.pt-grid{grid-template-columns:1fr}}
+.pt-list{background:var(--ink2);border:1px solid var(--border);border-radius:12px;overflow-y:auto;max-height:75vh}
+.pt-item{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+.pt-item:hover{background:var(--ink3)}
+.pt-item.active{background:var(--ink3);border-left:3px solid var(--gold)}
+.pt-name{font-size:14px;font-weight:500;color:var(--cream)}
+.pt-meta{font-size:12px;color:var(--dim);margin-top:3px}
+
+.pt-detail{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:20px;overflow-y:auto;max-height:75vh}
+.empty{color:var(--dim);text-align:center;padding:40px 20px;font-size:13px}
+.pt-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.pt-head h3{font-size:20px;color:var(--cream);font-weight:600}
+.pt-head .pt-info{color:var(--dim);font-size:12px;margin-top:4px}
+.pt-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 14px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--cream);cursor:pointer}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn.gold{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600}
+.btn.gold:hover{background:var(--gold2)}
+.btn.green{background:#16a34a;color:#fff;border-color:#16a34a}
+.btn.green:hover{background:#15803d}
+.btn.blue{background:#2563eb;color:#fff;border-color:#2563eb}
+.btn.blue:hover{background:#1d4ed8}
+
+.visit{margin-top:18px;padding:14px;background:var(--ink3);border-radius:10px;border:1px solid var(--border)}
+.visit-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+.visit-head .v-type{color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:11px}
+.visit-head .v-date{color:var(--dim);font-size:12px}
+.visit-notes{font-size:13px;color:var(--cream);margin-bottom:10px;line-height:1.5}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.ph-grid .ph{aspect-ratio:1;background:var(--ink);border-radius:8px;overflow:hidden;position:relative;border:1px solid var(--border)}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:pointer}
+.ph .lb{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:var(--cream);font-size:10px;padding:4px;text-align:center}
+.docs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.docs a{padding:8px 12px;background:var(--ink);border-radius:6px;color:var(--gold);font-size:12px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:8px;width:fit-content}
+.docs a:hover{border-color:var(--gold)}
+
+/* Agenda + Appointments */
+.date-bar{display:flex;align-items:center;gap:12px;background:var(--ink2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.date-bar input{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--cream);font-size:13px;color-scheme:dark}
+.date-bar button.nav{padding:8px 12px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-size:14px;font-weight:600}
+.date-bar button.nav:hover{border-color:var(--gold);color:var(--gold)}
+.date-bar .today-btn{margin-left:auto;padding:8px 14px;background:var(--gold);color:var(--ink);border-radius:8px;font-size:12px;font-weight:600}
+.date-bar .today-btn:hover{background:var(--gold2)}
+
+.list-card{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.list-card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.list-card .name{font-size:15px;font-weight:600;color:var(--cream)}
+.list-card .meta{font-size:12px;color:var(--dim);margin-top:3px}
+.list-card .tag{display:inline-block;padding:3px 10px;background:rgba(201,169,110,0.15);color:var(--gold);font-size:11px;border-radius:6px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase}
+.list-card .tag.green{background:rgba(74,222,128,0.15);color:var(--green)}
+.list-card .tag.red{background:rgba(248,113,113,0.15);color:var(--red)}
+.list-card .tag.blue{background:rgba(96,165,250,0.15);color:var(--blue)}
+.list-card .body{margin-top:10px;font-size:13px;color:var(--dim);line-height:1.5}
+.list-card .actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.stat-card{background:var(--ink2);border:1px solid var(--border);border-radius:14px;padding:18px}
+.stat-card .stat-title{font-size:11px;letter-spacing:1px;color:var(--gold);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.stat-cell{text-align:center}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px}
+.stat-icon.purple{background:rgba(167,139,250,0.15);color:var(--purple)}
+.stat-icon.teal{background:rgba(94,234,212,0.15);color:var(--teal)}
+.stat-icon.gold{background:rgba(201,169,110,0.15);color:var(--gold)}
+.stat-value{font-size:24px;font-weight:700;color:var(--cream)}
+.stat-label{font-size:11px;color:var(--dim);margin-top:2px}
+.stat-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:3px}
+.stat-trend.up{color:var(--green)}
+.stat-trend.down{color:var(--red)}
+.stat-compare{margin-top:10px;font-size:10px;color:var(--dim);text-align:center}
+
+/* Export */
+.export-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.exp-card{background:var(--ink2);border:1px solid var(--border);border-radius:14px;padding:20px}
+.exp-card h3{font-size:14px;color:var(--gold);font-weight:600;margin-bottom:6px;letter-spacing:0.5px}
+.exp-card p{font-size:12px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+.exp-card .btns{display:flex;flex-direction:column;gap:8px}
+
+/* Lightbox */
+.lb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.lb-overlay.open{display:flex}
+.lb-overlay img{max-width:100%;max-height:100%;border-radius:8px}
+.lb-overlay .close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--cream)}
+.lb-overlay .close:hover{background:rgba(255,255,255,0.2)}
+
+/* Spinner */
+.spinner-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.spinner-overlay.open{display:flex}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-text{color:var(--cream);font-size:13px;letter-spacing:0.5px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink2);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;color:var(--cream);font-size:13px;z-index:2000;transition:transform 0.3s;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:var(--red)}
+
+@media(max-width:700px){
+  .topbar{padding:12px 16px}
+  .content{padding:16px}
+  .stat-row{gap:6px}
+  .stat-value{font-size:20px}
+}
+</style>
 </head>
 <body>
 
-<nav>
-  <a href="#" class="logo">AAFC</a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
-    <a href="privacy.html">Privacy</a>
-    <a href="panel.html" class="login-btn">Login</a>
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <h1>AAFC</h1>
+    <div class="sub">Clinic Web Panel</div>
+    <label>Email</label>
+    <input id="li-email" type="email" placeholder="admin@clinic.com">
+    <label>Password</label>
+    <input id="li-pass" type="password" placeholder="••••••••">
+    <button class="primary" onclick="signIn()">Sign In</button>
+    <div class="err" id="li-err"></div>
   </div>
-</nav>
+</div>
 
-<section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-text">
-    <h1>The complete archive for<br><span>aesthetic clinics</span></h1>
-    <p>Patient photos, daily log, appointments, WhatsApp reminders, and branded PDF reports — all from your phone or tablet. Built by a clinician, for clinicians.</p>
-    <div class="badges">
-      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
-      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
-    </div>
-  </div>
-  <div class="hero-visual">
-    <div class="phone-frame"><img src="images/aafc_iphone_07.png" alt="AAFC clinic dashboard"></div>
-  </div>
-</section>
-
-<section class="trust">
-  <p>Built for</p>
-  <div class="spec-grid">
-    <span class="spec">Plastic Surgery</span>
-    <span class="spec">Dermatology</span>
-    <span class="spec">Aesthetic Medicine</span>
-    <span class="spec">ENT</span>
-    <span class="spec">Cosmetic Clinics</span>
-  </div>
-</section>
-
-<section class="screenshot-section" id="features">
-
-  <div class="screenshot-row">
-    <div class="screenshot-text">
-      <span class="label">Visual Comparison Slider</span>
-      <h2>Drag to compare<br>before &amp; after</h2>
-      <p>The killer feature for clinical consultations. Slide between two visits to reveal progress in real time — perfect for showing results to patients during follow-ups.</p>
-      <ul>
-        <li>Smooth interactive before/after slider</li>
-        <li>Save the result to your phone gallery</li>
-        <li>Standardized angles for accurate comparison</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_01.png" alt="Visual comparison slider"></div>
-  </div>
-
-  <div class="screenshot-row reverse">
-    <div class="screenshot-text">
-      <span class="label">Side-by-Side Comparison</span>
-      <h2>Five standardized angles,<br>instant comparison</h2>
-      <p>Front, left 45°, right 45°, left profile, right profile — the clinical five-angle protocol used by aesthetic professionals worldwide. Compare any two visits in a single glance.</p>
-      <ul>
-        <li>Ghost overlay during capture for angle consistency</li>
-        <li>Two-visit grid view across all five angles</li>
-        <li>Ideal for follow-up consultations</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_02.png" alt="Before and after side by side comparison"></div>
-  </div>
-
-  <div class="screenshot-row">
-    <div class="screenshot-text">
-      <span class="label">Branded PDF Reports</span>
-      <h2>Print-ready reports<br>one tap away</h2>
-      <p>Every export carries your clinic logo, address, doctor name, and contact details. Auto-formatted multi-page reports ready for print, WhatsApp, or email.</p>
-      <ul>
-        <li>Clinic branding on every page</li>
-        <li>Doctor name, specialty, and contact</li>
-        <li>Share via system print or messaging</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_03.png" alt="Branded PDF report"></div>
-  </div>
-
-  <div class="screenshot-row reverse">
-    <div class="screenshot-text">
-      <span class="label">Daily Patient Log</span>
-      <h2>Daily agenda<br>and visit log</h2>
-      <p>Every procedure, every patient, every day — automatically logged. Navigate the calendar to see exactly who was treated and what was performed on any given day.</p>
-      <ul>
-        <li>Calendar with marked treatment days</li>
-        <li>Procedure list per day</li>
-        <li>PDF export of any daily log</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_04.png" alt="Daily agenda visit log"></div>
-  </div>
-
-  <div class="screenshot-row">
-    <div class="screenshot-text">
-      <span class="label">Appointment Book</span>
-      <h2>Appointments with<br>WhatsApp &amp; SMS reminders</h2>
-      <p>Schedule appointments on a calendar and send patients reminders via WhatsApp or SMS — in one tap. Customize your reminder message per clinic for a consistent brand voice.</p>
-      <ul>
-        <li>Calendar-based appointment management</li>
-        <li>WhatsApp click-to-chat (zero SMS cost)</li>
-        <li>SMS option with customizable templates</li>
-        <li>Per-clinic message customization</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_05.png" alt="Appointment book with reminders"></div>
-  </div>
-
-  <div class="screenshot-row reverse">
-    <div class="screenshot-text">
-      <span class="label">Patient Database</span>
-      <h2>All your patients,<br>one tap away</h2>
-      <p>Stop searching your camera roll. Every patient, every visit, organized in a single clean list with instant search.</p>
-      <ul>
-        <li>Fast search by name, surname, or phone</li>
-        <li>Birthday, contact, city in one place</li>
-        <li>Visit count and follow-up tracking</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_06.png" alt="Patient list"></div>
-  </div>
-
-  <div class="screenshot-row">
-    <div class="screenshot-text">
-      <span class="label">Clinic Dashboard</span>
-      <h2>Your clinic<br>at a glance</h2>
-      <p>Patient count, recent visits, today's agenda, upcoming appointments — your entire clinic activity on one home screen. Configure storage, users, language, and branding from one panel.</p>
-      <ul>
-        <li>Real-time clinic statistics</li>
-        <li>Up to 5 team members with role-based access</li>
-        <li>10 languages, GDPR &amp; KVKK compliant</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_07.png" alt="Clinic dashboard at a glance"></div>
-  </div>
-
-  <div class="screenshot-row reverse">
-    <div class="screenshot-text">
-      <span class="label">Web Browser Access</span>
-      <h2>Access your data<br>from any browser</h2>
-      <p>Need to download a year of records? Open your data on any computer browser. Add patients, run backups, and export everything in multiple formats — without touching your phone.</p>
-      <ul>
-        <li>Encrypted browser-side download</li>
-        <li>JSON, CSV, HTML &amp; ZIP exports</li>
-        <li>New patient registration from web</li>
-        <li>Patient-organized folder structure</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_08.png" alt="Web access from any browser"></div>
-  </div>
-
-  <div class="screenshot-row">
-    <div class="screenshot-text">
-      <span class="label">Your Brand Everywhere</span>
-      <h2>Logo, address, contact<br>on every report</h2>
-      <p>Your clinic identity flows automatically into every PDF and shared photo: clinic name, doctor profile, specialty, contact, and social channels. Cloud storage with automatic backup, nightly to Cloudflare R2.</p>
-      <ul>
-        <li>Upload custom clinic logo</li>
-        <li>Doctor name and specialty</li>
-        <li>Phone, Instagram, web link</li>
-        <li>Automatic nightly cloud backup</li>
-      </ul>
-    </div>
-    <div class="screenshot-image"><img src="images/aafc_gplay_08.png" alt="Clinic brand info"></div>
-  </div>
-
-</section>
-
-<section class="pricing" id="pricing">
-  <h2>Simple, transparent pricing</h2>
-  <p>One subscription. All features unlocked. Cancel anytime.</p>
-
-  <div class="price-card">
-    <span class="price-badge">14-Day Free Trial</span>
-    <h3>AAFC Premium</h3>
-    <p class="tagline">Your complete aesthetic clinic archive.</p>
-
-    <div class="price-amount">
-      <span class="amount">$49.99</span>
-      <span class="period">/ month</span>
-    </div>
-    <p class="price-trial">Try free for 14 days. Cancel anytime in your account settings.</p>
-
-    <ul class="price-features">
-      <li><i class="fa-solid fa-check"></i> Unlimited patients, photos &amp; visits</li>
-      <li><i class="fa-solid fa-check"></i> Ghost overlay capture &amp; comparison slider</li>
-      <li><i class="fa-solid fa-check"></i> Daily patient log &amp; appointment book</li>
-      <li><i class="fa-solid fa-check"></i> WhatsApp &amp; SMS reminders</li>
-      <li><i class="fa-solid fa-check"></i> Branded PDF reports</li>
-      <li><i class="fa-solid fa-check"></i> Secure cloud backup (nightly)</li>
-      <li><i class="fa-solid fa-check"></i> Multi-user clinic access (up to 5)</li>
-      <li><i class="fa-solid fa-check"></i> Web browser data access &amp; full export</li>
-      <li><i class="fa-solid fa-check"></i> 10 languages, GDPR &amp; KVKK compliant</li>
-    </ul>
-
-    <div class="price-cta">
-      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:20px"></i>Start free trial - iOS</a>
-      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge badge-secondary"><i class="fa-brands fa-google-play" style="font-size:18px"></i>Start free trial - Android</a>
-    </div>
-  </div>
-</section>
-
-<section class="faq">
-  <h2>Frequently asked</h2>
-  <p>Everything you need to know about AAFC.</p>
-
-  <details class="faq-item">
-    <summary>Is my patient data secure?</summary>
-    <p>Yes. All photos and patient records are encrypted in transit and at rest. AAFC stores data on Supabase secure infrastructure with row-level security, and runs automatic nightly backups to Cloudflare R2. We never share data with third parties or advertisers. You can export your full data anytime, and request account deletion via our deletion page.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Who is AAFC for?</summary>
-    <p>AAFC is built for licensed medical professionals: plastic surgeons, dermatologists, ENT specialists, aesthetic doctors, and clinic teams. It is a documentation and archive tool; it does not provide diagnosis or treatment guidance.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>How do WhatsApp reminders work?</summary>
-    <p>Tap a patient's appointment, then tap the WhatsApp button — your customizable reminder message opens directly in WhatsApp with the patient's number pre-filled. Send in one tap. This uses WhatsApp's click-to-chat, so there is zero per-message cost. You can also send via SMS using your phone's native messaging.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Does the 14-day free trial auto-renew?</summary>
-    <p>The trial converts to a paid 49.99 USD per month subscription unless you cancel before the trial ends. You can cancel anytime through your App Store or Google Play account settings.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Can I use AAFC with my team?</summary>
-    <p>Yes. The Multi-User Clinic Access feature lets you invite up to 5 team members under your clinic account, each with role-based permissions.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>What devices does AAFC support?</summary>
-    <p>AAFC runs on iPhone (iOS 15+), iPad, Android phones and tablets (Android 7+), and Apple Silicon Macs. A web panel is available for data download, new patient registration, and backups from any browser.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>What languages are supported?</summary>
-    <p>AAFC is fully localized in 10 languages: Turkish, English, German, French, Spanish, Italian, Arabic, Russian, Portuguese, and Dutch — including reminder message templates per clinic.</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Do you store photos of identifiable patients?</summary>
-    <p>You decide. AAFC is an archive tool you control. We recommend obtaining patient consent before storing identifiable medical photos, and following your local medical data regulations (KVKK, GDPR, HIPAA, etc.).</p>
-  </details>
-</section>
-
-<section class="cta-final">
-  <h2>Ready to organize your clinical archive?</h2>
-  <p>Join clinics that document with confidence. 14 days free, no card needed to start.</p>
-  <div class="badges">
-    <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
-    <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <div class="logo">AAFC</div>
-      <p>Aesthetic Archive for Clinics. The complete clinic management for aesthetic professionals.</p>
-    </div>
-
-    <div class="footer-col">
-      <h4>Product</h4>
-      <a href="#features">Features</a>
-      <a href="#pricing">Pricing</a>
-      <a href="panel.html">Web Panel</a>
-    </div>
-
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="account-deletion.html">Account Deletion</a>
-    </div>
-
-    <div class="footer-col">
-      <h4>Contact</h4>
-      <a href="mailto:support@aafclinic.com">support@aafclinic.com</a>
-      <a href="https://aafclinic.com">aafclinic.com</a>
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand">AAFC<small>CLINIC WEB PANEL</small></div>
+    <div class="topbar-right">
+      <span id="userEmail"></span>
+      <button onclick="signOut()">Sign Out</button>
     </div>
   </div>
 
-  <div class="footer-bottom">
-    <p>(c) 2026 EDECA Yazilim Ticaret ve Sanayi Limited Sirketi</p>
-    <p class="vkn">Hurriyet Mah. 210. Sk. No: 37 Akhisar/Manisa 45240 - VKN: 2050264942</p>
+  <div class="tabs">
+    <button class="tab active" data-tab="patients" onclick="switchTab('patients')">Patients</button>
+    <button class="tab" data-tab="agenda" onclick="switchTab('agenda')">Agenda</button>
+    <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">Appointments</button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">Statistics</button>
+    <button class="tab" data-tab="export" onclick="switchTab('export')">Export</button>
   </div>
-</footer>
 
+  <div class="content">
+
+    <!-- PATIENTS -->
+    <div class="page active" id="page-patients">
+      <h2 class="page-title">Patients</h2>
+      <div class="page-sub">Browse patients, visits, and photos.</div>
+      <div class="search-box">
+        <input id="ptSearch" type="text" placeholder="Search by name, surname, or phone..." oninput="renderPtList()">
+      </div>
+      <div class="pt-grid">
+        <div class="pt-list" id="ptList"></div>
+        <div class="pt-detail" id="ptDetail">
+          <div class="empty">Select a patient to view details.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENDA -->
+    <div class="page" id="page-agenda">
+      <h2 class="page-title">Daily Agenda</h2>
+      <div class="page-sub">Visits completed on the selected day.</div>
+      <div class="date-bar">
+        <button class="nav" onclick="agendaShift(-1)">‹</button>
+        <input id="agendaDate" type="date" onchange="loadAgenda()">
+        <button class="nav" onclick="agendaShift(1)">›</button>
+        <button class="today-btn" onclick="agendaToday()">Today</button>
+      </div>
+      <div id="agendaList"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="page" id="page-appointments">
+      <h2 class="page-title">Appointment Book</h2>
+      <div class="page-sub">Scheduled appointments for the selected day. Send WhatsApp or SMS reminders.</div>
+      <div class="date-bar">
+        <button class="nav" onclick="apptShift(-1)">‹</button>
+        <input id="apptDate" type="date" onchange="loadAppts()">
+        <button class="nav" onclick="apptShift(1)">›</button>
+        <button class="today-btn" onclick="apptToday()">Today</button>
+      </div>
+      <div id="apptList"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page" id="page-stats">
+      <h2 class="page-title">Statistics</h2>
+      <div class="page-sub">Clinic activity across periods.</div>
+      <div id="statsBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="page" id="page-export">
+      <h2 class="page-title">Backup & Export</h2>
+      <div class="page-sub">Download all clinic data in your preferred format.</div>
+      <div class="export-grid">
+        <div class="exp-card">
+          <h3>All Patients</h3>
+          <p>Full archive including all patients, visits, photos, and documents.</p>
+          <div class="btns">
+            <button class="btn gold" onclick="dlZIP()">ZIP with photos</button>
+            <button class="btn" onclick="dlHTML()">HTML report</button>
+            <button class="btn" onclick="dlJSON()">JSON data</button>
+            <button class="btn" onclick="dlCSV()">CSV (photos list)</button>
+          </div>
+        </div>
+        <div class="exp-card">
+          <h3>Selected Patient</h3>
+          <p>Single patient export — pick a patient first in the Patients tab.</p>
+          <div class="btns">
+            <button class="btn gold" onclick="dlPtZIP()">ZIP with photos</button>
+            <button class="btn" onclick="dlPtHTML()">HTML report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lightbox" onclick="closeLightbox()">
+  <div class="close">×</div>
+  <img id="lbImg" src="" onclick="event.stopPropagation()">
+</div>
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spin">
+  <div class="spinner"></div>
+  <div class="spinner-text" id="spinText">Loading…</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://hugxacklprzujswtaike.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Z3hhY2tscHJ6dWpzd3RhaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MzQ4MDAsImV4cCI6MjA2MTExMDgwMH0.cdJG7VxjxF77F4WROLxONK0lD63DfRGsdaTBSiNgGlw';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const AL=['Front','Left 45°','Right 45°','Left Profile','Right Profile'];
+const BUCKET='visit-files';
+
+let user=null,clinic=null,cid=null,patients=[],selPid=null,selPt=null;
+let agendaDate=new Date(),apptDate=new Date();
+let signedUrlCache={}; // path → {url, exp}
+
+// ============== UTIL ==============
+function sp(msg){document.getElementById('spinText').textContent=msg||'Loading…';document.getElementById('spin').classList.add('open')}
+function hp(){document.getElementById('spin').classList.remove('open')}
+function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('err',!!err);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function fmtDate(d){return d.toISOString().split('T')[0]}
+function parseDate(s){const d=new Date(s);return isNaN(d)?new Date():d}
+
+async function getSignedUrl(path){
+  if(!path)return null;
+  // Already a full URL? return as-is
+  if(path.startsWith('http')){return path}
+  const cached=signedUrlCache[path];
+  const now=Date.now();
+  if(cached && cached.exp>now)return cached.url;
+  try{
+    const {data,error}=await db.storage.from(BUCKET).createSignedUrl(path,3600);
+    if(error||!data?.signedUrl)return null;
+    signedUrlCache[path]={url:data.signedUrl,exp:now+50*60*1000};
+    return data.signedUrl;
+  }catch(e){return null}
+}
+
+async function signedUrlsBatch(paths){
+  // Returns map of path → signedUrl
+  const out={};
+  const toFetch=[];
+  for(const p of paths){
+    if(!p)continue;
+    if(p.startsWith('http')){out[p]=p;continue}
+    const c=signedUrlCache[p];
+    if(c && c.exp>Date.now()){out[p]=c.url;continue}
+    toFetch.push(p);
+  }
+  if(toFetch.length){
+    try{
+      const {data}=await db.storage.from(BUCKET).createSignedUrls(toFetch,3600);
+      if(data){
+        for(const r of data){
+          if(r.signedUrl){
+            signedUrlCache[r.path]={url:r.signedUrl,exp:Date.now()+50*60*1000};
+            out[r.path]=r.signedUrl;
+          }
+        }
+      }
+    }catch(e){}
+  }
+  return out;
+}
+
+// ============== AUTH ==============
+async function signIn(){
+  const email=document.getElementById('li-email').value.trim();
+  const pass=document.getElementById('li-pass').value;
+  const err=document.getElementById('li-err');
+  err.textContent='';
+  if(!email||!pass){err.textContent='Enter email and password';return}
+  sp('Signing in…');
+  const {data,error}=await db.auth.signInWithPassword({email,password:pass});
+  hp();
+  if(error){err.textContent=error.message;return}
+  await initApp();
+}
+
+async function signOut(){
+  await db.auth.signOut();
+  user=null;clinic=null;cid=null;patients=[];selPid=null;selPt=null;signedUrlCache={};
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('li-pass').value='';
+}
+
+async function checkSession(){
+  const {data}=await db.auth.getSession();
+  if(data?.session){await initApp()}
+}
+
+async function initApp(){
+  sp('Loading clinic…');
+  const {data:u}=await db.auth.getUser();
+  user=u.user;
+  document.getElementById('userEmail').textContent=user.email;
+  // Get clinic_id from clinic_users
+  const cu=await db.from('clinic_users').select('clinic_id').eq('user_id',user.id).maybeSingle();
+  if(!cu.data){
+    // fallback: try clinic where owner is this user
+    const c2=await db.from('clinic').select('id').eq('owner_id',user.id).maybeSingle();
+    if(c2.data){cid=c2.data.id}
+  }else{cid=cu.data.clinic_id}
+  if(!cid){
+    hp();toast('No clinic linked to this account',true);return;
+  }
+  const cl=await db.from('clinic').select('*').eq('id',cid).maybeSingle();
+  clinic=cl.data;
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  await loadPatients();
+  hp();
+  // Set date inputs
+  document.getElementById('agendaDate').value=fmtDate(agendaDate);
+  document.getElementById('apptDate').value=fmtDate(apptDate);
+}
+
+// ============== TABS ==============
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
+  if(name==='agenda')loadAgenda();
+  if(name==='appointments')loadAppts();
+  if(name==='stats')loadStats();
+}
+
+// ============== PATIENTS ==============
+async function loadPatients(){
+  const r=await db.from('patients').select('*').eq('clinic_id',cid).is('deleted_at',null).order('name');
+  patients=r.data||[];
+  renderPtList();
+}
+
+function renderPtList(){
+  const q=(document.getElementById('ptSearch').value||'').toLowerCase().trim();
+  const list=patients.filter(p=>{
+    if(!q)return true;
+    const s=((p.name||'')+' '+(p.surname||'')+' '+(p.phone||'')).toLowerCase();
+    return s.includes(q);
+  });
+  const el=document.getElementById('ptList');
+  if(!list.length){el.innerHTML='<div class="empty">No patients found</div>';return}
+  el.innerHTML=list.map(p=>`
+    <div class="pt-item ${selPid===p.id?'active':''}" onclick="selectPt('${p.id}')">
+      <div class="pt-name">${esc((p.name||'')+' '+(p.surname||''))}</div>
+      <div class="pt-meta">${esc(p.phone||'—')}</div>
+    </div>
+  `).join('');
+}
+
+function esc(s){return (s||'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+async function selectPt(pid){
+  selPid=pid;
+  selPt=patients.find(p=>p.id===pid);
+  renderPtList();
+  await renderPtDetail();
+}
+
+async function renderPtDetail(){
+  const el=document.getElementById('ptDetail');
+  if(!selPid){el.innerHTML='<div class="empty">Select a patient.</div>';return}
+  el.innerHTML='<div class="empty">Loading…</div>';
+
+  const vis=await db.from('visits').select('*').eq('patient_id',selPid).is('deleted_at',null).order('visit_date',{ascending:false});
+  const visits=vis.data||[];
+
+  // Collect all photo + doc paths for batch signing
+  const allPaths=[];
+  const visitData=[];
+  for(const v of visits){
+    const ph=await db.from('photos').select('*').eq('visit_id',v.id).is('deleted_at',null).order('angle_index');
+    const dc=await db.from('documents').select('*').eq('visit_id',v.id).is('deleted_at',null);
+    const photos=ph.data||[],docs=dc.data||[];
+    photos.forEach(p=>{if(p.file_path)allPaths.push(p.file_path)});
+    docs.forEach(d=>{if(d.file_path)allPaths.push(d.file_path)});
+    visitData.push({v,photos,docs});
+  }
+  const urls=await signedUrlsBatch(allPaths);
+
+  let h=`<div class="pt-head">
+    <div>
+      <h3>${esc((selPt.name||'')+' '+(selPt.surname||''))}</h3>
+      <div class="pt-info">${esc(selPt.phone||'')}${selPt.birth_date?' · '+esc(selPt.birth_date):''}</div>
+    </div>
+    <div class="pt-actions">
+      <button class="btn" onclick="dlPtZIP()">ZIP</button>
+      <button class="btn" onclick="dlPtHTML()">HTML</button>
+    </div>
+  </div>`;
+
+  if(!visits.length){
+    h+='<div class="empty">No visits yet.</div>';
+  }else{
+    for(const {v,photos,docs} of visitData){
+      h+=`<div class="visit">
+        <div class="visit-head">
+          <div>
+            <span class="v-type">${esc(v.visit_type||'Visit')}</span>
+            ${v.region?' · <span style="color:var(--dim)">'+esc(v.region)+'</span>':''}
+          </div>
+          <div class="v-date">${esc((v.visit_date||'').split('T')[0])}</div>
+        </div>`;
+      if(v.notes)h+=`<div class="visit-notes">${esc(v.notes)}</div>`;
+      if(photos.length){
+        h+='<div class="ph-grid">';
+        for(const p of photos){
+          const u=urls[p.file_path]||'';
+          h+=`<div class="ph">
+            ${u?`<img src="${esc(u)}" onclick="openLightbox('${esc(u)}')" loading="lazy">`:'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim);font-size:10px;padding:8px;text-align:center">Image unavailable</div>'}
+            <div class="lb">${esc(AL[p.angle_index]||'Photo')}</div>
+          </div>`;
+        }
+        h+='</div>';
+      }
+      if(docs.length){
+        h+='<div class="docs">';
+        for(const d of docs){
+          const u=urls[d.file_path]||'';
+          h+=`<a href="${esc(u)}" target="_blank" rel="noopener">📄 ${esc(d.file_name||'Document')}</a>`;
+        }
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+  }
+  el.innerHTML=h;
+}
+
+function openLightbox(url){document.getElementById('lbImg').src=url;document.getElementById('lightbox').classList.add('open')}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
+
+// ============== AGENDA (Daily Visits) ==============
+function agendaShift(d){agendaDate.setDate(agendaDate.getDate()+d);document.getElementById('agendaDate').value=fmtDate(agendaDate);loadAgenda()}
+function agendaToday(){agendaDate=new Date();document.getElementById('agendaDate').value=fmtDate(agendaDate);loadAgenda()}
+
+async function loadAgenda(){
+  agendaDate=parseDate(document.getElementById('agendaDate').value);
+  const el=document.getElementById('agendaList');
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const {data,error}=await db.rpc('get_daily_agenda',{
+      p_clinic_id:cid,
+      p_date:fmtDate(agendaDate)
+    });
+    if(error)throw error;
+    const items=data||[];
+    if(!items.length){el.innerHTML='<div class="empty">No visits on this day.</div>';return}
+    el.innerHTML=items.map(it=>{
+      const name=esc((it.patient_name||'')+' '+(it.patient_surname||''));
+      const phone=esc(it.patient_phone||'');
+      const time=it.visit_date?new Date(it.visit_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
+      return `<div class="list-card">
+        <div class="row1">
+          <div>
+            <div class="name">${name}</div>
+            <div class="meta">${phone?phone+' · ':''}${time}</div>
+          </div>
+          <div>
+            <span class="tag">${esc(it.visit_type||'Visit')}</span>
+            ${it.region?'<span class="tag" style="margin-left:6px">'+esc(it.region)+'</span>':''}
+          </div>
+        </div>
+        ${it.notes?`<div class="body">${esc(it.notes)}</div>`:''}
+        <div class="actions">
+          <button class="btn" onclick="goToPatient('${it.patient_id}')">View Patient →</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">Could not load agenda. '+esc(e.message||'')+'</div>'}
+}
+
+function goToPatient(pid){switchTab('patients');selectPt(pid)}
+
+// ============== APPOINTMENTS ==============
+function apptShift(d){apptDate.setDate(apptDate.getDate()+d);document.getElementById('apptDate').value=fmtDate(apptDate);loadAppts()}
+function apptToday(){apptDate=new Date();document.getElementById('apptDate').value=fmtDate(apptDate);loadAppts()}
+
+async function loadAppts(){
+  apptDate=parseDate(document.getElementById('apptDate').value);
+  const el=document.getElementById('apptList');
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const {data,error}=await db.rpc('get_daily_appointments',{
+      p_clinic_id:cid,
+      p_date:fmtDate(apptDate)
+    });
+    if(error)throw error;
+    const items=data||[];
+    if(!items.length){el.innerHTML='<div class="empty">No appointments on this day.</div>';return}
+    el.innerHTML=items.map((a,i)=>{
+      const name=esc((a.patient_name||a.patient_name_temp||'')+' '+(a.patient_surname||''));
+      const phone=esc(a.patient_phone||a.patient_phone_temp||'');
+      const time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
+      const status=a.status||'planned';
+      const tagCls=status==='completed'?'green':status==='cancelled'?'red':'';
+      const hasPhone=phone.length>0;
+      window['_appt_'+i]=a; // store for handlers
+      return `<div class="list-card">
+        <div class="row1">
+          <div>
+            <div class="name">${name||'<span style="color:var(--dim)">No name</span>'}</div>
+            <div class="meta">${phone?'📞 '+phone+' · ':''}${time}${a.notes?' · '+esc(a.notes):''}</div>
+          </div>
+          <div><span class="tag ${tagCls}">${esc(status)}</span></div>
+        </div>
+        ${hasPhone && status==='planned'?`
+        <div class="actions">
+          <button class="btn green" onclick="sendWA(${i})">📱 WhatsApp Reminder</button>
+          <button class="btn blue" onclick="sendSMS(${i})">✉️ SMS Reminder</button>
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">Could not load appointments. '+esc(e.message||'')+'</div>'}
+}
+
+function normalizePhone(p){return (p||'').replace(/[^0-9+]/g,'')}
+
+function buildReminderMessage(a){
+  const tpl=((clinic?.reminder_message)||'').trim();
+  const name=(a.patient_name||a.patient_name_temp||'').trim();
+  const date=a.appointment_date?new Date(a.appointment_date).toLocaleDateString():'';
+  const time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
+  if(!tpl){
+    return `Dear ${name}, this is a reminder for your appointment on ${date} at ${time}.`;
+  }
+  // Mobile app: 10 dilin placeholder'ları
+  let msg=tpl;
+  // Turkish
+  msg=msg.replace(/\[ad\]/g,name).replace(/\[tarih\]/g,date).replace(/\[saat\]/g,time);
+  // English
+  msg=msg.replace(/\[name\]/g,name).replace(/\[date\]/g,date).replace(/\[time\]/g,time);
+  // German
+  msg=msg.replace(/\[datum\]/g,date).replace(/\[uhrzeit\]/g,time);
+  // Spanish
+  msg=msg.replace(/\[nombre\]/g,name).replace(/\[fecha\]/g,date).replace(/\[hora\]/g,time);
+  // French
+  msg=msg.replace(/\[nom\]/g,name).replace(/\[heure\]/g,time);
+  // Italian / Portuguese
+  msg=msg.replace(/\[nome\]/g,name).replace(/\[data\]/g,date).replace(/\[ora\]/g,time);
+  // Russian
+  msg=msg.replace(/\[имя\]/g,name).replace(/\[дата\]/g,date).replace(/\[время\]/g,time);
+  // Korean
+  msg=msg.replace(/\[이름\]/g,name).replace(/\[날짜\]/g,date).replace(/\[시간\]/g,time);
+  // Chinese
+  msg=msg.replace(/\[姓名\]/g,name).replace(/\[日期\]/g,date).replace(/\[时间\]/g,time);
+  return msg;
+}
+
+function sendWA(idx){
+  const a=window['_appt_'+idx];if(!a)return;
+  const phone=a.patient_phone||a.patient_phone_temp||'';
+  if(!phone){toast('No phone',true);return}
+  const msg=buildReminderMessage(a);
+  const url='https://wa.me/'+normalizePhone(phone)+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+
+function sendSMS(idx){
+  const a=window['_appt_'+idx];if(!a)return;
+  const phone=a.patient_phone||a.patient_phone_temp||'';
+  if(!phone){toast('No phone',true);return}
+  const msg=buildReminderMessage(a);
+  const url='sms:'+phone+'?body='+encodeURIComponent(msg);
+  window.location.href=url;
+}
+
+// ============== STATS ==============
+async function loadStats(){
+  const el=document.getElementById('statsBody');
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const {data,error}=await db.rpc('get_clinic_stats',{p_clinic_id:cid});
+    if(error)throw error;
+    if(!data){el.innerHTML='<div class="empty">No data.</div>';return}
+    const thisMonth=period(data,'this_month');
+    const lastMonth=period(data,'last_month');
+    const thisYear=period(data,'this_year');
+    const lastYear=period(data,'last_year');
+    const allTime=period(data,'all_time');
+
+    el.innerHTML=`<div class="stat-grid">
+      ${statCard('This Month',thisMonth,lastMonth,'vs last month')}
+      ${statCard('Last Month',lastMonth)}
+      ${statCard('This Year',thisYear,lastYear,'vs last year')}
+      ${statCard('Last Year',lastYear)}
+      ${statCard('All Time',allTime)}
+    </div>`;
+  }catch(e){el.innerHTML='<div class="empty">Could not load statistics. '+esc(e.message||'')+'</div>'}
+}
+
+function period(stats,key){
+  const p=stats[key]||{};
+  return {patients:+(p.patients||0),visits:+(p.visits||0),controls:+(p.controls||0)};
+}
+
+function trend(curr,prev){
+  const d=curr-prev;
+  if(d===0)return '';
+  const up=d>0;
+  return `<div class="stat-trend ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(d)}</div>`;
+}
+
+function statCard(title,data,cmp,cmpLabel){
+  return `<div class="stat-card">
+    <div class="stat-title">📅 ${esc(title)}</div>
+    <div class="stat-row">
+      <div class="stat-cell">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-value">${data.patients}</div>
+        <div class="stat-label">New Patients</div>
+        ${cmp?trend(data.patients,cmp.patients):''}
+      </div>
+      <div class="stat-cell">
+        <div class="stat-icon teal">📋</div>
+        <div class="stat-value">${data.visits}</div>
+        <div class="stat-label">Visits</div>
+        ${cmp?trend(data.visits,cmp.visits):''}
+      </div>
+      <div class="stat-cell">
+        <div class="stat-icon gold">🔄</div>
+        <div class="stat-value">${data.controls}</div>
+        <div class="stat-label">Controls</div>
+        ${cmp?trend(data.controls,cmp.controls):''}
+      </div>
+    </div>
+    ${cmpLabel?`<div class="stat-compare">${esc(cmpLabel)}</div>`:''}
+  </div>`;
+}
+
+// ============== EXPORT ==============
+async function fetchAll(){
+  // Returns array of patients with visits + photos + docs
+  const out=[];
+  for(const p of patients){
+    const v=await db.from('visits').select('*').eq('patient_id',p.id).is('deleted_at',null);
+    const visits=v.data||[];
+    const vd=[];
+    for(const vv of visits){
+      const ph=await db.from('photos').select('*').eq('visit_id',vv.id).is('deleted_at',null);
+      const dc=await db.from('documents').select('*').eq('visit_id',vv.id).is('deleted_at',null);
+      vd.push(Object.assign({},vv,{photos:ph.data||[],documents:dc.data||[]}));
+    }
+    out.push(Object.assign({},p,{visits:vd}));
+  }
+  return out;
+}
+
+async function fetchPt(pid){
+  const p=patients.find(x=>x.id===pid);
+  if(!p)return [];
+  const v=await db.from('visits').select('*').eq('patient_id',pid).is('deleted_at',null);
+  const visits=v.data||[];
+  const vd=[];
+  for(const vv of visits){
+    const ph=await db.from('photos').select('*').eq('visit_id',vv.id).is('deleted_at',null);
+    const dc=await db.from('documents').select('*').eq('visit_id',vv.id).is('deleted_at',null);
+    vd.push(Object.assign({},vv,{photos:ph.data||[],documents:dc.data||[]}));
+  }
+  return [Object.assign({},p,{visits:vd})];
+}
+
+async function mkZIP(a,fn){
+  const z=new JSZip();
+  let pc=0;
+  for(const p of a){
+    const pf=z.folder(((p.name||'')+'_'+(p.surname||'')).replace(/\s/g,'_'));
+    const meta={name:p.name,surname:p.surname,phone:p.phone,birth_date:p.birth_date,visits:[]};
+    for(const v of p.visits){
+      const vf=pf.folder((v.visit_type||'Visit')+'_'+(v.region||'')+'_'+(v.visit_date||'').split('T')[0]);
+      const vmeta={visit_type:v.visit_type,region:v.region,visit_date:v.visit_date,notes:v.notes,photos:[],documents:[]};
+      // Photos
+      for(let k=0;k<v.photos.length;k++){
+        sp('Downloading photo '+(++pc)+'…');
+        const ph=v.photos[k];
+        const url=await getSignedUrl(ph.file_path);
+        if(!url)continue;
+        try{
+          const rb=await fetch(url);
+          const blob=await rb.blob();
+          const fname='photo_'+(AL[ph.angle_index]||k)+'.jpg';
+          vf.file(fname,blob);
+          vmeta.photos.push({angle:AL[ph.angle_index]||'',file:fname});
+        }catch(e){}
+      }
+      // Docs
+      for(const d of v.documents){
+        const url=await getSignedUrl(d.file_path);
+        if(!url)continue;
+        try{
+          const rb=await fetch(url);
+          const blob=await rb.blob();
+          const fname=d.file_name||'document';
+          vf.file(fname,blob);
+          vmeta.documents.push({name:fname});
+        }catch(e){}
+      }
+      meta.visits.push(vmeta);
+    }
+    pf.file('metadata.json',JSON.stringify(meta,null,2));
+  }
+  sp('Compressing ZIP…');
+  const blob=await z.generateAsync({type:'blob'});
+  const el=document.createElement('a');
+  el.href=URL.createObjectURL(blob);
+  el.download=fn+'.zip';
+  el.click();
+}
+
+async function mkHTML(a,fn){
+  let h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+fn+'</title><style>body{font-family:sans-serif;max-width:900px;margin:20px auto;padding:20px;color:#1a1a1a}.pt{margin-bottom:40px;padding:20px;border:1px solid #ddd;border-radius:8px}h2{color:#c9a96e}h3{color:#444}.vs{margin-top:16px;padding:12px;background:#f7f7f7;border-radius:6px}.phs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}.phs img{width:100%;border-radius:4px}.lb{font-size:11px;color:#666;text-align:center;margin-top:4px}</style></head><body><h1>AAFC Clinic Report</h1><p>Generated '+new Date().toLocaleString()+'</p>';
+  for(const p of a){
+    h+='<div class="pt"><h2>'+esc((p.name||'')+' '+(p.surname||''))+'</h2><p>'+esc(p.phone||'')+(p.birth_date?' · '+esc(p.birth_date):'')+'</p>';
+    for(const v of p.visits){
+      h+='<div class="vs"><h3>'+esc(v.visit_type||'Visit')+' - '+esc(v.region||'')+' - '+esc((v.visit_date||'').split('T')[0])+'</h3>';
+      if(v.notes)h+='<p>'+esc(v.notes)+'</p>';
+      if(v.photos.length){
+        h+='<div class="phs">';
+        for(const ph of v.photos){
+          const url=await getSignedUrl(ph.file_path);
+          if(url)h+='<div><img src="'+esc(url)+'"/><div class="lb">'+esc(AL[ph.angle_index]||'')+'</div></div>';
+        }
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  h+='</body></html>';
+  const el=document.createElement('a');
+  el.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));
+  el.download=fn+'.html';
+  el.click();
+}
+
+async function dlZIP(){sp('Fetching all data…');const a=await fetchAll();await mkZIP(a,'aafc_all_'+fmtDate(new Date()));hp();toast('ZIP downloaded')}
+async function dlHTML(){sp('Fetching all data…');const a=await fetchAll();await mkHTML(a,'aafc_report_'+fmtDate(new Date()));hp();toast('HTML report downloaded')}
+async function dlPtZIP(){if(!selPid){toast('Select a patient first',true);return}sp('Fetching patient…');const a=await fetchPt(selPid);const n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkZIP(a,'aafc_'+n);hp();toast('Patient ZIP downloaded')}
+async function dlPtHTML(){if(!selPid){toast('Select a patient first',true);return}sp('Fetching patient…');const a=await fetchPt(selPid);const n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();toast('Patient HTML downloaded')}
+async function dlJSON(){sp('Fetching all data…');const a=await fetchAll();const el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+fmtDate(new Date())+'.json';el.click();hp();toast('JSON downloaded')}
+async function dlCSV(){sp('Fetching all data…');const a=await fetchAll();const rows=['Patient,Surname,Visit Date,Region,Angle,Photo Path'];for(const p of a){for(const v of p.visits){for(const ph of v.photos){rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}const el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+fmtDate(new Date())+'.csv';el.click();hp();toast('CSV downloaded')}
+
+// ============== INIT ==============
+checkSession();
+</script>
 </body>
 </html>

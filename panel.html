@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -27,7 +27,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bt{font-size:12px;color:rgba(245,241,235,0.5)}
 .bt strong{color:#B89A6A}
 .bts{display:flex;gap:6px}
-.btn{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
+.btn{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500;border:none;font-family:inherit}
 .bzip{background:rgba(108,99,168,0.2);color:#9B8FD4;border:1px solid rgba(108,99,168,0.3)}
 .bhtml{background:rgba(29,158,117,0.2);color:#1D9E75;border:1px solid rgba(29,158,117,0.3)}
 .bjson{background:rgba(184,154,106,0.2);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
@@ -35,18 +35,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bpdf{background:rgba(224,85,85,0.2);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
 .bedit{background:rgba(184,154,106,0.15);color:#B89A6A;border:1px solid rgba(184,154,106,0.3)}
 .bdel{background:rgba(224,85,85,0.15);color:#E05555;border:1px solid rgba(224,85,85,0.3)}
-.layout{display:flex;flex:1;overflow:hidden}
+.bwa{background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3)}
+.bsms{background:rgba(96,165,250,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.3)}
+/* TABS */
+.tabs{background:rgba(245,241,235,0.02);border-bottom:1px solid rgba(245,241,235,0.08);padding:0 20px;display:flex;gap:4px;flex-shrink:0;overflow-x:auto}
+.tab{padding:11px 16px;font-size:12px;font-weight:500;color:rgba(245,241,235,0.5);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;letter-spacing:0.5px;white-space:nowrap;transition:color 0.2s}
+.tab:hover{color:#F5F1EB}
+.tab.on{color:#B89A6A;border-bottom-color:#B89A6A}
+/* CONTENT */
+.tcontent{flex:1;overflow:hidden;display:none}
+.tcontent.on{display:flex}
+.layout{display:flex;flex:1;overflow:hidden;width:100%}
 .sb{width:280px;min-width:280px;background:rgba(245,241,235,0.03);border-right:1px solid rgba(245,241,235,0.08);display:flex;flex-direction:column}
 .sh{padding:12px 16px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
 .sl{font-size:16px;font-weight:600;color:#B89A6A;letter-spacing:2px}
-.bout{background:none;border:1px solid rgba(245,241,235,0.15);color:rgba(245,241,235,0.5);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(245,241,235,0.06);border-bottom:1px solid rgba(245,241,235,0.08)}
-.stat{background:#1C1929;padding:10px 14px}
-.stat .n{font-size:20px;font-weight:600;color:#B89A6A}
-.stat .l{font-size:10px;color:rgba(245,241,235,0.4);margin-top:2px}
+.bout{background:none;border:1px solid rgba(245,241,235,0.15);color:rgba(245,241,235,0.5);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit}
+.stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(245,241,235,0.06);border-bottom:1px solid rgba(245,241,235,0.08)}
+.stat-mini{background:#1C1929;padding:10px 14px}
+.stat-mini .n{font-size:20px;font-weight:600;color:#B89A6A}
+.stat-mini .l{font-size:10px;color:rgba(245,241,235,0.4);margin-top:2px}
 .ss{padding:10px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;gap:6px}
 .ss input{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.1);border-radius:8px;padding:8px 12px;color:#F5F1EB;font-size:13px;outline:none}
-.badd{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
+.badd{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;font-family:inherit}
 .pl{flex:1;overflow-y:auto}
 .pi{padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(245,241,235,0.04)}
 .pi:hover{background:rgba(245,241,235,0.04)}
@@ -95,21 +105,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .modal.on{display:flex}
 .mbox{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
 .mbox h3{font-size:18px;font-weight:400;margin-bottom:20px}
-.mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none}
+.mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none;font-family:inherit}
 .mi:focus{border-color:rgba(184,154,106,0.4)}
 .mbt{display:flex;gap:10px;margin-top:8px}
-.bsave{flex:1;background:#B89A6A;border:none;border-radius:8px;padding:12px;color:#1C1929;font-size:14px;font-weight:600;cursor:pointer}
-.bcancel{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:12px;color:rgba(245,241,235,0.6);font-size:14px;cursor:pointer}
+.bsave{flex:1;background:#B89A6A;border:none;border-radius:8px;padding:12px;color:#1C1929;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.bcancel{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:12px;color:rgba(245,241,235,0.6);font-size:14px;cursor:pointer;font-family:inherit}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center}
 .lightbox.on{display:flex}
 .lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
 .lbx{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px}
 .loader{padding:30px;text-align:center;color:rgba(245,241,235,0.3);font-size:13px}
 .prog{position:fixed;bottom:20px;right:20px;background:#1C1929;border:1px solid rgba(184,154,106,0.3);border-radius:12px;padding:12px 20px;font-size:13px;color:#B89A6A;display:none;z-index:100}
+/* DATE BAR (Agenda + Appointments) */
+.tab-content{flex:1;overflow-y:auto;padding:24px}
+.tab-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.tab-head h2{font-size:22px;font-weight:400;color:#F5F1EB}
+.tab-head .sub{font-size:13px;color:rgba(245,241,235,0.4);margin-top:4px}
+.date-bar{display:flex;align-items:center;gap:10px;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:10px;padding:8px 12px}
+.date-bar input{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:6px;padding:6px 10px;color:#F5F1EB;font-size:13px;color-scheme:dark;font-family:inherit}
+.date-bar .navb{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);color:#F5F1EB;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit}
+.date-bar .navb:hover{border-color:#B89A6A;color:#B89A6A}
+.date-bar .today-b{background:#B89A6A;color:#1C1929;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
+.list-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;margin-bottom:10px}
+.list-card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.list-card .name{font-size:15px;font-weight:600;color:#F5F1EB}
+.list-card .meta{font-size:12px;color:rgba(245,241,235,0.5);margin-top:3px}
+.list-card .tag{display:inline-block;padding:3px 10px;background:rgba(184,154,106,0.15);color:#B89A6A;font-size:10px;border-radius:6px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+.list-card .tag.green{background:rgba(29,158,117,0.2);color:#1D9E75}
+.list-card .tag.red{background:rgba(224,85,85,0.2);color:#E05555}
+.list-card .tag.blue{background:rgba(96,165,250,0.2);color:#60A5FA}
+.list-card .body{margin-top:8px;font-size:13px;color:rgba(245,241,235,0.6);line-height:1.5}
+.list-card .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.stat-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:14px;padding:18px}
+.stat-card .stat-title{font-size:11px;letter-spacing:1px;color:#B89A6A;font-weight:600;margin-bottom:14px;text-transform:uppercase}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.stat-cell{text-align:center}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px}
+.stat-icon.purple{background:rgba(167,139,250,0.15);color:#a78bfa}
+.stat-icon.teal{background:rgba(94,234,212,0.15);color:#5eead4}
+.stat-icon.gold{background:rgba(184,154,106,0.15);color:#B89A6A}
+.stat-value{font-size:24px;font-weight:700;color:#F5F1EB}
+.stat-label{font-size:11px;color:rgba(245,241,235,0.4);margin-top:2px}
+.stat-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:3px}
+.stat-trend.up{color:#1D9E75}
+.stat-trend.down{color:#E05555}
+.stat-compare{margin-top:10px;font-size:10px;color:rgba(245,241,235,0.3);text-align:center}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:rgba(245,241,235,0.15);border-radius:2px}
+@media(max-width:700px){
+  .sb{width:240px;min-width:240px}
+  .layout{flex-direction:column}
+  .sb{width:100%;min-width:100%;max-height:40vh}
+  .main{flex:1}
+  .tabs{padding:0 10px}
+  .tab{padding:10px 12px;font-size:11px}
+}
 </style>
-  <link rel="canonical" href="https://aafclinic.com/panel" />
+<link rel="canonical" href="https://aafclinic.com/panel" />
 </head>
 <body>
 
@@ -137,75 +191,127 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <button class="btn bcsv" onclick="dlCSV()">CSV</button>
     </div>
   </div>
-  <div class="layout">
-    <div class="sb">
-      <div class="sh">
-        <span class="sl">AAFC</span>
-        <button class="bout" onclick="doLogout()">Sign Out</button>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="n" id="stP">0</div><div class="l">Patients</div></div>
-        <div class="stat"><div class="n" id="stV">0</div><div class="l">Visits</div></div>
-        <div class="stat"><div class="n" id="stPh">0</div><div class="l">Photos</div></div>
-        <div class="stat"><div class="n" id="stD">0</div><div class="l">Documents</div></div>
-      </div>
-      <div class="ss">
-        <input type="text" id="srch" placeholder="Search patients..." oninput="filterP()"/>
-        <button class="badd" onclick="openAdd()">+ Add</button>
-      </div>
-      <div class="pl" id="pList"><div class="loader">Loading...</div></div>
-    </div>
-    <div class="main">
-      <div class="empty" id="emptyMsg">Select a patient</div>
-      <div id="pDetail" style="display:none">
-        <div class="mh">
-          <div><h2 id="dName"></h2><div class="sub" id="dMeta"></div></div>
-          <div class="mbs">
-            <button class="btn bzip" onclick="dlPtZIP()">ZIP</button>
-            <button class="btn bhtml" onclick="dlPtHTML()">HTML</button>
-            <button class="btn bedit" onclick="openEdit()">Edit</button>
-            <button class="btn bdel" onclick="delPt()">Delete</button>
-          </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" data-tab="patients" onclick="switchTab('patients')">PATIENTS</button>
+    <button class="tab" data-tab="agenda" onclick="switchTab('agenda')">AGENDA</button>
+    <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">APPOINTMENTS</button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
+  </div>
+
+  <!-- PATIENTS TAB -->
+  <div class="tcontent on" id="tab-patients">
+    <div class="layout">
+      <div class="sb">
+        <div class="sh">
+          <span class="sl">AAFC</span>
+          <button class="bout" onclick="doLogout()">Sign Out</button>
         </div>
-        <div class="mb">
-          <div class="sec">PATIENT INFO</div>
-          <div class="ibox" id="pInfo"></div>
-
-          <div class="sec">BEFORE / AFTER COMPARISON</div>
-          <div class="cw">
-            <div class="cs">
-              <h4>BEFORE</h4>
-              <select id="cV1" onchange="loadCmp()"><option value="">Select visit</option></select>
-              <div class="cp" id="cPh1"></div>
-            </div>
-            <div class="cs">
-              <h4>AFTER</h4>
-              <select id="cV2" onchange="loadCmp()"><option value="">Select visit</option></select>
-              <div class="cp" id="cPh2"></div>
+        <div class="stats-mini">
+          <div class="stat-mini"><div class="n" id="stP">0</div><div class="l">Patients</div></div>
+          <div class="stat-mini"><div class="n" id="stV">0</div><div class="l">Visits</div></div>
+          <div class="stat-mini"><div class="n" id="stPh">0</div><div class="l">Photos</div></div>
+          <div class="stat-mini"><div class="n" id="stD">0</div><div class="l">Documents</div></div>
+        </div>
+        <div class="ss">
+          <input type="text" id="srch" placeholder="Search patients..." oninput="filterP()"/>
+          <button class="badd" onclick="openAdd()">+ Add</button>
+        </div>
+        <div class="pl" id="pList"><div class="loader">Loading...</div></div>
+      </div>
+      <div class="main">
+        <div class="empty" id="emptyMsg">Select a patient</div>
+        <div id="pDetail" style="display:none">
+          <div class="mh">
+            <div><h2 id="dName"></h2><div class="sub" id="dMeta"></div></div>
+            <div class="mbs">
+              <button class="btn bzip" onclick="dlPtZIP()">ZIP</button>
+              <button class="btn bhtml" onclick="dlPtHTML()">HTML</button>
+              <button class="btn bedit" onclick="openEdit()">Edit</button>
+              <button class="btn bdel" onclick="delPt()">Delete</button>
             </div>
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-            <button class="btn bpdf" onclick="genPDF()">Generate PDF Report</button>
-          </div>
-
-          <div class="sec">VISITS</div>
-          <div class="vg" id="vList"></div>
-
-          <div id="vDetail" style="display:none">
-            <div class="sec">VISIT INFO</div>
-            <div class="ibox" id="vInfo"></div>
-            <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="nb" id="vNotes"></div></div>
-            <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
-            <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
-            <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
-            <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="dg" id="bGrid"></div></div>
+          <div class="mb">
+            <div class="sec">PATIENT INFO</div>
+            <div class="ibox" id="pInfo"></div>
+            <div class="sec">BEFORE / AFTER COMPARISON</div>
+            <div class="cw">
+              <div class="cs">
+                <h4>BEFORE</h4>
+                <select id="cV1" onchange="loadCmp()"><option value="">Select visit</option></select>
+                <div class="cp" id="cPh1"></div>
+              </div>
+              <div class="cs">
+                <h4>AFTER</h4>
+                <select id="cV2" onchange="loadCmp()"><option value="">Select visit</option></select>
+                <div class="cp" id="cPh2"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+              <button class="btn bpdf" onclick="genPDF()">Generate PDF Report</button>
+            </div>
+            <div class="sec">VISITS</div>
+            <div class="vg" id="vList"></div>
+            <div id="vDetail" style="display:none">
+              <div class="sec">VISIT INFO</div>
+              <div class="ibox" id="vInfo"></div>
+              <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="nb" id="vNotes"></div></div>
+              <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
+              <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
+              <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
+              <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="dg" id="bGrid"></div></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- AGENDA TAB -->
+  <div class="tcontent" id="tab-agenda" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Daily Agenda</h2><div class="sub">Visits completed on the selected day</div></div>
+        <div class="date-bar">
+          <button class="navb" onclick="agendaShift(-1)">‹</button>
+          <input id="agendaDate" type="date" onchange="loadAgenda()">
+          <button class="navb" onclick="agendaShift(1)">›</button>
+          <button class="today-b" onclick="agendaToday()">Today</button>
+        </div>
+      </div>
+      <div id="agendaList"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- APPOINTMENTS TAB -->
+  <div class="tcontent" id="tab-appointments" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Appointment Book</h2><div class="sub">Scheduled appointments. Send WhatsApp or SMS reminders.</div></div>
+        <div class="date-bar">
+          <button class="navb" onclick="apptShift(-1)">‹</button>
+          <input id="apptDate" type="date" onchange="loadAppts()">
+          <button class="navb" onclick="apptShift(1)">›</button>
+          <button class="today-b" onclick="apptToday()">Today</button>
+        </div>
+      </div>
+      <div id="apptList"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div class="tcontent" id="tab-stats" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Statistics</h2><div class="sub">Clinic activity across periods</div></div>
+      </div>
+      <div id="statsBody"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
 </div>
 
+<!-- Patient Modal -->
 <div class="modal" id="pModal">
   <div class="mbox">
     <h3 id="mTitle">Add Patient</h3>
@@ -233,12 +339,79 @@ var SU='https://hugxacklprzujswtaike.supabase.co';
 var SK='sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
 var db=supabase.createClient(SU,SK);
 var AL=['Front','Left 45','Left Profile','Right 45','Right Profile'];
+var BUCKET='visit-files';
 var cid=null,pts=[],selPid=null,selVid=null,vis=[],selPt=null,editPid=null,clinic={};
 var cPh1={},cPh2={},cVis1=null,cVis2=null;
+var agendaDate=new Date(),apptDate=new Date();
+var signedCache={}; // path -> {url, exp}
 
+// ============ SIGNED URL HELPERS ============
+async function getSigned(path){
+  if(!path)return null;
+  if(path.indexOf('http')===0){
+    // Old full URL - extract filename and re-sign
+    try{
+      var u=new URL(path);
+      var parts=u.pathname.split('/');
+      var fname=parts[parts.length-1];
+      if(fname)path=fname;
+    }catch(e){return path;}
+  }
+  var c=signedCache[path];
+  var now=Date.now();
+  if(c&&c.exp>now)return c.url;
+  try{
+    var r=await db.storage.from(BUCKET).createSignedUrl(path,3600);
+    if(r.data&&r.data.signedUrl){
+      signedCache[path]={url:r.data.signedUrl,exp:now+50*60*1000};
+      return r.data.signedUrl;
+    }
+  }catch(e){}
+  return null;
+}
+
+async function getSignedBatch(paths){
+  var out={};
+  var toFetch=[];
+  for(var i=0;i<paths.length;i++){
+    var p=paths[i];
+    if(!p)continue;
+    // Convert full URLs to filenames
+    var key=p;
+    if(p.indexOf('http')===0){
+      try{
+        var u=new URL(p);
+        var parts=u.pathname.split('/');
+        key=parts[parts.length-1];
+      }catch(e){out[p]=p;continue;}
+    }
+    var c=signedCache[key];
+    if(c&&c.exp>Date.now()){out[p]=c.url;continue;}
+    toFetch.push({orig:p,key:key});
+  }
+  if(toFetch.length){
+    try{
+      var keys=toFetch.map(function(x){return x.key;});
+      var r=await db.storage.from(BUCKET).createSignedUrls(keys,3600);
+      if(r.data){
+        for(var i=0;i<r.data.length;i++){
+          var item=r.data[i];
+          if(item.signedUrl){
+            signedCache[item.path]={url:item.signedUrl,exp:Date.now()+50*60*1000};
+            var match=toFetch.filter(function(x){return x.key===item.path;})[0];
+            if(match)out[match.orig]=item.signedUrl;
+          }
+        }
+      }
+    }catch(e){}
+  }
+  return out;
+}
+
+// ============ AUTH ============
 window.onload=async function(){
   var r=await db.auth.getSession();
-  if(r.data.session) await showApp(r.data.session.user);
+  if(r.data.session)await showApp(r.data.session.user);
 };
 
 async function doLogin(){
@@ -252,14 +425,12 @@ async function doLogin(){
   if(r.error){
     err.style.display='block';err.textContent='Invalid email or password';
     btn.disabled=false;btn.textContent='Sign In';
-  } else {
-    await showApp(r.data.user);
-  }
+  } else await showApp(r.data.user);
 }
 
 async function doLogout(){
   await db.auth.signOut();
-  cid=null;pts=[];
+  cid=null;pts=[];signedCache={};
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('app').classList.remove('on');
 }
@@ -274,13 +445,29 @@ async function showApp(user){
   clinic=cr.data||{};
   await loadPts();
   await loadStats();
+  var today=fmtDate(new Date());
+  document.getElementById('agendaDate').value=today;
+  document.getElementById('apptDate').value=today;
 }
 
+// ============ TABS ============
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===name);});
+  document.querySelectorAll('.tcontent').forEach(function(c){c.classList.toggle('on',c.id==='tab-'+name);});
+  if(name==='agenda')loadAgenda();
+  if(name==='appointments')loadAppts();
+  if(name==='stats')loadStatsTab();
+}
+
+function fmtDate(d){return d.toISOString().split('T')[0]}
+function parseDate(s){var d=new Date(s);return isNaN(d)?new Date():d}
+
+// ============ PATIENTS ============
 async function loadStats(){
-  var pc=await db.from('patients').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var vc=await db.from('visits').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var ph=await db.from('photos').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
-  var dc=await db.from('documents').select('*',{count:'exact',head:true}).eq('clinic_id',cid);
+  var pc=await db.from('patients').select('*',{count:'exact',head:true}).eq('clinic_id',cid).is('deleted_at',null);
+  var vc=await db.from('visits').select('*',{count:'exact',head:true}).eq('clinic_id',cid).is('deleted_at',null);
+  var ph=await db.from('photos').select('*',{count:'exact',head:true}).eq('clinic_id',cid).is('deleted_at',null);
+  var dc=await db.from('documents').select('*',{count:'exact',head:true}).eq('clinic_id',cid).is('deleted_at',null);
   document.getElementById('stP').textContent=pc.count||0;
   document.getElementById('stV').textContent=vc.count||0;
   document.getElementById('stPh').textContent=ph.count||0;
@@ -288,7 +475,7 @@ async function loadStats(){
 }
 
 async function loadPts(){
-  var r=await db.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});
+  var r=await db.from('patients').select('*').eq('clinic_id',cid).is('deleted_at',null).order('created_at',{ascending:false});
   pts=r.data||[];
   renderP(pts);
 }
@@ -300,7 +487,7 @@ function renderP(list){
   for(var i=0;i<list.length;i++){
     var p=list[i];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
-    h+='<div class="pn">'+p.name+' '+(p.surname||'')+'</div>';
+    h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
     h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
   }
   el.innerHTML=h;
@@ -308,7 +495,7 @@ function renderP(list){
 
 function filterP(){
   var q=document.getElementById('srch').value.toLowerCase();
-  renderP(pts.filter(function(p){return(p.name+' '+(p.surname||'')).toLowerCase().includes(q);}));
+  renderP(pts.filter(function(p){return((p.name||'')+' '+(p.surname||'')).toLowerCase().includes(q);}));
 }
 
 async function selP(id){
@@ -318,23 +505,23 @@ async function selP(id){
   document.getElementById('emptyMsg').style.display='none';
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
-  document.getElementById('dName').textContent=p.name+' '+(p.surname||'');
+  document.getElementById('dName').textContent=(p.name||'')+' '+(p.surname||'');
   document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
   var ih='';
-  ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+p.name+' '+(p.surname||'')+'</span></div>';
+  ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+(p.name||'')+' '+(p.surname||'')+'</span></div>';
   ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone||'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">City</span><span class="iv">'+(p.city||'-')+'</span></div>';
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+p.notes+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
-  var vr=await db.from('visits').select('*').eq('patient_id',id).order('created_at',{ascending:false});
+  var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
   renderV();
-  fillCmp();
+  await fillCmp();
 }
 
-function fillCmp(){
+async function fillCmp(){
   var opts='<option value="">Select visit</option>';
   for(var i=0;i<vis.length;i++){
     var v=vis[i];
@@ -348,7 +535,7 @@ function fillCmp(){
   if(vis.length>=2){
     document.getElementById('cV1').value=vis[vis.length-1].id;
     document.getElementById('cV2').value=vis[0].id;
-    loadCmp();
+    await loadCmp();
   }
 }
 
@@ -358,22 +545,35 @@ async function loadCmp(){
   cVis1=v1?vis.find(function(x){return x.id===v1;}):null;
   cVis2=v2?vis.find(function(x){return x.id===v2;}):null;
   cPh1={};cPh2={};
+  var paths=[];
+  var photosV1=[],photosV2=[];
   if(v1){
-    var r=await db.from('photos').select('*').eq('visit_id',v1).order('angle_index');
+    var r=await db.from('photos').select('*').eq('visit_id',v1).is('deleted_at',null).order('angle_index');
+    photosV1=r.data||[];
+    photosV1.forEach(function(p){if(p.file_path)paths.push(p.file_path);});
+  }
+  if(v2){
+    var r2=await db.from('photos').select('*').eq('visit_id',v2).is('deleted_at',null).order('angle_index');
+    photosV2=r2.data||[];
+    photosV2.forEach(function(p){if(p.file_path)paths.push(p.file_path);});
+  }
+  var urls=await getSignedBatch(paths);
+  if(v1){
     var h='';
-    (r.data||[]).forEach(function(p){
-      cPh1[p.angle_index]=p.file_path;
-      h+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+    photosV1.forEach(function(p){
+      var u=urls[p.file_path]||'';
+      cPh1[p.angle_index]=u;
+      h+='<div><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
       h+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
     document.getElementById('cPh1').innerHTML=h||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
   }
   if(v2){
-    var r2=await db.from('photos').select('*').eq('visit_id',v2).order('angle_index');
     var h2='';
-    (r2.data||[]).forEach(function(p){
-      cPh2[p.angle_index]=p.file_path;
-      h2+='<div><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+    photosV2.forEach(function(p){
+      var u=urls[p.file_path]||'';
+      cPh2[p.angle_index]=u;
+      h2+='<div><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
       h2+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
     });
     document.getElementById('cPh2').innerHTML=h2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
@@ -405,30 +605,40 @@ async function selV(id){
   document.getElementById('vInfo').innerHTML=vi;
   if(v.notes){document.getElementById('nWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
   else document.getElementById('nWrap').style.display='none';
-  var pr=await db.from('photos').select('*').eq('visit_id',id).order('angle_index');
-  if(pr.data&&pr.data.length){
+  var pr=await db.from('photos').select('*').eq('visit_id',id).is('deleted_at',null).order('angle_index');
+  var photos=pr.data||[];
+  if(photos.length){
     document.getElementById('phWrap').style.display='block';
+    var paths=photos.map(function(p){return p.file_path;}).filter(Boolean);
+    var urls=await getSignedBatch(paths);
     var ph='';
-    pr.data.forEach(function(p){
-      ph+='<div class="pc"><img src="'+p.file_path+'" onclick="openLb(\''+p.file_path+'\')"/>';
+    photos.forEach(function(p){
+      var u=urls[p.file_path]||'';
+      ph+='<div class="pc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
       ph+='<div class="plb">'+(AL[p.angle_index]||'Photo')+'</div></div>';
     });
     document.getElementById('phGrid').innerHTML=ph;
   } else document.getElementById('phWrap').style.display='none';
-  var dr=await db.from('documents').select('*').eq('visit_id',id);
-  sDocs('kWrap','kGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
-  sDocs('oWrap','oGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
-  sDocs('bWrap','bGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
+  var dr=await db.from('documents').select('*').eq('visit_id',id).is('deleted_at',null);
+  await sDocs('kWrap','kGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
+  await sDocs('oWrap','oGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
+  await sDocs('bWrap','bGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
 }
 
-function sDocs(wid,gid,docs){
+async function sDocs(wid,gid,docs){
   if(!docs.length){document.getElementById(wid).style.display='none';return;}
   document.getElementById(wid).style.display='block';
+  var paths=docs.map(function(d){return d.file_path;}).filter(Boolean);
+  var urls=await getSignedBatch(paths);
   var h='';
-  docs.forEach(function(d){h+='<div class="dc"><img src="'+d.file_path+'" onclick="openLb(\''+d.file_path+'\')"/></div>';});
+  docs.forEach(function(d){
+    var u=urls[d.file_path]||'';
+    h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';
+  });
   document.getElementById(gid).innerHTML=h;
 }
 
+// ============ MODAL ============
 function openAdd(){
   editPid=null;
   document.getElementById('mTitle').textContent='Add Patient';
@@ -479,7 +689,8 @@ async function savePt(){
 async function delPt(){
   if(!selPt)return;
   if(!confirm('Delete '+selPt.name+'? This cannot be undone.'))return;
-  await db.from('patients').delete().eq('id',selPid);
+  // Soft delete
+  await db.from('patients').update({deleted_at:new Date().toISOString()}).eq('id',selPid);
   selPid=null;selPt=null;
   document.getElementById('pDetail').style.display='none';
   document.getElementById('emptyMsg').style.display='flex';
@@ -492,6 +703,169 @@ function closeLb(){document.getElementById('lb').classList.remove('on');}
 function sp(msg){var el=document.getElementById('prog');el.textContent=msg;el.style.display='block';}
 function hp(){document.getElementById('prog').style.display='none';}
 
+// ============ AGENDA ============
+function agendaShift(d){agendaDate=parseDate(document.getElementById('agendaDate').value);agendaDate.setDate(agendaDate.getDate()+d);document.getElementById('agendaDate').value=fmtDate(agendaDate);loadAgenda();}
+function agendaToday(){agendaDate=new Date();document.getElementById('agendaDate').value=fmtDate(agendaDate);loadAgenda();}
+
+async function loadAgenda(){
+  agendaDate=parseDate(document.getElementById('agendaDate').value);
+  var el=document.getElementById('agendaList');
+  el.innerHTML='<div class="loader">Loading...</div>';
+  try{
+    var r=await db.rpc('get_daily_agenda',{p_clinic_id:cid,p_date:fmtDate(agendaDate)});
+    if(r.error)throw r.error;
+    var items=r.data||[];
+    if(!items.length){el.innerHTML='<div class="loader">No visits on this day.</div>';return;}
+    var h='';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      var name=((it.patient_name||'')+' '+(it.patient_surname||'')).trim();
+      var phone=it.patient_phone||'';
+      var time=it.visit_date?new Date(it.visit_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
+      h+='<div class="list-card"><div class="row1"><div>';
+      h+='<div class="name">'+name+'</div>';
+      h+='<div class="meta">'+(phone?phone+' · ':'')+time+'</div>';
+      h+='</div><div>';
+      h+='<span class="tag">'+(it.visit_type||'Visit')+'</span>';
+      if(it.region)h+=' <span class="tag" style="margin-left:6px">'+it.region+'</span>';
+      h+='</div></div>';
+      if(it.notes)h+='<div class="body">'+it.notes+'</div>';
+      h+='<div class="actions"><button class="btn bedit" onclick="goPatient(\''+it.patient_id+'\')">View Patient</button></div>';
+      h+='</div>';
+    }
+    el.innerHTML=h;
+  }catch(e){el.innerHTML='<div class="loader">Could not load agenda.</div>';}
+}
+
+function goPatient(pid){switchTab('patients');selP(pid);}
+
+// ============ APPOINTMENTS ============
+function apptShift(d){apptDate=parseDate(document.getElementById('apptDate').value);apptDate.setDate(apptDate.getDate()+d);document.getElementById('apptDate').value=fmtDate(apptDate);loadAppts();}
+function apptToday(){apptDate=new Date();document.getElementById('apptDate').value=fmtDate(apptDate);loadAppts();}
+
+window._appts=[];
+
+async function loadAppts(){
+  apptDate=parseDate(document.getElementById('apptDate').value);
+  var el=document.getElementById('apptList');
+  el.innerHTML='<div class="loader">Loading...</div>';
+  try{
+    var r=await db.rpc('get_daily_appointments',{p_clinic_id:cid,p_date:fmtDate(apptDate)});
+    if(r.error)throw r.error;
+    var items=r.data||[];
+    window._appts=items;
+    if(!items.length){el.innerHTML='<div class="loader">No appointments on this day.</div>';return;}
+    var h='';
+    for(var i=0;i<items.length;i++){
+      var a=items[i];
+      var name=((a.patient_name||a.patient_name_temp||'')+' '+(a.patient_surname||'')).trim();
+      var phone=a.patient_phone||a.patient_phone_temp||'';
+      var time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
+      var status=a.status||'planned';
+      var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
+      h+='<div class="list-card"><div class="row1"><div>';
+      h+='<div class="name">'+(name||'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
+      h+='<div class="meta">'+(phone?'📞 '+phone+' · ':'')+time+(a.notes?' · '+a.notes:'')+'</div>';
+      h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
+      if(phone&&status==='planned'){
+        h+='<div class="actions">';
+        h+='<button class="btn bwa" onclick="sendWA('+i+')">📱 WhatsApp</button>';
+        h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉️ SMS</button>';
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+    el.innerHTML=h;
+  }catch(e){el.innerHTML='<div class="loader">Could not load appointments.</div>';}
+}
+
+function normPhone(p){return (p||'').replace(/[^0-9+]/g,'');}
+
+function buildReminder(a){
+  var tpl=((clinic&&clinic.reminder_message)||'').trim();
+  var name=(a.patient_name||a.patient_name_temp||'').trim();
+  var date=a.appointment_date?new Date(a.appointment_date).toLocaleDateString():'';
+  var time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
+  if(!tpl)return 'Dear '+name+', this is a reminder for your appointment on '+date+' at '+time+'.';
+  var m=tpl;
+  m=m.replace(/\[ad\]/g,name).replace(/\[tarih\]/g,date).replace(/\[saat\]/g,time);
+  m=m.replace(/\[name\]/g,name).replace(/\[date\]/g,date).replace(/\[time\]/g,time);
+  m=m.replace(/\[datum\]/g,date).replace(/\[uhrzeit\]/g,time);
+  m=m.replace(/\[nombre\]/g,name).replace(/\[fecha\]/g,date).replace(/\[hora\]/g,time);
+  m=m.replace(/\[nom\]/g,name).replace(/\[heure\]/g,time);
+  m=m.replace(/\[nome\]/g,name).replace(/\[data\]/g,date).replace(/\[ora\]/g,time);
+  m=m.replace(/\[имя\]/g,name).replace(/\[дата\]/g,date).replace(/\[время\]/g,time);
+  m=m.replace(/\[이름\]/g,name).replace(/\[날짜\]/g,date).replace(/\[시간\]/g,time);
+  m=m.replace(/\[姓名\]/g,name).replace(/\[日期\]/g,date).replace(/\[时间\]/g,time);
+  return m;
+}
+
+function sendWA(i){
+  var a=window._appts[i];if(!a)return;
+  var phone=a.patient_phone||a.patient_phone_temp||'';
+  if(!phone){alert('No phone');return;}
+  var msg=buildReminder(a);
+  window.open('https://wa.me/'+normPhone(phone)+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+function sendSMS(i){
+  var a=window._appts[i];if(!a)return;
+  var phone=a.patient_phone||a.patient_phone_temp||'';
+  if(!phone){alert('No phone');return;}
+  var msg=buildReminder(a);
+  window.location.href='sms:'+phone+'?body='+encodeURIComponent(msg);
+}
+
+// ============ STATS ============
+async function loadStatsTab(){
+  var el=document.getElementById('statsBody');
+  el.innerHTML='<div class="loader">Loading...</div>';
+  try{
+    var r=await db.rpc('get_clinic_stats',{p_clinic_id:cid});
+    if(r.error)throw r.error;
+    var data=r.data;
+    if(!data){el.innerHTML='<div class="loader">No data.</div>';return;}
+    var thisMonth=getPeriod(data,'this_month');
+    var lastMonth=getPeriod(data,'last_month');
+    var thisYear=getPeriod(data,'this_year');
+    var lastYear=getPeriod(data,'last_year');
+    var allTime=getPeriod(data,'all_time');
+    var h='<div class="stat-grid">';
+    h+=statCard('This Month',thisMonth,lastMonth,'vs last month');
+    h+=statCard('Last Month',lastMonth);
+    h+=statCard('This Year',thisYear,lastYear,'vs last year');
+    h+=statCard('Last Year',lastYear);
+    h+=statCard('All Time',allTime);
+    h+='</div>';
+    el.innerHTML=h;
+  }catch(e){el.innerHTML='<div class="loader">Could not load statistics.</div>';}
+}
+
+function getPeriod(stats,key){
+  var p=stats[key]||{};
+  return {patients:+(p.patients||0),visits:+(p.visits||0),controls:+(p.controls||0)};
+}
+
+function trendBadge(curr,prev){
+  var d=curr-prev;
+  if(d===0)return '';
+  var up=d>0;
+  return '<div class="stat-trend '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+Math.abs(d)+'</div>';
+}
+
+function statCard(title,data,cmp,cmpLabel){
+  var h='<div class="stat-card"><div class="stat-title">📅 '+title+'</div>';
+  h+='<div class="stat-row">';
+  h+='<div class="stat-cell"><div class="stat-icon purple">👥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon teal">📋</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon gold">🔄</div><div class="stat-value">'+data.controls+'</div><div class="stat-label">Controls</div>'+(cmp?trendBadge(data.controls,cmp.controls):'')+'</div>';
+  h+='</div>';
+  if(cmpLabel)h+='<div class="stat-compare">'+cmpLabel+'</div>';
+  h+='</div>';
+  return h;
+}
+
+// ============ PDF ============
 function imgToB64(url){
   return new Promise(function(resolve){
     var img=new Image();
@@ -504,7 +878,7 @@ function imgToB64(url){
       resolve(c.toDataURL('image/jpeg',0.85));
     };
     img.onerror=function(){resolve(null);};
-    img.src=url+'?nocache='+Date.now();
+    img.src=url+(url.indexOf('?')>-1?'&':'?')+'nocache='+Date.now();
   });
 }
 
@@ -514,8 +888,7 @@ async function genPDF(){
   var v2=document.getElementById('cV2').value;
   if(!v1&&!v2){alert('Please select at least one visit');return;}
   sp('Loading images...');
-
-  var pName=selPt.name+' '+(selPt.surname||'');
+  var pName=(selPt.name||'')+' '+(selPt.surname||'');
   var imgC={};
   var allU=Object.assign({},cPh1,cPh2);
   var n=0;
@@ -525,32 +898,25 @@ async function genPDF(){
       imgC[allU[k]]=await imgToB64(allU[k]);
     }
   }
-
   var logoB=null;
   if(clinic.logo_url){
     sp('Loading logo...');
-    logoB=await imgToB64(clinic.logo_url);
+    var logoUrl=clinic.logo_url;
+    if(logoUrl.indexOf('http')!==0){
+      var s=await getSigned(logoUrl);
+      if(s)logoUrl=s;
+    }
+    logoB=await imgToB64(logoUrl);
   }
-
   var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
   var PW=595,PH=842;
   var M=28,UW=PW-M*2;
   var HDR=106,FTR=36,CG=8,RG=8,LH=20;
-
   function dHdr(d){
     var y=M;
-    if(clinic.name){
-      d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);
-      d.text(clinic.name,M,y+16);
-    }
-    if(clinic.doctor){
-      d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
-      d.text(clinic.doctor,M,y+30);
-    }
-    if(clinic.speciality){
-      d.setFontSize(9);d.setTextColor(180,0,0);
-      d.text(clinic.speciality,M,y+44);
-    }
+    if(clinic.name){d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);d.text(clinic.name,M,y+16);}
+    if(clinic.doctor){d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);d.text(clinic.doctor,M,y+30);}
+    if(clinic.speciality){d.setFontSize(9);d.setTextColor(180,0,0);d.text(clinic.speciality,M,y+44);}
     if(logoB){try{d.addImage(logoB,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
     d.setDrawColor(200,200,200);d.line(M,y+54,PW-M,y+54);
     d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
@@ -558,10 +924,7 @@ async function genPDF(){
     d.setFontSize(11);d.setFont('helvetica','bold');d.setTextColor(30,30,30);
     d.text(pName,M,y+78);
     var p=selPt;
-    if(p.birth_date){
-      d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
-      d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);
-    }
+    if(p.birth_date){d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);}
     d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
     d.text('VISIT',PW/2,y+66);
     d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
@@ -569,7 +932,6 @@ async function genPDF(){
     if(cVis2)d.text('After: '+(cVis2.visit_date||'').split('T')[0]+' - '+(cVis2.region||''),PW/2,y+90);
     d.setDrawColor(200,200,200);d.line(M,y+100,PW-M,y+100);
   }
-
   function dFtr(d){
     var y=PH-M-FTR;
     d.setDrawColor(200,200,200);d.line(M,y,PW-M,y);
@@ -578,7 +940,6 @@ async function genPDF(){
     if(clinic.address)d.text(clinic.address,PW/2,y+16,{align:'center'});
     if(clinic.instagram)d.text(clinic.instagram,PW-M,y+16,{align:'right'});
   }
-
   function dPage(d,idxs,lbls){
     var n2=idxs.length;
     var totalLabelSpace=n2*LH;
@@ -589,8 +950,7 @@ async function genPDF(){
     pH=pW*4/3;
     var sx=M+(UW-pW*2-CG)/2;
     var sy=M+HDR+4;
-    dHdr(d);
-    dFtr(d);
+    dHdr(d);dFtr(d);
     for(var i=0;i<n2;i++){
       var ai=idxs[i];
       var u1=cPh1[ai];
@@ -607,32 +967,26 @@ async function genPDF(){
       d.setTextColor(120,120,120);d.text('After',sx+pW*2+CG,ly,{align:'right'});
     }
   }
-
-  sp('Generating page 1...');
-  dPage(doc,[0],['Front']);
-  sp('Generating page 2...');
-  doc.addPage();
-  dPage(doc,[1,3],['Left 45','Right 45']);
-  sp('Generating page 3...');
-  doc.addPage();
-  dPage(doc,[2,4],['Left Profile','Right Profile']);
-
+  sp('Generating page 1...');dPage(doc,[0],['Front']);
+  sp('Generating page 2...');doc.addPage();dPage(doc,[1,3],['Left 45','Right 45']);
+  sp('Generating page 3...');doc.addPage();dPage(doc,[2,4],['Left Profile','Right Profile']);
   var fn=pName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
   doc.save(fn);
   hp();
 }
 
+// ============ EXPORT ============
 async function fetchAll(){
-  var r=await db.from('patients').select('*').eq('clinic_id',cid);
+  var r=await db.from('patients').select('*').eq('clinic_id',cid).is('deleted_at',null);
   var all=[];
   for(var i=0;i<(r.data||[]).length;i++){
     var p=r.data[i];
-    var vr=await db.from('visits').select('*').eq('patient_id',p.id);
+    var vr=await db.from('visits').select('*').eq('patient_id',p.id).is('deleted_at',null);
     var vd=[];
     for(var j=0;j<(vr.data||[]).length;j++){
       var v=vr.data[j];
-      var ph=await db.from('photos').select('*').eq('visit_id',v.id);
-      var dc=await db.from('documents').select('*').eq('visit_id',v.id);
+      var ph=await db.from('photos').select('*').eq('visit_id',v.id).is('deleted_at',null);
+      var dc=await db.from('documents').select('*').eq('visit_id',v.id).is('deleted_at',null);
       vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[]}));
     }
     all.push(Object.assign({},p,{visits:vd}));
@@ -642,12 +996,12 @@ async function fetchAll(){
 
 async function fetchPt(pid){
   var p=pts.find(function(x){return x.id===pid;});
-  var vr=await db.from('visits').select('*').eq('patient_id',pid);
+  var vr=await db.from('visits').select('*').eq('patient_id',pid).is('deleted_at',null);
   var vd=[];
   for(var j=0;j<(vr.data||[]).length;j++){
     var v=vr.data[j];
-    var ph=await db.from('photos').select('*').eq('visit_id',v.id);
-    var dc=await db.from('documents').select('*').eq('visit_id',v.id);
+    var ph=await db.from('photos').select('*').eq('visit_id',v.id).is('deleted_at',null);
+    var dc=await db.from('documents').select('*').eq('visit_id',v.id).is('deleted_at',null);
     vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[]}));
   }
   return [Object.assign({},p,{visits:vd})];
@@ -657,17 +1011,19 @@ async function mkZIP(all,fn){
   var zip=new JSZip();var t=0;
   for(var i=0;i<all.length;i++){
     var p=all[i];
-    var f=zip.folder(p.name+'_'+(p.surname||''));
+    var f=zip.folder((p.name||'')+'_'+(p.surname||''));
     f.file('info.json',JSON.stringify({name:p.name,surname:p.surname,birth_date:p.birth_date,phone:p.phone,city:p.city},null,2));
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       var vf=f.folder('visit_'+(j+1)+'_'+(v.visit_date||'').split('T')[0]);
       for(var k=0;k<v.photos.length;k++){
         sp('Downloading photo '+(++t)+'...');
-        try{var rb=await fetch(v.photos[k].file_path);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await rb.blob());}catch(e){}
+        var u=await getSigned(v.photos[k].file_path);
+        if(u){try{var rb=await fetch(u);vf.file('photo_'+(AL[v.photos[k].angle_index]||k)+'.jpg',await rb.blob());}catch(e){}}
       }
       for(var k=0;k<v.documents.length;k++){
-        try{var rb=await fetch(v.documents[k].file_path);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await rb.blob());}catch(e){}
+        var u=await getSigned(v.documents[k].file_path);
+        if(u){try{var rb=await fetch(u);vf.file('doc_'+v.documents[k].doc_type+'_'+(k+1)+'.jpg',await rb.blob());}catch(e){}}
       }
     }
   }
@@ -682,13 +1038,16 @@ async function mkHTML(all,fn){
   h+='</head><body><h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
   for(var i=0;i<all.length;i++){
     var p=all[i];
-    h+='<div class="pt"><h2>'+p.name+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
+    h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       h+='<div class="vs"><h3>'+(v.visit_type||'Visit')+' - '+(v.region||'')+' - '+(v.visit_date||'').split('T')[0]+'</h3>';
       if(v.photos.length){
         h+='<div class="phs">';
-        for(var k=0;k<v.photos.length;k++)h+='<div><img src="'+v.photos[k].file_path+'"/><div class="lb">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';
+        for(var k=0;k<v.photos.length;k++){
+          var u=await getSigned(v.photos[k].file_path);
+          if(u)h+='<div><img src="'+u+'"/><div class="lb">'+(AL[v.photos[k].angle_index]||'')+'</div></div>';
+        }
         h+='</div>';
       }
       h+='</div>';
@@ -704,10 +1063,10 @@ async function mkHTML(all,fn){
 
 async function dlZIP(){sp('Fetching...');var a=await fetchAll();await mkZIP(a,'aafc_all_'+new Date().toISOString().split('T')[0]);hp();}
 async function dlHTML(){sp('Fetching...');var a=await fetchAll();await mkHTML(a,'aafc_report_'+new Date().toISOString().split('T')[0]);hp();}
-async function dlPtZIP(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=(selPt.name+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkZIP(a,'aafc_'+n);hp();}
-async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=(selPt.name+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();}
+async function dlPtZIP(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkZIP(a,'aafc_'+n);hp();}
+async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();}
 async function dlJSON(){sp('Fetching...');var a=await fetchAll();var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';el.click();hp();}
-async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo URL'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
+async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo Path'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
 </script>
 </body>
 </html>

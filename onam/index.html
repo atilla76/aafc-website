@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>Onam Formu | AAFC</title>
+<style>
+  :root {
+    --ink: #12101E;
+    --ink2: #1C1929;
+    --gold: #B89A6A;
+    --goldLt: #D4B896;
+    --cream: #F5F1EB;
+    --dim: rgba(245,241,235,0.55);
+    --red: #C0614A;
+    --green: #3AB06A;
+    --border: rgba(255,255,255,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--ink);
+    color: var(--cream);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+  .logo { text-align: center; margin: 12px 0 28px; }
+  .logo h1 { color: var(--gold); font-size: 22px; font-weight: 600; letter-spacing: 1px; }
+  .logo .sub { color: var(--dim); font-size: 12px; margin-top: 4px; }
+  
+  .card {
+    background: var(--ink2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  
+  h2 { color: var(--gold); font-size: 16px; margin-bottom: 14px; letter-spacing: 0.5px; }
+  .info { color: var(--dim); font-size: 13px; margin-bottom: 14px; }
+  
+  .otp-box { text-align: center; padding: 12px 0; }
+  .otp-input {
+    width: 100%;
+    max-width: 280px;
+    font-size: 28px;
+    letter-spacing: 12px;
+    text-align: center;
+    padding: 14px;
+    background: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--cream);
+    font-weight: 600;
+    margin: 8px auto;
+    display: block;
+  }
+  .otp-input:focus { outline: none; border-color: var(--gold); }
+  
+  .btn {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { background: var(--goldLt); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.secondary { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+  .btn.danger { background: var(--red); color: white; }
+  
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .alert.error { background: rgba(192,97,74,0.15); color: var(--red); border: 1px solid rgba(192,97,74,0.3); }
+  .alert.success { background: rgba(58,176,106,0.15); color: var(--green); border: 1px solid rgba(58,176,106,0.3); }
+  .alert.warn { background: rgba(212,150,58,0.15); color: #D4963A; border: 1px solid rgba(212,150,58,0.3); }
+  
+  .content-box {
+    background: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    max-height: 380px;
+    overflow-y: auto;
+    font-size: 13px;
+    color: var(--cream);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .content-box::-webkit-scrollbar { width: 6px; }
+  .content-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  
+  .meta-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+  .meta-row strong { color: var(--cream); }
+  
+  .signature-box {
+    background: white;
+    border: 2px dashed var(--gold);
+    border-radius: 10px;
+    height: 200px;
+    margin: 14px 0;
+    position: relative;
+    touch-action: none;
+  }
+  .signature-canvas { width: 100%; height: 100%; cursor: crosshair; }
+  .signature-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    color: rgba(0,0,0,0.3);
+    font-size: 14px;
+    pointer-events: none;
+    user-select: none;
+  }
+  .signature-hint.hidden { display: none; }
+  
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; }
+  .checkbox-row input { margin-top: 3px; cursor: pointer; }
+  .checkbox-row label { font-size: 12px; color: var(--cream); cursor: pointer; line-height: 1.5; }
+  
+  .success-icon { font-size: 64px; text-align: center; color: var(--green); margin: 20px 0; }
+  
+  .footer { text-align: center; color: var(--dim); font-size: 11px; margin-top: 24px; padding: 16px; }
+  .footer a { color: var(--gold); text-decoration: none; }
+  
+  .hidden { display: none !important; }
+  
+  .loading {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--cream);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  
+  <div class="logo">
+    <h1>AAFC</h1>
+    <div class="sub">Aesthetic Archive for Clinics</div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loading-state" class="card">
+    <div style="text-align:center; padding: 40px 20px; color: var(--dim);">
+      <div class="loading" style="width:24px; height:24px; border-width:3px;"></div>
+      <div style="margin-top:12px;">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="error-state" class="card hidden">
+    <h2 style="color: var(--red);">⚠ Hata</h2>
+    <p id="error-message" style="color: var(--dim); font-size: 13px;"></p>
+  </div>
+
+  <!-- OTP STATE -->
+  <div id="otp-state" class="card hidden">
+    <h2>Doğrulama Kodu</h2>
+    <p class="info">
+      Telefonunuza gelen <strong>6 haneli kodu</strong> girin.<br>
+      <span style="font-size:11px; opacity:0.7;">Mesaj almadıysanız klinikten yeni kod isteyin.</span>
+    </p>
+    
+    <div id="otp-alert" class="alert error hidden"></div>
+    
+    <div class="otp-box">
+      <input type="tel" id="otp-input" class="otp-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="off">
+    </div>
+    
+    <button class="btn" id="verify-btn">Doğrula</button>
+    
+    <div style="text-align:center; font-size:11px; color:var(--dim); margin-top:14px;">
+      Hasta: <strong id="patient-name-otp" style="color:var(--cream);"></strong><br>
+      Telefon: <strong id="patient-phone-otp" style="color:var(--cream);"></strong>
+    </div>
+  </div>
+
+  <!-- CONSENT STATE -->
+  <div id="consent-state" class="hidden">
+    
+    <div class="card">
+      <h2 id="template-name-display">Onam Formu</h2>
+      <div class="meta-row">
+        <span>Klinik: <strong id="clinic-name-display"></strong></span>
+        <span>Hekim: <strong id="clinic-doctor-display"></strong></span>
+      </div>
+      <div class="meta-row">
+        <span>Hasta: <strong id="patient-name-display"></strong></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📄 Onam Metni</h2>
+      <p class="info">Lütfen aşağıdaki metni dikkatle okuyun.</p>
+      <div class="content-box" id="content-display"></div>
+    </div>
+
+    <div class="card">
+      <h2>✍ İmza</h2>
+      <p class="info">Lütfen aşağıdaki alana imzanızı çizin.</p>
+      
+      <div class="signature-box">
+        <canvas id="signature-canvas" class="signature-canvas"></canvas>
+        <div class="signature-hint" id="signature-hint">İmzanızı buraya çizin</div>
+      </div>
+      
+      <button class="btn secondary" id="clear-signature">Temizle</button>
+      
+      <div class="checkbox-row">
+        <input type="checkbox" id="consent-checkbox">
+        <label for="consent-checkbox">
+          Yukarıdaki onam metnini okudum, anladım, sorularıma yanıt aldım ve 
+          <strong>bilgilendirilmiş onamımı veriyorum.</strong>
+        </label>
+      </div>
+      
+      <div id="sign-alert" class="alert error hidden"></div>
+      
+      <button class="btn" id="sign-btn" disabled>Onaylıyorum</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div id="success-state" class="card hidden">
+    <div class="success-icon">✓</div>
+    <h2 style="color: var(--green); text-align:center;">Onamınız Kaydedildi</h2>
+    <p style="text-align:center; color: var(--dim); margin-top: 12px; font-size: 13px;">
+      İmzanız başarıyla kaydedildi.
+    </p>
+    <div style="background:var(--ink); border-radius:10px; padding:14px; margin-top:18px; font-size:11px; color:var(--dim);">
+      <div style="margin-bottom:4px;">📅 İmza Zamanı: <strong id="signed-at-display" style="color:var(--cream);"></strong></div>
+      <div style="margin-bottom:4px;">🔐 Belge Hash: <strong id="hash-display" style="color:var(--cream); font-family:monospace; font-size:9px; word-break:break-all;"></strong></div>
+    </div>
+    <p style="text-align:center; color:var(--dim); margin-top:14px; font-size:11px;">
+      Bu sayfayı kapatabilirsiniz. Klinik onaminizi panelden takip edebilir.
+    </p>
+  </div>
+
+  <div class="footer">
+    <a href="/">AAFC</a> · <a href="/privacy/">Gizlilik</a> · <a href="/terms/">Şartlar</a><br>
+    KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hugxacklprzujswtaike.supabase.co";
+const SUPABASE_ANON = "sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX";
+
+// URL'den consent_id al
+const urlParams = new URLSearchParams(window.location.search);
+const consentId = urlParams.get('id');
+
+// State elements
+const states = {
+  loading: document.getElementById('loading-state'),
+  error: document.getElementById('error-state'),
+  otp: document.getElementById('otp-state'),
+  consent: document.getElementById('consent-state'),
+  success: document.getElementById('success-state'),
+};
+
+function showState(name) {
+  Object.keys(states).forEach(k => states[k].classList.add('hidden'));
+  states[name].classList.remove('hidden');
+}
+
+function showError(msg) {
+  document.getElementById('error-message').textContent = msg;
+  showState('error');
+}
+
+function showAlert(elemId, message, type = 'error') {
+  const el = document.getElementById(elemId);
+  el.textContent = message;
+  el.className = `alert ${type}`;
+  el.classList.remove('hidden');
+}
+
+function hideAlert(elemId) {
+  document.getElementById(elemId).classList.add('hidden');
+}
+
+// ID kontrolu
+if (!consentId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(consentId)) {
+  showError('Geçersiz link. Lütfen klinikten yeni bir onam linki isteyin.');
+} else {
+  loadConsent();
+}
+
+let consentData = null;
+
+async function loadConsent() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_consent_for_signing`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+      },
+      body: JSON.stringify({ p_id: consentId }),
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Load error:', errText);
+      showError('Onam yüklenemedi. Link geçersiz veya süresi dolmuş olabilir.');
+      return;
+    }
+    
+    const data = await res.json();
+    
+    if (!data || data.length === 0) {
+      showError('Onam bulunamadı. Link süresi dolmuş veya iptal edilmiş olabilir.');
+      return;
+    }
+    
+    consentData = data[0];
+    
+    // Status kontrolu
+    if (consentData.status === 'signed') {
+      // Zaten imzalanmis
+      showError('Bu onam zaten imzalanmış. Yeni bir onam için klinikten link isteyin.');
+      return;
+    }
+    
+    if (consentData.status === 'revoked') {
+      showError('Bu onam klinik tarafından iptal edilmiş.');
+      return;
+    }
+    
+    if (consentData.status === 'expired' || new Date(consentData.otp_expires_at) < new Date()) {
+      showError('Bu onam linkinin süresi dolmuş (30 dakika). Klinikten yeni bir link isteyin.');
+      return;
+    }
+    
+    // Hasta bilgilerini goster
+    document.getElementById('patient-name-otp').textContent = consentData.patient_name || '-';
+    document.getElementById('patient-phone-otp').textContent = consentData.patient_phone || '-';
+    
+    // OTP zaten dogrulanmis mi?
+    if (consentData.status === 'otp_verified') {
+      showConsentContent();
+    } else {
+      showState('otp');
+      document.getElementById('otp-input').focus();
+    }
+    
+  } catch (err) {
+    console.error(err);
+    showError('Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+  }
+}
+
+// OTP DOĞRULAMA
+document.getElementById('verify-btn').addEventListener('click', verifyOtp);
+document.getElementById('otp-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') verifyOtp();
+});
+
+async function verifyOtp() {
+  const otp = document.getElementById('otp-input').value.trim();
+  
+  if (!/^\d{6}$/.test(otp)) {
+    showAlert('otp-alert', 'Lütfen 6 haneli kodu girin.');
+    return;
+  }
+  
+  const btn = document.getElementById('verify-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Doğrulanıyor...';
+  hideAlert('otp-alert');
+  
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+      },
+      body: JSON.stringify({ consent_id: consentId, otp: otp }),
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      showConsentContent();
+    } else {
+      let msg = 'Kod hatalı. Tekrar deneyin.';
+      if (data.error === 'expired') msg = 'Kod süresi dolmuş. Klinikten yeni bir link isteyin.';
+      else if (data.error === 'too_many_attempts') msg = 'Çok fazla yanlış deneme. Klinikten yeni link isteyin.';
+      else if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
+      else if (data.attempts_left !== undefined) msg = `Kod hatalı. ${data.attempts_left} deneme hakkınız kaldı.`;
+      
+      showAlert('otp-alert', msg);
+      btn.disabled = false;
+      btn.textContent = 'Doğrula';
+    }
+  } catch (err) {
+    console.error(err);
+    showAlert('otp-alert', 'Bağlantı hatası. Tekrar deneyin.');
+    btn.disabled = false;
+    btn.textContent = 'Doğrula';
+  }
+}
+
+function showConsentContent() {
+  document.getElementById('template-name-display').textContent = consentData.template_name || 'Onam Formu';
+  document.getElementById('clinic-name-display').textContent = consentData.clinic_name || '-';
+  document.getElementById('clinic-doctor-display').textContent = consentData.clinic_doctor || '-';
+  document.getElementById('patient-name-display').textContent = consentData.patient_name || '-';
+  document.getElementById('content-display').textContent = consentData.filled_content || '';
+  
+  showState('consent');
+  initSignatureCanvas();
+}
+
+// İMZA CANVAS
+let canvas, ctx, isDrawing = false, hasSignature = false;
+
+function initSignatureCanvas() {
+  canvas = document.getElementById('signature-canvas');
+  ctx = canvas.getContext('2d');
+  
+  // Canvas boyutunu ayarla
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  
+  // Touch + mouse event'leri
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseout', stopDraw);
+  
+  canvas.addEventListener('touchstart', handleTouch);
+  canvas.addEventListener('touchmove', handleTouch);
+  canvas.addEventListener('touchend', stopDraw);
+  
+  document.getElementById('clear-signature').addEventListener('click', clearSignature);
+  document.getElementById('consent-checkbox').addEventListener('change', updateSignButton);
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  if (e.touches && e.touches[0]) {
+    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  }
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  isDrawing = true;
+  const pos = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  
+  if (!hasSignature) {
+    hasSignature = true;
+    document.getElementById('signature-hint').classList.add('hidden');
+    updateSignButton();
+  }
+}
+
+function stopDraw() {
+  isDrawing = false;
+}
+
+function handleTouch(e) {
+  e.preventDefault();
+  if (e.type === 'touchstart') startDraw(e);
+  else if (e.type === 'touchmove') draw(e);
+}
+
+function clearSignature() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSignature = false;
+  document.getElementById('signature-hint').classList.remove('hidden');
+  updateSignButton();
+}
+
+function updateSignButton() {
+  const checked = document.getElementById('consent-checkbox').checked;
+  document.getElementById('sign-btn').disabled = !(hasSignature && checked);
+}
+
+// İMZA GÖNDER
+document.getElementById('sign-btn').addEventListener('click', submitSignature);
+
+async function submitSignature() {
+  const checked = document.getElementById('consent-checkbox').checked;
+  if (!hasSignature || !checked) return;
+  
+  const btn = document.getElementById('sign-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Kaydediliyor...';
+  hideAlert('sign-alert');
+  
+  try {
+    const signatureData = canvas.toDataURL('image/png');
+    
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/sign-consent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+      },
+      body: JSON.stringify({
+        consent_id: consentId,
+        signature_data: signatureData,
+      }),
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      document.getElementById('signed-at-display').textContent = new Date(data.signed_at).toLocaleString('tr-TR');
+      document.getElementById('hash-display').textContent = data.document_hash || '-';
+      showState('success');
+    } else {
+      let msg = 'Onam kaydedilemedi.';
+      if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
+      else if (data.error === 'otp_required') msg = 'OTP doğrulaması gerekli.';
+      
+      showAlert('sign-alert', msg);
+      btn.disabled = false;
+      btn.textContent = 'Onaylıyorum';
+    }
+  } catch (err) {
+    console.error(err);
+    showAlert('sign-alert', 'Bağlantı hatası. Tekrar deneyin.');
+    btn.disabled = false;
+    btn.textContent = 'Onaylıyorum';
+  }
+}
+</script>
+</body>
+</html>

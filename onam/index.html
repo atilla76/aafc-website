@@ -166,19 +166,19 @@
   <div id="loading-state" class="card">
     <div style="text-align:center; padding: 40px 20px; color: var(--dim);">
       <div class="loading" style="width:24px; height:24px; border-width:3px;"></div>
-      <div style="margin-top:12px;">Yükleniyor...</div>
+      <div style="margin-top:12px;" id="i18n-loading">Yükleniyor...</div>
     </div>
   </div>
 
   <!-- ERROR STATE -->
   <div id="error-state" class="card hidden">
-    <h2 style="color: var(--red);">⚠ Hata</h2>
+    <h2 style="color: var(--red);">⚠ <span id="i18n-error">Hata</span></h2>
     <p id="error-message" style="color: var(--dim); font-size: 13px;"></p>
   </div>
 
   <!-- OTP STATE -->
   <div id="otp-state" class="card hidden">
-    <h2>Doğrulama Kodu</h2>
+    <h2 id="i18n-otp-title">Doğrulama Kodu</h2>
     <p class="info">
       Telefonunuza gelen <strong>6 haneli kodu</strong> girin.<br>
       <span style="font-size:11px; opacity:0.7;">Mesaj almadıysanız klinikten yeni kod isteyin.</span>
@@ -193,8 +193,8 @@
     <button class="btn" id="verify-btn">Doğrula</button>
     
     <div style="text-align:center; font-size:11px; color:var(--dim); margin-top:14px;">
-      Hasta: <strong id="patient-name-otp" style="color:var(--cream);"></strong><br>
-      Telefon: <strong id="patient-phone-otp" style="color:var(--cream);"></strong>
+      <span id="i18n-patient">Hasta</span>: <strong id="patient-name-otp" style="color:var(--cream);"></strong><br>
+      <span id="i18n-phone">Telefon</span>: <strong id="patient-phone-otp" style="color:var(--cream);"></strong>
     </div>
   </div>
 
@@ -204,23 +204,23 @@
     <div class="card">
       <h2 id="template-name-display">Onam Formu</h2>
       <div class="meta-row">
-        <span>Klinik: <strong id="clinic-name-display"></strong></span>
-        <span>Hekim: <strong id="clinic-doctor-display"></strong></span>
+        <span><span id="i18n-clinic">Klinik</span>: <strong id="clinic-name-display"></strong></span>
+        <span><span id="i18n-doctor">Hekim</span>: <strong id="clinic-doctor-display"></strong></span>
       </div>
       <div class="meta-row">
-        <span>Hasta: <strong id="patient-name-display"></strong></span>
+        <span><span id="i18n-patient2">Hasta</span>: <strong id="patient-name-display"></strong></span>
       </div>
     </div>
 
     <div class="card">
-      <h2>📄 Onam Metni</h2>
-      <p class="info">Lütfen aşağıdaki metni dikkatle okuyun.</p>
+      <h2>📄 <span id="i18n-consent-text">Onam Metni</span></h2>
+      <p class="info" id="i18n-read-carefully">Lütfen aşağıdaki metni dikkatle okuyun.</p>
       <div class="content-box" id="content-display"></div>
     </div>
 
     <div class="card">
-      <h2>✍ İmza</h2>
-      <p class="info">Lütfen aşağıdaki alana imzanızı çizin.</p>
+      <h2>✍ <span id="i18n-signature">İmza</span></h2>
+      <p class="info" id="i18n-signature-prompt">Lütfen aşağıdaki alana imzanızı çizin.</p>
       
       <div class="signature-box">
         <canvas id="signature-canvas" class="signature-canvas"></canvas>
@@ -246,13 +246,13 @@
   <!-- SUCCESS STATE -->
   <div id="success-state" class="card hidden">
     <div class="success-icon">✓</div>
-    <h2 style="color: var(--green); text-align:center;">Onamınız Kaydedildi</h2>
+    <h2 style="color: var(--green); text-align:center;" id="i18n-success-title">Onamınız Kaydedildi</h2>
     <p style="text-align:center; color: var(--dim); margin-top: 12px; font-size: 13px;">
       İmzanız başarıyla kaydedildi.
     </p>
     <div style="background:var(--ink); border-radius:10px; padding:14px; margin-top:18px; font-size:11px; color:var(--dim);">
-      <div style="margin-bottom:4px;">📅 İmza Zamanı: <strong id="signed-at-display" style="color:var(--cream);"></strong></div>
-      <div style="margin-bottom:4px;">🔐 Belge Hash: <strong id="hash-display" style="color:var(--cream); font-family:monospace; font-size:9px; word-break:break-all;"></strong></div>
+      <div style="margin-bottom:4px;">📅 <span id="i18n-signed-at">İmza Zamanı</span>: <strong id="signed-at-display" style="color:var(--cream);"></strong></div>
+      <div style="margin-bottom:4px;">🔐 <span id="i18n-doc-hash">Belge Hash</span>: <strong id="hash-display" style="color:var(--cream); font-family:monospace; font-size:9px; word-break:break-all;"></strong></div>
     </div>
     <p style="text-align:center; color:var(--dim); margin-top:14px; font-size:11px;">
       Bu sayfayı kapatabilirsiniz. Klinik onaminizi panelden takip edebilir.
@@ -260,12 +260,527 @@
   </div>
 
   <div class="footer">
-    <a href="/">AAFC</a> · <a href="/privacy/">Gizlilik</a> · <a href="/terms/">Şartlar</a><br>
-    KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı
+    <a href="/">AAFC</a> · <a href="/privacy/" id="i18n-privacy">Gizlilik</a> · <a href="/terms/" id="i18n-terms">Şartlar</a><br>
+    <span id="i18n-footer">KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı</span>
   </div>
 </div>
 
 <script>
+
+// === I18N DICTIONARY ===
+const I18N = {
+  tr: {
+    title: 'Onam Formu | AAFC',
+    loading: 'Yükleniyor...',
+    error: 'Hata',
+    invalidLink: 'Geçersiz link. Lütfen klinikten yeni bir onam linki isteyin.',
+    loadFailed: 'Onam yüklenemedi. Link geçersiz veya süresi dolmuş olabilir.',
+    notFound: 'Onam bulunamadı. Link süresi dolmuş veya iptal edilmiş olabilir.',
+    alreadySigned: 'Bu onam zaten imzalanmış. Yeni bir onam için klinikten link isteyin.',
+    revoked: 'Bu onam klinik tarafından iptal edilmiş.',
+    expired: 'Bu onam linkinin süresi dolmuş (24 saat). Klinikten yeni bir link isteyin.',
+    connError: 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.',
+    otpTitle: 'Doğrulama Kodu',
+    otpInstr1: 'Telefonunuza gelen <strong>6 haneli kodu</strong> girin.',
+    otpInstr2: 'Mesaj almadıysanız klinikten yeni kod isteyin.',
+    verify: 'Doğrula',
+    verifying: 'Doğrulanıyor...',
+    patient: 'Hasta',
+    phone: 'Telefon',
+    consentForm: 'Onam Formu',
+    clinic: 'Klinik',
+    doctor: 'Hekim',
+    consentText: 'Onam Metni',
+    readCarefully: 'Lütfen aşağıdaki metni dikkatle okuyun.',
+    signature: 'İmza',
+    drawHere: 'İmzanızı buraya çizin',
+    signaturePrompt: 'Lütfen aşağıdaki alana imzanızı çizin.',
+    clear: 'Temizle',
+    consentCheckbox: 'Yukarıdaki onam metnini okudum, anladım, sorularıma yanıt aldım ve <strong>bilgilendirilmiş onamımı veriyorum.</strong>',
+    confirm: 'Onaylıyorum',
+    saving: 'Kaydediliyor...',
+    success: 'Onamınız Kaydedildi',
+    successDesc: 'İmzanız başarıyla kaydedildi.',
+    signedAt: 'İmza Zamanı',
+    docHash: 'Belge Hash',
+    closeNote: 'Bu sayfayı kapatabilirsiniz. Klinik onamınızı panelden takip edebilir.',
+    privacy: 'Gizlilik',
+    terms: 'Şartlar',
+    footer: '<span id="i18n-footer">KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı</span>',
+    otpRequired: 'Lütfen 6 haneli kodu girin.',
+    otpInvalid: 'Kod hatalı. Tekrar deneyin.',
+    otpInvalidLeft: 'Kod hatalı. {n} deneme hakkınız kaldı.',
+    otpExpired: 'Kod süresi dolmuş. Klinikten yeni bir link isteyin.',
+    otpTooMany: 'Çok fazla yanlış deneme. Klinikten yeni link isteyin.',
+    saveFailed: 'Onam kaydedilemedi.',
+    otpReq: 'OTP doğrulaması gerekli.'
+  },
+  en: {
+    title: 'Consent Form | AAFC',
+    loading: 'Loading...',
+    error: 'Error',
+    invalidLink: 'Invalid link. Please request a new consent link from the clinic.',
+    loadFailed: 'Could not load consent. The link may be invalid or expired.',
+    notFound: 'Consent not found. The link may have expired or been cancelled.',
+    alreadySigned: 'This consent has already been signed. Please request a new link from the clinic.',
+    revoked: 'This consent has been revoked by the clinic.',
+    expired: 'This consent link has expired (24 hours). Please request a new link from the clinic.',
+    connError: 'Connection error. Please check your internet connection.',
+    otpTitle: 'Verification Code',
+    otpInstr1: 'Enter the <strong>6-digit code</strong> sent to your phone.',
+    otpInstr2: 'If you did not receive a message, ask the clinic for a new code.',
+    verify: 'Verify',
+    verifying: 'Verifying...',
+    patient: 'Patient',
+    phone: 'Phone',
+    consentForm: 'Consent Form',
+    clinic: 'Clinic',
+    doctor: 'Doctor',
+    consentText: 'Consent Text',
+    readCarefully: 'Please read the text below carefully.',
+    signature: 'Signature',
+    drawHere: 'Draw your signature here',
+    signaturePrompt: 'Please draw your signature in the area below.',
+    clear: 'Clear',
+    consentCheckbox: 'I have read and understood the consent text above, my questions have been answered, and I hereby give my <strong>informed consent.</strong>',
+    confirm: 'I Confirm',
+    saving: 'Saving...',
+    success: 'Your Consent Has Been Saved',
+    successDesc: 'Your signature has been successfully saved.',
+    signedAt: 'Signed At',
+    docHash: 'Document Hash',
+    closeNote: 'You may close this page. The clinic can monitor your consent from their panel.',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    footer: 'KVKK & GDPR Compliant · Encrypted & Hash Protected',
+    otpRequired: 'Please enter the 6-digit code.',
+    otpInvalid: 'Invalid code. Please try again.',
+    otpInvalidLeft: 'Invalid code. {n} attempts remaining.',
+    otpExpired: 'Code expired. Please request a new link from the clinic.',
+    otpTooMany: 'Too many failed attempts. Please request a new link from the clinic.',
+    saveFailed: 'Could not save consent.',
+    otpReq: 'OTP verification required.'
+  },
+  de: {
+    title: 'Einwilligungsformular | AAFC',
+    loading: 'Laden...',
+    error: 'Fehler',
+    invalidLink: 'Ungültiger Link. Bitte fordern Sie einen neuen Einwilligungslink von der Klinik an.',
+    loadFailed: 'Einwilligung konnte nicht geladen werden. Der Link ist möglicherweise ungültig oder abgelaufen.',
+    notFound: 'Einwilligung nicht gefunden. Der Link ist möglicherweise abgelaufen oder storniert.',
+    alreadySigned: 'Diese Einwilligung wurde bereits unterzeichnet. Fordern Sie einen neuen Link von der Klinik an.',
+    revoked: 'Diese Einwilligung wurde von der Klinik widerrufen.',
+    expired: 'Dieser Einwilligungslink ist abgelaufen (24 Stunden). Fordern Sie einen neuen Link an.',
+    connError: 'Verbindungsfehler. Bitte überprüfen Sie Ihre Internetverbindung.',
+    otpTitle: 'Bestätigungscode',
+    otpInstr1: 'Geben Sie den <strong>6-stelligen Code</strong> ein, der an Ihr Telefon gesendet wurde.',
+    otpInstr2: 'Wenn Sie keine Nachricht erhalten haben, fordern Sie einen neuen Code an.',
+    verify: 'Bestätigen',
+    verifying: 'Bestätigen...',
+    patient: 'Patient',
+    phone: 'Telefon',
+    consentForm: 'Einwilligungsformular',
+    clinic: 'Klinik',
+    doctor: 'Arzt',
+    consentText: 'Einwilligungstext',
+    readCarefully: 'Bitte lesen Sie den folgenden Text sorgfältig durch.',
+    signature: 'Unterschrift',
+    drawHere: 'Zeichnen Sie Ihre Unterschrift hier',
+    signaturePrompt: 'Bitte zeichnen Sie Ihre Unterschrift in das Feld unten.',
+    clear: 'Löschen',
+    consentCheckbox: 'Ich habe den obigen Einwilligungstext gelesen und verstanden, meine Fragen wurden beantwortet, und ich gebe hiermit meine <strong>informierte Einwilligung.</strong>',
+    confirm: 'Ich bestätige',
+    saving: 'Speichern...',
+    success: 'Ihre Einwilligung wurde gespeichert',
+    successDesc: 'Ihre Unterschrift wurde erfolgreich gespeichert.',
+    signedAt: 'Unterzeichnet am',
+    docHash: 'Dokument-Hash',
+    closeNote: 'Sie können diese Seite schließen. Die Klinik kann Ihre Einwilligung über ihr Panel verfolgen.',
+    privacy: 'Datenschutz',
+    terms: 'Bedingungen',
+    footer: 'KVKK & DSGVO konform · Verschlüsselt & Hash-geschützt',
+    otpRequired: 'Bitte geben Sie den 6-stelligen Code ein.',
+    otpInvalid: 'Ungültiger Code. Bitte versuchen Sie es erneut.',
+    otpInvalidLeft: 'Ungültiger Code. {n} Versuche verbleibend.',
+    otpExpired: 'Code abgelaufen. Bitte fordern Sie einen neuen Link an.',
+    otpTooMany: 'Zu viele Fehlversuche. Bitte fordern Sie einen neuen Link an.',
+    saveFailed: 'Einwilligung konnte nicht gespeichert werden.',
+    otpReq: 'OTP-Bestätigung erforderlich.'
+  },
+  es: {
+    title: 'Formulario de Consentimiento | AAFC',
+    loading: 'Cargando...',
+    error: 'Error',
+    invalidLink: 'Enlace inválido. Solicite un nuevo enlace de consentimiento a la clínica.',
+    loadFailed: 'No se pudo cargar el consentimiento. El enlace puede ser inválido o haber expirado.',
+    notFound: 'Consentimiento no encontrado. El enlace puede haber expirado o sido cancelado.',
+    alreadySigned: 'Este consentimiento ya ha sido firmado. Solicite un nuevo enlace a la clínica.',
+    revoked: 'Este consentimiento ha sido revocado por la clínica.',
+    expired: 'Este enlace de consentimiento ha expirado (24 horas). Solicite un nuevo enlace.',
+    connError: 'Error de conexión. Verifique su conexión a internet.',
+    otpTitle: 'Código de Verificación',
+    otpInstr1: 'Ingrese el <strong>código de 6 dígitos</strong> enviado a su teléfono.',
+    otpInstr2: 'Si no recibió un mensaje, solicite un nuevo código a la clínica.',
+    verify: 'Verificar',
+    verifying: 'Verificando...',
+    patient: 'Paciente',
+    phone: 'Teléfono',
+    consentForm: 'Formulario de Consentimiento',
+    clinic: 'Clínica',
+    doctor: 'Médico',
+    consentText: 'Texto del Consentimiento',
+    readCarefully: 'Por favor lea cuidadosamente el siguiente texto.',
+    signature: 'Firma',
+    drawHere: 'Dibuje su firma aquí',
+    signaturePrompt: 'Por favor dibuje su firma en el área de abajo.',
+    clear: 'Limpiar',
+    consentCheckbox: 'He leído y entendido el texto del consentimiento, mis preguntas han sido respondidas, y otorgo mi <strong>consentimiento informado.</strong>',
+    confirm: 'Confirmo',
+    saving: 'Guardando...',
+    success: 'Su Consentimiento Ha Sido Guardado',
+    successDesc: 'Su firma ha sido guardada correctamente.',
+    signedAt: 'Firmado el',
+    docHash: 'Hash del Documento',
+    closeNote: 'Puede cerrar esta página. La clínica puede monitorear su consentimiento desde su panel.',
+    privacy: 'Privacidad',
+    terms: 'Términos',
+    footer: 'KVKK & GDPR Compatible · Cifrado y Protegido con Hash',
+    otpRequired: 'Por favor ingrese el código de 6 dígitos.',
+    otpInvalid: 'Código inválido. Intente de nuevo.',
+    otpInvalidLeft: 'Código inválido. {n} intentos restantes.',
+    otpExpired: 'Código expirado. Solicite un nuevo enlace.',
+    otpTooMany: 'Demasiados intentos fallidos. Solicite un nuevo enlace.',
+    saveFailed: 'No se pudo guardar el consentimiento.',
+    otpReq: 'Verificación OTP requerida.'
+  },
+  fr: {
+    title: 'Formulaire de Consentement | AAFC',
+    loading: 'Chargement...',
+    error: 'Erreur',
+    invalidLink: 'Lien invalide. Demandez un nouveau lien de consentement à la clinique.',
+    loadFailed: 'Impossible de charger le consentement. Le lien peut être invalide ou expiré.',
+    notFound: 'Consentement introuvable. Le lien a peut-être expiré ou été annulé.',
+    alreadySigned: 'Ce consentement a déjà été signé. Demandez un nouveau lien à la clinique.',
+    revoked: 'Ce consentement a été révoqué par la clinique.',
+    expired: 'Ce lien de consentement a expiré (24 heures). Demandez un nouveau lien.',
+    connError: 'Erreur de connexion. Vérifiez votre connexion internet.',
+    otpTitle: 'Code de Vérification',
+    otpInstr1: 'Entrez le <strong>code à 6 chiffres</strong> envoyé à votre téléphone.',
+    otpInstr2: 'Si vous n\'avez pas reçu de message, demandez un nouveau code.',
+    verify: 'Vérifier',
+    verifying: 'Vérification...',
+    patient: 'Patient',
+    phone: 'Téléphone',
+    consentForm: 'Formulaire de Consentement',
+    clinic: 'Clinique',
+    doctor: 'Médecin',
+    consentText: 'Texte du Consentement',
+    readCarefully: 'Veuillez lire attentivement le texte ci-dessous.',
+    signature: 'Signature',
+    drawHere: 'Dessinez votre signature ici',
+    signaturePrompt: 'Veuillez dessiner votre signature dans la zone ci-dessous.',
+    clear: 'Effacer',
+    consentCheckbox: 'J\'ai lu et compris le texte du consentement ci-dessus, mes questions ont été répondues, et je donne mon <strong>consentement éclairé.</strong>',
+    confirm: 'Je confirme',
+    saving: 'Enregistrement...',
+    success: 'Votre Consentement a Été Enregistré',
+    successDesc: 'Votre signature a été enregistrée avec succès.',
+    signedAt: 'Signé le',
+    docHash: 'Hash du Document',
+    closeNote: 'Vous pouvez fermer cette page. La clinique peut suivre votre consentement depuis son panneau.',
+    privacy: 'Confidentialité',
+    terms: 'Conditions',
+    footer: 'Conforme KVKK & RGPD · Chiffré & Protégé par Hash',
+    otpRequired: 'Veuillez entrer le code à 6 chiffres.',
+    otpInvalid: 'Code invalide. Réessayez.',
+    otpInvalidLeft: 'Code invalide. {n} tentatives restantes.',
+    otpExpired: 'Code expiré. Demandez un nouveau lien.',
+    otpTooMany: 'Trop de tentatives échouées. Demandez un nouveau lien.',
+    saveFailed: 'Impossible d\'enregistrer le consentement.',
+    otpReq: 'Vérification OTP requise.'
+  },
+  it: {
+    title: 'Modulo di Consenso | AAFC',
+    loading: 'Caricamento...',
+    error: 'Errore',
+    invalidLink: 'Link non valido. Richiedi un nuovo link di consenso alla clinica.',
+    loadFailed: 'Impossibile caricare il consenso. Il link potrebbe essere non valido o scaduto.',
+    notFound: 'Consenso non trovato. Il link potrebbe essere scaduto o annullato.',
+    alreadySigned: 'Questo consenso è già stato firmato. Richiedi un nuovo link alla clinica.',
+    revoked: 'Questo consenso è stato revocato dalla clinica.',
+    expired: 'Questo link di consenso è scaduto (24 ore). Richiedi un nuovo link.',
+    connError: 'Errore di connessione. Verifica la tua connessione internet.',
+    otpTitle: 'Codice di Verifica',
+    otpInstr1: 'Inserisci il <strong>codice di 6 cifre</strong> inviato al tuo telefono.',
+    otpInstr2: 'Se non hai ricevuto un messaggio, richiedi un nuovo codice.',
+    verify: 'Verifica',
+    verifying: 'Verifica...',
+    patient: 'Paziente',
+    phone: 'Telefono',
+    consentForm: 'Modulo di Consenso',
+    clinic: 'Clinica',
+    doctor: 'Medico',
+    consentText: 'Testo del Consenso',
+    readCarefully: 'Si prega di leggere attentamente il testo seguente.',
+    signature: 'Firma',
+    drawHere: 'Disegna la tua firma qui',
+    signaturePrompt: 'Si prega di disegnare la propria firma nell\'area sottostante.',
+    clear: 'Cancella',
+    consentCheckbox: 'Ho letto e compreso il testo del consenso, le mie domande hanno avuto risposta, e do il mio <strong>consenso informato.</strong>',
+    confirm: 'Confermo',
+    saving: 'Salvataggio...',
+    success: 'Il Tuo Consenso è Stato Salvato',
+    successDesc: 'La tua firma è stata salvata con successo.',
+    signedAt: 'Firmato il',
+    docHash: 'Hash del Documento',
+    closeNote: 'Puoi chiudere questa pagina. La clinica può monitorare il tuo consenso dal suo pannello.',
+    privacy: 'Privacy',
+    terms: 'Termini',
+    footer: 'Conforme KVKK & GDPR · Crittografato e Protetto con Hash',
+    otpRequired: 'Inserisci il codice di 6 cifre.',
+    otpInvalid: 'Codice non valido. Riprova.',
+    otpInvalidLeft: 'Codice non valido. {n} tentativi rimasti.',
+    otpExpired: 'Codice scaduto. Richiedi un nuovo link.',
+    otpTooMany: 'Troppi tentativi falliti. Richiedi un nuovo link.',
+    saveFailed: 'Impossibile salvare il consenso.',
+    otpReq: 'Verifica OTP richiesta.'
+  },
+  pt: {
+    title: 'Formulário de Consentimento | AAFC',
+    loading: 'Carregando...',
+    error: 'Erro',
+    invalidLink: 'Link inválido. Solicite um novo link de consentimento à clínica.',
+    loadFailed: 'Não foi possível carregar o consentimento. O link pode ser inválido ou expirado.',
+    notFound: 'Consentimento não encontrado. O link pode ter expirado ou sido cancelado.',
+    alreadySigned: 'Este consentimento já foi assinado. Solicite um novo link à clínica.',
+    revoked: 'Este consentimento foi revogado pela clínica.',
+    expired: 'Este link de consentimento expirou (24 horas). Solicite um novo link.',
+    connError: 'Erro de conexão. Verifique sua conexão com a internet.',
+    otpTitle: 'Código de Verificação',
+    otpInstr1: 'Digite o <strong>código de 6 dígitos</strong> enviado ao seu telefone.',
+    otpInstr2: 'Se você não recebeu uma mensagem, solicite um novo código.',
+    verify: 'Verificar',
+    verifying: 'Verificando...',
+    patient: 'Paciente',
+    phone: 'Telefone',
+    consentForm: 'Formulário de Consentimento',
+    clinic: 'Clínica',
+    doctor: 'Médico',
+    consentText: 'Texto do Consentimento',
+    readCarefully: 'Por favor, leia atentamente o texto abaixo.',
+    signature: 'Assinatura',
+    drawHere: 'Desenhe sua assinatura aqui',
+    signaturePrompt: 'Por favor, desenhe sua assinatura na área abaixo.',
+    clear: 'Limpar',
+    consentCheckbox: 'Li e compreendi o texto do consentimento acima, minhas perguntas foram respondidas, e dou meu <strong>consentimento informado.</strong>',
+    confirm: 'Eu Confirmo',
+    saving: 'Salvando...',
+    success: 'Seu Consentimento Foi Salvo',
+    successDesc: 'Sua assinatura foi salva com sucesso.',
+    signedAt: 'Assinado em',
+    docHash: 'Hash do Documento',
+    closeNote: 'Você pode fechar esta página. A clínica pode monitorar seu consentimento no painel.',
+    privacy: 'Privacidade',
+    terms: 'Termos',
+    footer: 'Compatível com KVKK & LGPD · Criptografado e Protegido por Hash',
+    otpRequired: 'Digite o código de 6 dígitos.',
+    otpInvalid: 'Código inválido. Tente novamente.',
+    otpInvalidLeft: 'Código inválido. {n} tentativas restantes.',
+    otpExpired: 'Código expirado. Solicite um novo link.',
+    otpTooMany: 'Muitas tentativas falhadas. Solicite um novo link.',
+    saveFailed: 'Não foi possível salvar o consentimento.',
+    otpReq: 'Verificação OTP necessária.'
+  },
+  ru: {
+    title: 'Форма согласия | AAFC',
+    loading: 'Загрузка...',
+    error: 'Ошибка',
+    invalidLink: 'Недействительная ссылка. Запросите новую ссылку согласия в клинике.',
+    loadFailed: 'Не удалось загрузить согласие. Ссылка может быть недействительной или просроченной.',
+    notFound: 'Согласие не найдено. Ссылка могла истечь или быть отменена.',
+    alreadySigned: 'Это согласие уже подписано. Запросите новую ссылку в клинике.',
+    revoked: 'Это согласие отозвано клиникой.',
+    expired: 'Срок действия этой ссылки истёк (24 часа). Запросите новую ссылку.',
+    connError: 'Ошибка соединения. Проверьте подключение к интернету.',
+    otpTitle: 'Код подтверждения',
+    otpInstr1: 'Введите <strong>6-значный код</strong>, отправленный на ваш телефон.',
+    otpInstr2: 'Если вы не получили сообщение, запросите новый код.',
+    verify: 'Подтвердить',
+    verifying: 'Подтверждение...',
+    patient: 'Пациент',
+    phone: 'Телефон',
+    consentForm: 'Форма согласия',
+    clinic: 'Клиника',
+    doctor: 'Врач',
+    consentText: 'Текст согласия',
+    readCarefully: 'Пожалуйста, внимательно прочитайте текст ниже.',
+    signature: 'Подпись',
+    drawHere: 'Нарисуйте свою подпись здесь',
+    signaturePrompt: 'Пожалуйста, нарисуйте свою подпись в области ниже.',
+    clear: 'Очистить',
+    consentCheckbox: 'Я прочитал(а) и понял(а) текст согласия выше, мои вопросы получили ответы, и я даю своё <strong>информированное согласие.</strong>',
+    confirm: 'Подтверждаю',
+    saving: 'Сохранение...',
+    success: 'Ваше согласие сохранено',
+    successDesc: 'Ваша подпись успешно сохранена.',
+    signedAt: 'Подписано',
+    docHash: 'Хеш документа',
+    closeNote: 'Вы можете закрыть эту страницу. Клиника может отслеживать ваше согласие со своей панели.',
+    privacy: 'Конфиденциальность',
+    terms: 'Условия',
+    footer: 'Соответствует KVKK & GDPR · Зашифровано и Защищено Хешем',
+    otpRequired: 'Пожалуйста, введите 6-значный код.',
+    otpInvalid: 'Неверный код. Попробуйте снова.',
+    otpInvalidLeft: 'Неверный код. Осталось попыток: {n}.',
+    otpExpired: 'Код истёк. Запросите новую ссылку.',
+    otpTooMany: 'Слишком много неудачных попыток. Запросите новую ссылку.',
+    saveFailed: 'Не удалось сохранить согласие.',
+    otpReq: 'Требуется подтверждение OTP.'
+  },
+  ko: {
+    title: '동의서 | AAFC',
+    loading: '로딩 중...',
+    error: '오류',
+    invalidLink: '잘못된 링크입니다. 클리닉에 새 동의서 링크를 요청하세요.',
+    loadFailed: '동의서를 불러올 수 없습니다. 링크가 유효하지 않거나 만료되었을 수 있습니다.',
+    notFound: '동의서를 찾을 수 없습니다. 링크가 만료되었거나 취소되었을 수 있습니다.',
+    alreadySigned: '이 동의서는 이미 서명되었습니다. 클리닉에 새 링크를 요청하세요.',
+    revoked: '이 동의서는 클리닉에 의해 철회되었습니다.',
+    expired: '이 동의서 링크의 유효 기간이 만료되었습니다 (24시간). 새 링크를 요청하세요.',
+    connError: '연결 오류. 인터넷 연결을 확인하세요.',
+    otpTitle: '인증 코드',
+    otpInstr1: '휴대폰으로 전송된 <strong>6자리 코드</strong>를 입력하세요.',
+    otpInstr2: '메시지를 받지 못한 경우 클리닉에 새 코드를 요청하세요.',
+    verify: '인증',
+    verifying: '인증 중...',
+    patient: '환자',
+    phone: '전화',
+    consentForm: '동의서',
+    clinic: '클리닉',
+    doctor: '의사',
+    consentText: '동의 텍스트',
+    readCarefully: '아래 텍스트를 주의 깊게 읽어주세요.',
+    signature: '서명',
+    drawHere: '여기에 서명하세요',
+    signaturePrompt: '아래 영역에 서명을 그려주세요.',
+    clear: '지우기',
+    consentCheckbox: '위의 동의 텍스트를 읽고 이해했으며, 질문에 답변을 받았고, 이로써 <strong>설명된 동의를 합니다.</strong>',
+    confirm: '확인',
+    saving: '저장 중...',
+    success: '동의서가 저장되었습니다',
+    successDesc: '서명이 성공적으로 저장되었습니다.',
+    signedAt: '서명 일시',
+    docHash: '문서 해시',
+    closeNote: '이 페이지를 닫으셔도 됩니다. 클리닉은 패널에서 동의서를 추적할 수 있습니다.',
+    privacy: '개인정보',
+    terms: '약관',
+    footer: 'KVKK & GDPR 준수 · 암호화 및 해시 보호',
+    otpRequired: '6자리 코드를 입력하세요.',
+    otpInvalid: '잘못된 코드입니다. 다시 시도하세요.',
+    otpInvalidLeft: '잘못된 코드입니다. {n}회 시도 남았습니다.',
+    otpExpired: '코드가 만료되었습니다. 새 링크를 요청하세요.',
+    otpTooMany: '실패 시도가 너무 많습니다. 새 링크를 요청하세요.',
+    saveFailed: '동의서를 저장할 수 없습니다.',
+    otpReq: 'OTP 인증이 필요합니다.'
+  },
+  zh: {
+    title: '同意书 | AAFC',
+    loading: '加载中...',
+    error: '错误',
+    invalidLink: '无效链接。请向诊所请求新的同意书链接。',
+    loadFailed: '无法加载同意书。链接可能无效或已过期。',
+    notFound: '未找到同意书。链接可能已过期或被取消。',
+    alreadySigned: '此同意书已签署。请向诊所请求新链接。',
+    revoked: '此同意书已被诊所撤销。',
+    expired: '此同意书链接已过期（24小时）。请请求新链接。',
+    connError: '连接错误。请检查您的网络连接。',
+    otpTitle: '验证码',
+    otpInstr1: '请输入发送到您手机的<strong>6位代码</strong>。',
+    otpInstr2: '如果您未收到消息，请向诊所请求新代码。',
+    verify: '验证',
+    verifying: '验证中...',
+    patient: '患者',
+    phone: '电话',
+    consentForm: '同意书',
+    clinic: '诊所',
+    doctor: '医生',
+    consentText: '同意书内容',
+    readCarefully: '请仔细阅读下面的文本。',
+    signature: '签名',
+    drawHere: '在此处绘制您的签名',
+    signaturePrompt: '请在下方区域绘制您的签名。',
+    clear: '清除',
+    consentCheckbox: '我已阅读并理解上述同意书内容，我的问题已得到回答，我特此给予<strong>知情同意。</strong>',
+    confirm: '我确认',
+    saving: '保存中...',
+    success: '您的同意书已保存',
+    successDesc: '您的签名已成功保存。',
+    signedAt: '签署时间',
+    docHash: '文档哈希',
+    closeNote: '您可以关闭此页面。诊所可以从其面板监控您的同意书。',
+    privacy: '隐私',
+    terms: '条款',
+    footer: '符合 KVKK 和 GDPR · 加密和哈希保护',
+    otpRequired: '请输入6位代码。',
+    otpInvalid: '代码无效。请重试。',
+    otpInvalidLeft: '代码无效。剩余 {n} 次尝试。',
+    otpExpired: '代码已过期。请请求新链接。',
+    otpTooMany: '失败尝试次数过多。请请求新链接。',
+    saveFailed: '无法保存同意书。',
+    otpReq: '需要 OTP 验证。'
+  }
+};
+
+// URL'den dil al, varsayilan TR
+const urlParamsLang = new URLSearchParams(window.location.search);
+const langCode = urlParamsLang.get('lang') || 'tr';
+const t = I18N[langCode] || I18N.tr;
+
+// Sayfayi dile gore guncelle
+function applyI18n() {
+  document.title = t.title;
+  document.documentElement.lang = langCode;
+  
+  // Helper
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+  const setHTML = (id, html) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  };
+  
+  setText('i18n-loading', t.loading);
+  setText('i18n-error', t.error);
+  setText('i18n-otp-title', t.otpTitle);
+  setHTML('i18n-otp-instr1', t.otpInstr1);
+  setText('i18n-otp-instr2', t.otpInstr2);
+  setText('verify-btn', t.verify);
+  setText('i18n-patient', t.patient);
+  setText('i18n-phone', t.phone);
+  setText('i18n-clinic', t.clinic);
+  setText('i18n-doctor', t.doctor);
+  setText('i18n-patient2', t.patient);
+  setText('i18n-consent-text', t.consentText);
+  setText('i18n-read-carefully', t.readCarefully);
+  setText('i18n-signature', t.signature);
+  setText('i18n-signature-prompt', t.signaturePrompt);
+  setText('signature-hint', t.drawHere);
+  setText('clear-signature', t.clear);
+  setHTML('i18n-checkbox-label', t.consentCheckbox);
+  setText('sign-btn', t.confirm);
+  setText('i18n-success-title', t.success);
+  setText('i18n-success-desc', t.successDesc);
+  setText('i18n-signed-at', t.signedAt);
+  setText('i18n-doc-hash', t.docHash);
+  setText('i18n-close-note', t.closeNote);
+  setText('i18n-privacy', t.privacy);
+  setText('i18n-terms', t.terms);
+  setText('i18n-footer', t.footer);
+}
+applyI18n();
+
 const SUPABASE_URL = "https://hugxacklprzujswtaike.supabase.co";
 const SUPABASE_ANON = "sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX";
 
@@ -305,7 +820,7 @@ function hideAlert(elemId) {
 
 // ID kontrolu
 if (!consentId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(consentId)) {
-  showError('Geçersiz link. Lütfen klinikten yeni bir onam linki isteyin.');
+  showError(t.invalidLink);
 } else {
   loadConsent();
 }
@@ -327,14 +842,14 @@ async function loadConsent() {
     if (!res.ok) {
       const errText = await res.text();
       console.error('Load error:', errText);
-      showError('Onam yüklenemedi. Link geçersiz veya süresi dolmuş olabilir.');
+      showError(t.loadFailed);
       return;
     }
     
     const data = await res.json();
     
     if (!data || data.length === 0) {
-      showError('Onam bulunamadı. Link süresi dolmuş veya iptal edilmiş olabilir.');
+      showError(t.notFound);
       return;
     }
     
@@ -343,17 +858,17 @@ async function loadConsent() {
     // Status kontrolu
     if (consentData.status === 'signed') {
       // Zaten imzalanmis
-      showError('Bu onam zaten imzalanmış. Yeni bir onam için klinikten link isteyin.');
+      showError(t.alreadySigned);
       return;
     }
     
     if (consentData.status === 'revoked') {
-      showError('Bu onam klinik tarafından iptal edilmiş.');
+      showError(t.revoked);
       return;
     }
     
     if (consentData.status === 'expired' || new Date(consentData.otp_expires_at) < new Date()) {
-      showError('Bu onam linkinin süresi dolmuş (24 saat). Klinikten yeni bir link isteyin.');
+      showError(t.expired);
       return;
     }
     
@@ -371,7 +886,7 @@ async function loadConsent() {
     
   } catch (err) {
     console.error(err);
-    showError('Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+    showError(t.connError);
   }
 }
 
@@ -385,13 +900,13 @@ async function verifyOtp() {
   const otp = document.getElementById('otp-input').value.trim();
   
   if (!/^\d{6}$/.test(otp)) {
-    showAlert('otp-alert', 'Lütfen 6 haneli kodu girin.');
+    showAlert('otp-alert', t.otpRequired);
     return;
   }
   
   const btn = document.getElementById('verify-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loading"></span> Doğrulanıyor...';
+  btn.innerHTML = '<span class="loading"></span> ' + t.verifying;
   hideAlert('otp-alert');
   
   try {
@@ -409,26 +924,26 @@ async function verifyOtp() {
     if (data.success) {
       showConsentContent();
     } else {
-      let msg = 'Kod hatalı. Tekrar deneyin.';
-      if (data.error === 'expired') msg = 'Kod süresi dolmuş. Klinikten yeni bir link isteyin.';
-      else if (data.error === 'too_many_attempts') msg = 'Çok fazla yanlış deneme. Klinikten yeni link isteyin.';
-      else if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
-      else if (data.attempts_left !== undefined) msg = `Kod hatalı. ${data.attempts_left} deneme hakkınız kaldı.`;
+      let msg = t.otpInvalid;
+      if (data.error === 'expired') msg = t.otpExpired;
+      else if (data.error === 'too_many_attempts') msg = t.otpTooMany;
+      else if (data.error === 'already_signed') msg = t.alreadySigned;
+      else if (data.attempts_left !== undefined) msg = t.otpInvalidLeft.replace('{n}', data.attempts_left);
       
       showAlert('otp-alert', msg);
       btn.disabled = false;
-      btn.textContent = 'Doğrula';
+      btn.textContent = t.verify;
     }
   } catch (err) {
     console.error(err);
-    showAlert('otp-alert', 'Bağlantı hatası. Tekrar deneyin.');
+    showAlert('otp-alert', t.connError);
     btn.disabled = false;
-    btn.textContent = 'Doğrula';
+    btn.textContent = t.verify;
   }
 }
 
 function showConsentContent() {
-  document.getElementById('template-name-display').textContent = consentData.template_name || 'Onam Formu';
+  document.getElementById('template-name-display').textContent = consentData.template_name || t.consentForm;
   document.getElementById('clinic-name-display').textContent = consentData.clinic_name || '-';
   document.getElementById('clinic-doctor-display').textContent = consentData.clinic_doctor || '-';
   document.getElementById('patient-name-display').textContent = consentData.patient_name || '-';
@@ -530,7 +1045,7 @@ async function submitSignature() {
   
   const btn = document.getElementById('sign-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loading"></span> Kaydediliyor...';
+  btn.innerHTML = '<span class="loading"></span> ' + t.saving;
   hideAlert('sign-alert');
   
   try {
@@ -555,19 +1070,19 @@ async function submitSignature() {
       document.getElementById('hash-display').textContent = data.document_hash || '-';
       showState('success');
     } else {
-      let msg = 'Onam kaydedilemedi.';
+      let msg = t.saveFailed;
       if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
-      else if (data.error === 'otp_required') msg = 'OTP doğrulaması gerekli.';
+      else if (data.error === 'otp_required') msg = t.otpReq;
       
       showAlert('sign-alert', msg);
       btn.disabled = false;
-      btn.textContent = 'Onaylıyorum';
+      btn.textContent = t.confirm;
     }
   } catch (err) {
     console.error(err);
-    showAlert('sign-alert', 'Bağlantı hatası. Tekrar deneyin.');
+    showAlert('sign-alert', t.connError);
     btn.disabled = false;
-    btn.textContent = 'Onaylıyorum';
+    btn.textContent = t.confirm;
   }
 }
 </script>

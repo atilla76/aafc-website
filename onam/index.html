@@ -353,7 +353,7 @@ async function loadConsent() {
     }
     
     if (consentData.status === 'expired' || new Date(consentData.otp_expires_at) < new Date()) {
-      showError('Bu onam linkinin süresi dolmuş (30 dakika). Klinikten yeni bir link isteyin.');
+      showError('Bu onam linkinin süresi dolmuş (24 saat). Klinikten yeni bir link isteyin.');
       return;
     }
     

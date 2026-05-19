@@ -142,6 +142,55 @@ if (window.location.search.includes('code=')) {
   </div>
 </section>
 
+
+<style>
+  .new-feature-banner { max-width: 1400px; margin: 60px auto 0; padding: 0 60px; }
+  .new-feature-banner a { display: block; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4); transition: transform 0.3s; }
+  .new-feature-banner a:hover { transform: translateY(-4px); }
+  .new-feature-banner img { width: 100%; height: auto; display: block; }
+  @media (max-width: 768px) { .new-feature-banner { padding: 0 20px; margin-top: 40px; } }
+</style>
+
+<section class="new-feature-banner">
+  <a href="#features">
+    <img src="images/aafc_website_collage.png" alt="AAFC Before & After Collage Editor - New Feature">
+  </a>
+</section>
+
+<style>
+  .features-overview { max-width: 1200px; margin: 100px auto; padding: 0 60px; display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 80px; align-items: center; }
+  @media (max-width: 900px) { .features-overview { grid-template-columns: 1fr; gap: 40px; text-align: center; } }
+  .features-overview .logo-side { display: flex; flex-direction: column; gap: 16px; }
+  .features-overview .aafc-logo-img { width: 220px; height: auto; border-radius: 20px; box-shadow: 0 10px 40px rgba(184,154,106,0.15); }
+  .features-overview .tag { font-size: 14px; color: rgba(245,241,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+  .features-overview ul { list-style: none; padding: 0; columns: 2; column-gap: 40px; }
+  @media (max-width: 600px) { .features-overview ul { columns: 1; } }
+  .features-overview li { padding: 10px 0; color: rgba(245,241,235,0.85); font-size: 15px; display: flex; align-items: center; gap: 12px; break-inside: avoid; }
+  .features-overview li i { color: #B89A6A; font-size: 14px; width: 20px; }
+</style>
+
+<section class="features-overview">
+  <div class="logo-side">
+    <img src="images/aafc_logo.png" alt="AAFC logo" class="aafc-logo-img">
+    <div class="tag">Twelve tools, one app</div>
+  </div>
+  <ul>
+    <li><i class="fa-solid fa-camera"></i>Five-Angle Photo Capture</li>
+    <li><i class="fa-solid fa-layer-group"></i>Collage Editor (NEW)</li>
+    <li><i class="fa-solid fa-arrows-left-right"></i>Interactive Slider Compare</li>
+    <li><i class="fa-solid fa-calendar-check"></i>Smart Appointment Book</li>
+    <li><i class="fa-brands fa-whatsapp"></i>WhatsApp & SMS Reminders</li>
+    <li><i class="fa-solid fa-file-signature"></i>Digital Consent Forms</li>
+    <li><i class="fa-solid fa-cloud"></i>Encrypted Cloud Storage</li>
+    <li><i class="fa-solid fa-users"></i>Multi-User Clinic Access</li>
+    <li><i class="fa-solid fa-file-pdf"></i>Branded PDF Reports</li>
+    <li><i class="fa-solid fa-chart-line"></i>Real-Time Statistics</li>
+    <li><i class="fa-solid fa-globe"></i>10 Languages Built-in</li>
+    <li><i class="fa-solid fa-laptop"></i>Web Panel Access</li>
+  </ul>
+</section>
+
+
 <section class="trust">
   <p>Built for</p>
   <div class="spec-grid">

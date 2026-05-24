@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -644,7 +644,8 @@ async function sDocs(wid,gid,docs){
   var h='';
   docs.forEach(function(d){
     var u=urls[d.file_path]||'';
-    h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';
+    var isPdf=(d.file_path||'').toLowerCase().indexOf('.pdf')>-1;
+    if(isPdf){h+='<div class="dc" style="display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="window.open(\''+u+'\',\'_blank\')"><div style="text-align:center;color:#B89A6A"><div style="font-size:34px">PDF</div><div style="font-size:11px;margin-top:4px">Open</div></div></div>';}else{h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';}
   });
   document.getElementById(gid).innerHTML=h;
 }

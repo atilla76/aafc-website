@@ -650,7 +650,7 @@ async function sDocs(wid,gid,docs){
 }
 
 // ============ MODAL ============
-function curSym(){var c=clinic&&clinic.currency;if(!c)return '';var m={TRY:'\u20BA',USD:'\$',EUR:'\u20AC',GBP:'\u00A3',RUB:'\u20BD'};return m[c]||c;}
+function curSym(){var c=clinic&&clinic.currency;if(!c)return '';var m={TRY:'\u20BA',USD:'\$',EUR:'\u20AC',GBP:'\u00A3',RUB:'\u20BD',KRW:'\u20A9',CNY:'\u00A5',JPY:'\u00A5',CHF:'CHF',AED:'AED'};return m[c]||c;}
 
 async function loadFaceMaps(visitId){
   document.getElementById('tpWrap').style.display='none';

@@ -650,6 +650,8 @@ async function sDocs(wid,gid,docs){
 }
 
 // ============ MODAL ============
+function curSym(){var c=clinic&&clinic.currency;if(!c)return '';var m={TRY:'\u20BA',USD:'\$',EUR:'\u20AC',GBP:'\u00A3',RUB:'\u20BD'};return m[c]||c;}
+
 async function loadFaceMaps(visitId){
   document.getElementById('tpWrap').style.display='none';
   document.getElementById('imWrap').style.display='none';
@@ -666,11 +668,11 @@ async function loadFaceMaps(visitId){
       var price=(p.price!=null)?p.price:null;
       if(price!=null)total+=Number(price);
       rows+='<tr><td class="fmn">'+p.seq+'</td><td class="fmp">'+(p.product_name||'')+'</td><td class="fmd">'+(p.descr||'')+'</td>';
-      if(isPlan)rows+='<td class="fmpr">'+(price!=null?(price+' TL'):'')+'</td>';
+      if(isPlan)rows+='<td class="fmpr">'+(price!=null?(price+(curSym()?' '+curSym():'')):'')+'</td>';
       rows+='</tr>';
     });
     var head=isPlan?'<tr><th>#</th><th>Procedure</th><th>Description</th><th>Price</th></tr>':'<tr><th>#</th><th>Procedure</th><th>Area</th></tr>';
-    var tot=(isPlan&&total>0)?'<div class="fmtot">TOTAL: '+total+' TL</div>':'';
+    var tot=(isPlan&&total>0)?'<div class="fmtot">TOTAL: '+total+(curSym()?' '+curSym():'')+'</div>':'';
     var html='<table class="fmt">'+head+rows+'</table>'+tot;
     if(isPlan){document.getElementById('tpWrap').style.display='block';document.getElementById('tpBody').innerHTML=html;}
     else{document.getElementById('imWrap').style.display='block';document.getElementById('imBody').innerHTML=html;}

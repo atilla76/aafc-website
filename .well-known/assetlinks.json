@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.aafcclinic.app",
+    "sha256_cert_fingerprints": [
+      "7F:2D:00:5B:A3:6A:2C:AA:E4:36:A0:97:F6:D3:C3:1F:AC:78:FE:F2:F9:23:D8:C7:0D:65:1A:3C:ED:9F:57:92"
+    ]
+  }
+}]

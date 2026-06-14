@@ -121,21 +121,22 @@ if (window.location.search.includes('code=')) {
 <nav>
   <a href="#" class="logo">AAFC</a>
   <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
-    <a href="privacy.html">Privacy</a>
-    <a href="panel.html" class="login-btn">Login</a>
+    <a href="#features" data-en="Features" data-tr="Ozellikler">Features</a>
+    <a href="#pricing" data-en="Pricing" data-tr="Fiyatlandirma">Pricing</a>
+    <a href="privacy.html" data-en="Privacy" data-tr="Gizlilik">Privacy</a>
+    <a href="#" id="langToggle" class="login-btn" onclick="toggleLang();return false;" style="margin-right:8px;">TR</a>
+    <a href="panel.html" class="login-btn" data-en="Login" data-tr="Giris">Login</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-text">
-    <h1>The complete archive for<br><span>aesthetic clinics</span></h1>
-    <p>Patient photos, daily log, appointments, WhatsApp reminders, and branded PDF reports — all from your phone or tablet. Built by a clinician, for clinicians.</p>
+    <h1 data-en-html="The complete archive for<br><span>aesthetic clinics</span>" data-tr-html="Estetik klinikler icin<br><span>eksiksiz arsiv</span>">The complete archive for<br><span>aesthetic clinics</span></h1>
+    <p data-en="Patient photos, daily log, appointments, WhatsApp reminders, and branded PDF reports — all from your phone or tablet. Built by a clinician, for clinicians." data-tr="Hasta fotograflari, gunluk kayit, randevular, WhatsApp hatirlatmalari ve markali PDF raporlari — hepsi telefonunuzdan veya tabletinizden. Bir hekim tarafindan, hekimler icin yapildi.">Patient photos, daily log, appointments, WhatsApp reminders, and branded PDF reports — all from your phone or tablet. Built by a clinician, for clinicians.</p>
     <div class="badges">
-      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
-      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
+      <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i data-en="Download on App Store" data-tr="App Store'dan indir">Download on App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i data-en="Get it on Google Play" data-tr="Google Play'den indir">Get it on Google Play</a>
     </div>
   </div>
   <div class="hero-visual">
@@ -160,54 +161,54 @@ if (window.location.search.includes('code=')) {
 <section class="features-overview">
   <div class="logo-side">
     <img src="images/aafc_logo.png" alt="AAFC logo" class="aafc-logo-img">
-    <div class="tag">Twelve tools, one app</div>
+    <div class="tag" data-en="Twelve tools, one app" data-tr="On iki arac, tek uygulama">Twelve tools, one app</div>
   </div>
   <ul>
-    <li><i class="fa-solid fa-camera"></i>Five-Angle Photo Capture</li>
-    <li><i class="fa-solid fa-layer-group"></i>Collage Editor (NEW)</li>
-    <li><i class="fa-solid fa-arrows-left-right"></i>Interactive Slider Compare</li>
-    <li><i class="fa-solid fa-calendar-check"></i>Smart Appointment Book</li>
-    <li><i class="fa-brands fa-whatsapp"></i>WhatsApp & SMS Reminders</li>
-    <li><i class="fa-solid fa-file-signature"></i>Digital Consent Forms</li>
-    <li><i class="fa-solid fa-cloud"></i>Encrypted Cloud Storage</li>
-    <li><i class="fa-solid fa-users"></i>Multi-User Clinic Access</li>
-    <li><i class="fa-solid fa-file-pdf"></i>Branded PDF Reports</li>
-    <li><i class="fa-solid fa-chart-line"></i>Real-Time Statistics</li>
-    <li><i class="fa-solid fa-globe"></i>10 Languages Built-in</li>
-    <li><i class="fa-solid fa-laptop"></i>Web Panel Access</li>
+    <li><i class="fa-solid fa-camera"></i data-en="Five-Angle Photo Capture" data-tr="5 Acili Fotograf Cekimi">Five-Angle Photo Capture</li>
+    <li><i class="fa-solid fa-layer-group"></i data-en="Collage Editor (NEW)" data-tr="Kolaj Editoru (YENI)">Collage Editor (NEW)</li>
+    <li><i class="fa-solid fa-arrows-left-right"></i data-en="Interactive Slider Compare" data-tr="Slider ile Karsilastirma">Interactive Slider Compare</li>
+    <li><i class="fa-solid fa-calendar-check"></i data-en="Smart Appointment Book" data-tr="Akilli Randevu Defteri">Smart Appointment Book</li>
+    <li><i class="fa-brands fa-whatsapp"></i data-en="WhatsApp &amp; SMS Reminders" data-tr="WhatsApp ve SMS Hatirlatma">WhatsApp & SMS Reminders</li>
+    <li><i class="fa-solid fa-file-signature"></i data-en="Digital Consent Forms" data-tr="Dijital Onam Formlari">Digital Consent Forms</li>
+    <li><i class="fa-solid fa-cloud"></i data-en="Encrypted Cloud Storage" data-tr="Sifreli Bulut Depolama">Encrypted Cloud Storage</li>
+    <li><i class="fa-solid fa-users"></i data-en="Multi-User Clinic Access" data-tr="Coklu Kullanici Erisimi">Multi-User Clinic Access</li>
+    <li><i class="fa-solid fa-file-pdf"></i data-en="Branded PDF Reports" data-tr="Markali PDF Raporlari">Branded PDF Reports</li>
+    <li><i class="fa-solid fa-chart-line"></i data-en="Real-Time Statistics" data-tr="Gercek Zamanli Istatistik">Real-Time Statistics</li>
+    <li><i class="fa-solid fa-globe"></i data-en="10 Languages Built-in" data-tr="10 Dil Destegi">10 Languages Built-in</li>
+    <li><i class="fa-solid fa-laptop"></i data-en="Web Panel Access" data-tr="Web Paneli Erisimi">Web Panel Access</li>
   </ul>
 </section>
 
 <section class="data-ownership" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
   <div style="text-align:center;margin-bottom:48px;">
-    <span style="color:#B89A6A;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;">Mobile + Web, Your Data</span>
-    <h2 style="font-size:38px;font-weight:300;line-height:1.2;margin-top:12px;letter-spacing:-0.5px;">Your data is <span style="color:#B89A6A;font-weight:600;">yours</span>. Always.</h2>
-    <p style="font-size:17px;color:rgba(245,241,235,0.6);max-width:620px;margin:16px auto 0;line-height:1.7;">No sales demo, no lock-in. Capture on your phone, manage from any browser, and export your entire archive whenever you want.</p>
+    <span style="color:#B89A6A;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:2px;" data-en="Mobile + Web, Your Data" data-tr="Mobil + Web, Veriniz Sizin">Mobile + Web, Your Data</span>
+    <h2 style="font-size:38px;font-weight:300;line-height:1.2;margin-top:12px;letter-spacing:-0.5px;" data-en-html="Your data is <span style=&quot;color:#B89A6A;font-weight:600;&quot;>yours</span>. Always." data-tr-html="Verileriniz <span style=&quot;color:#B89A6A;font-weight:600;&quot;>size</span> aittir. Her zaman.">Your data is <span style="color:#B89A6A;font-weight:600;">yours</span>. Always.</h2>
+    <p style="font-size:17px;color:rgba(245,241,235,0.6);max-width:620px;margin:16px auto 0;line-height:1.7;" data-en="No sales demo, no lock-in. Capture on your phone, manage from any browser, and export your entire archive whenever you want." data-tr="Satis gorusmesi yok, kilitlenme yok. Telefonunuzla cekin, tarayicidan yonetin, tum arsivinizi istediginiz zaman disa aktarin.">No sales demo, no lock-in. Capture on your phone, manage from any browser, and export your entire archive whenever you want.</p>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
     <div style="background:rgba(184,154,106,0.06);border:1px solid rgba(184,154,106,0.18);border-radius:16px;padding:28px;">
       <i class="fa-solid fa-mobile-screen" style="color:#B89A6A;font-size:22px;margin-bottom:14px;display:block;"></i>
-      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">Mobile + Web Panel</h3>
-      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;">Shoot in the field on your phone, review and manage everything from the web panel — fully synced.</p>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;" data-en="Mobile + Web Panel" data-tr="Mobil + Web Paneli">Mobile + Web Panel</h3>
+      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;" data-en="Shoot in the field on your phone, review and manage everything from the web panel — fully synced." data-tr="Sahada telefonunuzla cekin, her seyi web panelinden inceleyin ve yonetin — tam senkron.">Shoot in the field on your phone, review and manage everything from the web panel — fully synced.</p>
     </div>
     <div style="background:rgba(184,154,106,0.06);border:1px solid rgba(184,154,106,0.18);border-radius:16px;padding:28px;">
       <i class="fa-solid fa-download" style="color:#B89A6A;font-size:22px;margin-bottom:14px;display:block;"></i>
-      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">Export Anytime</h3>
-      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;">Download your full archive — patients, visits, and photos — as ZIP, HTML, JSON, or CSV. It is yours to keep.</p>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;" data-en="Export Anytime" data-tr="Istediginiz Zaman Disa Aktarin">Export Anytime</h3>
+      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;" data-en="Download your full archive — patients, visits, and photos — as ZIP, HTML, JSON, or CSV. It is yours to keep." data-tr="Tum arsivinizi — hastalar, vizitler ve fotograflar — ZIP, HTML, JSON veya CSV olarak indirin. Hepsi sizin.">Download your full archive — patients, visits, and photos — as ZIP, HTML, JSON, or CSV. It is yours to keep.</p>
     </div>
     <div style="background:rgba(184,154,106,0.06);border:1px solid rgba(184,154,106,0.18);border-radius:16px;padding:28px;">
       <i class="fa-solid fa-bolt" style="color:#B89A6A;font-size:22px;margin-bottom:14px;display:block;"></i>
-      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">Start in 5 Minutes</h3>
-      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;">Download, sign in, add your first patient. No demo call, no onboarding fee, no waiting on a sales team.</p>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;" data-en="Start in 5 Minutes" data-tr="5 Dakikada Baslayin">Start in 5 Minutes</h3>
+      <p style="font-size:14px;color:rgba(245,241,235,0.6);line-height:1.6;" data-en="Download, sign in, add your first patient. No demo call, no onboarding fee, no waiting on a sales team." data-tr="Indirin, giris yapin, ilk hastanizi ekleyin. Demo gorusmesi yok, kurulum ucreti yok, satis ekibi beklemek yok.">Download, sign in, add your first patient. No demo call, no onboarding fee, no waiting on a sales team.</p>
     </div>
   </div>
 </section>
 <section class="screenshot-section" style="padding-top: 60px; padding-bottom: 60px;">
   <div class="screenshot-row">
     <div class="screenshot-text">
-      <span class="label">New in Build 34</span>
-      <h2>Before &amp; After Collage<br>Built for Social Media</h2>
-      <p>Branded collages with logo and dates. 1:1, 4:5, 9:16, 3:4 — every aspect ratio your feed needs.</p>
+      <span class="label" data-en="New in Build 34" data-tr="Build 34'te Yeni">New in Build 34</span>
+      <h2 data-en-html="Before &amp; After Collage<br>Built for Social Media" data-tr-html="Oncesi ve Sonrasi Kolaj<br>Sosyal Medya icin">Before &amp; After Collage<br>Built for Social Media</h2>
+      <p data-en="Branded collages with logo and dates. 1:1, 4:5, 9:16, 3:4 — every aspect ratio your feed needs." data-tr="Logo ve tarihli markali kolajlar. 1:1, 4:5, 9:16, 3:4 — akisiniza uygun her en-boy orani.">Branded collages with logo and dates. 1:1, 4:5, 9:16, 3:4 — every aspect ratio your feed needs.</p>
     </div>
     <div class="screenshot-image"><img src="images/aafc_iphone_collage.png" alt="AAFC Collage Editor"></div>
   </div>
@@ -216,13 +217,13 @@ if (window.location.search.includes('code=')) {
 
 
 <section class="trust">
-  <p>Built for</p>
+  <p data-en="Built for" data-tr="Su alanlar icin">Built for</p>
   <div class="spec-grid">
-    <span class="spec">Plastic Surgery</span>
-    <span class="spec">Dermatology</span>
-    <span class="spec">Aesthetic Medicine</span>
-    <span class="spec">ENT</span>
-    <span class="spec">Cosmetic Clinics</span>
+    <span class="spec" data-en="Plastic Surgery" data-tr="Plastik Cerrahi">Plastic Surgery</span>
+    <span class="spec" data-en="Dermatology" data-tr="Dermatoloji">Dermatology</span>
+    <span class="spec" data-en="Aesthetic Medicine" data-tr="Estetik Tip">Aesthetic Medicine</span>
+    <span class="spec" data-en="ENT" data-tr="KBB">ENT</span>
+    <span class="spec" data-en="Cosmetic Clinics" data-tr="Kozmetik Klinikler">Cosmetic Clinics</span>
   </div>
 </section>
 
@@ -444,8 +445,8 @@ if (window.location.search.includes('code=')) {
   <h2>Ready to organize your clinical archive?</h2>
   <p>Join clinics that document with confidence. 14 days free, no card needed to start.</p>
   <div class="badges">
-    <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i>Download on App Store</a>
-    <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i>Get it on Google Play</a>
+    <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i data-en="Download on App Store" data-tr="App Store'dan indir">Download on App Store</a>
+    <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i data-en="Get it on Google Play" data-tr="Google Play'den indir">Get it on Google Play</a>
   </div>
 </section>
 
@@ -458,8 +459,8 @@ if (window.location.search.includes('code=')) {
 
     <div class="footer-col">
       <h4>Product</h4>
-      <a href="#features">Features</a>
-      <a href="#pricing">Pricing</a>
+      <a href="#features" data-en="Features" data-tr="Ozellikler">Features</a>
+      <a href="#pricing" data-en="Pricing" data-tr="Fiyatlandirma">Pricing</a>
       <a href="panel.html">Web Panel</a>
     </div>
 
@@ -483,5 +484,19 @@ if (window.location.search.includes('code=')) {
   </div>
 </footer>
 
+<script>
+function toggleLang(){
+  var cur = document.documentElement.getAttribute('data-lang') || 'en';
+  var next = cur === 'en' ? 'tr' : 'en';
+  document.documentElement.setAttribute('data-lang', next);
+  document.querySelectorAll('[data-'+next+']').forEach(function(el){
+    el.textContent = el.getAttribute('data-'+next);
+  });
+  document.querySelectorAll('[data-'+next+'-html]').forEach(function(el){
+    el.innerHTML = el.getAttribute('data-'+next+'-html');
+  });
+  document.getElementById('langToggle').textContent = next === 'en' ? 'TR' : 'EN';
+}
+</script>
 </body>
 </html>

@@ -162,8 +162,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   .tabs{padding:0 10px}
   .tab{padding:10px 12px;font-size:11px}
 }
+.fmt{width:100%;border-collapse:collapse;margin-top:8px}
+.fmt th{text-align:left;font-size:11px;color:#8a8499;font-weight:600;padding:6px 8px;border-bottom:1px solid rgba(245,241,235,0.1)}
+.fmt td{padding:7px 8px;font-size:13px;color:#F5F1EB;border-bottom:1px solid rgba(245,241,235,0.06)}
+.fmn{width:24px;color:#B89A6A;font-weight:700}
+.fmp{font-weight:600}
+.fmd{color:#9a93a8}
+.fmpr{text-align:right;font-weight:700;color:#B89A6A;white-space:nowrap}
+.fmtot{text-align:right;margin-top:8px;font-size:14px;font-weight:700;color:#B89A6A}
+.fmcard{position:relative;width:300px;max-width:100%;margin:8px auto;border-radius:10px;overflow:hidden;background:#0f0d17}
+.fmcard img{width:100%;display:block}
+.fmpin{position:absolute;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.5)}
+.fmleg{margin-top:6px}
+.fmleg div{display:flex;align-items:center;gap:6px;font-size:12px;color:#F5F1EB;padding:2px 0}
+.fmleg .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid #fff}
+.fmdl{display:inline-block;margin-top:8px;padding:7px 14px;background:#B89A6A;color:#1C1929;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
 </style>
 <link rel="canonical" href="https://aafclinic.com/panel" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -175,7 +191,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <span class="lbl">EMAIL</span>
     <input class="inp" type="email" id="iEmail" placeholder="clinic@email.com"/>
     <span class="lbl">PASSWORD</span>
-    <input class="inp" type="password" id="iPass" placeholder="••••••••"/>
+    <input class="inp" type="password" id="iPass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"/>
     <button class="btn-login" id="btnLogin" onclick="doLogin()">Sign In</button>
     <div class="err" id="loginErr">Invalid email or password</div>
   </div>
@@ -183,7 +199,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="app" id="app">
   <div class="banner">
-    <div class="bt"><strong>Backup and Export</strong> — Download all clinic data including photos</div>
+    <div class="bt"><strong>Backup and Export</strong> â€” Download all clinic data including photos</div>
     <div class="bts">
       <button class="btn bzip" onclick="dlZIP()">ZIP with photos</button>
       <button class="btn bhtml" onclick="dlHTML()">HTML Report</button>
@@ -261,6 +277,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
               <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
               <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="dg" id="bGrid"></div></div>
+              <div id="tpWrap" style="display:none"><div class="sec">TREATMENT PLAN</div><div id="tpBody"></div></div>
+              <div id="imWrap" style="display:none"><div class="sec">INJECTION MAP</div><div id="imBody"></div></div>
             </div>
           </div>
         </div>
@@ -274,9 +292,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2>Daily Agenda</h2><div class="sub">Visits completed on the selected day</div></div>
         <div class="date-bar">
-          <button class="navb" onclick="agendaShift(-1)">‹</button>
+          <button class="navb" onclick="agendaShift(-1)">â€¹</button>
           <input id="agendaDate" type="date" onchange="loadAgenda()">
-          <button class="navb" onclick="agendaShift(1)">›</button>
+          <button class="navb" onclick="agendaShift(1)">â€º</button>
           <button class="today-b" onclick="agendaToday()">Today</button>
         </div>
       </div>
@@ -290,9 +308,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2>Appointment Book</h2><div class="sub">Scheduled appointments. Send WhatsApp or SMS reminders.</div></div>
         <div class="date-bar">
-          <button class="navb" onclick="apptShift(-1)">‹</button>
+          <button class="navb" onclick="apptShift(-1)">â€¹</button>
           <input id="apptDate" type="date" onchange="loadAppts()">
-          <button class="navb" onclick="apptShift(1)">›</button>
+          <button class="navb" onclick="apptShift(1)">â€º</button>
           <button class="today-b" onclick="apptToday()">Today</button>
         </div>
       </div>
@@ -488,7 +506,7 @@ function renderP(list){
     var p=list[i];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
     h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
-    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
+    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' Â· ')+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -506,7 +524,7 @@ async function selP(id){
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
   document.getElementById('dName').textContent=(p.name||'')+' '+(p.surname||'');
-  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
+  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' Â· ');
   var ih='';
   ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+(p.name||'')+' '+(p.surname||'')+'</span></div>';
   ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
@@ -623,6 +641,7 @@ async function selV(id){
   await sDocs('kWrap','kGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
   await sDocs('oWrap','oGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
   await sDocs('bWrap','bGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
+  loadFaceMaps(id);
 }
 
 async function sDocs(wid,gid,docs){
@@ -633,12 +652,63 @@ async function sDocs(wid,gid,docs){
   var h='';
   docs.forEach(function(d){
     var u=urls[d.file_path]||'';
-    h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';
+    var isPdf=(d.file_path||'').toLowerCase().indexOf('.pdf')>-1;
+    if(isPdf){h+='<div class="dc" style="display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="window.open(\''+u+'\',\'_blank\')"><div style="text-align:center;color:#B89A6A"><div style="font-size:34px">PDF</div><div style="font-size:11px;margin-top:4px">Open</div></div></div>';}else{h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';}
   });
   document.getElementById(gid).innerHTML=h;
 }
 
 // ============ MODAL ============
+function curSym(){var c=clinic&&clinic.currency;if(!c)return '';var m={TRY:'\u20BA',USD:'\$',EUR:'\u20AC',GBP:'\u00A3',RUB:'\u20BD',KRW:'\u20A9',CNY:'\u00A5',JPY:'\u00A5',CHF:'CHF',AED:'AED'};return m[c]||c;}
+
+async function loadFaceMaps(visitId){
+  document.getElementById('tpWrap').style.display='none';
+  document.getElementById('imWrap').style.display='none';
+  var mr=await db.from('injection_maps').select('*').eq('visit_id',visitId);
+  if(!mr.data||!mr.data.length)return;
+  for(var i=0;i<mr.data.length;i++){
+    var m=mr.data[i];
+    var pr=await db.from('injection_points').select('*').eq('map_id',m.id).order('seq');
+    var pts2=pr.data||[];
+    if(!pts2.length)continue;
+    var isPlan=m.map_type==='treatment_plan';
+    var cardId='fmc_'+m.id;
+    var pins='';var leg='';var rows='';var total=0;
+    pts2.forEach(function(p){
+      var col=p.color||'#B8430F';
+      var lx=(Number(p.x)*100).toFixed(2);
+      var ly=(Number(p.y)*100).toFixed(2);
+      pins+='<div class="fmpin" style="left:'+lx+'%;top:'+ly+'%;background:'+col+'">'+p.seq+'</div>';
+      var dz=(p.descr||'');
+      leg+='<div><span class="dot" style="background:'+col+'"></span><b>'+p.seq+'.</b> '+(p.product_name||'')+(dz?' - '+dz:'')+'</div>';
+      var price=(p.price!=null)?p.price:null;
+      if(price!=null)total+=Number(price);
+      rows+='<tr><td class="fmn">'+p.seq+'</td><td class="fmp">'+(p.product_name||'')+'</td><td class="fmd">'+(p.descr||'')+'</td>';
+      if(isPlan)rows+='<td class="fmpr">'+(price!=null?(price+(curSym()?' '+curSym():'')):'')+'</td>';
+      rows+='</tr>';
+    });
+    var head=isPlan?'<tr><th>#</th><th>Procedure</th><th>Description</th><th>Price</th></tr>':'<tr><th>#</th><th>Procedure</th><th>Area</th></tr>';
+    var tot=(isPlan&&total>0)?'<div class="fmtot">TOTAL: '+total+(curSym()?' '+curSym():'')+'</div>':'';
+    var card='<div class="fmcard" id="'+cardId+'"><img src="face_template.jpeg" crossorigin="anonymous"/>'+pins+'</div>';
+    var kind=isPlan?'tedavi_plani':'enjeksiyon';
+    var btn='<button class="fmdl" onclick="dlFaceCard(this)" data-card="'+cardId+'" data-kind="'+kind+'">Indir (PNG)</button>';
+    var html=card+'<div class="fmleg">'+leg+'</div><table class="fmt">'+head+rows+'</table>'+tot+btn;
+    if(isPlan){document.getElementById('tpWrap').style.display='block';document.getElementById('tpBody').innerHTML=html;}
+    else{document.getElementById('imWrap').style.display='block';document.getElementById('imBody').innerHTML=html;}
+  }
+}
+function dlFaceCard(btn){
+  var cardId=btn.getAttribute('data-card');
+  var fn=btn.getAttribute('data-kind');
+  var el=document.getElementById(cardId);
+  if(!el||typeof html2canvas==='undefined'){alert('Indirme hazir degil, sayfayi yenileyin');return;}
+  html2canvas(el,{backgroundColor:'#0f0d17',scale:2,useCORS:true}).then(function(canvas){
+    var a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download='aafc_'+fn+'_'+new Date().toISOString().split('T')[0]+'.png';
+    a.click();
+  }).catch(function(err){alert('Indirme hatasi: '+err);});
+}
 function openAdd(){
   editPid=null;
   document.getElementById('mTitle').textContent='Add Patient';
@@ -724,7 +794,7 @@ async function loadAgenda(){
       var time=it.visit_date?new Date(it.visit_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
       h+='<div class="list-card"><div class="row1"><div>';
       h+='<div class="name">'+name+'</div>';
-      h+='<div class="meta">'+(phone?phone+' · ':'')+time+'</div>';
+      h+='<div class="meta">'+(phone?phone+' Â· ':'')+time+'</div>';
       h+='</div><div>';
       h+='<span class="tag">'+(it.visit_type||'Visit')+'</span>';
       if(it.region)h+=' <span class="tag" style="margin-left:6px">'+it.region+'</span>';
@@ -765,12 +835,12 @@ async function loadAppts(){
       var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
       h+='<div class="list-card"><div class="row1"><div>';
       h+='<div class="name">'+(name||'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
-      h+='<div class="meta">'+(phone?'📞 '+phone+' · ':'')+time+(a.notes?' · '+a.notes:'')+'</div>';
+      h+='<div class="meta">'+(phone?'ğŸ“ '+phone+' Â· ':'')+time+(a.notes?' Â· '+a.notes:'')+'</div>';
       h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
       if(phone&&status==='planned'){
         h+='<div class="actions">';
-        h+='<button class="btn bwa" onclick="sendWA('+i+')">📱 WhatsApp</button>';
-        h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉️ SMS</button>';
+        h+='<button class="btn bwa" onclick="sendWA('+i+')">ğŸ“± WhatsApp</button>';
+        h+='<button class="btn bsms" onclick="sendSMS('+i+')">âœ‰ï¸ SMS</button>';
         h+='</div>';
       }
       h+='</div>';
@@ -794,9 +864,9 @@ function buildReminder(a){
   m=m.replace(/\[nombre\]/g,name).replace(/\[fecha\]/g,date).replace(/\[hora\]/g,time);
   m=m.replace(/\[nom\]/g,name).replace(/\[heure\]/g,time);
   m=m.replace(/\[nome\]/g,name).replace(/\[data\]/g,date).replace(/\[ora\]/g,time);
-  m=m.replace(/\[имя\]/g,name).replace(/\[дата\]/g,date).replace(/\[время\]/g,time);
-  m=m.replace(/\[이름\]/g,name).replace(/\[날짜\]/g,date).replace(/\[시간\]/g,time);
-  m=m.replace(/\[姓名\]/g,name).replace(/\[日期\]/g,date).replace(/\[时间\]/g,time);
+  m=m.replace(/\[Ğ¸Ğ¼Ñ\]/g,name).replace(/\[Ğ´Ğ°Ñ‚Ğ°\]/g,date).replace(/\[Ğ²Ñ€ĞµĞ¼Ñ\]/g,time);
+  m=m.replace(/\[ì´ë¦„\]/g,name).replace(/\[ë‚ ì§œ\]/g,date).replace(/\[ì‹œê°„\]/g,time);
+  m=m.replace(/\[å§“å\]/g,name).replace(/\[æ—¥æœŸ\]/g,date).replace(/\[æ—¶é—´\]/g,time);
   return m;
 }
 
@@ -850,15 +920,15 @@ function trendBadge(curr,prev){
   var d=curr-prev;
   if(d===0)return '';
   var up=d>0;
-  return '<div class="stat-trend '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+Math.abs(d)+'</div>';
+  return '<div class="stat-trend '+(up?'up':'down')+'">'+(up?'â–²':'â–¼')+' '+Math.abs(d)+'</div>';
 }
 
 function statCard(title,data,cmp,cmpLabel){
-  var h='<div class="stat-card"><div class="stat-title">📅 '+title+'</div>';
+  var h='<div class="stat-card"><div class="stat-title">ğŸ“… '+title+'</div>';
   h+='<div class="stat-row">';
-  h+='<div class="stat-cell"><div class="stat-icon purple">👥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
-  h+='<div class="stat-cell"><div class="stat-icon teal">📋</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
-  h+='<div class="stat-cell"><div class="stat-icon gold">🔄</div><div class="stat-value">'+data.controls+'</div><div class="stat-label">Controls</div>'+(cmp?trendBadge(data.controls,cmp.controls):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon purple">ğŸ‘¥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon teal">ğŸ“‹</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon gold">ğŸ”„</div><div class="stat-value">'+data.controls+'</div><div class="stat-label">Controls</div>'+(cmp?trendBadge(data.controls,cmp.controls):'')+'</div>';
   h+='</div>';
   if(cmpLabel)h+='<div class="stat-compare">'+cmpLabel+'</div>';
   h+='</div>';
@@ -976,6 +1046,17 @@ async function genPDF(){
 }
 
 // ============ EXPORT ============
+async function fetchFaceMaps(visitId){
+  var out=[];
+  var mr=await db.from('injection_maps').select('*').eq('visit_id',visitId);
+  for(var i=0;i<(mr.data||[]).length;i++){
+    var m=mr.data[i];
+    var pr=await db.from('injection_points').select('*').eq('map_id',m.id).order('seq');
+    out.push(Object.assign({},m,{points:pr.data||[]}));
+  }
+  return out;
+}
+
 async function fetchAll(){
   var r=await db.from('patients').select('*').eq('clinic_id',cid).is('deleted_at',null);
   var all=[];
@@ -987,7 +1068,8 @@ async function fetchAll(){
       var v=vr.data[j];
       var ph=await db.from('photos').select('*').eq('visit_id',v.id).is('deleted_at',null);
       var dc=await db.from('documents').select('*').eq('visit_id',v.id).is('deleted_at',null);
-      vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[]}));
+      var fm=await fetchFaceMaps(v.id);
+      vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[],faceMaps:fm}));
     }
     all.push(Object.assign({},p,{visits:vd}));
   }
@@ -1002,7 +1084,8 @@ async function fetchPt(pid){
     var v=vr.data[j];
     var ph=await db.from('photos').select('*').eq('visit_id',v.id).is('deleted_at',null);
     var dc=await db.from('documents').select('*').eq('visit_id',v.id).is('deleted_at',null);
-    vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[]}));
+    var fm=await fetchFaceMaps(v.id);
+      vd.push(Object.assign({},v,{photos:ph.data||[],documents:dc.data||[],faceMaps:fm}));
   }
   return [Object.assign({},p,{visits:vd})];
 }
@@ -1038,7 +1121,7 @@ async function mkHTML(all,fn){
   h+='</head><body><h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
   for(var i=0;i<all.length;i++){
     var p=all[i];
-    h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
+    h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' Â· ')+'</div>';
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       h+='<div class="vs"><h3>'+(v.visit_type||'Visit')+' - '+(v.region||'')+' - '+(v.visit_date||'').split('T')[0]+'</h3>';

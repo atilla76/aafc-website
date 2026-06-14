@@ -191,7 +191,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <span class="lbl">EMAIL</span>
     <input class="inp" type="email" id="iEmail" placeholder="clinic@email.com"/>
     <span class="lbl">PASSWORD</span>
-    <input class="inp" type="password" id="iPass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"/>
+    <input class="inp" type="password" id="iPass" placeholder="••••••••"/>
     <button class="btn-login" id="btnLogin" onclick="doLogin()">Sign In</button>
     <div class="err" id="loginErr">Invalid email or password</div>
   </div>
@@ -199,7 +199,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="app" id="app">
   <div class="banner">
-    <div class="bt"><strong>Backup and Export</strong> â€” Download all clinic data including photos</div>
+    <div class="bt"><strong>Backup and Export</strong> — Download all clinic data including photos</div>
     <div class="bts">
       <button class="btn bzip" onclick="dlZIP()">ZIP with photos</button>
       <button class="btn bhtml" onclick="dlHTML()">HTML Report</button>
@@ -292,9 +292,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2>Daily Agenda</h2><div class="sub">Visits completed on the selected day</div></div>
         <div class="date-bar">
-          <button class="navb" onclick="agendaShift(-1)">â€¹</button>
+          <button class="navb" onclick="agendaShift(-1)">‹</button>
           <input id="agendaDate" type="date" onchange="loadAgenda()">
-          <button class="navb" onclick="agendaShift(1)">â€º</button>
+          <button class="navb" onclick="agendaShift(1)">›</button>
           <button class="today-b" onclick="agendaToday()">Today</button>
         </div>
       </div>
@@ -308,9 +308,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2>Appointment Book</h2><div class="sub">Scheduled appointments. Send WhatsApp or SMS reminders.</div></div>
         <div class="date-bar">
-          <button class="navb" onclick="apptShift(-1)">â€¹</button>
+          <button class="navb" onclick="apptShift(-1)">‹</button>
           <input id="apptDate" type="date" onchange="loadAppts()">
-          <button class="navb" onclick="apptShift(1)">â€º</button>
+          <button class="navb" onclick="apptShift(1)">›</button>
           <button class="today-b" onclick="apptToday()">Today</button>
         </div>
       </div>
@@ -840,7 +840,7 @@ async function loadAppts(){
       if(phone&&status==='planned'){
         h+='<div class="actions">';
         h+='<button class="btn bwa" onclick="sendWA('+i+')">ğŸ“± WhatsApp</button>';
-        h+='<button class="btn bsms" onclick="sendSMS('+i+')">âœ‰ï¸ SMS</button>';
+        h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉ï¸ SMS</button>';
         h+='</div>';
       }
       h+='</div>';
@@ -920,7 +920,7 @@ function trendBadge(curr,prev){
   var d=curr-prev;
   if(d===0)return '';
   var up=d>0;
-  return '<div class="stat-trend '+(up?'up':'down')+'">'+(up?'â–²':'â–¼')+' '+Math.abs(d)+'</div>';
+  return '<div class="stat-trend '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+Math.abs(d)+'</div>';
 }
 
 function statCard(title,data,cmp,cmpLabel){

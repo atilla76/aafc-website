@@ -506,7 +506,7 @@ function renderP(list){
     var p=list[i];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
     h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
-    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' Â· ')+'</div></div>';
+    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -524,7 +524,7 @@ async function selP(id){
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
   document.getElementById('dName').textContent=(p.name||'')+' '+(p.surname||'');
-  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' Â· ');
+  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
   var ih='';
   ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+(p.name||'')+' '+(p.surname||'')+'</span></div>';
   ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
@@ -794,7 +794,7 @@ async function loadAgenda(){
       var time=it.visit_date?new Date(it.visit_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
       h+='<div class="list-card"><div class="row1"><div>';
       h+='<div class="name">'+name+'</div>';
-      h+='<div class="meta">'+(phone?phone+' Â· ':'')+time+'</div>';
+      h+='<div class="meta">'+(phone?phone+' · ':'')+time+'</div>';
       h+='</div><div>';
       h+='<span class="tag">'+(it.visit_type||'Visit')+'</span>';
       if(it.region)h+=' <span class="tag" style="margin-left:6px">'+it.region+'</span>';
@@ -835,11 +835,11 @@ async function loadAppts(){
       var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
       h+='<div class="list-card"><div class="row1"><div>';
       h+='<div class="name">'+(name||'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
-      h+='<div class="meta">'+(phone?'ğŸ“ '+phone+' Â· ':'')+time+(a.notes?' Â· '+a.notes:'')+'</div>';
+      h+='<div class="meta">'+(phone?'📞 '+phone+' · ':'')+time+(a.notes?' · '+a.notes:'')+'</div>';
       h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
       if(phone&&status==='planned'){
         h+='<div class="actions">';
-        h+='<button class="btn bwa" onclick="sendWA('+i+')">ğŸ“± WhatsApp</button>';
+        h+='<button class="btn bwa" onclick="sendWA('+i+')">📱 WhatsApp</button>';
         h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉ï¸ SMS</button>';
         h+='</div>';
       }
@@ -924,11 +924,11 @@ function trendBadge(curr,prev){
 }
 
 function statCard(title,data,cmp,cmpLabel){
-  var h='<div class="stat-card"><div class="stat-title">ğŸ“… '+title+'</div>';
+  var h='<div class="stat-card"><div class="stat-title">📅 '+title+'</div>';
   h+='<div class="stat-row">';
-  h+='<div class="stat-cell"><div class="stat-icon purple">ğŸ‘¥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
-  h+='<div class="stat-cell"><div class="stat-icon teal">ğŸ“‹</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
-  h+='<div class="stat-cell"><div class="stat-icon gold">ğŸ”„</div><div class="stat-value">'+data.controls+'</div><div class="stat-label">Controls</div>'+(cmp?trendBadge(data.controls,cmp.controls):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon purple">👥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon teal">📋</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
+  h+='<div class="stat-cell"><div class="stat-icon gold">🔄</div><div class="stat-value">'+data.controls+'</div><div class="stat-label">Controls</div>'+(cmp?trendBadge(data.controls,cmp.controls):'')+'</div>';
   h+='</div>';
   if(cmpLabel)h+='<div class="stat-compare">'+cmpLabel+'</div>';
   h+='</div>';
@@ -1121,7 +1121,7 @@ async function mkHTML(all,fn){
   h+='</head><body><h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
   for(var i=0;i<all.length;i++){
     var p=all[i];
-    h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' Â· ')+'</div>';
+    h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
     for(var j=0;j<p.visits.length;j++){
       var v=p.visits[j];
       h+='<div class="vs"><h3>'+(v.visit_type||'Visit')+' - '+(v.region||'')+' - '+(v.visit_date||'').split('T')[0]+'</h3>';

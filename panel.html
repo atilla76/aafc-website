@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1C1929;color:#F5F1EB;height:100vh;overflow:hidden}
@@ -177,6 +178,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fmleg div{display:flex;align-items:center;gap:6px;font-size:12px;color:#F5F1EB;padding:2px 0}
 .fmleg .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid #fff}
 .fmdl{display:inline-block;margin-top:8px;padding:7px 14px;background:#B89A6A;color:#1C1929;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
+/* IMPORT */
+.imp-step{background:rgba(245,241,235,0.03);border:1px solid rgba(245,241,235,0.08);border-radius:14px;padding:18px;margin-bottom:16px}
+.imp-step h3{font-size:14px;font-weight:600;color:#B89A6A;margin-bottom:4px}
+.imp-step .hint{font-size:12px;color:rgba(245,241,235,0.45);margin-bottom:12px}
+.imp-drop{border:1.5px dashed rgba(184,154,106,0.35);border-radius:12px;padding:26px;text-align:center;cursor:pointer;color:rgba(245,241,235,0.6);font-size:13px}
+.imp-drop:hover,.imp-drop.over{border-color:#B89A6A;background:rgba(184,154,106,0.06)}
+.imp-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.imp-map label{display:block;font-size:11px;color:rgba(245,241,235,0.5);margin-bottom:4px}
+.imp-map select{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none}
+.imp-map select option{background:#1C1929}
+.imp-nums{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.imp-num{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:10px;padding:10px 14px;min-width:110px}
+.imp-num .n{font-size:22px;font-weight:600}
+.imp-num .l{font-size:11px;color:rgba(245,241,235,0.45)}
+.imp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.bimp{background:#B89A6A;color:#1C1929;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.bimp:disabled{opacity:.4;cursor:default}
+.bimp2{background:rgba(245,241,235,0.06);color:#F5F1EB;border:1px solid rgba(245,241,235,0.15);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
+.imp-wrap{overflow-x:auto;max-height:260px;overflow-y:auto}
 </style>
 <link rel="canonical" href="https://aafclinic.com/panel" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -214,6 +234,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="tab" data-tab="agenda" onclick="switchTab('agenda')">AGENDA</button>
     <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">APPOINTMENTS</button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
+    <button class="tab" data-tab="import" onclick="switchTab('import')">IMPORT</button>
   </div>
 
   <!-- PATIENTS TAB -->
@@ -325,6 +346,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div><h2>Statistics</h2><div class="sub">Clinic activity across periods</div></div>
       </div>
       <div id="statsBody"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- IMPORT TAB -->
+  <div class="tcontent" id="tab-import" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Import Patients</h2><div class="sub">Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.</div></div>
+      </div>
+
+      <div class="imp-step">
+        <h3>1 · Choose file</h3>
+        <div class="hint">.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.</div>
+        <div class="imp-drop" id="impDrop" onclick="document.getElementById('impFile').click()">Click to choose a file or drop it here</div>
+        <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="impRead(this.files[0])">
+      </div>
+
+      <div class="imp-step" id="impMapStep" style="display:none">
+        <h3>2 · Match columns</h3>
+        <div class="hint" id="impMapHint"></div>
+        <div class="imp-map" id="impMap"></div>
+        <div class="sec">FIRST ROWS</div>
+        <div class="imp-wrap"><table class="fmt" id="impSample"></table></div>
+        <div style="margin-top:14px" class="imp-actions">
+          <button class="bimp" onclick="impRun(true)">Preview</button>
+        </div>
+      </div>
+
+      <div class="imp-step" id="impResStep" style="display:none">
+        <h3 id="impResTitle">3 · Preview</h3>
+        <div class="imp-nums" id="impNums"></div>
+        <div class="imp-wrap"><table class="fmt" id="impIssues"></table></div>
+        <div style="margin-top:14px" class="imp-actions" id="impResActions"></div>
+      </div>
+
+      <div class="imp-step">
+        <h3>Previous imports</h3>
+        <div class="hint">An import can be undone: imported patients without any visit are removed.</div>
+        <div class="imp-wrap"><table class="fmt" id="impBatches"></table></div>
+      </div>
     </div>
   </div>
 </div>
@@ -475,6 +536,7 @@ function switchTab(name){
   if(name==='agenda')loadAgenda();
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
+  if(name==='import')impLoadBatches();
 }
 
 function fmtDate(d){return d.toISOString().split('T')[0]}
@@ -1150,6 +1212,143 @@ async function dlPtZIP(){if(!selPid)return;sp('Fetching...');var a=await fetchPt
 async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();}
 async function dlJSON(){sp('Fetching...');var a=await fetchAll();var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';el.click();hp();}
 async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo Path'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
+
+// ============ IMPORT ============
+var IMP_FIELDS=[
+  {k:'name',l:'First name (or full name) *',m:['ad','adı','adi','isim','first name','firstname','name','ad soyad','adı soyadı','adi soyadi','hasta adı','hasta adi','full name','patient','hasta']},
+  {k:'surname',l:'Last name',m:['soyad','soyadı','soyadi','surname','last name','lastname','family name']},
+  {k:'phone',l:'Phone',m:['telefon','tel','gsm','cep','cep telefonu','phone','mobile','mobil','telefon no']},
+  {k:'birth_date',l:'Birth date',m:['doğum tarihi','dogum tarihi','d.tarihi','dt','birth date','birthdate','date of birth','dob','doğum','dogum']},
+  {k:'national_id',l:'National ID (TC Kimlik No)',m:['tc','tc no','tckn','tc kimlik','tc kimlik no','kimlik no','kimlik','national id','id number','passport','pasaport']},
+  {k:'email',l:'E-mail',m:['e-posta','eposta','email','e-mail','mail']},
+  {k:'city',l:'City',m:['şehir','sehir','il','city','town']},
+  {k:'notes',l:'Notes',m:['not','notlar','açıklama','aciklama','notes','note','comment','remarks']},
+  {k:'external_id',l:'Patient no (old program)',m:['hasta no','dosya no','protokol','protokol no','kayıt no','kayit no','id','patient no','patient id','file no','record no']}
+];
+var impHead=[],impRows=[],impFileName='';
+
+(function(){
+  var d=document.getElementById('impDrop');if(!d)return;
+  d.addEventListener('dragover',function(e){e.preventDefault();d.classList.add('over');});
+  d.addEventListener('dragleave',function(){d.classList.remove('over');});
+  d.addEventListener('drop',function(e){e.preventDefault();d.classList.remove('over');if(e.dataTransfer.files[0])impRead(e.dataTransfer.files[0]);});
+})();
+
+function impEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function impNorm(s){return String(s||'').toLowerCase().replace(/[._:]/g,' ').replace(/\s+/g,' ').trim();}
+
+function impRead(file){
+  if(!file)return;
+  if(typeof XLSX==='undefined'){alert('Excel reader could not be loaded. Check your internet connection and reload.');return;}
+  impFileName=file.name;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      // raw:true keeps real date cells as Date objects; format them ourselves (dd.mm.yyyy)
+      // so Excel's locale display format (e.g. US m/d/yy) can never swap day and month.
+      var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}).map(function(r){
+        return r.map(function(c){
+          if(c instanceof Date&&!isNaN(c)){var d=new Date(c.getTime()+12*3600*1000);
+            return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear();}
+          return c==null?'':String(c);
+        });
+      });
+      rows=rows.filter(function(r){return r.some(function(c){return String(c).trim()!=='';});});
+      if(rows.length<2){alert('The file has no data rows.');return;}
+      impHead=rows[0].map(function(h){return String(h).trim();});
+      impRows=rows.slice(1);
+      if(impRows.length>5000){alert('Max 5,000 patients per import. This file has '+impRows.length+'. Please split it.');return;}
+      impShowMap();
+    }catch(err){alert('Could not read the file: '+err.message);}
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function impShowMap(){
+  var used={},html='';
+  IMP_FIELDS.forEach(function(f){
+    var guess=-1;
+    impHead.forEach(function(h,i){if(guess<0&&!used[i]&&f.m.indexOf(impNorm(h))>=0)guess=i;});
+    if(guess>=0)used[guess]=1;
+    var opts='<option value="-1">— skip —</option>'+impHead.map(function(h,i){return '<option value="'+i+'"'+(i===guess?' selected':'')+'>'+impEsc(h||('Column '+(i+1)))+'</option>';}).join('');
+    html+='<div><label>'+f.l+'</label><select id="impSel_'+f.k+'">'+opts+'</select></div>';
+  });
+  document.getElementById('impMap').innerHTML=html;
+  document.getElementById('impMapHint').textContent=impFileName+' · '+impRows.length+' rows. Check the matches below; columns are guessed from their headers.';
+  var sample='<tr>'+impHead.map(function(h){return '<th>'+impEsc(h)+'</th>';}).join('')+'</tr>';
+  impRows.slice(0,5).forEach(function(r){sample+='<tr>'+impHead.map(function(_,i){return '<td>'+impEsc(r[i])+'</td>';}).join('')+'</tr>';});
+  document.getElementById('impSample').innerHTML=sample;
+  document.getElementById('impMapStep').style.display='block';
+  document.getElementById('impResStep').style.display='none';
+}
+
+function impBuildRows(){
+  var idx={};
+  IMP_FIELDS.forEach(function(f){idx[f.k]=parseInt(document.getElementById('impSel_'+f.k).value,10);});
+  if(idx.name<0){alert('Please match the first name (or full name) column.');return null;}
+  return impRows.map(function(r){
+    var o={};
+    IMP_FIELDS.forEach(function(f){if(idx[f.k]>=0){var v=r[idx[f.k]];o[f.k]=(v==null?'':String(v)).trim();}});
+    return o;
+  });
+}
+
+var IMP_REASONS={missing_name:'Missing name',bad_birth_date:'Birth date not recognised (left empty)',invalid_tckn:'Invalid TC Kimlik No (left empty)',
+  duplicate_national_id:'Already registered (same ID no)',duplicate_external_id:'Already registered (same patient no)',
+  duplicate_phone_name:'Already registered (same phone + name)',duplicate_name_birth:'Already registered (same name + birth date)',duplicate_in_file:'Appears twice in this file'};
+
+async function impRun(dry){
+  var rows=impBuildRows();if(!rows)return;
+  sp(dry?'Checking...':'Importing...');
+  var r=await db.rpc('import_patients',{p_clinic_id:cid,p_rows:rows,p_dry_run:dry,p_file_name:impFileName});
+  hp();
+  if(r.error){alert('Error: '+r.error.message);return;}
+  var d=r.data;
+  document.getElementById('impResTitle').textContent=dry?'3 · Preview — nothing saved yet':'Done ✓';
+  document.getElementById('impNums').innerHTML=
+    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+d.inserted+'</div><div class="l">'+(dry?'will be added':'added')+'</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#D4963A">'+d.duplicates+'</div><div class="l">duplicates skipped</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#E05555">'+d.invalid+'</div><div class="l">invalid rows</div></div>'+
+    '<div class="imp-num"><div class="n">'+d.total+'</div><div class="l">rows in file</div></div>';
+  var iss=d.issues||[];
+  document.getElementById('impIssues').innerHTML=iss.length?('<tr><th>Row</th><th>Note</th><th>Detail</th></tr>'+iss.map(function(x){
+    return '<tr><td>'+(x.row+1)+'</td><td>'+impEsc(IMP_REASONS[x.reason]||x.reason)+'</td><td>'+impEsc(x.name||x.value||'')+'</td></tr>';}).join('')
+    +(iss.length>=50?'<tr><td colspan="3" style="color:rgba(245,241,235,0.4)">First 50 notes shown</td></tr>':'')):'';
+  var act=document.getElementById('impResActions');
+  if(dry){
+    act.innerHTML=d.inserted>0?'<button class="bimp" onclick="impRun(false)">Import '+d.inserted+' patients</button>':'<span class="hint">Nothing new to import.</span>';
+  }else{
+    act.innerHTML='<button class="bimp2" onclick="impUndo(\''+d.batch_id+'\')">Undo this import</button>';
+    document.getElementById('impMapStep').style.display='none';
+    await loadPts();await loadStats();impLoadBatches();
+  }
+  document.getElementById('impResStep').style.display='block';
+}
+
+async function impUndo(id){
+  if(!confirm('Undo this import? Imported patients without visits will be removed.'))return;
+  sp('Undoing...');
+  var r=await db.rpc('undo_patient_import',{p_batch_id:id});
+  hp();
+  if(r.error){alert('Error: '+r.error.message);return;}
+  alert(r.data.removed+' patients removed'+(r.data.kept_with_visits?(', '+r.data.kept_with_visits+' kept because they already have visits'):'')+'.');
+  document.getElementById('impResStep').style.display='none';
+  await loadPts();await loadStats();impLoadBatches();
+}
+
+async function impLoadBatches(){
+  var el=document.getElementById('impBatches');if(!el||!cid)return;
+  var r=await db.from('patient_import_batches').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}).limit(20);
+  var b=r.data||[];
+  if(!b.length){el.innerHTML='<tr><td style="color:rgba(245,241,235,0.4)">No imports yet</td></tr>';return;}
+  el.innerHTML='<tr><th>Date</th><th>File</th><th>Added</th><th>Skipped</th><th></th></tr>'+b.map(function(x){
+    var dt=new Date(x.created_at).toLocaleString();
+    var act=x.undone_at?'<span style="color:rgba(245,241,235,0.4)">undone</span>':'<button class="bimp2" style="padding:5px 10px;font-size:11px" onclick="impUndo(\''+x.id+'\')">Undo</button>';
+    return '<tr><td>'+impEsc(dt)+'</td><td>'+impEsc(x.file_name||'')+'</td><td>'+x.inserted+'</td><td>'+(x.duplicates+x.invalid)+'</td><td>'+act+'</td></tr>';
+  }).join('');
+}
 </script>
 </body>
 </html>

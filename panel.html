@@ -356,7 +356,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <button class="today-b" onclick="apptToday()">Today</button>
         </div>
       </div>
+      <div id="apptBlocks"></div>
       <div id="apptList"><div class="loader">Loading...</div></div>
+      <div style="margin-top:24px">
+      <div class="imp-step">
+        <h3>Blocked times</h3>
+        <div class="hint">Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.</div>
+        <div class="bk-row">
+          <input class="bk-in" type="date" id="blDate" style="color-scheme:dark">
+          <input class="bk-in" type="time" id="blStart" value="13:00" style="color-scheme:dark"><span class="hint" style="margin:0">–</span>
+          <input class="bk-in" type="time" id="blEnd" value="15:00" style="color-scheme:dark">
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="blAll"> All day</label>
+          <input class="bk-in" id="blReason" placeholder="Reason (e.g. Surgery)" style="flex:1;min-width:160px">
+          <button class="bimp" onclick="blAdd()">Block time</button>
+        </div>
+        <div class="imp-wrap"><table class="fmt" id="blList"></table></div>
+      </div>
+      <div class="imp-step">
+        <h3>Calendar subscription</h3>
+        <div class="hint">Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).</div>
+        <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="cfEnabled" onchange="cfSet()"> Enable calendar subscription</label></div>
+        <div id="cfBox" style="display:none">
+          <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="cfNames" onchange="cfSet()"> Show patient names</label></div>
+          <div class="bk-row"><span class="bk-link" id="cfLink"></span></div>
+          <div class="bk-row"><button class="bimp2" onclick="cfOpen('google')">Add to Google Calendar</button><button class="bimp2" onclick="cfOpen('apple')">Add to iPhone / Mac calendar</button><button class="bimp2" onclick="navigator.clipboard.writeText(document.getElementById('cfLink').textContent);apMsg(trText('Copied'))">Copy link</button><span id="apMsg" class="hint" style="margin:0;color:#3AB06A"></span><button class="bimp2" onclick="if(confirm(trText('Regenerate link? The old link will stop working.')))cfSet(true)">Regenerate link</button></div>
+        </div>
+      </div>
+      </div>
     </div>
   </div>
 
@@ -445,29 +471,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <span class="hint" style="margin:0">Slot every</span><input class="bk-in" id="bkSlot" type="number" min="5" max="240" style="width:80px"><span class="hint" style="margin:0">min ·</span>
           <span class="hint" style="margin:0">min notice</span><input class="bk-in" id="bkNotice" type="number" min="0" max="168" style="width:70px"><span class="hint" style="margin:0">h ·</span>
           <span class="hint" style="margin:0">up to</span><input class="bk-in" id="bkAhead" type="number" min="1" max="180" style="width:70px"><span class="hint" style="margin:0">days ahead</span>
-        </div>
-      </div>
-      <div class="imp-step">
-        <h3>Blocked times</h3>
-        <div class="hint">Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.</div>
-        <div class="bk-row">
-          <input class="bk-in" type="date" id="blDate" style="color-scheme:dark">
-          <input class="bk-in" type="time" id="blStart" value="13:00" style="color-scheme:dark"><span class="hint" style="margin:0">–</span>
-          <input class="bk-in" type="time" id="blEnd" value="15:00" style="color-scheme:dark">
-          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="blAll"> All day</label>
-          <input class="bk-in" id="blReason" placeholder="Reason (e.g. Surgery)" style="flex:1;min-width:160px">
-          <button class="bimp" onclick="blAdd()">Block time</button>
-        </div>
-        <div class="imp-wrap"><table class="fmt" id="blList"></table></div>
-      </div>
-      <div class="imp-step">
-        <h3>Calendar subscription</h3>
-        <div class="hint">Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).</div>
-        <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="cfEnabled" onchange="cfSet()"> Enable calendar subscription</label></div>
-        <div id="cfBox" style="display:none">
-          <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="cfNames" onchange="cfSet()"> Show patient names</label></div>
-          <div class="bk-row"><span class="bk-link" id="cfLink"></span></div>
-          <div class="bk-row"><button class="bimp2" onclick="cfOpen('google')">Add to Google Calendar</button><button class="bimp2" onclick="cfOpen('apple')">Add to iPhone / Mac calendar</button><button class="bimp2" onclick="navigator.clipboard.writeText(document.getElementById('cfLink').textContent);bkMsg(trText('Copied'))">Copy link</button><button class="bimp2" onclick="if(confirm(trText('Regenerate link? The old link will stop working.')))cfSet(true)">Regenerate link</button></div>
         </div>
       </div>
       <div class="imp-step">
@@ -1074,6 +1077,8 @@ window._appts=[];
 
 async function loadAppts(){
   apptDate=parseDate(document.getElementById('apptDate').value);
+  if(document.getElementById('blDate'))document.getElementById('blDate').value=fmtDate(apptDate);
+  apptBlocks();blLoad();cfLoad();
   var el=document.getElementById('apptList');
   el.innerHTML='<div class="loader">Loading...</div>';
   try{
@@ -1753,7 +1758,7 @@ async function bkLoad(){
   document.getElementById('bkSlot').value=bkData.slot_minutes;
   document.getElementById('bkNotice').value=bkData.min_notice_hours;
   document.getElementById('bkAhead').value=bkData.max_days_ahead;
-  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();blLoad();cfLoad();
+  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();
 }
 function bkRenderSvcs(){
   document.getElementById('bkSvcs').innerHTML=(bkData.services||[]).map(function(s,i){
@@ -1797,6 +1802,14 @@ async function bkRecent(){
 }
 
 // ============ BLOCKED TIMES + CALENDAR FEED ============
+function apMsg(t,err){if(err){alert(t);return;}var e=document.getElementById('apMsg');if(!e)return;e.textContent=t;setTimeout(function(){e.textContent='';},3000);}
+async function apptBlocks(){
+  var r=await db.from('clinic_time_blocks').select('*').eq('clinic_id',cid).eq('block_date',fmtDate(apptDate)).order('start_time');
+  var rows=r.data||[],el=document.getElementById('apptBlocks');
+  el.innerHTML=rows.length?'<div style="background:rgba(192,97,74,.10);border:1px solid rgba(192,97,74,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px">'+rows.map(function(b){
+    var s=String(b.start_time).slice(0,5),e=String(b.end_time).slice(0,5);
+    return '<div style="font-size:13px;padding:2px 0">⛔ '+(s==='00:00'&&e==='23:59'?trText('All day'):s+' – '+e)+(b.reason?' · '+bkEsc(b.reason):'')+'</div>';}).join('')+'</div>':'';
+}
 var CF_BASE='https://hugxacklprzujswtaike.supabase.co/functions/v1/calendar-feed?t=',cfData=null;
 async function blLoad(){
   if(!document.getElementById('blDate').value)document.getElementById('blDate').value=mxIso(new Date());
@@ -1808,11 +1821,11 @@ async function blLoad(){
 }
 async function blAdd(){
   var all=document.getElementById('blAll').checked,s=all?'00:00':document.getElementById('blStart').value,e=all?'23:59':document.getElementById('blEnd').value;
-  if(!document.getElementById('blDate').value||!s||!e||e<=s){bkMsg(trText('End time must be after start time.'),true);return;}
+  if(!document.getElementById('blDate').value||!s||!e||e<=s){apMsg(trText('End time must be after start time.'),true);return;}
   var r=await db.from('clinic_time_blocks').insert({clinic_id:cid,block_date:document.getElementById('blDate').value,start_time:s,end_time:e,reason:document.getElementById('blReason').value.trim()||null});
-  if(r.error){bkMsg(r.error.message,true);return;}document.getElementById('blReason').value='';blLoad();
+  if(r.error){apMsg(r.error.message,true);return;}document.getElementById('blReason').value='';blLoad();apptBlocks();
 }
-async function blDel(id){await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();}
+async function blDel(id){await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();apptBlocks();}
 async function cfLoad(){
   var u=await db.auth.getUser();var uid=u.data&&u.data.user&&u.data.user.id;if(!uid)return;
   var r=await db.from('calendar_feeds').select('enabled,show_names,token').eq('auth_id',uid).maybeSingle();cfData=r.data;cfRender();
@@ -1823,7 +1836,7 @@ function cfRender(){
 }
 async function cfSet(regen){
   var r=await db.rpc('set_calendar_feed',{p_enabled:document.getElementById('cfEnabled').checked,p_show_names:cfData?document.getElementById('cfNames').checked:true,p_regenerate:!!regen});
-  if(r.error){bkMsg(r.error.message,true);return;}cfData=r.data;cfRender();
+  if(r.error){apMsg(r.error.message,true);return;}cfData=r.data;cfRender();
 }
 function cfOpen(k){if(!cfData)return;var web='webcal://'+(CF_BASE+cfData.token).replace('https://','');
   window.open(k==='google'?'https://calendar.google.com/calendar/r?cid='+encodeURIComponent(web):web,'_blank');}

@@ -197,6 +197,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bimp:disabled{opacity:.4;cursor:default}
 .bimp2{background:rgba(245,241,235,0.06);color:#F5F1EB;border:1px solid rgba(245,241,235,0.15);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
 .imp-wrap{overflow-x:auto;max-height:260px;overflow-y:auto}
+/* BOOKING */
+.bk-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.bk-in{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none;font-family:inherit}
+.bk-in:focus{border-color:#B89A6A}
+.bk-day{display:grid;grid-template-columns:110px 90px 90px 20px 90px 90px;gap:8px;align-items:center;margin-bottom:6px;font-size:13px}
+.bk-day input[type=time]{color-scheme:dark}
+.bk-link{font-family:monospace;font-size:13px;color:#D4B896;word-break:break-all}
+.bk-x{background:none;border:none;color:#C0614A;cursor:pointer;font-size:16px}
+@media(max-width:700px){.bk-day{grid-template-columns:1fr 1fr;}.bk-day .sep{display:none}}
 </style>
 <link rel="canonical" href="https://aafclinic.com/panel" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -235,6 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">APPOINTMENTS</button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
     <button class="tab" data-tab="import" onclick="switchTab('import')">IMPORT</button>
+    <button class="tab" data-tab="booking" onclick="switchTab('booking')">ONLINE BOOKING</button>
   </div>
 
   <!-- PATIENTS TAB -->
@@ -382,9 +392,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       </div>
 
       <div class="imp-step">
-        <h3>Previous imports</h3>
+        <h3>Previous imports</h3><!--imp-prev-->
         <div class="hint">An import can be undone: imported patients without any visit are removed.</div>
         <div class="imp-wrap"><table class="fmt" id="impBatches"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING TAB -->
+  <div class="tcontent" id="tab-booking" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Online Booking</h2><div class="sub">Patients pick a free time from your public link; bookings appear in the appointment book as "🌐 Online".</div></div>
+        <div class="imp-actions"><button class="bimp" onclick="bkSave()">Save</button></div>
+      </div>
+      <div class="imp-step">
+        <h3>Booking page</h3>
+        <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bkEnabled"> Accept online bookings</label></div>
+        <div class="bk-row"><span class="hint" style="margin:0">aafclinic.com/randevu?k=</span><input class="bk-in" id="bkSlug" placeholder="your-clinic" style="width:220px" oninput="bkLink()"></div>
+        <div class="bk-row"><span class="bk-link" id="bkLink"></span></div>
+        <div class="bk-row"><button class="bimp2" onclick="bkCopy()">Copy link</button><button class="bimp2" onclick="bkOpen()">Open page</button><span id="bkMsg" class="hint" style="margin:0"></span></div>
+        <div class="hint" style="margin-top:8px">Short welcome text (optional)</div>
+        <textarea class="bk-in" id="bkIntro" rows="2" style="width:100%;resize:vertical"></textarea>
+      </div>
+      <div class="imp-step">
+        <h3>Services</h3>
+        <div class="hint">What patients can book and how long it takes (minutes).</div>
+        <div id="bkSvcs"></div>
+        <button class="bimp2" onclick="bkAddSvc()">+ Add service</button>
+      </div>
+      <div class="imp-step">
+        <h3>Working hours</h3>
+        <div class="hint">Second range is optional (e.g. after lunch). Closed days from the app are respected automatically.</div>
+        <div id="bkHours"></div>
+        <div class="bk-row" style="margin-top:10px">
+          <span class="hint" style="margin:0">Slot every</span><input class="bk-in" id="bkSlot" type="number" min="5" max="240" style="width:80px"><span class="hint" style="margin:0">min ·</span>
+          <span class="hint" style="margin:0">min notice</span><input class="bk-in" id="bkNotice" type="number" min="0" max="168" style="width:70px"><span class="hint" style="margin:0">h ·</span>
+          <span class="hint" style="margin:0">up to</span><input class="bk-in" id="bkAhead" type="number" min="1" max="180" style="width:70px"><span class="hint" style="margin:0">days ahead</span>
+        </div>
+      </div>
+      <div class="imp-step">
+        <h3>Recent online bookings</h3>
+        <div class="imp-wrap"><table class="fmt" id="bkRecent"></table></div>
       </div>
     </div>
   </div>
@@ -537,6 +586,7 @@ function switchTab(name){
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
   if(name==='import')impLoadBatches();
+  if(name==='booking')bkLoad();
 }
 
 function fmtDate(d){return d.toISOString().split('T')[0]}
@@ -1212,6 +1262,71 @@ async function dlPtZIP(){if(!selPid)return;sp('Fetching...');var a=await fetchPt
 async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchPt(selPid);var n=((selPt.name||'')+'_'+(selPt.surname||'')).replace(/\s/g,'_');await mkHTML(a,'aafc_'+n+'_report');hp();}
 async function dlJSON(){sp('Fetching...');var a=await fetchAll();var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';el.click();hp();}
 async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo Path'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
+
+// ============ ONLINE BOOKING ============
+var BK_DAYS=[['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']];
+var bkData=null;
+function bkEsc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function bkSlugify(t){var m={'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u','Ç':'c','Ğ':'g','İ':'i','Ö':'o','Ş':'s','Ü':'u'};
+  return (t||'').replace(/[çğıöşüÇĞİÖŞÜ]/g,function(c){return m[c]}).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);}
+function bkUrl(){return 'https://aafclinic.com/randevu?k='+encodeURIComponent(document.getElementById('bkSlug').value.trim());}
+function bkLink(){document.getElementById('bkLink').textContent=document.getElementById('bkSlug').value.trim()?bkUrl():'';}
+function bkCopy(){navigator.clipboard.writeText(bkUrl()).then(function(){bkMsg('Copied');});}
+function bkOpen(){window.open(bkUrl(),'_blank');}
+function bkMsg(t,err){var e=document.getElementById('bkMsg');e.textContent=t;e.style.color=err?'#C0614A':'#3AB06A';setTimeout(function(){e.textContent='';},4000);}
+async function bkLoad(){
+  var r=await db.from('clinic_booking_settings').select('*').eq('clinic_id',cid).maybeSingle();
+  bkData=r.data||{enabled:false,slug:bkSlugify(clinic.name||''),slot_minutes:30,min_notice_hours:2,max_days_ahead:30,intro:'',
+    services:[{name:'Muayene / Konsültasyon',duration:30}],
+    hours:{'1':[['09:00','18:00']],'2':[['09:00','18:00']],'3':[['09:00','18:00']],'4':[['09:00','18:00']],'5':[['09:00','18:00']],'6':[['10:00','14:00']],'7':[]}};
+  document.getElementById('bkEnabled').checked=!!bkData.enabled;
+  document.getElementById('bkSlug').value=bkData.slug||'';
+  document.getElementById('bkIntro').value=bkData.intro||'';
+  document.getElementById('bkSlot').value=bkData.slot_minutes;
+  document.getElementById('bkNotice').value=bkData.min_notice_hours;
+  document.getElementById('bkAhead').value=bkData.max_days_ahead;
+  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();
+}
+function bkRenderSvcs(){
+  document.getElementById('bkSvcs').innerHTML=(bkData.services||[]).map(function(s,i){
+    return '<div class="bk-row"><input class="bk-in bk-sn" value="'+bkEsc(s.name)+'" style="flex:1;min-width:180px" placeholder="Service name">'+
+      '<input class="bk-in bk-sd" type="number" min="5" max="480" value="'+(s.duration||30)+'" style="width:80px"><span class="hint" style="margin:0">min</span>'+
+      '<button class="bk-x" onclick="bkDelSvc('+i+')">✕</button></div>';}).join('');
+}
+function bkReadSvcs(){var n=document.querySelectorAll('.bk-sn'),d=document.querySelectorAll('.bk-sd'),out=[];
+  n.forEach(function(el,i){var name=el.value.trim();if(name)out.push({name:name,duration:Math.max(5,parseInt(d[i].value)||30)});});return out;}
+function bkAddSvc(){bkData.services=bkReadSvcs();bkData.services.push({name:'',duration:30});bkRenderSvcs();}
+function bkDelSvc(i){bkData.services=bkReadSvcs();bkData.services.splice(i,1);bkRenderSvcs();}
+function bkRenderHours(){
+  document.getElementById('bkHours').innerHTML=BK_DAYS.map(function(d){
+    var iv=(bkData.hours||{})[d[0]]||[];var a=iv[0]||['',''],b=iv[1]||['',''];
+    return '<div class="bk-day" data-d="'+d[0]+'"><span>'+d[1]+'</span>'+
+      '<input class="bk-in" type="time" value="'+a[0]+'"><input class="bk-in" type="time" value="'+a[1]+'"><span class="sep" style="text-align:center;color:rgba(245,241,235,.3)">·</span>'+
+      '<input class="bk-in" type="time" value="'+b[0]+'"><input class="bk-in" type="time" value="'+b[1]+'"></div>';}).join('');
+}
+function bkReadHours(){var h={};document.querySelectorAll('.bk-day').forEach(function(row){var t=row.querySelectorAll('input');var arr=[];
+  if(t[0].value&&t[1].value&&t[0].value<t[1].value)arr.push([t[0].value,t[1].value]);
+  if(t[2].value&&t[3].value&&t[2].value<t[3].value)arr.push([t[2].value,t[3].value]);h[row.dataset.d]=arr;});return h;}
+async function bkSave(){
+  var slug=bkSlugify(document.getElementById('bkSlug').value);document.getElementById('bkSlug').value=slug;bkLink();
+  if(slug.length<3){bkMsg('Link name must be at least 3 characters',true);return;}
+  var svcs=bkReadSvcs();if(!svcs.length){bkMsg('Add at least one service',true);return;}
+  var row={clinic_id:cid,enabled:document.getElementById('bkEnabled').checked,slug:slug,intro:document.getElementById('bkIntro').value.trim()||null,
+    services:svcs,hours:bkReadHours(),slot_minutes:parseInt(document.getElementById('bkSlot').value)||30,
+    min_notice_hours:parseInt(document.getElementById('bkNotice').value)||0,max_days_ahead:parseInt(document.getElementById('bkAhead').value)||30,updated_at:new Date().toISOString()};
+  var r=await db.from('clinic_booking_settings').upsert(row,{onConflict:'clinic_id'});
+  if(r.error){bkMsg(r.error.code==='23505'?'This link name is taken, choose another':(r.error.message||'Error'),true);return;}
+  bkData=row;bkRenderSvcs();bkMsg('Saved');
+}
+async function bkRecent(){
+  var r=await db.from('appointments').select('appointment_date,appointment_time,patient_name_temp,patient_phone_temp,service_name,status,created_at')
+    .eq('clinic_id',cid).eq('source','online').order('created_at',{ascending:false}).limit(20);
+  var rows=r.data||[];var t=document.getElementById('bkRecent');
+  if(!rows.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No online bookings yet</td></tr>';return;}
+  t.innerHTML='<tr><th>Date</th><th>Time</th><th>Name</th><th>Phone</th><th>Service</th><th>Status</th></tr>'+rows.map(function(a){
+    return '<tr><td>'+a.appointment_date.split('-').reverse().join('.')+'</td><td>'+String(a.appointment_time).slice(0,5)+'</td><td>'+bkEsc(a.patient_name_temp||'')+
+      '</td><td>'+bkEsc(a.patient_phone_temp||'')+'</td><td>'+bkEsc(a.service_name||'')+'</td><td>'+bkEsc(a.status)+'</td></tr>';}).join('');
+}
 
 // ============ IMPORT ============
 var IMP_FIELDS=[

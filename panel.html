@@ -675,6 +675,7 @@ async function showApp(user){
   cid=ur.data.clinic_id;
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
   clinic=cr.data||{};
+  try{db.rpc('set_my_language',{p_lang:LANG});}catch(e){}
   await loadPts();
   await loadStats();
   var today=fmtDate(new Date());

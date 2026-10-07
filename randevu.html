@@ -86,8 +86,81 @@ const EN = {
   waMsg: (n, s, d, t) => `Hello, I booked "${s}" online for ${n} on ${d} at ${t}.`,
   call: 'Call', kvkk: 'Your details are only shared with the clinic for this appointment.',
 };
-const L = (navigator.language || 'tr').toLowerCase().startsWith('tr') ? TR : EN;
-const locale = L === TR ? 'tr-TR' : undefined;
+const mk = (o) => Object.assign({}, EN, o, { errors: Object.assign({}, EN.errors, o.errors || {}) });
+const DE = mk({ title: 'Online-Termin', service: 'Leistung wählen', date: 'Tag und Uhrzeit', info: 'Ihre Angaben', change: 'Ändern', min: 'Min.',
+  noDays: 'Derzeit keine freien Tage. Bitte rufen Sie die Praxis an.', noTimes: 'Für diesen Tag sind keine Zeiten mehr frei.',
+  name: 'Vor- und Nachname', phone: 'Telefon', note: 'Notiz (optional)', book: 'Termin bestätigen', loading: 'Wird geladen…',
+  done: 'Ihr Termin ist gebucht', doneSub: 'Die Praxis meldet sich bei Bedarf bei Ihnen.', wa: 'Praxis per WhatsApp informieren',
+  cal: 'Zum Kalender hinzufügen', another: 'Neuer Termin', notFound: 'Diese Buchungsseite wurde nicht gefunden oder ist geschlossen.',
+  errors: { name: 'Bitte Vor- und Nachnamen eingeben.', phone: 'Bitte eine gültige Telefonnummer eingeben.', taken: 'Diese Zeit wurde gerade vergeben, bitte eine andere wählen.',
+    limit: 'Zu viele Versuche, bitte rufen Sie die Praxis an.', generic: 'Etwas ist schiefgelaufen, bitte erneut versuchen.' },
+  waMsg: (n, s, d, t) => `Hallo, ich habe für ${n} online "${s}" am ${d} um ${t} gebucht.`, call: 'Anrufen',
+  kvkk: 'Ihre Angaben werden nur für diesen Termin an die Praxis übermittelt.' });
+const ES = mk({ title: 'Cita online', service: 'Elija un servicio', date: 'Día y hora', info: 'Sus datos', change: 'Cambiar', min: 'min',
+  noDays: 'No hay días disponibles. Llame a la clínica.', noTimes: 'No quedan horas para este día.', name: 'Nombre y apellidos', phone: 'Teléfono',
+  note: 'Nota (opcional)', book: 'Confirmar cita', loading: 'Cargando…', done: 'Su cita está reservada', doneSub: 'La clínica le contactará si es necesario.',
+  wa: 'Avisar a la clínica por WhatsApp', cal: 'Añadir al calendario', another: 'Nueva cita', notFound: 'Esta página de reservas no existe o está cerrada.',
+  errors: { name: 'Escriba su nombre y apellidos.', phone: 'Escriba un teléfono válido.', taken: 'Esa hora acaba de ocuparse, elija otra.',
+    limit: 'Demasiados intentos, llame a la clínica.', generic: 'Algo salió mal, inténtelo de nuevo.' },
+  waMsg: (n, s, d, t) => `Hola, he reservado online "${s}" para ${n} el ${d} a las ${t}.`, call: 'Llamar',
+  kvkk: 'Sus datos solo se comparten con la clínica para esta cita.' });
+const FR = mk({ title: 'Rendez-vous en ligne', service: 'Choisissez une prestation', date: 'Jour et heure', info: 'Vos coordonnées', change: 'Modifier', min: 'min',
+  noDays: 'Aucun jour disponible. Veuillez appeler la clinique.', noTimes: 'Plus de créneaux ce jour-là.', name: 'Nom et prénom', phone: 'Téléphone',
+  note: 'Note (facultatif)', book: 'Confirmer le rendez-vous', loading: 'Chargement…', done: 'Votre rendez-vous est confirmé', doneSub: 'La clinique vous contactera si nécessaire.',
+  wa: 'Prévenir la clinique sur WhatsApp', cal: 'Ajouter au calendrier', another: 'Nouveau rendez-vous', notFound: 'Cette page de réservation est introuvable ou fermée.',
+  errors: { name: 'Veuillez saisir votre nom complet.', phone: 'Veuillez saisir un numéro valide.', taken: 'Ce créneau vient d\'être pris, choisissez-en un autre.',
+    limit: 'Trop de tentatives, veuillez appeler la clinique.', generic: 'Une erreur est survenue, veuillez réessayer.' },
+  waMsg: (n, s, d, t) => `Bonjour, j'ai réservé en ligne « ${s} » pour ${n} le ${d} à ${t}.`, call: 'Appeler',
+  kvkk: 'Vos données sont transmises uniquement à la clinique pour ce rendez-vous.' });
+const IT = mk({ title: 'Prenotazione online', service: 'Scegli un servizio', date: 'Giorno e ora', info: 'I tuoi dati', change: 'Cambia', min: 'min',
+  noDays: 'Nessun giorno disponibile. Chiama la clinica.', noTimes: 'Nessun orario disponibile per questo giorno.', name: 'Nome e cognome', phone: 'Telefono',
+  note: 'Nota (facoltativa)', book: 'Conferma prenotazione', loading: 'Caricamento…', done: 'Appuntamento prenotato', doneSub: 'La clinica ti contatterà se necessario.',
+  wa: 'Avvisa la clinica su WhatsApp', cal: 'Aggiungi al calendario', another: 'Nuova prenotazione', notFound: 'Pagina di prenotazione non trovata o chiusa.',
+  errors: { name: 'Inserisci nome e cognome.', phone: 'Inserisci un numero valido.', taken: 'Orario appena occupato, scegline un altro.',
+    limit: 'Troppi tentativi, chiama la clinica.', generic: 'Qualcosa è andato storto, riprova.' },
+  waMsg: (n, s, d, t) => `Ciao, ho prenotato online "${s}" per ${n} il ${d} alle ${t}.`, call: 'Chiama',
+  kvkk: 'I tuoi dati sono condivisi solo con la clinica per questo appuntamento.' });
+const PT = mk({ title: 'Agendamento online', service: 'Escolha um serviço', date: 'Dia e hora', info: 'Seus dados', change: 'Alterar', min: 'min',
+  noDays: 'Sem dias disponíveis. Ligue para a clínica.', noTimes: 'Sem horários para este dia.', name: 'Nome completo', phone: 'Telefone',
+  note: 'Nota (opcional)', book: 'Confirmar agendamento', loading: 'Carregando…', done: 'Consulta agendada', doneSub: 'A clínica entrará em contato se necessário.',
+  wa: 'Avisar a clínica no WhatsApp', cal: 'Adicionar ao calendário', another: 'Novo agendamento', notFound: 'Página de agendamento não encontrada ou fechada.',
+  errors: { name: 'Digite seu nome completo.', phone: 'Digite um telefone válido.', taken: 'Esse horário acabou de ser ocupado, escolha outro.',
+    limit: 'Muitas tentativas, ligue para a clínica.', generic: 'Algo deu errado, tente novamente.' },
+  waMsg: (n, s, d, t) => `Olá, agendei online "${s}" para ${n} em ${d} às ${t}.`, call: 'Ligar',
+  kvkk: 'Seus dados são compartilhados apenas com a clínica para este agendamento.' });
+const RU = mk({ title: 'Онлайн-запись', service: 'Выберите услугу', date: 'День и время', info: 'Ваши данные', change: 'Изменить', min: 'мин',
+  noDays: 'Свободных дней нет. Позвоните в клинику.', noTimes: 'На этот день свободного времени нет.', name: 'Имя и фамилия', phone: 'Телефон',
+  note: 'Комментарий (необязательно)', book: 'Подтвердить запись', loading: 'Загрузка…', done: 'Вы записаны', doneSub: 'При необходимости клиника свяжется с вами.',
+  wa: 'Сообщить клинике в WhatsApp', cal: 'Добавить в календарь', another: 'Новая запись', notFound: 'Страница записи не найдена или закрыта.',
+  errors: { name: 'Укажите имя и фамилию.', phone: 'Укажите корректный номер телефона.', taken: 'Это время только что заняли, выберите другое.',
+    limit: 'Слишком много попыток, позвоните в клинику.', generic: 'Что-то пошло не так, попробуйте снова.' },
+  waMsg: (n, s, d, t) => `Здравствуйте, я записался(ась) онлайн на «${s}» для ${n} на ${d} в ${t}.`, call: 'Позвонить',
+  kvkk: 'Ваши данные передаются только клинике для этой записи.' });
+const KO = mk({ title: '온라인 예약', service: '서비스 선택', date: '날짜와 시간', info: '예약자 정보', change: '변경', min: '분',
+  noDays: '현재 예약 가능한 날이 없습니다. 클리닉에 전화해 주세요.', noTimes: '이 날은 남은 시간이 없습니다.', name: '이름', phone: '전화번호',
+  note: '메모 (선택)', book: '예약 확정', loading: '불러오는 중…', done: '예약이 완료되었습니다', doneSub: '필요 시 클리닉에서 연락드립니다.',
+  wa: 'WhatsApp으로 클리닉에 알리기', cal: '캘린더에 추가', another: '새 예약', notFound: '예약 페이지를 찾을 수 없거나 닫혀 있습니다.',
+  errors: { name: '이름을 입력해 주세요.', phone: '올바른 전화번호를 입력해 주세요.', taken: '방금 예약된 시간입니다. 다른 시간을 선택해 주세요.',
+    limit: '시도가 너무 많습니다. 클리닉에 전화해 주세요.', generic: '문제가 발생했습니다. 다시 시도해 주세요.' },
+  waMsg: (n, s, d, t) => `안녕하세요, ${n} 이름으로 ${d} ${t}에 "${s}" 온라인 예약을 했습니다.`, call: '전화',
+  kvkk: '입력하신 정보는 이 예약을 위해서만 클리닉에 전달됩니다.' });
+const ZH = mk({ title: '在线预约', service: '选择服务', date: '日期和时间', info: '您的信息', change: '更改', min: '分钟',
+  noDays: '暂无可预约日期，请致电诊所。', noTimes: '当天已无可约时间。', name: '姓名', phone: '电话', note: '备注（可选）', book: '确认预约',
+  loading: '加载中…', done: '预约成功', doneSub: '如有需要诊所会与您联系。', wa: '通过 WhatsApp 通知诊所', cal: '添加到日历', another: '新预约',
+  notFound: '未找到该预约页面或已关闭。', errors: { name: '请输入姓名。', phone: '请输入有效的电话号码。', taken: '该时间刚被预约，请选择其他时间。',
+    limit: '尝试次数过多，请致电诊所。', generic: '出现问题，请重试。' },
+  waMsg: (n, s, d, t) => `您好，我已为 ${n} 在线预约 ${d} ${t} 的「${s}」。`, call: '致电', kvkk: '您的信息仅为本次预约提供给诊所。' });
+const LANGS = { tr: TR, en: EN, de: DE, es: ES, fr: FR, it: IT, pt: PT, ru: RU, ko: KO, zh: ZH };
+const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+const locale = LOCALES[LC];
+document.documentElement.lang = LC;
 document.title = L.title;
 
 const st = { info: null, service: null, days: [], date: null, times: [], time: null, busy: false, err: '', result: null };
@@ -231,7 +304,7 @@ function render(keepForm) {
         <form onsubmit="doBook(event)" autocomplete="on">
           <input class="hp" name="website" tabindex="-1" autocomplete="off">
           <label for="nm">${L.name}</label><input id="nm" name="nm" autocomplete="name" required minlength="3" maxlength="80">
-          <label for="ph">${L.phone}</label><input id="ph" name="ph" type="tel" inputmode="tel" autocomplete="tel" required placeholder="05xx xxx xx xx">
+          <label for="ph">${L.phone}</label><input id="ph" name="ph" type="tel" inputmode="tel" autocomplete="tel" required placeholder="${LC === 'tr' ? '05xx xxx xx xx' : '+'}">
           <label for="nt">${L.note}</label><textarea id="nt" name="nt" maxlength="300"></textarea>
           ${st.err ? `<div class="err">${esc(st.err)}</div>` : ''}
           <button class="btn" ${st.busy ? 'disabled' : ''}>${st.busy ? L.loading : L.book}</button>

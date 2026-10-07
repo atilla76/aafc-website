@@ -308,7 +308,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div id="vDetail" style="display:none">
               <div class="sec">VISIT INFO</div>
               <div class="ibox" id="vInfo"></div>
-              <div id="nWrap" style="display:none"><div class="sec">NOTES</div><div class="nb" id="vNotes"></div></div>
+              <div id="nWrap">
+                <div class="sec">PROCEDURES</div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vProc" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
+                <div class="sec">NOTES</div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vNotesEd" rows="4" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
+              </div>
               <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
               <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
               <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
@@ -520,7 +526,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <input class="mi" type="text" id="mNid" placeholder="National ID (TC Kimlik No)" inputmode="numeric" maxlength="11"/>
     <input class="mi" type="email" id="mEmail" placeholder="E-mail"/>
     <div class="err" id="mErr" style="margin:-4px 0 10px"></div>
-    <textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
+    <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea><button class="btn bedit micbtn" data-target="mNotes" onclick="vxDictate(this)">🎤</button></div>
     <div class="mbt">
       <button class="bcancel" onclick="closeModal()">Cancel</button>
       <button class="bsave" onclick="savePt()">Save</button>
@@ -802,6 +808,29 @@ function renderV(){
   el.innerHTML=h;
 }
 
+async function saveVisitText(){
+  if(!selVid)return;
+  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null}).eq('id',selVid);
+  var m=document.getElementById('vSaveMsg');
+  if(r.error){m.style.color='#C0614A';m.textContent=r.error.message;return;}
+  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();}
+  m.style.color='#3AB06A';m.textContent=trText('Saved');setTimeout(function(){m.textContent='';},3000);
+}
+// Dictation via the browser's speech recognition (Chrome / Edge / Safari)
+var vxRec=null,vxBtn=null;
+function vxDictate(btn){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert(trText('Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.'));return;}
+  if(vxRec){vxRec.stop();return;}
+  var ta=document.getElementById(btn.dataset.target),base=ta.value.replace(/\s+$/,'');
+  vxRec=new SR();vxRec.lang=LANG==='tr'?'tr-TR':(navigator.language||'en-US');vxRec.continuous=true;vxRec.interimResults=true;
+  vxBtn=btn;btn.textContent='⏹';btn.style.background='rgba(192,97,74,.35)';
+  vxRec.onresult=function(e){var fin='',tmp='';for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else tmp+=t;}
+    if(fin){base=(base?base+' ':'')+fin.trim();}ta.value=(base+(tmp?(base?' ':'')+tmp.trim():''));};
+  vxRec.onerror=function(ev){if(ev.error==='not-allowed')alert(trText('Microphone permission was denied.'));};
+  vxRec.onend=function(){if(vxBtn){vxBtn.textContent='🎤';vxBtn.style.background='';}vxRec=null;vxBtn=null;ta.value=base;};
+  vxRec.start();
+}
 async function selV(id){
   selVid=id;renderV();
   var v=vis.find(function(x){return x.id===id;});
@@ -811,8 +840,9 @@ async function selV(id){
   vi+='<div class="ir"><span class="il">Region</span><span class="iv">'+(v.region||'-')+'</span></div>';
   vi+='<div class="ir"><span class="il">Date</span><span class="iv">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
   document.getElementById('vInfo').innerHTML=vi;
-  if(v.notes){document.getElementById('nWrap').style.display='block';document.getElementById('vNotes').textContent=v.notes;}
-  else document.getElementById('nWrap').style.display='none';
+  document.getElementById('vProc').value=v.procedures||'';
+  document.getElementById('vNotesEd').value=v.notes||'';
+  document.getElementById('vSaveMsg').textContent='';
   var pr=await db.from('photos').select('*').eq('visit_id',id).is('deleted_at',null).order('angle_index');
   var photos=pr.data||[];
   if(photos.length){
@@ -1883,7 +1913,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+var I18N_TR={'PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

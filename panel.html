@@ -1278,7 +1278,7 @@ function bkMsg(t,err){var e=document.getElementById('bkMsg');e.textContent=t;e.s
 async function bkLoad(){
   var r=await db.from('clinic_booking_settings').select('*').eq('clinic_id',cid).maybeSingle();
   bkData=r.data||{enabled:false,slug:bkSlugify(clinic.name||''),slot_minutes:30,min_notice_hours:2,max_days_ahead:30,intro:'',
-    services:[{name:'Muayene / Konsültasyon',duration:30}],
+    services:[{name:(LANG==='tr'?'Muayene / Konsültasyon':'Consultation'),duration:30}],
     hours:{'1':[['09:00','18:00']],'2':[['09:00','18:00']],'3':[['09:00','18:00']],'4':[['09:00','18:00']],'5':[['09:00','18:00']],'6':[['10:00','14:00']],'7':[]}};
   document.getElementById('bkEnabled').checked=!!bkData.enabled;
   document.getElementById('bkSlug').value=bkData.slug||'';

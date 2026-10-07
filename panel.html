@@ -214,7 +214,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="lw" id="loginWrap">
   <div class="lb2">
-    <div class="logo">AAFC</div>
+    <div class="logo">AAFC <button class="langbtn" onclick="setPanelLang(LANG==='tr'?'en':'tr')" style="float:right;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;letter-spacing:0">TR</button></div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
     <span class="lbl">EMAIL</span>
@@ -253,6 +253,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="sb">
         <div class="sh">
           <span class="sl">AAFC</span>
+          <button class="bout langbtn" onclick="setPanelLang(LANG==='tr'?'en':'tr')" style="margin-right:6px">TR</button>
           <button class="bout" onclick="doLogout()">Sign Out</button>
         </div>
         <div class="stats-mini">
@@ -1464,6 +1465,106 @@ async function impLoadBatches(){
     return '<tr><td>'+impEsc(dt)+'</td><td>'+impEsc(x.file_name||'')+'</td><td>'+x.inserted+'</td><td>'+(x.duplicates+x.invalid)+'</td><td>'+act+'</td></tr>';
   }).join('');
 }
+</script>
+<script>
+// ============ I18N (TR) ============
+// Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
+var I18N_TR={
+'Panel Login':'Panel Girişi','Sign in with your clinic account':'Klinik hesabınızla giriş yapın','EMAIL':'E-POSTA','PASSWORD':'ŞİFRE',
+'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
+'Sign Out':'Çıkış','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
+'ZIP with photos':'Fotoğraflı ZIP','HTML Report':'HTML Rapor',
+'PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
+'Search patients...':'Hasta ara...','+ Add':'+ Ekle','Add Patient':'Hasta Ekle','Edit Patient':'Hastayı Düzenle','View Patient':'Hastayı Gör',
+'First Name':'Ad','Last Name':'Soyad','Last name':'Soyad','Name':'Ad','Phone':'Telefon','City':'Şehir','Notes':'Notlar','NOTES':'NOTLAR','Note':'Not',
+'Birth date':'Doğum tarihi','DOB':'Doğum T.','DOB: ':'Doğum T.: ','Cancel':'İptal','Save':'Kaydet','Saved':'Kaydedildi','Delete':'Sil','Edit':'Düzenle',
+'Please fill all fields':'Lütfen tüm alanları doldurun','Name is required':'Ad zorunludur','Please select a patient':'Lütfen bir hasta seçin',
+'Select a patient':'Bir hasta seçin','Select visit':'Vizit seçin','Please select at least one visit':'Lütfen en az bir vizit seçin',
+'No patients':'Hasta yok','No visits':'Vizit yok','No photos':'Fotoğraf yok','No phone':'Telefon yok','No name':'İsimsiz','No data.':'Veri yok.',
+'PATIENT INFO':'HASTA BİLGİSİ','VISIT INFO':'VİZİT BİLGİSİ','VISITS':'VİZİTLER','PHOTOS':'FOTOĞRAFLAR','Visits':'Vizitler','Visit':'Vizit',
+'Photos':'Fotoğraflar','Photo':'Fotoğraf','Documents':'Belgeler','Region':'Bölge','Area':'Bölge','Date':'Tarih','Time':'Saat','Type':'Tür','Status':'Durum',
+'PATIENT CONSENT':'HASTA ONAMI','TREATMENT CARD':'TEDAVİ KARTI','PRODUCT BARCODE':'ÜRÜN BARKODU','INJECTION MAP':'ENJEKSİYON HARİTASI','TREATMENT PLAN':'TEDAVİ PLANI',
+'Procedure':'İşlem','Description':'Açıklama','Price':'Fiyat','Detail':'Detay','First 50 notes shown':'İlk 50 not gösteriliyor',
+'Before':'Öncesi','After':'Sonrası','BEFORE':'ÖNCESİ','AFTER':'SONRASI','Before: ':'Öncesi: ','After: ':'Sonrası: ','BEFORE / AFTER COMPARISON':'ÖNCESİ / SONRASI KARŞILAŞTIRMA',
+'Front':'Ön','Left 45':'Sol 45','Right 45':'Sağ 45','Left Profile':'Sol Profil','Right Profile':'Sağ Profil',
+'Generate PDF Report':'PDF Rapor Oluştur','AAFC Clinic Report':'AAFC Klinik Raporu','AAFC Report':'AAFC Raporu',
+'Preparing...':'Hazırlanıyor...','Loading...':'Yükleniyor...','Loading images...':'Görseller yükleniyor...','Loading logo...':'Logo yükleniyor...',
+'Creating ZIP...':'ZIP oluşturuluyor...','Fetching...':'Getiriliyor...','Error':'Hata','Error: ':'Hata: ',
+'Daily Agenda':'Günlük Ajanda','Visits completed on the selected day':'Seçilen günde yapılan vizitler','No visits on this day.':'Bu günde vizit yok.',
+'Could not load agenda.':'Ajanda yüklenemedi.','Appointment Book':'Randevu Defteri','Scheduled appointments. Send WhatsApp or SMS reminders.':'Planlanan randevular. WhatsApp veya SMS hatırlatma gönderin.',
+'No appointments on this day.':'Bu günde randevu yok.','Could not load appointments.':'Randevular yüklenemedi.','Today':'Bugün',
+'Statistics':'İstatistikler','Clinic activity across periods':'Dönemlere göre klinik aktivitesi','Could not load statistics.':'İstatistikler yüklenemedi.',
+'Patients':'Hastalar','New Patients':'Yeni Hastalar','Controls':'Kontroller','This Month':'Bu Ay','Last Month':'Geçen Ay','This Year':'Bu Yıl','Last Year':'Geçen Yıl',
+'All Time':'Tüm Zamanlar','vs last month':'geçen aya göre','vs last year':'geçen yıla göre',
+'Monday':'Pazartesi','Tuesday':'Salı','Wednesday':'Çarşamba','Thursday':'Perşembe','Friday':'Cuma','Saturday':'Cumartesi','Sunday':'Pazar',
+// import
+'Import Patients':'Hasta İçe Aktar','Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.':'Hasta listenizi başka bir programdan getirin (Excel veya CSV). Mükerrer kayıtlar otomatik atlanır.',
+'1 · Choose file':'1 · Dosya seçin','.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.':'.xlsx, .xls veya .csv — ilk satır sütun başlıkları olmalı. Dosya başına en fazla 5.000 hasta.',
+'Click to choose a file or drop it here':'Dosya seçmek için tıklayın veya buraya bırakın','2 · Match columns':'2 · Sütunları eşleştirin','FIRST ROWS':'İLK SATIRLAR',
+'Preview':'Önizleme','3 · Preview':'3 · Önizleme','Previous imports':'Önceki aktarımlar','An import can be undone: imported patients without any visit are removed.':'Bir aktarım geri alınabilir: vizit girilmemiş aktarılan hastalar silinir.',
+'No imports yet':'Henüz aktarım yok','Undo':'Geri al','Undo this import':'Bu aktarımı geri al','Undo this import? Imported patients without visits will be removed.':'Bu aktarım geri alınsın mı? Vizit girilmemiş aktarılan hastalar silinecek.',
+'Undoing...':'Geri alınıyor...','undone':'geri alındı','Added':'Eklendi','Skipped':'Atlandı','Row':'Satır','File':'Dosya','— skip —':'— atla —',
+'rows in file':'dosyadaki satır','duplicates skipped':'mükerrer atlandı','invalid rows':'geçersiz satır','Nothing new to import.':'Aktarılacak yeni kayıt yok.',
+'The file has no data rows.':'Dosyada veri satırı yok.','Please match the first name (or full name) column.':'Lütfen ad (veya ad soyad) sütununu eşleştirin.',
+'Missing name':'Ad eksik','Appears twice in this file':'Dosyada iki kez geçiyor','Already registered (same ID no)':'Zaten kayıtlı (aynı TC no)',
+'Already registered (same patient no)':'Zaten kayıtlı (aynı hasta no)','Birth date not recognised (left empty)':'Doğum tarihi tanınmadı (boş bırakıldı)',
+'Invalid TC Kimlik No (left empty)':'Geçersiz TC Kimlik No (boş bırakıldı)','National ID (TC Kimlik No)':'TC Kimlik No','Patient no (old program)':'Hasta no (eski program)',
+'Excel reader could not be loaded. Check your internet connection and reload.':'Excel okuyucu yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.',
+// booking
+'Online Booking':'Online Randevu','Patients pick a free time from your public link; bookings appear in the appointment book as "🌐 Online".':'Hastalar size özel linkten boş saati seçer; randevu defterine "🌐 Online" olarak düşer.',
+'Booking page':'Randevu sayfası','Accept online bookings':'Online randevu kabul et','Copy link':'Linki kopyala','Open page':'Sayfayı aç','Copied':'Kopyalandı',
+'Short welcome text (optional)':'Kısa karşılama metni (isteğe bağlı)','Services':'Hizmetler','What patients can book and how long it takes (minutes).':'Hastaların alabileceği hizmetler ve süreleri (dakika).',
+'+ Add service':'+ Hizmet ekle','Service name':'Hizmet adı','Service':'Hizmet','Working hours':'Çalışma saatleri','min':'dk',
+'Second range is optional (e.g. after lunch). Closed days from the app are respected automatically.':'İkinci aralık isteğe bağlı (ör. öğleden sonra). Uygulamadaki kapalı günler otomatik dikkate alınır.',
+'Slot every':'Randevu aralığı','min ·':'dk ·','min notice':'en az','h ·':'saat önce ·','up to':'en fazla','days ahead':'gün ileriye',
+'Recent online bookings':'Son online randevular','No online bookings yet':'Henüz online randevu yok','Add at least one service':'En az bir hizmet ekleyin',
+'This link name is taken, choose another':'Bu link adı kullanılıyor, başka bir ad seçin','Link name must be at least 3 characters':'Link adı en az 3 karakter olmalı',
+'your-clinic':'kliniginiz','planned':'planlandı','completed':'tamamlandı','cancelled':'iptal','no_show':'gelmedi'
+};
+var I18N_PREFIX=[['Downloading photo ','Fotoğraf indiriliyor '],['Loading image ','Görsel yükleniyor '],['Could not read the file: ','Dosya okunamadı: '],
+  ['Delete ','Sil: '],['Import ','İçe aktar: '],['Column ','Sütun '],['TOTAL: ','TOPLAM: ']];
+var LANG='en';
+function trText(t){
+  if(LANG!=='tr'||!t)return t;
+  var k=t.trim(); if(!k)return t;
+  if(I18N_TR.hasOwnProperty(k))return t.replace(k,I18N_TR[k]);
+  for(var i=0;i<I18N_PREFIX.length;i++){if(k.indexOf(I18N_PREFIX[i][0])===0)return t.replace(I18N_PREFIX[i][0],I18N_PREFIX[i][1]);}
+  return t;
+}
+function trNode(root){
+  if(LANG!=='tr'||!root)return;
+  if(root.nodeType===3){var n=trText(root.nodeValue);if(n!==root.nodeValue)root.nodeValue=n;return;}
+  if(root.nodeType!==1||root.tagName==='SCRIPT'||root.tagName==='STYLE')return;
+  ['placeholder','title'].forEach(function(a){if(root.hasAttribute&&root.hasAttribute(a)){var v=root.getAttribute(a),n=trText(v);if(n!==v)root.setAttribute(a,n);}});
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,null),x;
+  while((x=w.nextNode())){
+    if(x.nodeType===3){var p=x.parentNode;if(p&&(p.tagName==='SCRIPT'||p.tagName==='STYLE'||p.isContentEditable||p.tagName==='TEXTAREA'))continue;var n2=trText(x.nodeValue);if(n2!==x.nodeValue)x.nodeValue=n2;}
+    else{['placeholder','title'].forEach(function(a){if(x.hasAttribute(a)){var v=x.getAttribute(a),n=trText(v);if(n!==v)x.setAttribute(a,n);}});
+      if(x.tagName==='OPTION'){var o=trText(x.textContent);if(o!==x.textContent)x.textContent=o;}}
+  }
+}
+var _alert=window.alert.bind(window),_confirm=window.confirm.bind(window);
+window.alert=function(m){return _alert(trText(String(m)));};
+window.confirm=function(m){return _confirm(trText(String(m)));};
+function setPanelLang(l){
+  try{localStorage.setItem('aafc_lang',l);}catch(e){}
+  location.reload();
+}
+(function(){
+  var q=(new URLSearchParams(location.search).get('lang')||'').toLowerCase(),saved=null;
+  try{saved=localStorage.getItem('aafc_lang');}catch(e){}
+  var nav=(navigator.languages&&navigator.languages[0]||navigator.language||'en').toLowerCase();
+  LANG=(q==='tr'||q==='en')?q:(saved||(nav.indexOf('tr')===0?'tr':'en'));
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('.langbtn').forEach(function(b){b.textContent=LANG==='tr'?'EN':'TR';});
+  if(LANG!=='tr')return;
+  document.title='AAFC Panel';
+  trNode(document.body);
+  new MutationObserver(function(ms){ms.forEach(function(m){
+    if(m.type==='characterData')trNode(m.target);
+    else m.addedNodes.forEach(function(n){trNode(n);});
+  });}).observe(document.body,{childList:true,subtree:true,characterData:true});
+})();
 </script>
 </body>
 </html>

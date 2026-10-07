@@ -245,6 +245,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
     <button class="tab" data-tab="import" onclick="switchTab('import')">IMPORT</button>
     <button class="tab" data-tab="booking" onclick="switchTab('booking')">ONLINE BOOKING</button>
+    <button class="tab" data-tab="recall" onclick="switchTab('recall')">RECALLS</button>
+    <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
+    <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
   </div>
 
   <!-- PATIENTS TAB -->
@@ -438,6 +441,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       </div>
     </div>
   </div>
+  <!-- STOCK TAB -->
+  <div class="tcontent" id="tab-stock" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Stock</h2><div class="sub">Products, lots and expiry. Injection maps in the app deduct stock automatically.</div></div>
+        <div class="imp-actions"><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
+      </div>
+      <div id="stAlerts"></div>
+      <div class="imp-step"><h3>Products</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="stProducts"></table></div></div>
+      <div class="imp-step" id="stLotsBox" style="display:none">
+        <h3 id="stLotsTitle"></h3>
+        <div class="imp-actions" style="margin-bottom:8px"><button class="bimp" onclick="stLotModal()">+ Receive lot</button><button class="bimp2" onclick="stProductModal(stSel)">Edit product</button></div>
+        <div class="imp-wrap" style="max-height:none"><table class="fmt" id="stLots"></table></div>
+        <div id="stRecipients"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNTING TAB -->
+  <div class="tcontent" id="tab-finance" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Accounting</h2><div class="sub" id="fnSub">Income, expenses, receivables and installments. Admins only.</div></div>
+        <div class="imp-actions">
+          <button class="bimp2" onclick="fnShift(-1)">‹</button><span id="fnPeriod" style="min-width:130px;text-align:center;align-self:center"></span><button class="bimp2" onclick="fnShift(1)">›</button>
+          <select class="bk-in" id="fnMode" onchange="fnLoad()"><option value="m">Month</option><option value="y">Year</option></select>
+          <button class="bimp2" onclick="fnCsv()">Export CSV</button>
+          <button class="bimp" onclick="fnEntryModal()">+ Add entry</button>
+        </div>
+      </div>
+      <div class="imp-nums" id="fnTotals"></div>
+      <div class="tabs" style="border:none;padding:0;margin-bottom:10px">
+        <button class="tab on" data-fn="entries" onclick="fnView('entries')">ENTRIES</button>
+        <button class="tab" data-fn="recv" onclick="fnView('recv')">RECEIVABLES</button>
+        <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
+      </div>
+      <div id="fnBody"></div>
+    </div>
+  </div>
+
+  <!-- RECALL TAB -->
+  <div class="tcontent" id="tab-recall" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Recalls &amp; Reviews</h2><div class="sub">Patients due for a control or repeat treatment, and patients to ask for a Google review.</div></div>
+      </div>
+      <div class="imp-step"><h3>Due recalls (next 7 days and overdue)</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="rcList"></table></div></div>
+      <div class="imp-step"><h3>Ask for a Google review</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="rvList"></table></div></div>
+    </div>
+  </div>
+
+<!-- generic module modal -->
+<div class="modal" id="mxModal" onclick="if(event.target===this)mxClose()">
+  <div class="mbox" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <h3 id="mxTitle" style="margin-bottom:14px"></h3>
+    <div id="mxBody"></div>
+    <div class="mbt" id="mxBtns"></div>
+  </div>
+</div>
 </div>
 
 <!-- Patient Modal -->
@@ -588,6 +650,9 @@ function switchTab(name){
   if(name==='stats')loadStatsTab();
   if(name==='import')impLoadBatches();
   if(name==='booking')bkLoad();
+  if(name==='stock')stLoad();
+  if(name==='finance')fnLoad();
+  if(name==='recall')rcLoad();
 }
 
 function fmtDate(d){return d.toISOString().split('T')[0]}
@@ -1264,6 +1329,298 @@ async function dlPtHTML(){if(!selPid)return;sp('Fetching...');var a=await fetchP
 async function dlJSON(){sp('Fetching...');var a=await fetchAll();var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),patients:a},null,2)],{type:'application/json'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.json';el.click();hp();}
 async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patient,Surname,Visit Date,Region,Angle,Photo Path'];for(var i=0;i<a.length;i++){var p=a[i];for(var j=0;j<p.visits.length;j++){var v=p.visits[j];for(var k=0;k<v.photos.length;k++){var ph=v.photos[k];rows.push([p.name,p.surname||'',(v.visit_date||'').split('T')[0],v.region||'',AL[ph.angle_index]||'',ph.file_path].join(','));}}}var el=document.createElement('a');el.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));el.download='aafc_'+new Date().toISOString().split('T')[0]+'.csv';el.click();hp();}
 
+// ============ SHARED MODULE HELPERS ============
+function mxE(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function mxOpen(title,body,btns){
+  document.getElementById('mxTitle').textContent=title;
+  document.getElementById('mxBody').innerHTML=body;
+  var b=document.getElementById('mxBtns');b.innerHTML='';
+  (btns||[]).forEach(function(x){var el=document.createElement('button');el.className=x.cls||'bsave';el.textContent=x.label;el.onclick=x.fn;b.appendChild(el);});
+  document.getElementById('mxModal').style.display='flex';
+}
+function mxClose(){document.getElementById('mxModal').style.display='none';}
+function mxV(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+function mxNum(s){s=String(s||'').replace(/\s/g,'');if(!s)return null;var c=s.lastIndexOf(','),d=s.lastIndexOf('.');
+  if(c>=0&&d>=0)s=c>d?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');
+  else if(c>=0)s=(s.split(',').length===2&&s.length-c-1<=2)?s.replace(',','.'):s.replace(/,/g,'');
+  else if(d>=0&&!(s.split('.').length===2&&s.length-d-1<=2))s=s.replace(/\./g,'');
+  var n=parseFloat(s);return isNaN(n)?null:n;}
+function mxDate(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+function mxIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function mxMoney(v){var n=Number(v||0),a=Math.abs(n);var s=a.toLocaleString(LANG==='tr'?'tr-TR':'en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});return (n<0?'−':'')+(curSym()||'')+s;}
+function mxQty(v){var n=Number(v||0);return n%1?n.toFixed(2).replace(/0+$/,''):String(n);}
+function mxWa(phone,msg){var d=String(phone||'').replace(/\D/g,'');if(d.length===11&&d[0]==='0')d='9'+d;if(d.length===10&&d[0]==='5')d='90'+d;
+  return 'https://wa.me/'+d+'?text='+encodeURIComponent(msg);}
+function mxFill(tpl,name,proc,extra){
+  var m=tpl;['[ad]','[name]','[nombre]','[nom]','[nome]','[имя]','[이름]','[姓名]'].forEach(function(p){m=m.split(p).join(name||'');});
+  ['[islem]','[işlem]','[procedure]','[behandlung]','[tratamiento]','[soin]','[trattamento]','[procedimento]','[процедура]','[시술]','[项目]'].forEach(function(p){m=m.split(p).join(proc||'');});
+  ['[klinik]','[clinic]','[clinica]','[clinique]','[клиника]','[클리닉]','[诊所]'].forEach(function(p){m=m.split(p).join(clinic.name||'');});
+  if(extra)Object.keys(extra).forEach(function(k){m=m.split(k).join(extra[k]);});
+  return m;}
+function mxTr(en,tr){return LANG==='tr'?tr:en;}
+
+// ============ STOCK ============
+var stProds=[],stBal={},stSel=null;
+async function stLoad(){
+  var r=await Promise.all([
+    db.from('clinic_products').select('*').eq('clinic_id',cid).eq('is_active',true).order('name'),
+    db.from('stock_product_balance').select('*').eq('clinic_id',cid),
+    db.from('stock_alerts').select('*').eq('clinic_id',cid)]);
+  stProds=r[0].data||[];stBal={};(r[1].data||[]).forEach(function(b){stBal[b.product_id]=b;});
+  var al=r[2].data||[];
+  document.getElementById('stAlerts').innerHTML=al.length?'<div class="imp-step" style="border-color:rgba(212,150,58,.4)"><h3 style="color:#D4963A">Alerts</h3>'+al.map(function(a){
+    var t=a.alert==='low_stock'?'Low stock':a.alert==='expiring'?'Expiring soon':'Opened vial expired';
+    var d=a.alert==='expiring'?(a.detail||'').split(' ').map(function(x,i){return i===1?mxDate(x):x;}).join(' · '):a.detail;
+    return '<div style="font-size:13px;padding:3px 0"><b>'+mxE(a.name)+'</b> — <span>'+t+'</span> · '+mxE(d)+'</div>';}).join('')+'</div>':'';
+  var t=document.getElementById('stProducts');
+  if(!stProds.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No products yet. Add a product, then receive a lot.</td></tr>';return;}
+  t.innerHTML='<tr><th>Product</th><th>Unit</th><th>Remaining</th><th>Next expiry</th><th>Min stock</th></tr>'+stProds.map(function(p){
+    var b=stBal[p.id]||{},low=b.tracked&&p.min_stock!=null&&Number(b.remaining)<=Number(p.min_stock);
+    return '<tr style="cursor:pointer" onclick="stOpen(\''+p.id+'\')"><td><b>'+mxE(p.name)+'</b></td><td>'+(p.unit==='ml'?'ml':'u')+'</td><td style="color:'+(low?'#D4963A':'#F5F1EB')+'">'+(b.tracked?mxQty(b.remaining):'—')+'</td><td>'+mxDate(b.next_expiry)+'</td><td>'+(p.min_stock!=null?mxQty(p.min_stock):'')+'</td></tr>';}).join('');
+  if(stSel)stOpen(stSel.id);
+}
+async function stOpen(id){
+  stSel=stProds.find(function(p){return p.id===id;});if(!stSel)return;
+  document.getElementById('stLotsBox').style.display='block';
+  document.getElementById('stLotsTitle').textContent=stSel.name;
+  document.getElementById('stRecipients').innerHTML='';
+  var r=await db.from('stock_lot_balance').select('*').eq('product_id',id).order('expiry_date',{ascending:true,nullsFirst:false});
+  var lots=r.data||[],u=stSel.unit==='ml'?'ml':'u',t=document.getElementById('stLots');
+  if(!lots.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No lots received</td></tr>';return;}
+  t.innerHTML='<tr><th>Lot / serial no</th><th>Expiry date</th><th>Opened</th><th>Remaining</th><th></th></tr>'+lots.map(function(l){
+    var soon=l.expiry_date&&new Date(l.expiry_date)<new Date(Date.now()+30*864e5);
+    return '<tr style="opacity:'+(Number(l.remaining)>0?1:.45)+'"><td><b>'+mxE(l.lot_no)+'</b></td><td style="color:'+(soon?'#C0614A':'inherit')+'">'+mxDate(l.expiry_date)+'</td><td>'+mxDate(l.opened_at)+'</td><td>'+mxQty(l.remaining)+' '+u+'</td><td style="white-space:nowrap">'+
+      (l.opened_at?'':'<button class="btn bedit" onclick="stOpenLot(\''+l.lot_id+'\')">Vial opened</button> ')+
+      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button></td></tr>';}).join('');
+}
+function stProductModal(p){
+  p=p||{};
+  mxOpen(p.id?'Edit product':'Add product',
+    '<input class="mi" id="spName" placeholder="Product name" value="'+mxE(p.name||'')+'">'+
+    '<select class="mi" id="spUnit"><option value="unit"'+(p.unit!=='ml'?' selected':'')+'>Units (u)</option><option value="ml"'+(p.unit==='ml'?' selected':'')+'>ml</option></select>'+
+    '<input class="mi" id="spMin" placeholder="Minimum stock (alert)" value="'+(p.min_stock!=null?p.min_stock:'')+'">'+
+    '<input class="mi" id="spShelf" placeholder="Use within after opening (days)" value="'+(p.open_shelf_life_days!=null?p.open_shelf_life_days:'')+'">'+
+    '<input class="mi" id="spPack" placeholder="Pack content (default quantity)" value="'+(p.pack_size!=null?p.pack_size:'')+'">'+
+    '<input class="mi" id="spGtin" placeholder="Product barcode (GTIN)" value="'+mxE(p.gtin||'')+'">',
+    [{label:'Cancel',cls:'bcancel',fn:mxClose}].concat(p.id?[{label:'Deactivate product',cls:'bcancel',fn:async function(){if(!confirm('Deactivate product?'))return;await db.from('clinic_products').update({is_active:false}).eq('id',p.id);stSel=null;document.getElementById('stLotsBox').style.display='none';mxClose();stLoad();}}]:[]).concat([{label:'Save',fn:async function(){
+      var name=mxV('spName');if(!name){alert('Name is required');return;}
+      var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),gtin:mxV('spGtin')||null};
+      var r=p.id?await db.from('clinic_products').update(row).eq('id',p.id):await db.from('clinic_products').insert(Object.assign({kind:'both',color:'#C9A96E'},row));
+      if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]));
+}
+function stLotModal(){
+  if(!stSel)return;
+  mxOpen('Receive lot',
+    '<input class="mi" id="slNo" placeholder="Lot / serial no">'+
+    '<input class="mi" id="slQty" placeholder="Quantity" value="'+(stSel.pack_size!=null?mxQty(stSel.pack_size):'')+'">'+
+    '<span class="hint" style="display:block;margin:-4px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">Expiry date</span><input class="mi" id="slExp" type="date">'+
+    '<input class="mi" id="slCost" placeholder="Unit cost">'+
+    '<input class="mi" id="slSup" placeholder="Supplier">'+
+    '<input class="mi" id="slSerial" placeholder="Serial no">'+
+    '<input class="mi" id="slBar" placeholder="Barcode (UDI)">',
+    [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
+      var lot=mxV('slNo'),qty=mxNum(mxV('slQty'));if(!lot||!qty||qty<=0){alert('Please fill all fields');return;}
+      var row={clinic_id:cid,product_id:stSel.id,lot_no:lot,quantity_in:qty,expiry_date:mxV('slExp')||null,unit_cost:mxNum(mxV('slCost')),supplier:mxV('slSup')||null,serial_no:mxV('slSerial')||null,barcode:mxV('slBar')||null};
+      var r=await db.from('stock_lots').insert(row);
+      if(r.error&&r.error.code==='23505'){
+        var ex=await db.from('stock_lots').select('id').eq('clinic_id',cid).eq('product_id',stSel.id).eq('lot_no',lot).single();
+        r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:ex.data.id,kind:'in',quantity:qty,note:'panel'});
+        if(!r.error)alert('Lot already exists, quantity added to it');
+      }
+      if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]);
+}
+async function stOpenLot(id){await db.rpc('open_stock_lot',{p_lot_id:id});stLoad();}
+function stMove(id,kind){
+  mxOpen(kind==='waste'?'Waste / disposal':'Count adjustment',
+    '<input class="mi" id="smQty" placeholder="Quantity">'+(kind==='adjust'?'<div style="font-size:12px;color:rgba(245,241,235,.45);margin-top:-6px">Enter + for surplus, − for shortage</div>':''),
+    [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
+      var q=mxNum(mxV('smQty').replace('−','-'));if(!q){return;}
+      var r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:id,kind:kind,quantity:kind==='adjust'?q:-Math.abs(q)});
+      if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]);
+}
+async function stRecip(id,lotNo){
+  var r=await db.rpc('lot_recipients',{p_lot_id:id});var rows=r.data||[];
+  var ids=rows.map(function(x){return x.patient_id;}),names={};
+  if(ids.length){var p=await db.from('patients').select('id,name,surname,phone').in('id',ids);(p.data||[]).forEach(function(x){names[x.id]=x;});}
+  document.getElementById('stRecipients').innerHTML='<div class="sec" style="margin-top:14px">Patients who received this lot · '+mxE(lotNo)+'</div>'+(rows.length?'<table class="fmt">'+rows.map(function(x){var p=names[x.patient_id]||{};
+    return '<tr><td>'+mxE((p.name||'')+' '+(p.surname||''))+'</td><td>'+mxE(p.phone||'')+'</td><td>'+mxDate(x.first_used_at)+'</td><td>'+mxQty(x.quantity)+'</td></tr>';}).join('')+'</table>':'<div style="color:rgba(245,241,235,.4);font-size:13px">This lot has not been used yet</div>');
+}
+
+// ============ ACCOUNTING ============
+var FN_CAT_IN=['treatment','consultation','product_sale','other'],FN_CAT_EX=['stock','rent','salary','utilities','tax','marketing','accounting','equipment','other'],FN_METHODS=['cash','card','transfer','other'];
+var FN_CAT_L={treatment:['Treatment','İşlem / tedavi'],consultation:['Consultation','Muayene'],product_sale:['Product sale','Ürün satışı'],stock:['Product purchase (stock)','Ürün alımı (stok)'],
+  rent:['Rent','Kira'],salary:['Staff / salary','Personel / maaş'],utilities:['Utilities','Faturalar (elektrik, su, internet)'],tax:['Tax / social security','Vergi / SGK'],marketing:['Marketing','Reklam'],
+  accounting:['Accounting / consulting','Muhasebe / danışmanlık'],equipment:['Device / equipment','Cihaz / ekipman'],other:['Other','Diğer']};
+var FN_M_L={cash:['Cash','Nakit'],card:['Card','Kart'],transfer:['Bank transfer','Havale / EFT'],other:['Other','Diğer']};
+function fnCat(c){var x=FN_CAT_L[c]||[c,c];return LANG==='tr'?x[1]:x[0];}
+function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return LANG==='tr'?x[1]:x[0];}
+var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null;
+function fnRange(){var y=document.getElementById('fnMode').value==='y';var a=fnAnchor;
+  return y?[new Date(a.getFullYear(),0,1),new Date(a.getFullYear(),11,31)]:[a,new Date(a.getFullYear(),a.getMonth()+1,0)];}
+function fnShift(d){var y=document.getElementById('fnMode').value==='y';fnAnchor=y?new Date(fnAnchor.getFullYear()+d,fnAnchor.getMonth(),1):new Date(fnAnchor.getFullYear(),fnAnchor.getMonth()+d,1);fnLoad();}
+async function fnLoad(){
+  if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
+  if(!fnAdmin){document.getElementById('fnBody').innerHTML='<div class="imp-step">'+mxTr('Accounting is available to admin users only.','Muhasebe yalnızca yönetici kullanıcılara açıktır.')+'</div>';return;}
+  var r=fnRange(),y=document.getElementById('fnMode').value==='y';
+  document.getElementById('fnPeriod').textContent=y?String(fnAnchor.getFullYear()):fnAnchor.toLocaleDateString(LANG==='tr'?'tr-TR':'en-US',{month:'long',year:'numeric'});
+  var res=await Promise.all([
+    db.from('finance_entries').select('*, patients(name, surname)').eq('clinic_id',cid).is('deleted_at',null).gte('entry_date',mxIso(r[0])).lte('entry_date',mxIso(r[1])).order('entry_date',{ascending:false}).order('created_at',{ascending:false}),
+    db.rpc('finance_summary',{p_clinic_id:cid,p_from:mxIso(r[0]),p_to:mxIso(r[1])}),
+    db.rpc('get_receivables',{p_clinic_id:cid})]);
+  fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
+  var inc=Number(fnSum.income||0),exp=Number(fnSum.expense||0);
+  document.getElementById('fnTotals').innerHTML=
+    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+mxMoney(inc)+'</div><div class="l">Income</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#C0614A">'+mxMoney(exp)+'</div><div class="l">Expense</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:'+(inc-exp>=0?'#B89A6A':'#C0614A')+'">'+mxMoney(inc-exp)+'</div><div class="l">Net</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#D4963A">'+mxMoney(fnRecv.reduce(function(s,x){return s+Number(x.balance||0);},0))+'</div><div class="l">Total receivable</div></div>';
+  fnView(fnTab);
+}
+function fnView(v){
+  fnTab=v;document.querySelectorAll('[data-fn]').forEach(function(t){t.classList.toggle('on',t.dataset.fn===v);});
+  var b=document.getElementById('fnBody');
+  if(v==='entries'){
+    if(!fnEntries.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
+    b.innerHTML='<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+fnEntries.map(function(e){
+      var inc=e.kind==='income',p=e.patients;
+      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' ✓':'')+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+  }else if(v==='recv'){
+    if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
+    b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
+      var name=(x.patient_name||'')+' '+(x.patient_surname||''),od=Number(x.overdue_amount||0);
+      var wa=od>0&&x.patient_phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,mxFill(clinic.installment_message||mxTr('Hi [name], this is a reminder for your installment of [amount] due on [date]. Have a nice day — [clinic]','Merhaba [ad], [tarih] vadeli [tutar] tutarındaki taksit ödemenizi hatırlatmak isteriz. İyi günler dileriz — [klinik]'),name,'',{'[tutar]':mxMoney(od),'[amount]':mxMoney(od),'[tarih]':mxDate(x.next_due_date)||'','[date]':mxDate(x.next_due_date)||''}))+'">WhatsApp</a>':'';
+      return '<tr><td style="cursor:pointer" onclick="fnAccount(\''+x.patient_id+'\')"><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td style="text-align:right;color:#D4963A">'+mxMoney(x.balance)+'</td><td style="color:#C0614A">'+(od>0?mxMoney(od)+' ('+x.overdue_count+')':'')+'</td><td>'+(x.next_due_date?mxDate(x.next_due_date)+' · '+mxMoney(x.next_due_amount):'')+'</td><td style="white-space:nowrap">'+wa+' <button class="btn bedit" onclick="fnAccount(\''+x.patient_id+'\')">Patient account</button></td></tr>';}).join('')+'</table>';
+  }else{
+    var cats=(fnSum.by_category||[]),meths=(fnSum.by_method||[]),months=(fnSum.by_month||[]);
+    function bars(title,rows,color,lab){if(!rows.length)return '';var max=Math.max.apply(null,rows.map(function(r){return Number(r.total);}));
+      return '<div class="imp-step"><h3 style="color:'+color+'">'+title+'</h3>'+rows.map(function(r){return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(lab(r))+'</span><span>'+mxMoney(r.total)+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:'+color+';width:'+(max>0?Number(r.total)/max*100:0)+'%"></div></div></div>';}).join('')+'</div>';}
+    b.innerHTML=bars(mxTr('Income · By category','Gelir · Kategoriye göre'),cats.filter(function(c){return c.kind==='income';}),'#3AB06A',function(r){return fnCat(r.category);})+
+      bars(mxTr('Expense · By category','Gider · Kategoriye göre'),cats.filter(function(c){return c.kind==='expense';}),'#C0614A',function(r){return fnCat(r.category);})+
+      bars(mxTr('Payment methods','Tahsilat şekli'),meths,'#2A9E8A',function(r){return fnMeth(r.method);})+
+      (document.getElementById('fnMode').value==='y'&&months.length?'<div class="imp-step"><table class="fmt"><tr><th>Month</th><th>Income</th><th>Expense</th><th>Net</th></tr>'+months.map(function(m){var i=Number(m.income||0),x=Number(m.expense||0);return '<tr><td>'+m.month.split('-').reverse().join('.')+'</td><td style="color:#3AB06A">'+mxMoney(i)+'</td><td style="color:#C0614A">'+mxMoney(x)+'</td><td>'+mxMoney(i-x)+'</td></tr>';}).join('')+'</table></div>':'')||'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';
+  }
+}
+var fnSelPatient=null;
+function fnKindChanged(){var k=document.getElementById('feKind').value;
+  document.getElementById('feCat').innerHTML=(k==='income'?FN_CAT_IN:FN_CAT_EX).map(function(c){return '<option value="'+c+'">'+mxE(fnCat(c))+'</option>';}).join('');
+  document.getElementById('fePatBox').style.display=k==='income'?'block':'none';}
+async function fnEntryModal(id,preset){
+  var e=id?fnEntries.find(function(x){return x.id===id;}):null;preset=preset||{};
+  if(id&&!e){var q=await db.from('finance_entries').select('*, patients(name, surname)').eq('id',id).single();e=q.data;}
+  e=e||{};var kind=e.kind||preset.kind||'income';
+  fnSelPatient=e.patient_id?{id:e.patient_id,name:(e.patients||{}).name||'',surname:(e.patients||{}).surname||''}:(preset.patient||null);
+  function catOpts(k){return (k==='income'?FN_CAT_IN:FN_CAT_EX).map(function(c){return '<option value="'+c+'"'+(c===(e.category||preset.category)?' selected':'')+'>'+mxE(fnCat(c))+'</option>';}).join('');}
+  mxOpen(id?'Edit entry':'Add entry',
+    '<select class="mi" id="feKind" onchange="fnKindChanged()">'+
+      '<option value="income"'+(kind==='income'?' selected':'')+'>Income</option><option value="expense"'+(kind==='expense'?' selected':'')+'>Expense</option></select>'+
+    '<input class="mi" id="feAmt" placeholder="Amount" value="'+(e.amount!=null?mxQty(e.amount):(preset.amount!=null?mxQty(preset.amount):''))+'" style="font-size:18px;font-weight:600">'+
+    '<select class="mi" id="feCat">'+catOpts(kind)+'</select>'+
+    '<select class="mi" id="feMeth">'+FN_METHODS.map(function(m){return '<option value="'+m+'"'+(m===(e.method||'cash')?' selected':'')+'>'+mxE(fnMeth(m))+'</option>';}).join('')+'</select>'+
+    '<input class="mi" id="feDate" type="date" value="'+(e.entry_date||mxIso(new Date()))+'">'+
+    '<div id="fePatBox" style="display:'+(kind==='income'?'block':'none')+'"><div id="fePat"></div><select class="mi" id="feCharge" style="display:none"></select></div>'+
+    '<input class="mi" id="feDesc" placeholder="Description" value="'+mxE(e.description||preset.description||'')+'">'+
+    '<input class="mi" id="feInv" placeholder="Invoice / e-SMM no" value="'+mxE(e.invoice_no||'')+'">',
+    [{label:'Cancel',cls:'bcancel',fn:mxClose}].concat(id?[{label:'Delete',cls:'bcancel',fn:async function(){if(!confirm(mxTr('Delete this entry?','Bu kayıt silinsin mi?')))return;await db.from('finance_entries').update({deleted_at:new Date().toISOString()}).eq('id',id);mxClose();fnLoad();}}]:[]).concat([{label:'Save',fn:async function(){
+      var amt=mxNum(mxV('feAmt'));if(!amt||amt<=0){alert('Amount');return;}
+      var k=document.getElementById('feKind').value,ch=document.getElementById('feCharge');
+      var row={clinic_id:cid,kind:k,amount:amt,category:document.getElementById('feCat').value,method:document.getElementById('feMeth').value,entry_date:mxV('feDate'),
+        patient_id:k==='income'&&fnSelPatient?fnSelPatient.id:null,charge_id:k==='income'&&fnSelPatient&&ch.style.display!=='none'&&ch.value?ch.value:null,
+        description:mxV('feDesc')||null,invoice_no:mxV('feInv')||null};
+      var r=id?await db.from('finance_entries').update(row).eq('id',id):await db.from('finance_entries').insert(Object.assign({currency:clinic.currency||null},row));
+      if(r.error){alert('Error: '+r.error.message);return;}mxClose();fnLoad();if(preset.after)preset.after();}}]));
+  fnRenderPat(e.charge_id||preset.charge_id||null);
+}
+function fnRenderPat(selCharge){
+  var box=document.getElementById('fePat');if(!box)return;
+  if(fnSelPatient){
+    box.innerHTML='<div class="mi" style="display:flex;justify-content:space-between"><span>'+mxE((fnSelPatient.name||'')+' '+(fnSelPatient.surname||''))+'</span><a style="cursor:pointer;color:#C0614A" onclick="fnSelPatient=null;fnRenderPat()">✕</a></div>';
+    fnLoadCharges(selCharge);
+  }else{
+    box.innerHTML='<input class="mi" id="fePatQ" placeholder="'+mxTr('Search patient (optional)','Hasta ara (opsiyonel)')+'" oninput="fnPatSearch(this.value)"><div id="fePatRes"></div>';
+    document.getElementById('feCharge').style.display='none';
+  }
+}
+var fnPatT=null;
+function fnPatSearch(q){clearTimeout(fnPatT);if(q.trim().length<2){document.getElementById('fePatRes').innerHTML='';return;}
+  fnPatT=setTimeout(async function(){var r=await db.rpc('search_patients',{p_clinic_id:cid,p_query:q.trim()});
+    var list=(r.data||[]).slice(0,6);window._fnPats=list;
+    document.getElementById('fePatRes').innerHTML=list.map(function(p,i){return '<div style="padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(245,241,235,.06)" onclick="fnSelPatient=window._fnPats['+i+'];fnRenderPat()">'+mxE((p.name||'')+' '+(p.surname||''))+' <span style="color:rgba(245,241,235,.4)">'+mxE(p.phone||'')+'</span></div>';}).join('');},300);}
+async function fnLoadCharges(sel){
+  var ch=document.getElementById('feCharge');if(!ch||!fnSelPatient)return;
+  var r=await db.rpc('patient_account',{p_patient_id:fnSelPatient.id});var acc=r.data||{};
+  var open=(acc.charges||[]).filter(function(c){return Number(c.amount)-Number(c.paid)>0.009||c.id===sel;}).sort(function(a,b){return a.charge_date<b.charge_date?-1:1;});
+  if(!open.length){ch.style.display='none';return;}
+  if(sel===null&&!document.getElementById('feAmt').value)sel=open[0].id;
+  ch.innerHTML='<option value="">'+mxTr('Not linked to a charge','Borca bağlı değil')+'</option>'+open.map(function(c){return '<option value="'+c.id+'"'+(c.id===(sel||open[0].id)?' selected':'')+'>'+mxTr('Apply to charge','Borca say')+': '+mxE(c.description||mxDate(c.charge_date))+' · '+mxMoney(Number(c.amount)-Number(c.paid))+'</option>';}).join('');
+  ch.style.display='block';
+}
+async function fnAccount(pid){
+  var r=await Promise.all([db.rpc('patient_account',{p_patient_id:pid}),db.from('patients').select('id,name,surname,phone').eq('id',pid).single()]);
+  var acc=r[0].data||{},p=r[1].data||{id:pid};
+  var st={paid:['Paid','Ödendi','#3AB06A'],overdue:['Overdue','Gecikti','#C0614A'],partial:['Partial','Kısmi','#D4963A'],open:['Open','Bekliyor','rgba(245,241,235,.6)']};
+  var h='<div style="font-size:26px;font-weight:700;color:'+(Number(acc.balance)>0?'#D4963A':'#3AB06A')+'">'+mxMoney(acc.balance)+'</div><div style="font-size:12px;color:rgba(245,241,235,.45);margin-bottom:12px">'+mxTr('Balance due','Kalan borç')+'</div>';
+  (acc.charges||[]).forEach(function(c){
+    h+='<div class="imp-step" style="padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between"><b>'+mxE(c.description||fnCat('treatment'))+'</b><a style="cursor:pointer;color:#C0614A;font-size:12px" onclick="fnDelCharge(\''+c.id+'\',\''+pid+'\')">'+mxTr('Delete','Sil')+'</a></div>'+
+      '<div style="font-size:12px;color:rgba(245,241,235,.5)">'+mxDate(c.charge_date)+' · '+mxMoney(c.paid)+' / '+mxMoney(c.amount)+'</div>'+
+      (c.installments||[]).map(function(i){var s=st[i.status]||st.open;return '<div style="display:flex;gap:10px;font-size:13px;margin-top:4px"><span style="width:20px;color:rgba(245,241,235,.4)">'+i.seq+'.</span><span style="width:86px">'+mxDate(i.due_date)+'</span><span style="flex:1">'+mxMoney(i.amount)+'</span><span style="color:'+s[2]+'">'+(LANG==='tr'?s[1]:s[0])+'</span></div>';}).join('')+'</div>';});
+  if((acc.payments||[]).length)h+='<div class="sec" style="margin-top:10px">'+mxTr('Payments','Ödemeler')+'</div>'+(acc.payments||[]).map(function(x){return '<div style="font-size:13px;padding:3px 0">'+mxDate(x.entry_date)+' · <b style="color:#3AB06A">'+mxMoney(x.amount)+'</b> · '+mxE(fnMeth(x.method))+(x.invoice_no?' · '+mxE(x.invoice_no):'')+'</div>';}).join('');
+  if(!(acc.charges||[]).length&&!(acc.payments||[]).length)h+='<div style="color:rgba(245,241,235,.4);font-size:13px">'+mxTr('No charges or payments for this patient.','Bu hastanın borç veya ödeme kaydı yok.')+'</div>';
+  mxOpen((p.name||'')+' '+(p.surname||''),h,[{label:'Cancel',cls:'bcancel',fn:mxClose},
+    {label:mxTr('Add charge','Borç ekle'),cls:'bcancel',fn:function(){fnChargeModal(p);}},
+    {label:mxTr('Take payment','Ödeme al'),fn:function(){var open=(acc.charges||[]).filter(function(c){return Number(c.amount)-Number(c.paid)>0.009;}).sort(function(a,b){return a.charge_date<b.charge_date?-1:1;});
+      var nx=null;if(open.length){var ins=(open[0].installments||[]).find(function(i){return Number(i.remaining)>0.009;});nx=ins?Number(ins.remaining):Number(open[0].amount)-Number(open[0].paid);}
+      fnEntryModal(null,{kind:'income',patient:p,charge_id:open.length?open[0].id:null,amount:nx,category:'treatment',after:function(){fnAccount(pid);}});}}]);
+}
+function fnChargeModal(p){
+  mxOpen(mxTr('Add charge','Borç ekle'),
+    '<input class="mi" id="fcAmt" placeholder="'+mxTr('Total amount','Toplam tutar')+'" style="font-size:18px;font-weight:600">'+
+    '<input class="mi" id="fcDesc" placeholder="Description">'+
+    '<span style="font-size:11px;color:rgba(245,241,235,.45)">'+mxTr('Date','Tarih')+'</span><input class="mi" id="fcDate" type="date" value="'+mxIso(new Date())+'">'+
+    '<span style="font-size:11px;color:rgba(245,241,235,.45)">'+mxTr('Number of installments','Taksit sayısı')+'</span><select class="mi" id="fcCount">'+[1,2,3,4,6,9,12].map(function(n){return '<option value="'+n+'">'+(n===1?mxTr('Single payment','Tek ödeme'):n)+'</option>';}).join('')+'</select>'+
+    '<span style="font-size:11px;color:rgba(245,241,235,.45)">'+mxTr('First installment / due date','İlk taksit / vade tarihi')+'</span><input class="mi" id="fcDue" type="date" value="'+mxIso(new Date())+'">',
+    [{label:'Cancel',cls:'bcancel',fn:function(){fnAccount(p.id);}},{label:'Save',fn:async function(){
+      var a=mxNum(mxV('fcAmt'));if(!a||a<=0){alert(mxTr('Total amount','Toplam tutar'));return;}
+      var r=await db.rpc('create_patient_charge',{p_patient_id:p.id,p_amount:a,p_description:mxV('fcDesc')||null,p_visit_id:null,p_charge_date:mxV('fcDate'),p_count:parseInt(document.getElementById('fcCount').value),p_first_due:mxV('fcDue'),p_interval_months:1});
+      if(r.error){alert('Error: '+r.error.message);return;}fnAccount(p.id);fnLoad();}}]);
+}
+async function fnDelCharge(id,pid){if(!confirm(mxTr('Delete this charge and its installments?','Bu borç ve taksitleri silinsin mi?')))return;
+  await db.from('patient_charges').update({deleted_at:new Date().toISOString()}).eq('id',id);fnAccount(pid);fnLoad();}
+function fnCsv(){
+  if(!fnEntries.length){alert(mxTr('No entries in this period','Bu dönemde kayıt yok'));return;}
+  var q=function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';};
+  var head=LANG==='tr'?['Tarih','Tür','Kategori','Tutar','Para birimi','Ödeme şekli','Hasta','Fatura no','Açıklama']:['Date','Type','Category','Amount','Currency','Payment method','Patient','Invoice no','Description'];
+  var lines=[head.map(q).join(';')].concat(fnEntries.slice().reverse().map(function(e){var p=e.patients;
+    return [mxDate(e.entry_date),e.kind==='income'?mxTr('Income','Gelir'):mxTr('Expense','Gider'),fnCat(e.category),Number(e.amount).toFixed(2).replace('.',','),e.currency||'',fnMeth(e.method),p?(p.name||'')+' '+(p.surname||''):'',e.invoice_no||'',e.description||''].map(q).join(';');}));
+  var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='aafc_muhasebe_'+document.getElementById('fnPeriod').textContent.replace(/\s+/g,'_')+'.csv';a.click();
+}
+
+// ============ RECALLS & REVIEWS ============
+var RC_RULE_TR={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP']};
+function rcRule(l){var x=RC_RULE_TR[l];return x?(LANG==='tr'?x[1]:x[0]):l;}
+async function rcLoad(){
+  var until=mxIso(new Date(Date.now()+7*864e5));
+  var r=await Promise.all([db.rpc('get_recalls',{p_clinic_id:cid,p_until:until}),db.rpc('get_review_requests',{p_clinic_id:cid}),db.from('clinic').select('*').eq('id',cid).single()]);
+  var rc=r[0].data||[],rv=r[1].data||[];if(r[2].data)clinic=r[2].data;
+  var t=document.getElementById('rcList');
+  t.innerHTML=rc.length?'<tr><th>Patient</th><th>Phone</th><th>Procedure</th><th>Type</th><th>Due date</th><th></th></tr>'+rc.map(function(x,i){
+    var name=(x.patient_name||'')+' '+(x.patient_surname||''),ctl=x.kind==='control';
+    var tpl=(ctl?clinic.recall_control_message:clinic.recall_repeat_message)||(ctl?mxTr('Hi [name], it is time for your check-up after your [procedure]. Shall we book an appointment for you? — [clinic]','Merhaba [ad], [islem] sonrası kontrol zamanınız geldi. Size uygun bir gün için randevu oluşturalım mı? — [klinik]'):mxTr('Hi [name], it has been a while since your last [procedure]. Shall we book a touch-up at a time that suits you? — [clinic]','Merhaba [ad], son [islem] uygulamanızın üzerinden zaman geçti. Tazeleme için size uygun bir gün ayarlayalım mı? — [klinik]'));
+    var od=Number(x.days_overdue||0);
+    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxE(rcRule(x.rule_label))+'</td><td>'+(ctl?mxTr('Control','Kontrol'):mxTr('Repeat','Tekrar'))+'</td><td style="color:'+(od>0?'#C0614A':'inherit')+'">'+mxDate(x.due_date)+'</td><td style="white-space:nowrap">'+
+      (x.patient_phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,mxFill(tpl,name,rcRule(x.rule_label)))+'" onclick="rcMark('+i+',\'sent\')">WhatsApp</a> ':'')+
+      '<button class="btn bedit" onclick="rcMark('+i+',\'dismissed\')">'+mxTr('Skip','Atla')+'</button></td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to call back right now.','Şu an geri çağrılacak hasta yok.')+'</td></tr>';
+  window._rc=rc;window._rv=rv;
+  var link=clinic.google_review_url||'',v=document.getElementById('rvList');
+  if(!link){v.innerHTML='<tr><td style="color:rgba(245,241,235,.5)">'+mxTr('Add your Google review link in the app (Settings › Reminders).','Önce Google yorum linkinizi uygulamadan ekleyin (Ayarlar › Hatırlatıcılar).')+'</td></tr>';return;}
+  v.innerHTML=rv.length?'<tr><th>Patient</th><th>Phone</th><th>Visit</th><th>Procedure</th><th></th></tr>'+rv.map(function(x,i){var name=(x.patient_name||'')+' '+(x.patient_surname||'');
+    var msg=mxFill(clinic.review_message||mxTr('Hi [name], thank you for choosing us. We would be very happy if you shared your experience on Google: [link] — [clinic]','Merhaba [ad], bizi tercih ettiğiniz için teşekkür ederiz. Deneyiminizi Google\'da paylaşırsanız çok mutlu oluruz: [link] — [klinik]'),name,'',{'[link]':link});
+    if(msg.indexOf(link)<0)msg+='\n'+link;
+    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxDate(x.visit_date)+'</td><td>'+mxE(x.procedures||'')+'</td><td style="white-space:nowrap"><a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,msg)+'" onclick="rvMark('+i+',\'sent\')">WhatsApp</a> <button class="btn bedit" onclick="rvMark('+i+',\'dismissed\')">'+mxTr('Skip','Atla')+'</button></td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to ask for a review right now','Şu an yorum istenecek hasta yok')+'</td></tr>';
+}
+async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
+async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
+
 // ============ ONLINE BOOKING ============
 var BK_DAYS=[['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']];
 var bkData=null;
@@ -1469,7 +1826,21 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={
+var I18N_TR={'RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
+'+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
+'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',
+'+ Receive lot':'+ Lot girişi','Receive lot':'Lot girişi','No lots received':'Lot girişi yok','Lot / serial no':'Lot / seri no','Expiry date':'Son kullanma tarihi','Opened':'Açıldı',
+'Vial opened':'Şişeyi açtım','Waste':'Fire','Count adjustment':'Sayım düzeltme','Waste / disposal':'Fire / imha','Enter + for surplus, − for shortage':'Fazla için +, eksik için − girin','Patients who received this lot':'Bu lotu alan hastalar',
+'This lot has not been used yet':'Bu lot henüz kullanılmadı','Product name':'Ürün adı','Units (u)':'Ünite (u)','Minimum stock (alert)':'Minimum stok (uyarı)','Use within after opening (days)':'Açıldıktan sonra kullanım (gün)',
+'Pack content (default quantity)':'Kutu içeriği (varsayılan miktar)','Product barcode (GTIN)':'Ürün barkodu (GTIN)','Deactivate product':'Ürünü pasifleştir','Deactivate product?':'Ürün pasifleştirilsin mi?',
+'Quantity':'Miktar','Unit cost':'Birim maliyet','Supplier':'Tedarikçi','Serial no':'Seri no','Barcode (UDI)':'Barkod (ÜTS/İTS)','Lot already exists, quantity added to it':'Aynı lot bulundu, miktar mevcut lota eklendi',
+'Accounting':'Muhasebe','Income, expenses, receivables and installments. Admins only.':'Gelir, gider, alacak ve taksitler. Yalnızca yöneticiler.','Month':'Ay','Year':'Yıl','Export CSV':'Excel (CSV) indir',
+'+ Add entry':'+ Kayıt ekle','Add entry':'Kayıt ekle','Edit entry':'Kaydı düzenle','Income':'Gelir','Expense':'Gider','Net':'Net','Total receivable':'Toplam alacak','No entries in this period':'Bu dönemde kayıt yok',
+'Category':'Kategori','Patient':'Hasta','Payment method':'Ödeme şekli','Invoice no':'Fatura no','Amount':'Tutar','Invoice / e-SMM no':'Fatura / e-SMM no','No open receivables.':'Açık alacak yok.',
+'Balance due':'Kalan borç','Overdue':'Gecikmiş','Next installment':'Sonraki taksit','Patient account':'Hasta hesabı',
+'Recalls & Reviews':'Geri Çağır ve Yorum','Patients due for a control or repeat treatment, and patients to ask for a Google review.':'Kontrol veya tekrar zamanı gelen hastalar ve Google yorumu istenecek hastalar.',
+'Due recalls (next 7 days and overdue)':'Zamanı gelenler (7 gün içinde ve gecikenler)','Ask for a Google review':'Google yorumu iste','Due date':'Vade','Procedure':'İşlem',
 'Panel Login':'Panel Girişi','Sign in with your clinic account':'Klinik hesabınızla giriş yapın','EMAIL':'E-POSTA','PASSWORD':'ŞİFRE',
 'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
 'Sign Out':'Çıkış','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',

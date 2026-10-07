@@ -280,6 +280,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <button class="btn bzip" onclick="dlPtZIP()">ZIP</button>
               <button class="btn bhtml" onclick="dlPtHTML()">HTML</button>
               <button class="btn bedit" onclick="openEdit()">Edit</button>
+              <button class="btn bedit" id="btnAcct" onclick="if(selPt)fnAccount(selPt.id)" style="display:none">Patient account</button>
               <button class="btn bdel" onclick="delPt()">Delete</button>
             </div>
           </div>
@@ -511,6 +512,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <input class="mi" type="date" id="mDob"/>
     <input class="mi" type="tel" id="mPhone" placeholder="Phone"/>
     <input class="mi" type="text" id="mCity" placeholder="City"/>
+    <input class="mi" type="text" id="mNid" placeholder="National ID (TC Kimlik No)" inputmode="numeric" maxlength="11"/>
+    <input class="mi" type="email" id="mEmail" placeholder="E-mail"/>
+    <div class="err" id="mErr" style="margin:-4px 0 10px"></div>
     <textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea>
     <div class="mbt">
       <button class="bcancel" onclick="closeModal()">Cancel</button>
@@ -708,6 +712,9 @@ async function selP(id){
   ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone||'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">City</span><span class="iv">'+(p.city||'-')+'</span></div>';
+  if(p.national_id)ih+='<div class="ir"><span class="il">National ID (TC Kimlik No)</span><span class="iv">'+mxE(p.national_id)+'</span></div>';
+  if(p.email)ih+='<div class="ir"><span class="il">E-mail</span><span class="iv">'+mxE(p.email)+'</span></div>';
+  (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+p.notes+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
@@ -895,6 +902,9 @@ function openAdd(){
   document.getElementById('mDob').value='';
   document.getElementById('mPhone').value='';
   document.getElementById('mCity').value='';
+  document.getElementById('mNid').value='';
+  document.getElementById('mEmail').value='';
+  document.getElementById('mErr').style.display='none';
   document.getElementById('mNotes').value='';
   document.getElementById('pModal').classList.add('on');
 }
@@ -908,26 +918,37 @@ function openEdit(){
   document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];
   document.getElementById('mPhone').value=selPt.phone||'';
   document.getElementById('mCity').value=selPt.city||'';
+  document.getElementById('mNid').value=selPt.national_id||'';
+  document.getElementById('mEmail').value=selPt.email||'';
+  document.getElementById('mErr').style.display='none';
   document.getElementById('mNotes').value=selPt.notes||'';
   document.getElementById('pModal').classList.add('on');
 }
 
 function closeModal(){document.getElementById('pModal').classList.remove('on');}
 
+function isTckn(t){if(!/^[1-9][0-9]{10}$/.test(t))return false;var d=t.split('').map(Number);
+  var o=d[0]+d[2]+d[4]+d[6]+d[8],e=d[1]+d[3]+d[5]+d[7];if(((o*7-e)%10+10)%10!==d[9])return false;
+  return d.slice(0,10).reduce(function(a,b){return a+b;},0)%10===d[10];}
 async function savePt(){
   var name=document.getElementById('mName').value.trim();
   if(!name){alert('Name is required');return;}
+  var nid=document.getElementById('mNid').value.replace(/\D/g,'');
+  var errEl=document.getElementById('mErr');errEl.style.display='none';
+  if(nid&&!isTckn(nid)){errEl.textContent=trText('Invalid TC Kimlik No');errEl.style.display='block';return;}
   var data={
     name:name,
     surname:document.getElementById('mSur').value||null,
     birth_date:document.getElementById('mDob').value||null,
     phone:document.getElementById('mPhone').value||null,
     city:document.getElementById('mCity').value||null,
+    national_id:nid||null,
+    email:document.getElementById('mEmail').value.trim()||null,
     notes:document.getElementById('mNotes').value||null,
     clinic_id:cid
   };
-  if(editPid) await db.from('patients').update(data).eq('id',editPid);
-  else await db.from('patients').insert(data);
+  var res=editPid?await db.from('patients').update(data).eq('id',editPid):await db.from('patients').insert(data);
+  if(res.error){errEl.textContent=res.error.code==='23505'?trText('A patient with this TC Kimlik No is already registered'):(res.error.message||'Error');errEl.style.display='block';return;}
   closeModal();
   await loadPts();
   await loadStats();
@@ -1826,7 +1847,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+var I18N_TR={'E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

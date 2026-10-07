@@ -50,7 +50,12 @@ textarea{resize:vertical;min-height:70px}
 .hp{position:absolute;left:-9999px;opacity:0}
 .spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
 @keyframes s{to{transform:rotate(360deg)}}
+html.light{--ink:#FFFFFF;--ink2:#F7F5F1;--ink3:#EEEAE3;--gold:#9A7B4C;--goldlt:#7A5F36;--cream:#1C1929;--mid:rgba(28,25,41,.68);--dim:rgba(28,25,41,.45);--line:rgba(0,0,0,.10)}
+html.light .time.sel{color:#fff}html.light .btn{color:#fff}
+html.embed,html.embed body{background:transparent}
+html.embed .wrap{padding:8px 4px 12px}
 </style>
+<script>(function(){var q=new URLSearchParams(location.search),c=document.documentElement.classList;if(q.get('theme')==='light')c.add('light');if(q.get('embed')==='1')c.add('embed');})();</script>
 </head>
 <body>
 <div class="wrap" id="app"><div class="spin"></div></div>
@@ -165,6 +170,10 @@ document.title = L.title;
 
 const st = { info: null, service: null, days: [], date: null, times: [], time: null, busy: false, err: '', result: null };
 const app = document.getElementById('app');
+if (document.documentElement.classList.contains('embed') && window.parent !== window) {
+  const post = () => window.parent.postMessage({ aafcBooking: slug, h: document.documentElement.scrollHeight }, '*');
+  new ResizeObserver(post).observe(document.body); window.addEventListener('load', post);
+}
 
 async function rpc(fn, body) {
   const r = await fetch(`${SU}/rest/v1/rpc/${fn}`, {

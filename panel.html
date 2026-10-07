@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1C1929;color:#F5F1EB;height:100vh;overflow:hidden}
@@ -203,6 +204,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bk-in:focus{border-color:#B89A6A}
 .bk-day{display:grid;grid-template-columns:110px 90px 90px 20px 90px 90px;gap:8px;align-items:center;margin-bottom:6px;font-size:13px}
 .bk-day input[type=time]{color-scheme:dark}
+.bk-qr{background:#fff;border-radius:10px;padding:10px;width:180px;height:180px}.bk-qr img,.bk-qr svg{width:100%;height:100%;display:block}
+.bk-code{width:100%;font-family:monospace;font-size:12px;background:#12101E;color:#D4B896;border:1px solid rgba(245,241,235,.12);border-radius:8px;padding:10px;resize:vertical}
 .bk-link{font-family:monospace;font-size:13px;color:#D4B896;word-break:break-all}
 .bk-x{background:none;border:none;color:#C0614A;cursor:pointer;font-size:16px}
 @media(max-width:700px){.bk-day{grid-template-columns:1fr 1fr;}.bk-day .sep{display:none}}
@@ -456,6 +459,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="bk-row"><button class="bimp2" onclick="bkCopy()">Copy link</button><button class="bimp2" onclick="bkOpen()">Open page</button><span id="bkMsg" class="hint" style="margin:0"></span></div>
         <div class="hint" style="margin-top:8px">Short welcome text (optional)</div>
         <textarea class="bk-in" id="bkIntro" rows="2" style="width:100%;resize:vertical"></textarea>
+      </div>
+      <div class="imp-step">
+        <h3>Share your booking link</h3>
+        <div class="hint">Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.</div>
+        <div class="bk-row" style="align-items:flex-start;gap:18px;flex-wrap:wrap">
+          <div><div class="bk-qr" id="bkQr"></div>
+            <div class="bk-row" style="margin-top:8px"><button class="bimp2" onclick="bkQrDownload()">Download QR</button></div>
+            <div class="hint" style="margin:0;max-width:190px">Print it for the reception desk, business cards or brochures.</div></div>
+          <div style="flex:1;min-width:260px">
+            <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="bkLight" onchange="bkCodes()"> Light theme (for white websites)</label></div>
+            <div class="hint" style="margin:6px 0 4px">Button for your website</div>
+            <textarea class="bk-code" id="bkBtnCode" rows="3" readonly></textarea>
+            <div class="bk-row"><button class="bimp2" onclick="bkCopyCode('bkBtnCode')">Copy code</button></div>
+            <div class="hint" style="margin:10px 0 4px">Booking form embedded in your website</div>
+            <textarea class="bk-code" id="bkEmbedCode" rows="5" readonly></textarea>
+            <div class="bk-row"><button class="bimp2" onclick="bkCopyCode('bkEmbedCode')">Copy code</button><span id="bkShareMsg" class="hint" style="margin:0"></span></div>
+            <div class="hint" style="margin:0">Paste into an HTML / embed block (WordPress, Wix, Squarespace, Ikas…).</div>
+          </div>
+        </div>
       </div>
       <div class="imp-step">
         <h3>Services</h3>
@@ -1744,7 +1766,20 @@ function bkEsc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){ret
 function bkSlugify(t){var m={'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u','Ç':'c','Ğ':'g','İ':'i','Ö':'o','Ş':'s','Ü':'u'};
   return (t||'').replace(/[çğıöşüÇĞİÖŞÜ]/g,function(c){return m[c]}).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);}
 function bkUrl(){return 'https://aafclinic.com/randevu?k='+encodeURIComponent(document.getElementById('bkSlug').value.trim());}
-function bkLink(){document.getElementById('bkLink').textContent=document.getElementById('bkSlug').value.trim()?bkUrl():'';}
+function bkLink(){document.getElementById('bkLink').textContent=document.getElementById('bkSlug').value.trim()?bkUrl():'';bkCodes();}
+function bkCodes(){var has=document.getElementById('bkSlug').value.trim(),u=bkUrl(),q=document.getElementById('bkQr');if(!q)return;
+  if(!has){q.innerHTML='';document.getElementById('bkBtnCode').value='';document.getElementById('bkEmbedCode').value='';return;}
+  try{var qr=qrcode(0,'M');qr.addData(u);qr.make();q.innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});}catch(e){q.innerHTML='';}
+  var light=document.getElementById('bkLight').checked,label=LANG==='tr'?'Online Randevu Al':'Book Online';
+  var bg=light?'#9A7B4C':'#B89A6A',fg=light?'#FFFFFF':'#12101E';
+  document.getElementById('bkBtnCode').value='<a href="'+u+'" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;background:'+bg+';color:'+fg+';border-radius:10px;font:600 16px -apple-system,Segoe UI,Roboto,sans-serif;text-decoration:none">'+label+'</a>';
+  var eu=u+'&embed=1'+(light?'&theme=light':'');
+  document.getElementById('bkEmbedCode').value='<iframe id="aafc-booking" src="'+eu+'" title="'+label+'" loading="lazy" style="width:100%;max-width:560px;height:780px;border:0"></iframe>\n<script>addEventListener("message",function(e){if(e.origin==="https://aafclinic.com"&&e.data&&e.data.aafcBooking){var f=document.getElementById("aafc-booking");if(f)f.style.height=(e.data.h+16)+"px";}});<\/script>';
+}
+function bkCopyCode(id){navigator.clipboard.writeText(document.getElementById(id).value).then(function(){var e=document.getElementById('bkShareMsg');e.textContent=mxTr('Copied','Kopyalandı');e.style.color='#3AB06A';setTimeout(function(){e.textContent='';},3000);});}
+function bkQrDownload(){var u=bkUrl();try{var qr=qrcode(0,'M');qr.addData(u);qr.make();var n=qr.getModuleCount(),sc=Math.ceil(1024/(n+8)),sz=(n+8)*sc,c=document.createElement('canvas');c.width=c.height=sz;
+  var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,sz,sz);x.fillStyle='#000';for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(qr.isDark(r,k))x.fillRect((k+4)*sc,(r+4)*sc,sc,sc);
+  var a=document.createElement('a');a.download='randevu-qr-'+document.getElementById('bkSlug').value.trim()+'.png';a.href=c.toDataURL('image/png');a.click();}catch(e){}}
 function bkCopy(){navigator.clipboard.writeText(bkUrl()).then(function(){bkMsg('Copied');});}
 function bkOpen(){window.open(bkUrl(),'_blank');}
 function bkMsg(t,err){var e=document.getElementById('bkMsg');e.textContent=t;e.style.color=err?'#C0614A':'#3AB06A';setTimeout(function(){e.textContent='';},4000);}
@@ -1982,7 +2017,12 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Blocked times':'Kapalı saatler','Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.':'Ameliyat, hastane nöbeti veya özel işler. Online randevuda kapalı görünür, takvim aboneliğine düşer.',
+var I18N_TR={'Share your booking link':'Randevu linkinizi paylaşın',
+'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
+'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
+'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',
+'Copy code':'Kodu kopyala','Booking form embedded in your website':'Web sitenize gömülü randevu formu',
+'Paste into an HTML / embed block (WordPress, Wix, Squarespace, Ikas…).':'HTML / gömme bloğuna yapıştırın (WordPress, Wix, Squarespace, Ikas…).','Blocked times':'Kapalı saatler','Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.':'Ameliyat, hastane nöbeti veya özel işler. Online randevuda kapalı görünür, takvim aboneliğine düşer.',
 'All day':'Tüm gün','Reason (e.g. Surgery)':'Açıklama (ör. Ameliyat)','Block time':'Saat kapat','No blocked times.':'Kapalı saat yok.','End time must be after start time.':'Bitiş saati başlangıçtan sonra olmalı.',
 'Calendar subscription':'Takvim aboneliği','Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).':'Randevular ve kapalı saatler iPhone, Google veya Outlook takviminizde (tek yönlü, 15 dk – birkaç saatte bir yenilenir).',
 'Enable calendar subscription':'Takvim aboneliğini aç','Show patient names':'Hasta adlarını göster','Add to Google Calendar':'Google Takvim\'e ekle','Add to iPhone / Mac calendar':'iPhone / Mac takvimine ekle','Regenerate link':'Linki yenile',

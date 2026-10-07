@@ -448,6 +448,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         </div>
       </div>
       <div class="imp-step">
+        <h3>Blocked times</h3>
+        <div class="hint">Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.</div>
+        <div class="bk-row">
+          <input class="bk-in" type="date" id="blDate" style="color-scheme:dark">
+          <input class="bk-in" type="time" id="blStart" value="13:00" style="color-scheme:dark"><span class="hint" style="margin:0">–</span>
+          <input class="bk-in" type="time" id="blEnd" value="15:00" style="color-scheme:dark">
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="blAll"> All day</label>
+          <input class="bk-in" id="blReason" placeholder="Reason (e.g. Surgery)" style="flex:1;min-width:160px">
+          <button class="bimp" onclick="blAdd()">Block time</button>
+        </div>
+        <div class="imp-wrap"><table class="fmt" id="blList"></table></div>
+      </div>
+      <div class="imp-step">
+        <h3>Calendar subscription</h3>
+        <div class="hint">Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).</div>
+        <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="cfEnabled" onchange="cfSet()"> Enable calendar subscription</label></div>
+        <div id="cfBox" style="display:none">
+          <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="cfNames" onchange="cfSet()"> Show patient names</label></div>
+          <div class="bk-row"><span class="bk-link" id="cfLink"></span></div>
+          <div class="bk-row"><button class="bimp2" onclick="cfOpen('google')">Add to Google Calendar</button><button class="bimp2" onclick="cfOpen('apple')">Add to iPhone / Mac calendar</button><button class="bimp2" onclick="navigator.clipboard.writeText(document.getElementById('cfLink').textContent);bkMsg(trText('Copied'))">Copy link</button><button class="bimp2" onclick="if(confirm(trText('Regenerate link? The old link will stop working.')))cfSet(true)">Regenerate link</button></div>
+        </div>
+      </div>
+      <div class="imp-step">
         <h3>Recent online bookings</h3>
         <div class="imp-wrap"><table class="fmt" id="bkRecent"></table></div>
       </div>
@@ -1730,7 +1753,7 @@ async function bkLoad(){
   document.getElementById('bkSlot').value=bkData.slot_minutes;
   document.getElementById('bkNotice').value=bkData.min_notice_hours;
   document.getElementById('bkAhead').value=bkData.max_days_ahead;
-  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();
+  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();blLoad();cfLoad();
 }
 function bkRenderSvcs(){
   document.getElementById('bkSvcs').innerHTML=(bkData.services||[]).map(function(s,i){
@@ -1772,6 +1795,38 @@ async function bkRecent(){
     return '<tr><td>'+a.appointment_date.split('-').reverse().join('.')+'</td><td>'+String(a.appointment_time).slice(0,5)+'</td><td>'+bkEsc(a.patient_name_temp||'')+
       '</td><td>'+bkEsc(a.patient_phone_temp||'')+'</td><td>'+bkEsc(a.service_name||'')+'</td><td>'+bkEsc(a.status)+'</td></tr>';}).join('');
 }
+
+// ============ BLOCKED TIMES + CALENDAR FEED ============
+var CF_BASE='https://hugxacklprzujswtaike.supabase.co/functions/v1/calendar-feed?t=',cfData=null;
+async function blLoad(){
+  if(!document.getElementById('blDate').value)document.getElementById('blDate').value=mxIso(new Date());
+  var r=await db.from('clinic_time_blocks').select('*').eq('clinic_id',cid).gte('block_date',mxIso(new Date())).order('block_date').order('start_time');
+  var rows=r.data||[],t=document.getElementById('blList');
+  t.innerHTML=rows.length?rows.map(function(b){var s=String(b.start_time).slice(0,5),e=String(b.end_time).slice(0,5);
+    return '<tr><td>'+mxDate(b.block_date)+'</td><td>'+(s==='00:00'&&e==='23:59'?trText('All day'):s+' – '+e)+'</td><td>'+bkEsc(b.reason||'')+'</td><td><button class="bk-x" onclick="blDel(\''+b.id+'\')">✕</button></td></tr>';}).join('')
+    :'<tr><td style="color:rgba(245,241,235,.4)">'+trText('No blocked times.')+'</td></tr>';
+}
+async function blAdd(){
+  var all=document.getElementById('blAll').checked,s=all?'00:00':document.getElementById('blStart').value,e=all?'23:59':document.getElementById('blEnd').value;
+  if(!document.getElementById('blDate').value||!s||!e||e<=s){bkMsg(trText('End time must be after start time.'),true);return;}
+  var r=await db.from('clinic_time_blocks').insert({clinic_id:cid,block_date:document.getElementById('blDate').value,start_time:s,end_time:e,reason:document.getElementById('blReason').value.trim()||null});
+  if(r.error){bkMsg(r.error.message,true);return;}document.getElementById('blReason').value='';blLoad();
+}
+async function blDel(id){await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();}
+async function cfLoad(){
+  var u=await db.auth.getUser();var uid=u.data&&u.data.user&&u.data.user.id;if(!uid)return;
+  var r=await db.from('calendar_feeds').select('enabled,show_names,token').eq('auth_id',uid).maybeSingle();cfData=r.data;cfRender();
+}
+function cfRender(){
+  var on=!!(cfData&&cfData.enabled);document.getElementById('cfEnabled').checked=on;document.getElementById('cfBox').style.display=on?'block':'none';
+  if(on){document.getElementById('cfNames').checked=!!cfData.show_names;document.getElementById('cfLink').textContent=CF_BASE+cfData.token;}
+}
+async function cfSet(regen){
+  var r=await db.rpc('set_calendar_feed',{p_enabled:document.getElementById('cfEnabled').checked,p_show_names:cfData?document.getElementById('cfNames').checked:true,p_regenerate:!!regen});
+  if(r.error){bkMsg(r.error.message,true);return;}cfData=r.data;cfRender();
+}
+function cfOpen(k){if(!cfData)return;var web='webcal://'+(CF_BASE+cfData.token).replace('https://','');
+  window.open(k==='google'?'https://calendar.google.com/calendar/r?cid='+encodeURIComponent(web):web,'_blank');}
 
 // ============ IMPORT ============
 var IMP_FIELDS=[
@@ -1913,7 +1968,11 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+var I18N_TR={'Blocked times':'Kapalı saatler','Surgery, hospital shifts or personal matters. Hidden from online booking and shown in the calendar subscription.':'Ameliyat, hastane nöbeti veya özel işler. Online randevuda kapalı görünür, takvim aboneliğine düşer.',
+'All day':'Tüm gün','Reason (e.g. Surgery)':'Açıklama (ör. Ameliyat)','Block time':'Saat kapat','No blocked times.':'Kapalı saat yok.','End time must be after start time.':'Bitiş saati başlangıçtan sonra olmalı.',
+'Calendar subscription':'Takvim aboneliği','Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).':'Randevular ve kapalı saatler iPhone, Google veya Outlook takviminizde (tek yönlü, 15 dk – birkaç saatte bir yenilenir).',
+'Enable calendar subscription':'Takvim aboneliğini aç','Show patient names':'Hasta adlarını göster','Add to Google Calendar':'Google Takvim\'e ekle','Add to iPhone / Mac calendar':'iPhone / Mac takvimine ekle','Regenerate link':'Linki yenile',
+'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

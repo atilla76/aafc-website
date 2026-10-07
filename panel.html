@@ -361,6 +361,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div><h2>Statistics</h2><div class="sub">Clinic activity across periods</div></div>
       </div>
       <div id="statsBody"><div class="loader">Loading...</div></div>
+      <div class="tab-head" style="margin-top:24px">
+        <div><h2>Reports</h2></div>
+        <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repLoad()"><option value="month">This Month</option><option value="year">This Year</option><option value="12m">Last 12 months</option></select></div>
+      </div>
+      <div id="repBody"></div>
     </div>
   </div>
 
@@ -1108,6 +1113,37 @@ async function loadStatsTab(){
     h+='</div>';
     el.innerHTML=h;
   }catch(e){el.innerHTML='<div class="loader">Could not load statistics.</div>';}
+  repLoad();
+}
+var REP_CAT={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP'],'Diğer':['Other','Diğer'],'Lipoliz':['Lipolysis','Lipoliz'],
+  'Gençlik aşısı':['Skin booster','Gençlik aşısı'],'İp / lifting':['Threads / lifting','İp / lifting'],'Peeling':['Peeling','Peeling'],'Cihaz / lazer':['Device / laser','Cihaz / lazer'],'Muayene':['Consultation','Muayene']};
+function repCat(c){var x=REP_CAT[c];return x?(LANG==='tr'?x[1]:x[0]):c;}
+async function repLoad(){
+  var b=document.getElementById('repBody');b.innerHTML='<div class="loader">Loading...</div>';
+  var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate()),v=document.getElementById('repRange').value;
+  var f=v==='year'?new Date(now.getFullYear(),0,1):v==='12m'?new Date(now.getFullYear()-1,now.getMonth(),now.getDate()+1):new Date(now.getFullYear(),now.getMonth(),1);
+  var r=await db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)});
+  if(r.error||!r.data){b.innerHTML='<div class="loader">Could not load statistics.</div>';return;}
+  var d=r.data,pt=d.patients||{},ap=d.appointments||{},h='';
+  function kpis(arr){return '<div class="imp-nums">'+arr.map(function(x){return '<div class="imp-num"><div class="n" style="color:'+(x[2]||'#F5F1EB')+'">'+x[0]+'</div><div class="l">'+x[1]+'</div></div>';}).join('')+'</div>';}
+  function bars(rows,color,lab,val){if(!rows.length)return '';var max=Math.max.apply(null,rows.map(function(x){return Number(val(x)[0]);}));
+    return rows.map(function(x){var v=val(x);return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(lab(x))+'</span><span style="color:rgba(245,241,235,.6)">'+v[1]+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:'+color+';width:'+(max>0?Number(v[0])/max*100:0)+'%"></div></div></div>';}).join('');}
+  var seen=Number(pt.seen||0);
+  h+='<div class="imp-step"><h3>'+mxTr('Patients','Hastalar')+'</h3>'+kpis([[pt['new']||0,mxTr('New Patients','Yeni Hastalar'),'#6C63A8'],[seen,mxTr('Patients seen','Gelen hasta'),'#2A9E8A'],
+    [seen?'%'+Math.round(100*Number(pt.returning||0)/seen):'—',mxTr('Returning share','Eski hasta oranı'),'#B89A6A'],[pt.repeat_rate_12m!=null?'%'+pt.repeat_rate_12m:'—',mxTr('Repeat rate (12 mo)','Tekrar gelen (12 ay)'),'#3AB06A']])+'</div>';
+  if((d.procedures||[]).length)h+='<div class="imp-step"><h3>'+mxTr('Procedures','İşlemler')+'</h3>'+bars(d.procedures,'#2A9E8A',function(x){return repCat(x.category);},function(x){return [x.visits,x.visits+(x.controls?' + '+x.controls+' '+mxTr('controls','kontrol'):'')];})+'</div>';
+  if(d.is_admin&&d.revenue){var rv=d.revenue,cnt=Number(rv.count||0);
+    h+='<div class="imp-step"><h3>'+mxTr('Revenue','Ciro')+'</h3>'+kpis([[mxMoney(rv.total),mxTr('Total collected','Toplam tahsilat'),'#3AB06A'],[cnt?mxMoney(Math.round(rv.total/cnt)):'—',mxTr('Average ticket','Ortalama işlem'),'#B89A6A']])+
+      ((rv.by_category||[]).length?bars(rv.by_category,'#3AB06A',function(x){return repCat(x.category);},function(x){return [x.total,mxMoney(x.total)+' · '+x.count];}):'<div style="font-size:12px;color:rgba(245,241,235,.45)">'+mxTr('No payments recorded in this period. Add them in Accounting.','Bu dönemde tahsilat kaydı yok. Ödemeleri Muhasebe\'den girin.')+'</div>')+'</div>';}
+  h+='<div class="imp-step"><h3>'+mxTr('Appointments','Randevular')+'</h3>'+kpis([[ap.total||0,mxTr('Total','Toplam')],[ap.online||0,'Online','#6C63A8'],[ap.cancelled||0,mxTr('Cancelled','İptal'),'#D4963A'],[ap.no_show||0,mxTr('No-show','Gelmedi'),'#C0614A']])+'</div>';
+  if(d.is_admin&&(d.stock||[]).length)h+='<div class="imp-step"><h3>'+mxTr('Product usage','Ürün tüketimi')+'</h3><table class="fmt">'+d.stock.map(function(x){return '<tr><td>'+mxE(x.name)+'</td><td>'+mxQty(x.used)+' '+(x.unit==='ml'?'ml':'u')+'</td><td>'+(Number(x.used_cost)>0?mxMoney(x.used_cost):'')+'</td><td style="color:#C0614A">'+(Number(x.wasted)>0?mxTr('Waste','Fire')+': '+mxQty(x.wasted):'')+'</td></tr>';}).join('')+'</table></div>';
+  var m=d.monthly||[];
+  if(m.length){function chart(key,color,money){var vals=m.map(function(x){return Number(x[key]||0);}),max=Math.max.apply(null,vals.concat([0]));
+      return '<div style="display:flex;align-items:flex-end;gap:4px;height:130px;margin:6px 0 14px">'+vals.map(function(v,i){return '<div style="flex:1;text-align:center"><div style="font-size:9px;color:rgba(245,241,235,.5)">'+(v?(money?(v>=1000?Math.round(v/1000)+'K':v):v):'')+'</div><div style="height:'+(max?2+90*v/max:2)+'px;background:'+color+';opacity:'+(i===vals.length-1?1:.6)+';border-radius:3px"></div><div style="font-size:9px;color:rgba(245,241,235,.4);margin-top:3px">'+m[i].month.slice(5)+'</div></div>';}).join('')+'</div>';}
+    h+='<div class="imp-step"><h3>'+mxTr('Last 12 months','Son 12 ay')+'</h3><div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('Visits','Vizitler')+'</div>'+chart('visits','#2A9E8A')+
+      '<div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('New Patients','Yeni Hastalar')+'</div>'+chart('new_patients','#6C63A8')+
+      (d.is_admin?'<div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('Income','Gelir')+'</div>'+chart('income','#3AB06A',true):'')+'</div>';}
+  b.innerHTML=h;
 }
 
 function getPeriod(stats,key){
@@ -1123,7 +1159,7 @@ function trendBadge(curr,prev){
 }
 
 function statCard(title,data,cmp,cmpLabel){
-  var h='<div class="stat-card"><div class="stat-title">📅 '+title+'</div>';
+  var h='<div class="stat-card"><div class="stat-title">📅 '+trText(title)+'</div>';
   h+='<div class="stat-row">';
   h+='<div class="stat-cell"><div class="stat-icon purple">👥</div><div class="stat-value">'+data.patients+'</div><div class="stat-label">New Patients</div>'+(cmp?trendBadge(data.patients,cmp.patients):'')+'</div>';
   h+='<div class="stat-cell"><div class="stat-icon teal">📋</div><div class="stat-value">'+data.visits+'</div><div class="stat-label">Visits</div>'+(cmp?trendBadge(data.visits,cmp.visits):'')+'</div>';
@@ -1847,7 +1883,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+var I18N_TR={'Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

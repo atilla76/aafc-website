@@ -521,6 +521,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         </div>
       </div>
       <div class="imp-step">
+        <h3>Social media QR codes</h3>
+        <div class="hint">Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.</div>
+        <div class="bk-row" style="flex-wrap:wrap">
+          <input class="bk-in" id="soInstagram" placeholder="Instagram @" style="flex:1;min-width:170px">
+          <input class="bk-in" id="soFacebook" placeholder="Facebook" style="flex:1;min-width:170px">
+          <input class="bk-in" id="soTiktok" placeholder="TikTok @" style="flex:1;min-width:170px">
+        </div>
+        <div class="bk-row" style="flex-wrap:wrap">
+          <input class="bk-in" id="soYoutube" placeholder="YouTube @" style="flex:1;min-width:170px">
+          <input class="bk-in" id="soWebsite" placeholder="Website (www.clinic.com)" style="flex:1;min-width:170px">
+          <input class="bk-in" id="soReview" placeholder="Google review link" style="flex:1;min-width:170px">
+        </div>
+        <div class="bk-row"><button class="bimp" onclick="soSave()">Save</button><button class="bimp2" onclick="soShow()">Show QR codes</button><span id="soMsg" class="hint" style="margin:0"></span></div>
+        <div id="soQrs" style="display:flex;flex-wrap:wrap;gap:14px;margin-top:10px"></div>
+      </div>
+      <div class="imp-step">
         <h3>Services</h3>
         <div class="hint">What patients can book and how long it takes (minutes).</div>
         <div id="bkSvcs"></div>
@@ -2336,7 +2352,39 @@ function bkQrDownload(){var u=bkUrl();try{var qr=qrcode(0,'M');qr.addData(u);qr.
 function bkCopy(){navigator.clipboard.writeText(bkUrl()).then(function(){bkMsg('Copied');});}
 function bkOpen(){window.open(bkUrl(),'_blank');}
 function bkMsg(t,err){var e=document.getElementById('bkMsg');e.textContent=t;e.style.color=err?'#C0614A':'#3AB06A';setTimeout(function(){e.textContent='';},4000);}
+// ---- social media QR codes ----
+var SO_F=[['instagram','soInstagram'],['facebook','soFacebook'],['tiktok','soTiktok'],['youtube','soYoutube'],['website','soWebsite'],['google_review_url','soReview']],soOrig={};
+function soHandle(v){var t=String(v||'').trim();if(/:\/\//.test(t)||t.indexOf('www.')===0){try{var u=new URL(t.indexOf('www.')===0?'https://'+t:t);t=u.pathname.split('/').filter(Boolean)[0]||'';}catch(e){t='';}}
+  return t.replace(/^@+/,'').replace(/[\/\s]+$/,'').trim();}
+function soWeb(v){var t=String(v||'').trim();return !t?null:/^https?:\/\//.test(t)?t:'https://'+t;}
+function soLinks(c){var o=[],h;
+  if((h=soHandle(c.instagram)))o.push(['Instagram','https://instagram.com/'+h,'instagram-qr']);
+  if(String(c.facebook||'').trim()){var f=String(c.facebook).trim();o.push(['Facebook',/profile\.php/.test(f)||(/:\/\/|^www\./.test(f)&&!/facebook\.com|fb\.com/.test(f))?soWeb(f):'https://facebook.com/'+soHandle(f),'facebook-qr']);}
+  if((h=soHandle(c.tiktok)))o.push(['TikTok','https://www.tiktok.com/@'+h,'tiktok-qr']);
+  if(String(c.youtube||'').trim()){var y=String(c.youtube).trim();o.push(['YouTube',/:\/\/|^www\./.test(y)?soWeb(y):'https://youtube.com/@'+soHandle(y),'youtube-qr']);}
+  if(soWeb(c.website))o.push([mxTr('Website','Web sitesi'),soWeb(c.website),'web-qr']);
+  var wd=mxWaDigits(c.phone||'');if(wd.length>=8)o.push(['WhatsApp','https://wa.me/'+wd,'whatsapp-qr']);
+  if(soWeb(c.google_review_url))o.push([mxTr('Google review link','Google yorum linki'),soWeb(c.google_review_url),'google-review-qr']);
+  return o;}
+function soFill(){SO_F.forEach(function(f){var e=document.getElementById(f[1]);if(e)e.value=clinic[f[0]]||'';soOrig[f[0]]=String(clinic[f[0]]||'').trim();});}
+function qrPng(data,name){try{var qr=qrcode(0,'M');qr.addData(data);qr.make();var n=qr.getModuleCount(),sc=Math.ceil(1024/(n+8)),sz=(n+8)*sc,c=document.createElement('canvas');c.width=c.height=sz;
+  var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,sz,sz);x.fillStyle='#000';for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(qr.isDark(r,k))x.fillRect((k+4)*sc,(r+4)*sc,sc,sc);
+  var a=document.createElement('a');a.download=name+'.png';a.href=c.toDataURL('image/png');a.click();}catch(e){}}
+var soItems=[];
+function soShow(){var c=Object.assign({},clinic);SO_F.forEach(function(f){c[f[0]]=mxV(f[1]);});soItems=soLinks(c);var box=document.getElementById('soQrs');
+  if(!soItems.length){box.innerHTML='<div class="hint" style="margin:0">'+mxTr('No accounts yet.','Henüz hesap girilmedi.')+'</div>';return;}
+  box.innerHTML=soItems.map(function(it,i){var svg='';try{var qr=qrcode(0,'M');qr.addData(it[1]);qr.make();svg=qr.createSvgTag({cellSize:4,margin:2,scalable:true});}catch(e){}
+    return '<div style="width:190px;text-align:center"><div style="font-weight:600;margin-bottom:6px">'+mxE(it[0])+'</div><div class="bk-qr">'+svg+'</div>'+
+      '<div class="hint" style="margin:4px 0;word-break:break-all;font-size:11px">'+mxE(it[1])+'</div><button class="bimp2" onclick="qrPng(soItems['+i+'][1],soItems['+i+'][2])">'+mxTr('Download QR','Karekodu indir')+'</button></div>';}).join('');}
+async function soSave(){var row={};SO_F.forEach(function(f){row[f[0]]=mxV(f[1])||null;});
+  var r=await db.from('clinic').update(row).eq('id',cid);var m=document.getElementById('soMsg');
+  if(r.error){m.textContent=r.error.message;m.style.color='#C0614A';return;}
+  Object.assign(clinic,row);m.textContent=mxTr('Saved','Kaydedildi');m.style.color='#3AB06A';setTimeout(function(){m.textContent='';},2500);
+  var changed=SO_F.some(function(f){var v=String(row[f[0]]||'').trim();return v&&v!==soOrig[f[0]];});SO_F.forEach(function(f){soOrig[f[0]]=String(row[f[0]]||'').trim();});
+  if(changed&&confirm(mxTr('Shall we create QR codes for your social media accounts and website?','Sosyal medya hesaplarınız ve web siteniz için karekod oluşturalım mı?'))){soShow();document.getElementById('soQrs').scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
 async function bkLoad(){
+  soFill();
   var r=await db.from('clinic_booking_settings').select('*').eq('clinic_id',cid).maybeSingle();
   bkData=r.data||{enabled:false,slug:bkSlugify(clinic.name||''),slot_minutes:30,min_notice_hours:2,max_days_ahead:30,intro:'',
     services:[{name:(LANG==='tr'?'Muayene / Konsültasyon':'Consultation'),duration:30}],
@@ -2572,7 +2620,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

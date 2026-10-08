@@ -1808,7 +1808,7 @@ var IN_RISK=['pregnant','allergy','anticoag','chronic','autoimmune','neuro','iso
 var inForms=[];
 function inLabel(k){for(var i=0;i<IN_Q.length;i++)if(IN_Q[i][0]===k)return mxTr(IN_Q[i][1],IN_Q[i][2]);return k;}
 function inFlagText(f,k){var d=((f.answers||{})[k+'_detail']||'').trim();return inLabel(k)+(d?': '+d:'');}
-function inUrl(tok){return 'https://aafclinic.com/form?t='+encodeURIComponent(tok)+'&lang='+(LANG==='tr'?'tr':'en');}
+function inUrl(tok){return 'https://aafclinic.com/form?t='+encodeURIComponent(tok);}
 async function inLoad(pid){
   var box=document.getElementById('pIntake');box.innerHTML='<div class="hint" style="margin:0">…</div>';
   var r=await db.from('patient_intake_forms').select('id,token,status,answers,flags,created_at,expires_at,completed_at,reviewed_at').eq('patient_id',pid).is('deleted_at',null).order('created_at',{ascending:false}).limit(10);

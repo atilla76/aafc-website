@@ -291,6 +291,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div class="sec">PATIENT INFO</div>
             <div class="ibox" id="pInfo"></div>
             <div class="ibox" id="pIntake" style="margin-top:10px"></div>
+            <div class="ibox" id="pPkg" style="margin-top:10px"></div>
             <div class="sec">BEFORE / AFTER COMPARISON</div>
             <div class="cw">
               <div class="cs">
@@ -538,6 +539,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <button class="tab on" data-fn="entries" onclick="fnView('entries')">ENTRIES</button>
         <button class="tab" data-fn="recv" onclick="fnView('recv')">RECEIVABLES</button>
         <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
+        <button class="tab" data-fn="cash" onclick="fnView('cash')">DAY CLOSE</button>
       </div>
       <div id="fnBody"></div>
     </div>
@@ -779,7 +781,7 @@ async function selP(id){
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
-  inLoad(id);
+  inLoad(id);pkLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
@@ -1656,6 +1658,7 @@ async function fnLoad(){
 function fnView(v){
   fnTab=v;document.querySelectorAll('[data-fn]').forEach(function(t){t.classList.toggle('on',t.dataset.fn===v);});
   var b=document.getElementById('fnBody');
+  if(v==='cash'){fnCashRender();return;}
   if(v==='entries'){
     if(!fnEntries.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+fnEntries.map(function(e){
@@ -1797,6 +1800,101 @@ async function rcLoad(){
 }
 async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
+
+// ============ END-OF-DAY CASH (admin) ============
+var fnCashDate=new Date();
+async function fnCashRender(){
+  var b=document.getElementById('fnBody');b.innerHTML='<div class="loader">…</div>';
+  var d=mxIso(fnCashDate),r=await db.rpc('day_cash_summary',{p_clinic_id:cid,p_date:d});
+  if(r.error){b.innerHTML='<div class="imp-step">'+mxE(r.error.message)+'</div>';return;}
+  var s=r.data||{},inc=s.income||{},ex=s.expense||{},cl=s.closing,today=d===mxIso(new Date());
+  var rowsM=[['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')],['other',mxTr('Other','Diğer')]].filter(function(m){return Number(inc[m[0]]||0)||Number(ex[m[0]]||0);});
+  var h='<div class="imp-step"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button class="bimp2" onclick="fnCashShift(-1)">‹</button>'+
+    '<input type="date" class="bk-in" value="'+d+'" max="'+mxIso(new Date())+'" onchange="fnCashDate=new Date(this.value+\'T12:00:00\');fnCashRender()">'+
+    '<button class="bimp2" '+(today?'disabled style="opacity:.4"':'')+' onclick="fnCashShift(1)">›</button></div>'+
+    '<table class="fmt" style="max-width:520px">'+
+    '<tr><td>'+mxTr('Opening cash','Açılış kasası')+'<div class="hint" style="margin:0">'+mxTr('Cash counted at the previous closing','Bir önceki kapanışta sayılan nakit')+'</div></td><td style="text-align:right">'+mxMoney(s.opening_cash)+'</td></tr>'+
+    '<tr><td>'+mxTr('Cash in','Nakit giriş')+'</td><td style="text-align:right;color:#3AB06A">+ '+mxMoney(s.cash_in)+'</td></tr>'+
+    '<tr><td>'+mxTr('Cash out','Nakit çıkış')+'</td><td style="text-align:right;color:#C0614A">− '+mxMoney(s.cash_out)+'</td></tr>'+
+    '<tr><td><b>'+mxTr('Expected in drawer','Kasada olması gereken')+'</b></td><td style="text-align:right;color:#B89A6A;font-size:17px"><b>'+mxMoney(s.expected_cash)+'</b></td></tr></table></div>';
+  h+='<div class="imp-step"><h3>'+mxTr('By payment method','Ödeme türüne göre')+'</h3>'+(Number(s.count||0)?'<table class="fmt" style="max-width:520px"><tr><th></th><th style="text-align:right">'+mxTr('Income','Gelir')+'</th><th style="text-align:right">'+mxTr('Expense','Gider')+'</th></tr>'+
+    rowsM.map(function(m){return '<tr><td>'+m[1]+'</td><td style="text-align:right">'+mxMoney(inc[m[0]])+'</td><td style="text-align:right">'+mxMoney(ex[m[0]])+'</td></tr>';}).join('')+
+    '<tr><td><b>'+mxTr('Total','Toplam')+'</b></td><td style="text-align:right"><b>'+mxMoney(inc.total)+'</b></td><td style="text-align:right"><b>'+mxMoney(ex.total)+'</b></td></tr></table>'
+    :'<div class="hint" style="margin:0">'+mxTr('No entries on this day','Bu gün kayıt yok')+'</div>')+'</div>';
+  h+='<div class="imp-step" style="max-width:520px"><h3>'+mxTr('Counted cash','Sayılan nakit')+'</h3>'+
+    '<input class="mi" id="ccCount" style="font-size:18px;font-weight:600" value="'+(cl?mxQty(cl.counted_cash):'')+'" oninput="fnCashDiff('+Number(s.expected_cash||0)+')">'+
+    '<div id="ccDiff" style="margin:6px 0;font-weight:600"></div>'+
+    '<input class="mi" id="ccNote" placeholder="'+mxTr('Note','Not')+'" value="'+mxE(cl&&cl.note||'')+'">'+
+    (cl?'<div style="color:#3AB06A;font-size:13px;margin:6px 0">🔒 '+mxTr('Day closed','Kasa kapatıldı')+'</div>':'')+
+    '<button class="bimp" onclick="fnCashClose()">'+(cl?mxTr('Update closing','Kapanışı güncelle'):mxTr('Close the day','Kasayı kapat'))+'</button> <span id="ccMsg" class="hint"></span></div>';
+  b.innerHTML=h;fnCashDiff(Number(s.expected_cash||0));
+}
+function fnCashShift(n){var d=new Date(fnCashDate);d.setDate(d.getDate()+n);if(d>new Date())return;fnCashDate=d;fnCashRender();}
+function fnCashDiff(expd){var el=document.getElementById('ccDiff'),v=mxNum(document.getElementById('ccCount').value);
+  if(v==null||isNaN(v)||document.getElementById('ccCount').value.trim()===''){el.textContent='';return;}
+  var df=Math.round((v-expd)*100)/100;el.textContent=mxTr('Difference','Fark')+': '+(df>0?'+ ':'')+mxMoney(df);el.style.color=Math.abs(df)<0.005?'#3AB06A':'#C0614A';}
+async function fnCashClose(){
+  var v=mxNum(document.getElementById('ccCount').value);if(v==null||isNaN(v)||v<0){alert(mxTr('Counted cash','Sayılan nakit'));return;}
+  var r=await db.rpc('close_cash_day',{p_date:mxIso(fnCashDate),p_counted:v,p_note:mxV('ccNote')||null});
+  if(r.error){alert(r.error.message);return;}fnCashRender();
+}
+
+// ============ SESSION PACKAGES (patient view) ============
+var pkList=[];
+async function pkLoad(pid){
+  var box=document.getElementById('pPkg');box.innerHTML='<div class="hint" style="margin:0">…</div>';
+  var r=await db.from('patient_package_status').select('*').eq('patient_id',pid).order('created_at',{ascending:false});
+  if(selPid!==pid)return;pkList=r.data||[];pkRender();
+}
+function pkStatus(s){return {completed:mxTr('Completed','Tamamlandı'),expired:mxTr('Expired','Süresi doldu'),cancelled:mxTr('Cancelled','İptal')}[s]||'';}
+function pkRender(){
+  var box=document.getElementById('pPkg');
+  var h='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px;color:#F5F1EB">'+mxTr('Packages','Paketler')+'</b><button class="bimp2" onclick="pkAdd()">+ '+mxTr('Add package','Paket ekle')+'</button></div>';
+  if(!pkList.length)h+='<div style="margin-top:8px;font-size:13px;color:rgba(245,241,235,.4)">'+mxTr('No active packages','Aktif paket yok')+'</div>';
+  pkList.forEach(function(p){
+    var used=Number(p.used_sessions||0),tot=Number(p.total_sessions||1),act=p.status==='active',c={completed:'#3AB06A',expired:'#C0614A',cancelled:'rgba(245,241,235,.4)'}[p.status]||'#B89A6A';
+    h+='<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+      '<a href="#" onclick="pkHistory(\''+p.id+'\');return false" style="color:'+(act?'#F5F1EB':'rgba(245,241,235,.6)')+';font-weight:600;font-size:13px;text-decoration:none">'+mxE(p.name)+'</a>'+
+      (act?'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="pkUse(\''+p.id+'\')">'+mxTr('Use a session','Seans kullan')+'</button>':'<span style="color:'+c+';font-size:11px;font-weight:700">'+pkStatus(p.status)+'</span>')+'</div>'+
+      '<div style="height:6px;background:rgba(255,255,255,.08);border-radius:4px;margin:6px 0;overflow:hidden"><div style="height:100%;width:'+Math.min(100,used/tot*100)+'%;background:'+c+'"></div></div>'+
+      '<div style="font-size:11px;color:rgba(245,241,235,.45)">'+used+'/'+tot+' '+mxTr('used','kullanıldı')+' · '+Math.max(0,tot-used)+' '+mxTr('left','kalan')+(p.expires_at?' · '+mxDate(p.expires_at):'')+'</div></div>';
+  });
+  box.innerHTML=h;
+}
+async function pkUse(id){
+  var p=pkList.find(function(x){return x.id===id;});if(!p||!confirm(p.name+'\n\n'+mxTr('Use 1 session from this package?','Bu paketten 1 seans düşülsün mü?')))return;
+  var r=await db.rpc('use_package_session',{p_package_id:id});
+  if(r.error||!r.data||!r.data.ok){alert(r.data&&r.data.error==='no_sessions_left'?mxTr('No sessions left in this package','Pakette seans kalmadı'):mxTr('Error','Hata'));}
+  pkLoad(selPid);
+}
+function pkAdd(){
+  mxOpen(mxTr('Add package','Paket ekle'),
+    '<input class="mi" id="pkName" placeholder="'+mxTr('Package name (e.g. Mesotherapy 5 sessions)','Paket adı (ör. Mezoterapi 5 seans)')+'">'+
+    '<label class="hint" style="margin:6px 0 2px;display:block">'+mxTr('Number of sessions','Seans sayısı')+'</label><input class="mi" id="pkSes" type="number" min="1" max="50" value="5">'+
+    '<label class="hint" style="margin:6px 0 2px;display:block">'+mxTr('Expiry date (optional)','Son kullanma tarihi (isteğe bağlı)')+'</label><input class="mi" id="pkExp" type="date">'+
+    (fnAdmin?'<label class="hint" style="margin:6px 0 2px;display:block">'+mxTr("Package price (optional) — added to the patient's account",'Paket ücreti (isteğe bağlı) — hastanın hesabına borç olarak eklenir')+'</label><input class="mi" id="pkPrice">'+
+      '<label class="hint" style="margin:6px 0 2px;display:block">'+mxTr('Number of instalments','Taksit sayısı')+'</label><input class="mi" id="pkInst" type="number" min="1" max="12" value="1">':''),
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),fn:async function(){
+      var name=mxV('pkName'),ses=parseInt(mxV('pkSes'))||0;if(!name||ses<1){alert(mxTr('Package name','Paket adı'));return;}
+      var price=fnAdmin?mxNum(mxV('pkPrice')||''):null;
+      var r=await db.rpc('create_patient_package',{p_patient_id:selPid,p_name:name,p_sessions:ses,p_expires_at:mxV('pkExp')||null,
+        p_price:price&&price>0?price:null,p_installments:fnAdmin?(parseInt(mxV('pkInst'))||1):1});
+      if(r.error){alert(r.error.message);return;}mxClose();pkLoad(selPid);}}]);
+}
+async function pkHistory(id){
+  var p=pkList.find(function(x){return x.id===id;});if(!p)return;
+  var r=await db.from('package_sessions').select('id,session_date').eq('package_id',id).is('voided_at',null).order('session_date',{ascending:false});
+  var rows=r.data||[];
+  var h='<div class="hint" style="margin:0 0 8px">'+mxDate(p.purchase_date)+'</div>'+(rows.length?'<table class="fmt">'+rows.map(function(x,i){return '<tr><td>'+(rows.length-i)+'</td><td>'+mxDate(x.session_date)+
+    '</td><td style="text-align:right"><a href="#" style="color:#C0614A" onclick="pkUndo(\''+x.id+'\');return false">'+mxTr('Undo','Geri al')+'</a></td></tr>';}).join('')+'</table>':'<div class="hint">-</div>');
+  mxOpen(p.name,h,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}].concat(p.status!=='cancelled'?[{label:mxTr('Cancel package','Paketi iptal et'),cls:'bcancel',fn:async function(){
+    if(!confirm(mxTr('Cancel this package? Used sessions stay on record.','Paket iptal edilsin mi? Kullanılmış seanslar kayıtlı kalır.')))return;
+    await db.from('patient_packages').update({status:'cancelled'}).eq('id',id);mxClose();pkLoad(selPid);}}]:[]));
+}
+async function pkUndo(sid){
+  if(!confirm(mxTr('Undo this session?','Bu seans kaydı geri alınsın mı?')))return;
+  var r=await db.rpc('undo_package_session',{p_session_id:sid});if(r.error){alert(r.error.message);return;}mxClose();pkLoad(selPid);
+}
 
 // ============ HEALTH FORM (patient_intake_forms) ============
 var IN_Q=[['pregnant','Pregnancy / breastfeeding','Gebelik / emzirme'],['allergy','Allergy','Alerji'],['meds','Regular medication / supplements','Düzenli ilaç / takviye'],
@@ -2126,7 +2224,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

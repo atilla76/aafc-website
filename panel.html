@@ -363,6 +363,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         </div>
       </div>
       <div id="apptBlocks"></div>
+      <div id="apptWl"></div>
       <div id="apptList"><div class="loader">Loading...</div></div>
       <div style="margin-top:24px">
       <div class="imp-step">
@@ -498,6 +499,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <span class="hint" style="margin:0">min notice</span><input class="bk-in" id="bkNotice" type="number" min="0" max="168" style="width:70px"><span class="hint" style="margin:0">h ·</span>
           <span class="hint" style="margin:0">up to</span><input class="bk-in" id="bkAhead" type="number" min="1" max="180" style="width:70px"><span class="hint" style="margin:0">days ahead</span>
         </div>
+      </div>
+      <div class="imp-step">
+        <h3>Waiting list</h3>
+        <div id="bkWl"></div>
       </div>
       <div class="imp-step">
         <h3>Recent online bookings</h3>
@@ -1108,7 +1113,7 @@ window._appts=[];
 async function loadAppts(){
   apptDate=parseDate(document.getElementById('apptDate').value);
   if(document.getElementById('blDate'))document.getElementById('blDate').value=fmtDate(apptDate);
-  apptBlocks();blLoad();cfLoad();
+  apptBlocks();blLoad();cfLoad();wlLoad('apptWl',fmtDate(apptDate));
   var el=document.getElementById('apptList');
   el.innerHTML='<div class="loader">Loading...</div>';
   try{
@@ -1802,6 +1807,46 @@ async function rcLoad(){
 async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 
+// ============ BOOKING WAITING LIST ============
+var WL_MSG={tr:['Merhaba [name], [date] için beklediğiniz randevuda yer açıldı. Bize yazabilir ya da buradan randevu alabilirsiniz: [link]','Merhaba [name], randevu için yer açıldı. Bize yazabilir ya da buradan randevu alabilirsiniz: [link]'],
+ en:['Hello [name], a slot has opened up on [date]. Reply to us or book here: [link]','Hello [name], a slot has opened up. Reply to us or book here: [link]'],
+ de:['Hallo [name], am [date] ist ein Termin frei geworden. Antworten Sie uns oder buchen Sie hier: [link]','Hallo [name], ein Termin ist frei geworden. Antworten Sie uns oder buchen Sie hier: [link]'],
+ es:['Hola [name], ha quedado un hueco el [date]. Respóndanos o reserve aquí: [link]','Hola [name], ha quedado un hueco libre. Respóndanos o reserve aquí: [link]'],
+ fr:['Bonjour [name], une place s’est libérée le [date]. Répondez-nous ou réservez ici : [link]','Bonjour [name], une place s’est libérée. Répondez-nous ou réservez ici : [link]'],
+ it:['Salve [name], si è liberato un posto il [date]. Ci risponda o prenoti qui: [link]','Salve [name], si è liberato un posto. Ci risponda o prenoti qui: [link]'],
+ pt:['Olá [name], abriu uma vaga em [date]. Responda-nos ou marque aqui: [link]','Olá [name], abriu uma vaga. Responda-nos ou marque aqui: [link]'],
+ ru:['Здравствуйте, [name]! На [date] освободилось время. Ответьте нам или запишитесь здесь: [link]','Здравствуйте, [name]! Освободилось время для записи. Ответьте нам или запишитесь здесь: [link]'],
+ ko:['[name]님, [date]에 자리가 났습니다. 답장 주시거나 여기에서 예약하세요: [link]','[name]님, 예약 자리가 났습니다. 답장 주시거나 여기에서 예약하세요: [link]'],
+ zh:['[name]您好，[date] 有空位了。请回复我们或在此预约：[link]','[name]您好，现在有空位了。请回复我们或在此预约：[link]']};
+var wlRows={},wlSlug=null;
+async function wlLoad(el,date){
+  var box=document.getElementById(el);if(!box)return;
+  var r=await db.rpc('get_waitlist',{p_clinic_id:cid,p_date:date});var rows=r.data||[];wlRows[el]=rows;
+  if(wlSlug===null){var b=await db.from('clinic_booking_settings').select('slug').eq('clinic_id',cid).maybeSingle();wlSlug=(b.data&&b.data.slug)||'';}
+  if(el==='apptWl'){
+    box.innerHTML=rows.length?'<div class="imp-step" style="border-color:rgba(184,154,106,.4);margin-bottom:10px"><b>⏳ '+mxTr('Waiting list','Bekleme listesi')+': '+rows.length+' '+mxTr('waiting','kişi bekliyor')+'</b>'+wlTable(el,rows)+'</div>':'';
+  }else box.innerHTML=rows.length?wlTable(el,rows):'<div class="hint" style="margin:0">'+mxTr('Nobody is waiting','Bekleyen kimse yok')+'</div>';
+}
+function wlTable(el,rows){
+  return '<table class="fmt" style="margin-top:6px">'+rows.map(function(w,i){
+    return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([w.phone,w.service_name].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
+      '<td>'+(w.wanted_date?mxDate(w.wanted_date):mxTr('Any day','Herhangi bir gün'))+'</td>'+
+      '<td>'+(w.status==='notified'?'<span style="color:#3AB06A">✓ '+mxTr('Notified','Haber verildi')+'</span>':'')+'</td>'+
+      '<td style="text-align:right;white-space:nowrap"><button class="btn bwa" onclick="wlNotify(\''+el+'\','+i+')">📱 '+mxTr('Slot opened, notify','Yer açıldı, haber ver')+'</button> '+
+      '<a href="#" onclick="wlSet(\''+el+'\','+i+',\'booked\');return false" style="color:#D4B896;font-size:12px">'+mxTr('Booked','Randevu verildi')+'</a> · '+
+      '<a href="#" onclick="wlSet(\''+el+'\','+i+',\'cancelled\');return false" style="color:rgba(245,241,235,.5);font-size:12px">'+mxTr('Remove','Listeden çıkar')+'</a></td></tr>';}).join('')+'</table>';
+}
+async function wlNotify(el,i){
+  var w=wlRows[el][i],lg=(w.lang||'tr').slice(0,2),T=WL_MSG[lg]||WL_MSG.tr;
+  var link=wlSlug?'https://aafclinic.com/randevu?k='+encodeURIComponent(wlSlug)+'&lang='+lg:'';
+  var msg=(w.wanted_date?T[0]:T[1]).replace('[name]',String(w.name||'').trim().split(' ')[0]).replace('[date]',mxDate(w.wanted_date)).replace('[link]',link);
+  var ph=String(w.phone||'').replace(/\D/g,'');if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
+  await db.from('booking_waitlist').update({status:'notified',notified_at:new Date().toISOString()}).eq('id',w.id);
+  wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
+}
+async function wlSet(el,i,st){var w=wlRows[el][i];await db.from('booking_waitlist').update({status:st}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);}
+
 // ============ PHOTO SHARE (aafclinic.com/foto?t=) ============
 var psSel={},psDays=30,psShares=[];
 async function psOpen(){
@@ -2059,7 +2104,7 @@ async function bkLoad(){
   document.getElementById('bkSlot').value=bkData.slot_minutes;
   document.getElementById('bkNotice').value=bkData.min_notice_hours;
   document.getElementById('bkAhead').value=bkData.max_days_ahead;
-  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();
+  bkLink();bkRenderSvcs();bkRenderHours();bkRecent();wlLoad('bkWl',null);
 }
 function bkRenderSvcs(){
   document.getElementById('bkSvcs').innerHTML=(bkData.services||[]).map(function(s,i){
@@ -2282,7 +2327,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

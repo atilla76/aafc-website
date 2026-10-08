@@ -1222,7 +1222,7 @@ function sendWA(i){
   var phone=a.patient_phone||a.patient_phone_temp||'';
   if(!phone){alert('No phone');return;}
   var msg=buildReminder(a);
-  window.open('https://wa.me/'+normPhone(phone)+'?text='+encodeURIComponent(msg),'_blank');
+  window.open(mxWa(phone,msg),'_blank');
 }
 
 function sendSMS(i){
@@ -1552,7 +1552,8 @@ function mxDate(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');
 function mxIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function mxMoney(v){var n=Number(v||0),a=Math.abs(n);var s=a.toLocaleString(LANG==='tr'?'tr-TR':'en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});return (n<0?'−':'')+(curSym()||'')+s;}
 function mxQty(v){var n=Number(v||0);return n%1?n.toFixed(2).replace(/0+$/,''):String(n);}
-function mxWa(phone,msg){var d=String(phone||'').replace(/\D/g,'');if(d.length===11&&d[0]==='0')d='9'+d;if(d.length===10&&d[0]==='5')d='90'+d;
+function mxWaDigits(phone){var d=String(phone||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.length===11&&d[0]==='0')d='9'+d;if(d.length===10&&d[0]==='5')d='90'+d;return d;}
+function mxWa(phone,msg){var d=mxWaDigits(phone);
   return 'https://wa.me/'+d+'?text='+encodeURIComponent(msg);}
 function mxFill(tpl,name,proc,extra){
   var m=tpl;['[ad]','[name]','[nombre]','[nom]','[nome]','[имя]','[이름]','[姓名]'].forEach(function(p){m=m.split(p).join(name||'');});
@@ -1898,7 +1899,7 @@ async function wlNotify(el,i){
   var w=wlRows[el][i],lg=(w.lang||'tr').slice(0,2),T=WL_MSG[lg]||WL_MSG.tr;
   var link=wlSlug?'https://aafclinic.com/randevu?k='+encodeURIComponent(wlSlug)+'&lang='+lg:'';
   var msg=(w.wanted_date?T[0]:T[1]).replace('[name]',String(w.name||'').trim().split(' ')[0]).replace('[date]',mxDate(w.wanted_date)).replace('[link]',link);
-  var ph=String(w.phone||'').replace(/\D/g,'');if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+  var ph=mxWaDigits(w.phone);
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
   await db.from('booking_waitlist').update({status:'notified',notified_at:new Date().toISOString()}).eq('id',w.id);
   wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
@@ -1923,7 +1924,7 @@ async function ptSend(wa){
   var r=await db.rpc('create_patient_portal',{p_patient_id:selPid});
   if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
   var url='https://aafclinic.com/hasta?t='+encodeURIComponent(r.data.token);
-  if(wa){if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+  if(wa){ph=mxWaDigits(ph);
     var msg=mxTr('Hello '+(p.name||'')+', here is your '+(clinic.name||'')+' patient portal: '+url+'\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
       'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' hasta portalınız: '+url+'\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.');
     var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await ptLoad(selPid);mxWaOpen(wu,document.getElementById('ptMsg'));return;}
@@ -1977,7 +1978,7 @@ async function psSend(wa){
   if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
   var url='https://aafclinic.com/foto?t='+encodeURIComponent(r.data.token);
   if(wa){
-    if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+    ph=mxWaDigits(ph);
     var msg=mxTr('Hello '+(p.name||'')+', '+(clinic.name||'')+' is sharing your photos with you: '+url+' (The link is valid until '+mxDate(r.data.expires_at)+'.)',
       'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak fotoğraflarınızı paylaşıyoruz: '+url+' (Link '+mxDate(r.data.expires_at)+' tarihine kadar geçerlidir.)');
     var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await psOpen();mxWaOpen(wu,document.getElementById('psMsg'));return;
@@ -2127,7 +2128,7 @@ async function inCreate(){
 async function inSend(){
   var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,'');
   if(!ph){var m=document.getElementById('inMsg');m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
-  if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+  ph=mxWaDigits(ph);
   var url=await inCreate();if(!url){return;}
   var msg=mxTr('Hello '+(p.name||'')+', before your treatment '+(clinic.name||'')+' kindly asks you to fill in a short health form (2 min): '+url,
     'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): '+url);

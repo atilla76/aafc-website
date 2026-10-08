@@ -1040,6 +1040,7 @@ async function savePt(){
   await loadPts();
   await loadStats();
   if(editPid&&selPid===editPid) await selP(selPid);
+  if(apAfterSave){apAfterSave=false;loadAppts();}
 }
 
 async function delPt(){
@@ -1122,8 +1123,10 @@ async function loadAppts(){
       var status=a.status||'planned';
       var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
       h+='<div class="list-card"><div class="row1"><div>';
-      h+='<div class="name">'+(name||'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
-      h+='<div class="meta">'+(phone?'📞 '+phone+' · ':'')+time+(a.notes?' · '+a.notes:'')+'</div>';
+      h+='<div class="name">'+(name?mxE(name):'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
+      h+='<div class="meta">'+(phone?'📞 '+mxE(phone)+' · ':'')+mxE(time)+(a.notes?' · '+mxE(a.notes):'')+'</div>';
+      h+='<div class="ap-extra" id="apx_'+i+'" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
+        (a.patient_id?'':'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="apCreatePt('+i+')">+ '+mxTr('Create patient record','Hasta kaydı aç')+'</button>')+'</div>';
       h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
       if(phone&&status==='planned'){
         h+='<div class="actions">';
@@ -1134,7 +1137,40 @@ async function loadAppts(){
       h+='</div>';
     }
     el.innerHTML=h;
+    apIntake(items);
   }catch(e){el.innerHTML='<div class="loader">Could not load appointments.</div>';}
+}
+
+// health-form chip on appointment cards + patient record from an online/quick appointment
+var apForms={};
+async function apIntake(items){
+  var ids=items.map(function(a){return a.appointment_id;}).filter(Boolean),pids=items.map(function(a){return a.patient_id;}).filter(Boolean);
+  if(!ids.length)return;
+  var cols='id,appointment_id,patient_id,status,answers,flags,completed_at,reviewed_at,created_at';
+  var r1=await db.from('patient_intake_forms').select(cols).in('appointment_id',ids).is('deleted_at',null);
+  var r2=pids.length?await db.from('patient_intake_forms').select(cols).in('patient_id',pids).is('deleted_at',null).order('created_at',{ascending:false}):{data:[]};
+  var A=r1.data||[],P=r2.data||[];
+  items.forEach(function(a,i){
+    var f=A.find(function(x){return x.appointment_id===a.appointment_id;});
+    if(!f&&a.patient_id){var mine=P.filter(function(x){return x.patient_id===a.patient_id;});f=mine.find(function(x){return x.status==='completed';})||mine[0];}
+    var box=document.getElementById('apx_'+i);if(!f||!box)return;
+    apForms[f.id]=f;
+    var done=f.status==='completed',fl=f.flags||[];
+    var c=!done?'rgba(245,241,235,.45)':fl.length?'#E08A73':'#3AB06A';
+    var t=!done?mxTr('Form pending','Form bekleniyor'):fl.length?'⚠ '+fl.map(inLabel).join(', '):mxTr('Health form ✓','Ön bilgi formu ✓');
+    box.insertAdjacentHTML('afterbegin','<span '+(done?'onclick="apViewForm(\''+f.id+'\')" ':'')+'style="cursor:'+(done?'pointer':'default')+';border:1px solid '+c+';color:'+c+';border-radius:8px;padding:3px 9px;font-size:12px">📋 '+mxE(t)+'</span>');
+  });
+}
+function apViewForm(id){inForms=[apForms[id]];inView(id);}
+var apAfterSave=false;
+function apCreatePt(i){
+  var a=(window._appts||[])[i];if(!a)return;
+  var parts=String(a.patient_name_temp||'').trim().split(/\s+/);
+  openAdd();
+  document.getElementById('mName').value=parts.length>1?parts.slice(0,-1).join(' '):(parts[0]||'');
+  document.getElementById('mSur').value=parts.length>1?parts[parts.length-1]:'';
+  document.getElementById('mPhone').value=a.patient_phone_temp||'';
+  apAfterSave=true;
 }
 
 function normPhone(p){return (p||'').replace(/[^0-9+]/g,'');}
@@ -1152,9 +1188,9 @@ function buildReminder(a){
   m=m.replace(/\[nombre\]/g,name).replace(/\[fecha\]/g,date).replace(/\[hora\]/g,time);
   m=m.replace(/\[nom\]/g,name).replace(/\[heure\]/g,time);
   m=m.replace(/\[nome\]/g,name).replace(/\[data\]/g,date).replace(/\[ora\]/g,time);
-  m=m.replace(/\[Ğ¸Ğ¼Ñ\]/g,name).replace(/\[Ğ´Ğ°Ñ‚Ğ°\]/g,date).replace(/\[Ğ²Ñ€ĞµĞ¼Ñ\]/g,time);
-  m=m.replace(/\[ì´ë¦„\]/g,name).replace(/\[ë‚ ì§œ\]/g,date).replace(/\[ì‹œê°„\]/g,time);
-  m=m.replace(/\[å§“å\]/g,name).replace(/\[æ—¥æœŸ\]/g,date).replace(/\[æ—¶é—´\]/g,time);
+  m=m.replace(/\[имя\]/g,name).replace(/\[дата\]/g,date).replace(/\[время\]/g,time);
+  m=m.replace(/\[이름\]/g,name).replace(/\[날짜\]/g,date).replace(/\[시간\]/g,time);
+  m=m.replace(/\[姓名\]/g,name).replace(/\[日期\]/g,date).replace(/\[时间\]/g,time);
   return m;
 }
 

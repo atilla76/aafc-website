@@ -284,6 +284,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <button class="btn bhtml" onclick="dlPtHTML()">HTML</button>
               <button class="btn bedit" onclick="openEdit()">Edit</button>
               <button class="btn bedit" id="btnAcct" onclick="if(selPt)fnAccount(selPt.id)" style="display:none">Patient account</button>
+              <button class="btn bedit" onclick="if(selPt)psOpen()">Share photos</button>
               <button class="btn bdel" onclick="delPt()">Delete</button>
             </div>
           </div>
@@ -1801,6 +1802,63 @@ async function rcLoad(){
 async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 
+// ============ PHOTO SHARE (aafclinic.com/foto?t=) ============
+var psSel={},psDays=30,psShares=[];
+async function psOpen(){
+  mxOpen(mxTr('Share photos','Fotoğraf paylaş'),'<div class="loader">…</div>',[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
+  psSel={};
+  var vr=await db.from('visits').select('id,visit_date,created_at').eq('patient_id',selPid).is('deleted_at',null).order('visit_date',{ascending:false});
+  var vs=vr.data||[],ids=vs.map(function(v){return v.id;});
+  var pr=ids.length?await db.from('photos').select('id,visit_id,file_path,angle_index').in('visit_id',ids).is('deleted_at',null).order('angle_index'):{data:[]};
+  var ph=pr.data||[],urls=await getSignedBatch(ph.map(function(p){return p.file_path;}));
+  var sr=await db.from('photo_shares').select('id,photo_ids,expires_at,revoked_at,view_count,created_at').eq('patient_id',selPid).order('created_at',{ascending:false}).limit(20);
+  psShares=sr.data||[];
+  var h='';
+  if(!ph.length)h='<div class="hint">'+mxTr('This patient has no photos','Bu hastanın fotoğrafı yok')+'</div>';
+  else{
+    h+='<div class="hint" style="margin:0 0 8px">'+mxTr('Choose the photos to send to the patient','Hastaya gönderilecek fotoğrafları seçin')+'</div><div style="max-height:46vh;overflow:auto">';
+    vs.forEach(function(v){var items=ph.filter(function(p){return p.visit_id===v.id&&urls[p.file_path];});if(!items.length)return;
+      h+='<div style="display:flex;justify-content:space-between;margin:8px 0 4px"><b style="color:#B89A6A;font-size:12px">'+mxDate(v.visit_date||v.created_at)+'</b><a href="#" style="font-size:12px;color:rgba(245,241,235,.6)" onclick="psAll(['+items.map(function(p){return "\'"+p.id+"\'";}).join(',')+']);return false">'+mxTr('All','Tümü')+'</a></div>'+
+        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'+items.map(function(p){return '<img src="'+mxE(urls[p.file_path])+'" data-ps="'+p.id+'" onclick="psToggle(\''+p.id+'\')" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;cursor:pointer;border:3px solid transparent">';}).join('')+'</div>';});
+    h+='</div><div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"><span class="hint" style="margin:0">'+mxTr('Link valid for','Link geçerliliği')+'</span>'+
+      '<select class="bk-in" id="psDays">'+[7,30,90].map(function(d){return '<option value="'+d+'"'+(d===30?' selected':'')+'>'+d+' '+mxTr('days','gün')+'</option>';}).join('')+'</select></div>'+
+      '<input class="mi" id="psNote" placeholder="'+mxTr('Note to the patient (optional)','Hastaya not (isteğe bağlı)')+'">'+
+      '<div style="display:flex;gap:8px;margin-top:6px"><button class="bimp" onclick="psSend(true)">📱 '+mxTr('Send via WhatsApp','WhatsApp ile gönder')+' (<span id="psCnt">0</span>)</button><button class="bimp2" onclick="psSend(false)">'+mxTr('Copy link','Linki kopyala')+'</button><span id="psMsg" class="hint" style="margin:0;align-self:center"></span></div>';
+  }
+  if(psShares.length){
+    h+='<div class="hint" style="margin:14px 0 4px">'+mxTr('Shared links','Paylaşılan linkler')+'</div><table class="fmt">'+psShares.map(function(x){
+      var rev=!!x.revoked_at,exp=!rev&&new Date(x.expires_at)<new Date(),act=!rev&&!exp;
+      return '<tr><td>'+mxDate(x.created_at)+' · '+(x.photo_ids||[]).length+' '+mxTr('photos','fotoğraf')+'</td><td>'+(rev?mxTr('Revoked','İptal edildi'):exp?mxTr('Expired','Süresi doldu'):'→ '+mxDate(x.expires_at))+'</td><td>'+(x.view_count||0)+' '+mxTr('views','görüntülenme')+'</td><td>'+
+        (act?'<a href="#" style="color:#C0614A" onclick="psRevoke(\''+x.id+'\');return false">'+mxTr('Revoke link','Linki iptal et')+'</a>':'')+'</td></tr>';}).join('')+'</table>';
+  }
+  document.getElementById('mxBody').innerHTML=h;
+}
+function psPaint(){document.querySelectorAll('[data-ps]').forEach(function(el){el.style.borderColor=psSel[el.dataset.ps]?'#B89A6A':'transparent';el.style.opacity=psSel[el.dataset.ps]?'1':'.75';});
+  var c=document.getElementById('psCnt');if(c)c.textContent=Object.keys(psSel).length;}
+function psToggle(id){if(psSel[id])delete psSel[id];else psSel[id]=1;psPaint();}
+function psAll(ids){var all=ids.every(function(i){return psSel[i];});ids.forEach(function(i){if(all)delete psSel[i];else psSel[i]=1;});psPaint();}
+async function psSend(wa){
+  var ids=Object.keys(psSel),m=document.getElementById('psMsg');
+  if(!ids.length){m.textContent=mxTr('Choose the photos to send to the patient','Hastaya gönderilecek fotoğrafları seçin');m.style.color='#C0614A';return;}
+  var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,'');
+  if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
+  var w=wa?window.open('about:blank','_blank'):null;
+  var r=await db.rpc('create_photo_share',{p_patient_id:selPid,p_photo_ids:ids,p_days:parseInt(mxV('psDays'))||30,p_note:mxV('psNote')||null});
+  if(r.error||!r.data){if(w)w.close();m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
+  var url='https://aafclinic.com/foto?t='+encodeURIComponent(r.data.token);
+  if(wa){
+    if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+    var msg=mxTr('Hello '+(p.name||'')+', '+(clinic.name||'')+' is sharing your photos with you: '+url+' (The link is valid until '+mxDate(r.data.expires_at)+'.)',
+      'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak fotoğraflarınızı paylaşıyoruz: '+url+' (Link '+mxDate(r.data.expires_at)+' tarihine kadar geçerlidir.)');
+    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);if(w)w.location=wu;else window.open(wu,'_blank');
+  }else{await navigator.clipboard.writeText(url);}
+  psOpen();
+}
+async function psRevoke(id){
+  if(!confirm(mxTr('Revoke this link? The patient will no longer see the photos.','Link iptal edilsin mi? Hasta artık fotoğrafları göremez.')))return;
+  await db.from('photo_shares').update({revoked_at:new Date().toISOString()}).eq('id',id);psOpen();
+}
+
 // ============ END-OF-DAY CASH (admin) ============
 var fnCashDate=new Date();
 async function fnCashRender(){
@@ -2224,7 +2282,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

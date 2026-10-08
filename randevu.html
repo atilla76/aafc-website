@@ -167,6 +167,18 @@ const FORM_CTA = {
   ko: ['건강 문진표를 작성해 주세요', '방문 전 2분 문진표를 작성하시면 시술이 더 빠르고 안전해집니다.', '문진표 작성'],
   zh: ['请填写健康问卷', '就诊前花 2 分钟填写问卷，可让治疗更快速、更安全。', '填写问卷'],
 };
+const WL = {
+  tr: { cta: 'Uygun saat yok mu? Bekleme listesine yazılın', title: 'Bekleme listesi', sub: (d) => `${d} için yer açılırsa size haber verelim.`, any: 'Başka bir gün de olur', note: 'Tercihiniz (ör. öğleden sonra)', join: 'Listeye yazıl', done: 'Bekleme listesine eklendiniz. Yer açılınca size haber vereceğiz.' },
+  en: { cta: 'No suitable time? Join the waiting list', title: 'Waiting list', sub: (d) => `We will let you know if a slot opens up on ${d}.`, any: 'Any other day is fine too', note: 'Preference (e.g. afternoon)', join: 'Join the list', done: 'You are on the waiting list. We will contact you when a slot opens up.' },
+  de: { cta: 'Kein passender Termin? Auf die Warteliste', title: 'Warteliste', sub: (d) => `Wir melden uns, wenn am ${d} ein Termin frei wird.`, any: 'Ein anderer Tag passt auch', note: 'Wunsch (z. B. nachmittags)', join: 'Eintragen', done: 'Sie stehen auf der Warteliste. Wir melden uns, sobald ein Termin frei wird.' },
+  es: { cta: '¿No hay hora? Apúntese a la lista de espera', title: 'Lista de espera', sub: (d) => `Le avisaremos si queda un hueco el ${d}.`, any: 'Otro día también me vale', note: 'Preferencia (p. ej. por la tarde)', join: 'Apuntarme', done: 'Está en la lista de espera. Le avisaremos cuando haya un hueco.' },
+  fr: { cta: 'Pas de créneau ? Inscrivez-vous sur liste d’attente', title: 'Liste d’attente', sub: (d) => `Nous vous préviendrons si une place se libère le ${d}.`, any: 'Un autre jour me convient aussi', note: 'Préférence (ex. après-midi)', join: 'M’inscrire', done: 'Vous êtes sur la liste d’attente. Nous vous contacterons dès qu’une place se libère.' },
+  it: { cta: 'Nessun orario adatto? Iscriviti alla lista d’attesa', title: 'Lista d’attesa', sub: (d) => `Ti avviseremo se si libera un posto il ${d}.`, any: 'Va bene anche un altro giorno', note: 'Preferenza (es. pomeriggio)', join: 'Iscrivimi', done: 'Sei in lista d’attesa. Ti contatteremo quando si libera un posto.' },
+  pt: { cta: 'Sem horário? Entre na lista de espera', title: 'Lista de espera', sub: (d) => `Avisamos se abrir uma vaga em ${d}.`, any: 'Outro dia também serve', note: 'Preferência (ex. à tarde)', join: 'Entrar na lista', done: 'Está na lista de espera. Contactamos assim que abrir uma vaga.' },
+  ru: { cta: 'Нет удобного времени? Запишитесь в лист ожидания', title: 'Лист ожидания', sub: (d) => `Сообщим, если на ${d} освободится время.`, any: 'Подойдёт и другой день', note: 'Пожелание (напр. после обеда)', join: 'Записаться', done: 'Вы в листе ожидания. Мы свяжемся с вами, когда освободится время.' },
+  ko: { cta: '원하는 시간이 없나요? 대기 명단에 등록하세요', title: '대기 명단', sub: (d) => `${d}에 자리가 나면 알려 드릴게요.`, any: '다른 날도 괜찮아요', note: '희망 사항 (예: 오후)', join: '등록하기', done: '대기 명단에 등록되었습니다. 자리가 나면 연락드리겠습니다.' },
+  zh: { cta: '没有合适的时间？加入候补名单', title: '候补名单', sub: (d) => `如果 ${d} 有空位，我们会通知您。`, any: '其他日期也可以', note: '偏好（如：下午）', join: '加入名单', done: '您已加入候补名单，有空位时我们会联系您。' },
+};
 const LANGS = { tr: TR, en: EN, de: DE, es: ES, fr: FR, it: IT, pt: PT, ru: RU, ko: KO, zh: ZH };
 const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
 const LC = (() => {
@@ -176,11 +188,12 @@ const LC = (() => {
   return 'tr';
 })();
 const L = LANGS[LC];
+const W = WL[LC] || WL.en;
 const locale = LOCALES[LC];
 document.documentElement.lang = LC;
 document.title = L.title;
 
-const st = { info: null, service: null, days: [], date: null, times: [], time: null, busy: false, err: '', result: null };
+const st = { info: null, service: null, days: [], date: null, times: [], time: null, busy: false, err: '', result: null, wl: false, wlDone: false };
 const app = document.getElementById('app');
 if (document.documentElement.classList.contains('embed') && window.parent !== window) {
   const post = () => window.parent.postMessage({ aafcBooking: slug, h: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
@@ -255,6 +268,24 @@ async function doBook(ev) {
   st.busy = false; render();
 }
 
+async function doWait(ev) {
+  ev.preventDefault();
+  if (st.busy) return;
+  const f = ev.target;
+  if (f.website.value) return;
+  st.busy = true; st.err = ''; render();
+  try {
+    const any = document.getElementById('wa')?.checked;
+    const r = await rpc('booking_waitlist_join', {
+      p_slug: slug, p_service: st.service?.name || null, p_date: any ? null : (st.date || null),
+      p_name: f.wn.value, p_phone: f.wp.value, p_note: f.wt.value || null, p_lang: LC,
+    });
+    if (r && r.ok) { st.wl = false; st.wlDone = true; }
+    else st.err = L.errors[r?.error] || L.errors.generic;
+  } catch (e) { st.err = L.errors.generic; }
+  st.busy = false; render();
+}
+
 function icsHref() {
   const r = st.result, i = st.info;
   const start = r.date.replaceAll('-', '') + 'T' + r.time.replace(':', '') + '00';
@@ -322,7 +353,24 @@ function render(keepForm) {
       else if (!st.times.length) h += `<div class="muted">${L.noTimes}</div>`;
       else h += `<div class="times">${st.times.map((t) => `<button class="time ${t === st.time ? 'sel' : ''}" onclick="pickTime('${t}')">${t}</button>`).join('')}</div>`;
     }
+    if (!st.wl && !st.wlDone && st.days !== null && st.times !== null)
+      h += `<div class="muted" style="padding-bottom:0"><a href="#" style="color:var(--goldlt)" onclick="st.wl=true;st.time=null;render();return false">${W.cta}</a></div>`;
     h += `</div>`;
+    if (st.wlDone) h += `<div class="card"><div class="muted" style="color:var(--green)">✓ ${W.done}</div></div>`;
+    else if (st.wl) {
+      h += `<div class="card"><div class="step"><span>${W.title}</span><span class="chg" onclick="st.wl=false;render()">✕</span></div>
+        ${st.date ? `<div class="sub" style="margin-top:0">${esc(W.sub(longDate(st.date)))}</div>` : ''}
+        <form onsubmit="doWait(event)" autocomplete="on">
+          <input class="hp" name="website" tabindex="-1" autocomplete="off">
+          <label for="wn">${L.name}</label><input id="wn" name="wn" autocomplete="name" required minlength="3" maxlength="80">
+          <label for="wp">${L.phone}</label><input id="wp" name="wp" type="tel" inputmode="tel" autocomplete="tel" required placeholder="${LC === 'tr' ? '05xx xxx xx xx' : '+'}">
+          <label for="wt">${W.note}</label><input id="wt" name="wt" maxlength="300">
+          ${st.date ? `<label style="display:flex;gap:8px;align-items:center;color:var(--cream);font-size:14px;margin-top:14px"><input type="checkbox" id="wa" style="width:20px;height:20px;margin:0"> ${W.any}</label>` : ''}
+          ${st.err ? `<div class="err">${esc(st.err)}</div>` : ''}
+          <button class="btn" ${st.busy ? 'disabled' : ''}>${st.busy ? L.loading : W.join}</button>
+          <div class="muted" style="padding-bottom:0">${L.kvkk}</div>
+        </form></div>`;
+    }
 
     // 3) details
     if (st.time) {
@@ -343,9 +391,11 @@ function render(keepForm) {
   }
   // keep typed values across re-render
   const keep = {};
-  if (document.getElementById('nm')) for (const k of ['nm', 'ph', 'nt']) keep[k] = document.getElementById(k).value;
+  for (const k of ['nm', 'ph', 'nt', 'wn', 'wp', 'wt']) if (document.getElementById(k)) keep[k] = document.getElementById(k).value;
+  const wa = document.getElementById('wa')?.checked;
   app.innerHTML = h + foot();
   for (const k in keep) { const el = document.getElementById(k); if (el) el.value = keep[k]; }
+  if (wa && document.getElementById('wa')) document.getElementById('wa').checked = true;
 }
 
 function foot() {

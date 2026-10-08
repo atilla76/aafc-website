@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fotoğraflarınız</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12101E">
+<style>
+:root{--ink:#12101E;--ink2:#1C1929;--gold:#B89A6A;--goldlt:#D4B896;--cream:#F5F1EB;--mid:rgba(245,241,235,.62);--dim:rgba(245,241,235,.38);--line:rgba(255,255,255,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:600}
+h1{font-size:24px;font-weight:600;margin-top:10px}
+.sub{color:var(--mid);font-size:14px;margin-top:6px;line-height:1.5}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:16px}
+.step{font-size:11px;letter-spacing:1.5px;color:var(--gold);font-weight:600;text-transform:uppercase;margin-bottom:10px}
+.note{white-space:pre-line;font-size:14px;line-height:1.5;color:var(--cream)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,1fr)}}
+.grid button{border:0;padding:0;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:3/4;cursor:pointer}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.cmp{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:72vh;margin:0 auto;touch-action:none;user-select:none}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.cmp .top{clip-path:inset(0 50% 0 0)}
+.cmp .bar{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--cream);transform:translateX(-1px)}
+.cmp .knob{position:absolute;top:50%;left:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:var(--cream);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700}
+.cmp .lb{position:absolute;bottom:10px;padding:3px 8px;border-radius:6px;background:rgba(0,0,0,.55);font-size:12px}
+.cmp .lb.l{left:10px}.cmp .lb.r{right:10px}
+.lbx{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;flex-direction:column;z-index:10}
+.lbx.on{display:flex}
+.lbx .img{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.lbx img{max-width:100%;max-height:100%;object-fit:contain}
+.lbx .bar2{display:flex;justify-content:space-between;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));gap:10px}
+.lbx button,.lbx a{background:rgba(255,255,255,.1);color:var(--cream);border:0;border-radius:10px;padding:10px 14px;font-size:15px;cursor:pointer;text-decoration:none;font-family:inherit}
+.lbx .cnt{color:var(--mid);font-size:13px}
+.muted{color:var(--dim);font-size:13px;text-align:center;padding:14px 0;line-height:1.5}
+.foot{margin-top:28px;text-align:center;color:var(--dim);font-size:11px;line-height:1.7}
+.foot a{color:var(--dim)}
+.spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<div class="lbx" id="lbx">
+  <div class="img" id="lbImgBox"><img id="lbImg" alt=""></div>
+  <div class="bar2">
+    <button onclick="lbGo(-1)">‹</button>
+    <span class="cnt" id="lbCnt"></span>
+    <a id="lbDl" href="#" onclick="dl(event)">⬇</a>
+    <button onclick="lbGo(1)">›</button>
+    <button onclick="lbClose()">✕</button>
+  </div>
+</div>
+<script>
+const FN = 'https://hugxacklprzujswtaike.supabase.co/functions/v1/photo-share';
+const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+
+const LANGS = {
+  tr: { title: 'Fotoğraflarınız', hi: (n) => n ? `Merhaba ${n},` : 'Merhaba,', intro: 'Kliniğimizde çekilen fotoğraflarınız aşağıdadır.',
+    compare: 'Önce / Sonra', before: 'Önce', after: 'Sonra', all: 'Tüm fotoğraflar', note: 'Kliniğinizin notu', download: 'İndir',
+    valid: (d) => `Bu link ${d} tarihine kadar geçerlidir.`, private: 'Bu fotoğraflar yalnızca size özeldir; lütfen linki başkalarıyla paylaşmayın.',
+    expired: 'Bu linkin süresi dolmuş. Lütfen kliniğinizle iletişime geçin.', revoked: 'Bu link artık geçerli değil.', notFound: 'Link bulunamadı.',
+    error: 'Bir sorun oluştu, lütfen tekrar deneyin.', call: 'Ara' },
+  en: { title: 'Your photos', hi: (n) => n ? `Hello ${n},` : 'Hello,', intro: 'Here are the photos taken at our clinic.',
+    compare: 'Before / After', before: 'Before', after: 'After', all: 'All photos', note: 'Note from your clinic', download: 'Download',
+    valid: (d) => `This link is valid until ${d}.`, private: 'These photos are private to you; please do not share this link.',
+    expired: 'This link has expired. Please contact your clinic.', revoked: 'This link is no longer valid.', notFound: 'Link not found.',
+    error: 'Something went wrong, please try again.', call: 'Call' },
+  de: { title: 'Ihre Fotos', hi: (n) => n ? `Hallo ${n},` : 'Hallo,', intro: 'Hier sind die in unserer Praxis aufgenommenen Fotos.',
+    compare: 'Vorher / Nachher', before: 'Vorher', after: 'Nachher', all: 'Alle Fotos', note: 'Hinweis Ihrer Praxis', download: 'Herunterladen',
+    valid: (d) => `Dieser Link ist gültig bis ${d}.`, private: 'Diese Fotos sind nur für Sie bestimmt; bitte geben Sie den Link nicht weiter.',
+    expired: 'Dieser Link ist abgelaufen. Bitte wenden Sie sich an Ihre Praxis.', revoked: 'Dieser Link ist nicht mehr gültig.', notFound: 'Link nicht gefunden.',
+    error: 'Etwas ist schiefgelaufen, bitte erneut versuchen.', call: 'Anrufen' },
+  es: { title: 'Sus fotos', hi: (n) => n ? `Hola ${n}:` : 'Hola:', intro: 'Estas son las fotos tomadas en nuestra clínica.',
+    compare: 'Antes / Después', before: 'Antes', after: 'Después', all: 'Todas las fotos', note: 'Nota de su clínica', download: 'Descargar',
+    valid: (d) => `Este enlace es válido hasta el ${d}.`, private: 'Estas fotos son privadas; por favor, no comparta este enlace.',
+    expired: 'Este enlace ha caducado. Contacte con su clínica.', revoked: 'Este enlace ya no es válido.', notFound: 'Enlace no encontrado.',
+    error: 'Algo salió mal, inténtelo de nuevo.', call: 'Llamar' },
+  fr: { title: 'Vos photos', hi: (n) => n ? `Bonjour ${n},` : 'Bonjour,', intro: 'Voici les photos prises dans notre clinique.',
+    compare: 'Avant / Après', before: 'Avant', after: 'Après', all: 'Toutes les photos', note: 'Note de votre clinique', download: 'Télécharger',
+    valid: (d) => `Ce lien est valable jusqu’au ${d}.`, private: 'Ces photos vous sont réservées ; merci de ne pas partager ce lien.',
+    expired: 'Ce lien a expiré. Merci de contacter votre clinique.', revoked: 'Ce lien n’est plus valide.', notFound: 'Lien introuvable.',
+    error: 'Un problème est survenu, veuillez réessayer.', call: 'Appeler' },
+  it: { title: 'Le sue foto', hi: (n) => n ? `Gentile ${n},` : 'Salve,', intro: 'Ecco le foto scattate nella nostra clinica.',
+    compare: 'Prima / Dopo', before: 'Prima', after: 'Dopo', all: 'Tutte le foto', note: 'Nota della clinica', download: 'Scarica',
+    valid: (d) => `Questo link è valido fino al ${d}.`, private: 'Queste foto sono riservate a lei; non condivida il link.',
+    expired: 'Questo link è scaduto. Contatti la clinica.', revoked: 'Questo link non è più valido.', notFound: 'Link non trovato.',
+    error: 'Si è verificato un problema, riprovi.', call: 'Chiama' },
+  pt: { title: 'As suas fotos', hi: (n) => n ? `Olá ${n},` : 'Olá,', intro: 'Aqui estão as fotos tiradas na nossa clínica.',
+    compare: 'Antes / Depois', before: 'Antes', after: 'Depois', all: 'Todas as fotos', note: 'Nota da clínica', download: 'Transferir',
+    valid: (d) => `Este link é válido até ${d}.`, private: 'Estas fotos são só suas; por favor não partilhe este link.',
+    expired: 'Este link expirou. Contacte a sua clínica.', revoked: 'Este link já não é válido.', notFound: 'Link não encontrado.',
+    error: 'Ocorreu um problema, tente novamente.', call: 'Ligar' },
+  ru: { title: 'Ваши фотографии', hi: (n) => n ? `Здравствуйте, ${n}!` : 'Здравствуйте!', intro: 'Здесь фотографии, сделанные в нашей клинике.',
+    compare: 'До / После', before: 'До', after: 'После', all: 'Все фото', note: 'Комментарий клиники', download: 'Скачать',
+    valid: (d) => `Ссылка действует до ${d}.`, private: 'Эти фото предназначены только для вас; пожалуйста, не пересылайте ссылку.',
+    expired: 'Срок действия ссылки истёк. Свяжитесь с клиникой.', revoked: 'Ссылка больше не действует.', notFound: 'Ссылка не найдена.',
+    error: 'Что-то пошло не так, попробуйте ещё раз.', call: 'Позвонить' },
+  ko: { title: '내 사진', hi: (n) => n ? `${n}님, 안녕하세요.` : '안녕하세요.', intro: '저희 병원에서 촬영한 사진입니다.',
+    compare: '전 / 후', before: '전', after: '후', all: '전체 사진', note: '병원 메모', download: '다운로드',
+    valid: (d) => `이 링크는 ${d}까지 유효합니다.`, private: '이 사진은 본인 전용입니다. 링크를 다른 사람과 공유하지 마세요.',
+    expired: '링크가 만료되었습니다. 병원에 문의해 주세요.', revoked: '더 이상 유효하지 않은 링크입니다.', notFound: '링크를 찾을 수 없습니다.',
+    error: '문제가 발생했습니다. 다시 시도해 주세요.', call: '전화' },
+  zh: { title: '您的照片', hi: (n) => n ? `${n}，您好：` : '您好：', intro: '以下是在本诊所拍摄的照片。',
+    compare: '前 / 后对比', before: '治疗前', after: '治疗后', all: '全部照片', note: '诊所备注', download: '下载',
+    valid: (d) => `此链接有效期至 ${d}。`, private: '这些照片仅供您本人查看，请勿转发此链接。',
+    expired: '链接已过期，请联系诊所。', revoked: '此链接已失效。', notFound: '未找到链接。',
+    error: '出现问题，请重试。', call: '致电' },
+};
+const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+document.documentElement.lang = LC;
+document.title = L.title;
+const app = document.getElementById('app');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (iso) => { try { return new Date(String(iso).slice(0, 10) + 'T12:00:00').toLocaleDateString(LOCALES[LC], { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return iso; } };
+let D = null, flat = [], cur = 0;
+
+function head(i) { return `<div class="brand">${esc(((i && i.clinic) || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`; }
+function foot(i) {
+  i = i || {};
+  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a><br>` : ''}${i.website ? esc(i.website) + ' · ' : ''}AAFC</div>`;
+}
+function msg(t) { app.innerHTML = head(D) + `<div class="card"><div class="muted">${t}</div></div>` + foot(D); }
+
+async function init() {
+  if (!TOKEN) return msg(L.notFound);
+  let r;
+  try { r = await fetch(FN + '?t=' + encodeURIComponent(TOKEN), { cache: 'no-store' }); D = await r.json(); } catch (e) { return msg(L.error); }
+  if (!D || D.status !== 'ok') { const s = D && D.status; D = null; return msg(s === 'expired' ? L.expired : s === 'revoked' ? L.revoked : s === 'error' ? L.error : L.notFound); }
+  render();
+}
+
+function render() {
+  const groups = [];
+  for (const p of D.photos) { const g = groups[groups.length - 1]; if (g && g.date === p.date) g.items.push(p); else groups.push({ date: p.date, items: [p] }); }
+  flat = D.photos;
+  let h = head(D) + `<div class="sub" style="margin-top:10px">${esc(L.hi(D.first_name))}<br>${L.intro}</div>`;
+  if (D.note) h += `<div class="card"><div class="step">${L.note}</div><div class="note">${esc(D.note)}</div></div>`;
+  if (groups.length >= 2) {
+    const a = groups[0].items[0], b = groups[groups.length - 1].items[0];
+    h += `<div class="card"><div class="step">${L.compare}</div>
+      <div class="cmp" id="cmp"><img src="${esc(b.url)}" alt=""><img class="top" id="cmpTop" src="${esc(a.url)}" alt="">
+      <div class="bar" id="cmpBar"></div><div class="knob" id="cmpKnob">⇆</div>
+      <span class="lb l">${L.before} · ${esc(fmt(groups[0].date))}</span><span class="lb r">${L.after} · ${esc(fmt(groups[groups.length - 1].date))}</span></div></div>`;
+  }
+  let idx = 0;
+  for (const g of groups) {
+    h += `<div class="card"><div class="step">${esc(fmt(g.date))}</div><div class="grid">` +
+      g.items.map(() => { const i = idx++; return `<button onclick="lbOpen(${i})"><img loading="lazy" src="${esc(flat[i].url)}" alt=""></button>`; }).join('') + `</div></div>`;
+  }
+  h += `<div class="muted">${esc(L.valid(fmt(D.expires_at)))}<br>${L.private}</div>` + foot(D);
+  app.innerHTML = h;
+  const c = document.getElementById('cmp');
+  if (c) {
+    const set = (x) => { const r = c.getBoundingClientRect(); let p = Math.min(100, Math.max(0, (x - r.left) / r.width * 100));
+      document.getElementById('cmpTop').style.clipPath = `inset(0 ${100 - p}% 0 0)`; document.getElementById('cmpBar').style.left = p + '%'; document.getElementById('cmpKnob').style.left = p + '%'; };
+    let drag = false;
+    c.addEventListener('pointerdown', (e) => { drag = true; c.setPointerCapture(e.pointerId); set(e.clientX); });
+    c.addEventListener('pointermove', (e) => { if (drag) set(e.clientX); });
+    c.addEventListener('pointerup', () => { drag = false; });
+  }
+}
+
+function lbOpen(i) { cur = i; lbShow(); document.getElementById('lbx').classList.add('on'); }
+function lbClose() { document.getElementById('lbx').classList.remove('on'); }
+function lbGo(d) { cur = (cur + d + flat.length) % flat.length; lbShow(); }
+function lbShow() {
+  document.getElementById('lbImg').src = flat[cur].url;
+  document.getElementById('lbCnt').textContent = `${cur + 1} / ${flat.length} · ${fmt(flat[cur].date)}`;
+  document.getElementById('lbDl').title = L.download;
+}
+async function dl(ev) {
+  ev.preventDefault();
+  const p = flat[cur];
+  try {
+    const blob = await (await fetch(p.url)).blob();
+    const file = new File([blob], `foto-${p.date}-${cur + 1}.jpg`, { type: blob.type || 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { window.open(p.url, '_blank', 'noopener'); }
+}
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lbx').classList.contains('on')) return;
+  if (e.key === 'Escape') lbClose(); else if (e.key === 'ArrowRight') lbGo(1); else if (e.key === 'ArrowLeft') lbGo(-1);
+});
+(() => { let x0 = null; const b = document.getElementById('lbImgBox');
+  b.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  b.addEventListener('touchend', (e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) lbGo(dx < 0 ? 1 : -1); x0 = null; }); })();
+init();
+</script>
+</body>
+</html>

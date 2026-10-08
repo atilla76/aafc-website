@@ -293,6 +293,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div class="ibox" id="pInfo"></div>
             <div class="ibox" id="pIntake" style="margin-top:10px"></div>
             <div class="ibox" id="pPkg" style="margin-top:10px"></div>
+            <div class="ibox" id="pPortal" style="margin-top:10px"></div>
             <div class="sec">BEFORE / AFTER COMPARISON</div>
             <div class="cw">
               <div class="cs">
@@ -798,7 +799,7 @@ async function selP(id){
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
-  inLoad(id);pkLoad(id);
+  inLoad(id);pkLoad(id);ptLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
@@ -1900,6 +1901,35 @@ async function wlNotify(el,i){
   wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
 }
 async function wlSet(el,i,st){var w=wlRows[el][i];await db.from('booking_waitlist').update({status:st}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);}
+
+// ============ PATIENT PORTAL (aafclinic.com/hasta?t=) ============
+var ptActive=null;
+async function ptLoad(pid){
+  var r=await db.from('patient_portals').select('id,token,expires_at,view_count').eq('patient_id',pid).is('revoked_at',null).gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(1);
+  if(selPid!==pid)return;ptActive=(r.data||[])[0]||null;
+  var a=ptActive;
+  document.getElementById('pPortal').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:13px;color:#F5F1EB">'+mxTr('Patient portal','Hasta portalı')+'</b><span>'+
+    '<button class="bimp2" onclick="ptSend(true)">'+mxTr('Send via WhatsApp','WhatsApp ile gönder')+'</button> <button class="bimp2" onclick="ptSend(false)">'+mxTr('Copy link','Linki kopyala')+'</button>'+
+    (a?' <button class="bimp2" style="color:#E08A73" onclick="ptRevoke()">'+mxTr('Revoke link','Linki iptal et')+'</button>':'')+'</span></div>'+
+    '<div class="hint" style="margin:6px 0 0">'+(a?mxTr('Active · valid until','Aktif · son geçerlilik')+' '+mxDate(a.expires_at)+' · '+(a.view_count||0)+' '+mxTr('views','görüntülenme')
+      :mxTr('The patient sees appointments, packages, shared photos and consents in one link','Hasta randevularını, paketlerini, paylaşılan fotoğraflarını ve onamlarını tek linkte görür'))+'</div><div id="ptMsg" class="hint" style="margin:4px 0 0"></div>';
+}
+async function ptSend(wa){
+  var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,''),m=document.getElementById('ptMsg');
+  if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
+  var w=wa?window.open('about:blank','_blank'):null;
+  var r=await db.rpc('create_patient_portal',{p_patient_id:selPid});
+  if(r.error||!r.data){if(w)w.close();m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
+  var url='https://aafclinic.com/hasta?t='+encodeURIComponent(r.data.token);
+  if(wa){if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+    var msg=mxTr('Hello '+(p.name||'')+', here is your '+(clinic.name||'')+' patient portal: '+url+'\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
+      'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' hasta portalınız: '+url+'\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.');
+    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);if(w)w.location=wu;else window.open(wu,'_blank');}
+  else{await navigator.clipboard.writeText(url);}
+  ptLoad(selPid);
+}
+async function ptRevoke(){if(!ptActive||!confirm(mxTr('Revoke the portal link? The patient will no longer be able to sign in.','Portal linki iptal edilsin mi? Hasta artık giriş yapamaz.')))return;
+  await db.from('patient_portals').update({revoked_at:new Date().toISOString()}).eq('id',ptActive.id);ptLoad(selPid);}
 
 // ============ PHOTO SHARE (aafclinic.com/foto?t=) ============
 var psSel={},psDays=30,psShares=[];

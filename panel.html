@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="panel-i18n.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1C1929;color:#F5F1EB;height:100vh;overflow:hidden}
@@ -58,7 +59,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .stat-mini .l{font-size:10px;color:rgba(245,241,235,0.4);margin-top:2px}
 .ss{padding:10px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;gap:6px}
 .ss input{flex:1;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.1);border-radius:8px;padding:8px 12px;color:#F5F1EB;font-size:13px;outline:none}
-.badd{background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;font-family:inherit}
+.ss input{min-width:0}
+.badd{flex:none;background:rgba(184,154,106,0.2);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;font-family:inherit}
 .pl{flex:1;overflow-y:auto}
 .pi{padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(245,241,235,0.04)}
 .pi:hover{background:rgba(245,241,235,0.04)}
@@ -218,7 +220,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="lw" id="loginWrap">
   <div class="lb2">
-    <div class="logo">AAFC <button class="langbtn" onclick="setPanelLang(LANG==='tr'?'en':'tr')" style="float:right;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;letter-spacing:0">TR</button></div>
+    <div class="logo">AAFC <select class="langsel" onchange="setPanelLang(this.value)" title="Language" style="float:right;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:3px 4px;font-size:11px;cursor:pointer;letter-spacing:0;font-family:inherit;max-width:86px"></select></div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
     <span class="lbl">EMAIL</span>
@@ -260,7 +262,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="sb">
         <div class="sh">
           <span class="sl">AAFC</span>
-          <button class="bout langbtn" onclick="setPanelLang(LANG==='tr'?'en':'tr')" style="margin-right:6px">TR</button>
+          <select class="langsel" onchange="setPanelLang(this.value)" title="Language" style="margin-right:6px;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer;font-family:inherit"></select>
           <button class="bout" onclick="doLogout()">Sign Out</button>
         </div>
         <div class="stats-mini">
@@ -935,7 +937,7 @@ function vxDictate(btn){
   if(!SR){alert(trText('Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.'));return;}
   if(vxRec){vxRec.stop();return;}
   var ta=document.getElementById(btn.dataset.target),base=ta.value.replace(/\s+$/,'');
-  vxRec=new SR();vxRec.lang=LANG==='tr'?'tr-TR':(navigator.language||'en-US');vxRec.continuous=true;vxRec.interimResults=true;
+  vxRec=new SR();vxRec.lang=LANG_LOC[LANG]||navigator.language||'en-US';vxRec.continuous=true;vxRec.interimResults=true;
   vxBtn=btn;btn.textContent='⏹';btn.style.background='rgba(192,97,74,.35)';
   vxRec.onresult=function(e){var fin='',tmp='';for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else tmp+=t;}
     if(fin){base=(base?base+' ':'')+fin.trim();}ta.value=(base+(tmp?(base?' ':'')+tmp.trim():''));};
@@ -1301,7 +1303,7 @@ async function loadStatsTab(){
 }
 var REP_CAT={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP'],'Diğer':['Other','Diğer'],'Lipoliz':['Lipolysis','Lipoliz'],
   'Gençlik aşısı':['Skin booster','Gençlik aşısı'],'İp / lifting':['Threads / lifting','İp / lifting'],'Peeling':['Peeling','Peeling'],'Cihaz / lazer':['Device / laser','Cihaz / lazer'],'Muayene':['Consultation','Muayene']};
-function repCat(c){var x=REP_CAT[c];return x?(LANG==='tr'?x[1]:x[0]):c;}
+function repCat(c){var x=REP_CAT[c];return x?mxTr(x[0],x[1]):c;}
 async function repLoad(){
   var b=document.getElementById('repBody');b.innerHTML='<div class="loader">Loading...</div>';
   var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate()),v=document.getElementById('repRange').value;
@@ -1653,7 +1655,7 @@ function mxNum(s){s=String(s||'').replace(/\s/g,'');if(!s)return null;var c=s.la
   var n=parseFloat(s);return isNaN(n)?null:n;}
 function mxDate(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0];}
 function mxIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function mxMoney(v){var n=Number(v||0),a=Math.abs(n);var s=a.toLocaleString(LANG==='tr'?'tr-TR':'en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});return (n<0?'−':'')+(curSym()||'')+s;}
+function mxMoney(v){var n=Number(v||0),a=Math.abs(n);var s=a.toLocaleString(LANG_LOC[LANG]||'en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});return (n<0?'−':'')+(curSym()||'')+s;}
 function mxQty(v){var n=Number(v||0);return n%1?n.toFixed(2).replace(/0+$/,''):String(n);}
 var PC_LIST=[['TR','90','Türkiye'],['DE','49','Deutschland'],['GB','44','United Kingdom'],['US','1','United States / Canada'],['NL','31','Nederland'],['FR','33','France'],['IT','39','Italia'],['ES','34','España'],['RU','7','Россия / Қазақстан'],['AZ','994','Azərbaycan'],['AE','971','UAE'],['SA','966','Saudi Arabia'],['KR','82','대한민국'],['CN','86','中国'],
 ['AL','355','Shqipëria'],['AM','374','Armenia'],['AT','43','Österreich'],['AU','61','Australia'],['BA','387','Bosna i Hercegovina'],['BE','32','Belgium'],['BG','359','България'],['BH','973','Bahrain'],['BR','55','Brasil'],['BY','375','Беларусь'],['CH','41','Schweiz / Suisse'],['CY','357','Κύπρος'],['CZ','420','Česko'],['DK','45','Danmark'],['DZ','213','Algeria'],['EG','20','Egypt'],['FI','358','Suomi'],['GE','995','Georgia'],['GR','30','Ελλάδα'],['HR','385','Hrvatska'],['HU','36','Magyarország'],['IE','353','Ireland'],['IL','972','Israel'],['IN','91','India'],['IQ','964','Iraq'],['IR','98','Iran'],['JO','962','Jordan'],['JP','81','日本'],['KG','996','Кыргызстан'],['KW','965','Kuwait'],['LB','961','Lebanon'],['LU','352','Luxembourg'],['LY','218','Libya'],['MA','212','Morocco'],['MD','373','Moldova'],['ME','382','Crna Gora'],['MK','389','North Macedonia'],['MX','52','México'],['NO','47','Norge'],['OM','968','Oman'],['PH','63','Philippines'],['PK','92','Pakistan'],['PL','48','Polska'],['PT','351','Portugal'],['QA','974','Qatar'],['RO','40','România'],['RS','381','Srbija'],['SE','46','Sverige'],['SY','963','Syria'],['TM','993','Türkmenistan'],['TN','216','Tunisia'],['UA','380','Україна'],['UZ','998','Oʻzbekiston'],['XK','383','Kosova']];
@@ -1685,7 +1687,9 @@ function mxFill(tpl,name,proc,extra){
   ['[klinik]','[clinic]','[clinica]','[clinique]','[клиника]','[클리닉]','[诊所]'].forEach(function(p){m=m.split(p).join(clinic.name||'');});
   if(extra)Object.keys(extra).forEach(function(k){m=m.split(k).join(extra[k]);});
   return m;}
-function mxTr(en,tr){return LANG==='tr'?tr:en;}
+function mxTr(en,tr){if(LANG==='tr')return tr;if(LANG==='en')return en;var d=window.PANEL_I18N&&PANEL_I18N[LANG];return d&&Object.prototype.hasOwnProperty.call(d,en)?d[en]:en;}
+// translated template + values: mxTrV('Hello [name]','Merhaba [name]',{name:'Ayşe'})
+function mxTrV(en,tr,v){var t=mxTr(en,tr);Object.keys(v||{}).forEach(function(k){t=t.split('['+k+']').join(v[k]);});return t;}
 
 // ============ STOCK ============
 var stProds=[],stBal={},stSel=null;
@@ -1780,8 +1784,8 @@ var FN_CAT_L={treatment:['Treatment','İşlem / tedavi'],consultation:['Consulta
   rent:['Rent','Kira'],salary:['Staff / salary','Personel / maaş'],utilities:['Utilities','Faturalar (elektrik, su, internet)'],tax:['Tax / social security','Vergi / SGK'],marketing:['Marketing','Reklam'],
   accounting:['Accounting / consulting','Muhasebe / danışmanlık'],equipment:['Device / equipment','Cihaz / ekipman'],other:['Other','Diğer']};
 var FN_M_L={cash:['Cash','Nakit'],card:['Card','Kart'],transfer:['Bank transfer','Havale / EFT'],other:['Other','Diğer']};
-function fnCat(c){var x=FN_CAT_L[c]||[c,c];return LANG==='tr'?x[1]:x[0];}
-function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return LANG==='tr'?x[1]:x[0];}
+function fnCat(c){var x=FN_CAT_L[c]||[c,c];return mxTr(x[0],x[1]);}
+function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return mxTr(x[0],x[1]);}
 var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null;
 function fnRange(){var y=document.getElementById('fnMode').value==='y';var a=fnAnchor;
   return y?[new Date(a.getFullYear(),0,1),new Date(a.getFullYear(),11,31)]:[a,new Date(a.getFullYear(),a.getMonth()+1,0)];}
@@ -1790,7 +1794,7 @@ async function fnLoad(){
   if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
   if(!fnAdmin){document.getElementById('fnBody').innerHTML='<div class="imp-step">'+mxTr('Accounting is available to admin users only.','Muhasebe yalnızca yönetici kullanıcılara açıktır.')+'</div>';return;}
   var r=fnRange(),y=document.getElementById('fnMode').value==='y';
-  document.getElementById('fnPeriod').textContent=y?String(fnAnchor.getFullYear()):fnAnchor.toLocaleDateString(LANG==='tr'?'tr-TR':'en-US',{month:'long',year:'numeric'});
+  document.getElementById('fnPeriod').textContent=y?String(fnAnchor.getFullYear()):fnAnchor.toLocaleDateString(LANG_LOC[LANG]||'en-US',{month:'long',year:'numeric'});
   var res=await Promise.all([
     db.from('finance_entries').select('*, patients(name, surname)').eq('clinic_id',cid).is('deleted_at',null).gte('entry_date',mxIso(r[0])).lte('entry_date',mxIso(r[1])).order('entry_date',{ascending:false}).order('created_at',{ascending:false}),
     db.rpc('finance_summary',{p_clinic_id:cid,p_from:mxIso(r[0]),p_to:mxIso(r[1])}),
@@ -1891,7 +1895,7 @@ async function fnAccount(pid){
   (acc.charges||[]).forEach(function(c){
     h+='<div class="imp-step" style="padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between"><b>'+mxE(c.description||fnCat('treatment'))+'</b><a style="cursor:pointer;color:#C0614A;font-size:12px" onclick="fnDelCharge(\''+c.id+'\',\''+pid+'\')">'+mxTr('Delete','Sil')+'</a></div>'+
       '<div style="font-size:12px;color:rgba(245,241,235,.5)">'+mxDate(c.charge_date)+' · '+mxMoney(c.paid)+' / '+mxMoney(c.amount)+'</div>'+
-      (c.installments||[]).map(function(i){var s=st[i.status]||st.open;return '<div style="display:flex;gap:10px;font-size:13px;margin-top:4px"><span style="width:20px;color:rgba(245,241,235,.4)">'+i.seq+'.</span><span style="width:86px">'+mxDate(i.due_date)+'</span><span style="flex:1">'+mxMoney(i.amount)+'</span><span style="color:'+s[2]+'">'+(LANG==='tr'?s[1]:s[0])+'</span></div>';}).join('')+'</div>';});
+      (c.installments||[]).map(function(i){var s=st[i.status]||st.open;return '<div style="display:flex;gap:10px;font-size:13px;margin-top:4px"><span style="width:20px;color:rgba(245,241,235,.4)">'+i.seq+'.</span><span style="width:86px">'+mxDate(i.due_date)+'</span><span style="flex:1">'+mxMoney(i.amount)+'</span><span style="color:'+s[2]+'">'+mxTr(s[0],s[1])+'</span></div>';}).join('')+'</div>';});
   if((acc.payments||[]).length)h+='<div class="sec" style="margin-top:10px">'+mxTr('Payments','Ödemeler')+'</div>'+(acc.payments||[]).map(function(x){return '<div style="font-size:13px;padding:3px 0">'+mxDate(x.entry_date)+' · <b style="color:#3AB06A">'+mxMoney(x.amount)+'</b> · '+mxE(fnMeth(x.method))+(x.invoice_no?' · '+mxE(x.invoice_no):'')+'</div>';}).join('');
   if(!(acc.charges||[]).length&&!(acc.payments||[]).length)h+='<div style="color:rgba(245,241,235,.4);font-size:13px">'+mxTr('No charges or payments for this patient.','Bu hastanın borç veya ödeme kaydı yok.')+'</div>';
   mxOpen((p.name||'')+' '+(p.surname||''),h,[{label:'Cancel',cls:'bcancel',fn:mxClose},
@@ -1917,7 +1921,8 @@ async function fnDelCharge(id,pid){if(!confirm(mxTr('Delete this charge and its 
 function fnCsv(){
   if(!fnEntries.length){alert(mxTr('No entries in this period','Bu dönemde kayıt yok'));return;}
   var q=function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';};
-  var head=LANG==='tr'?['Tarih','Tür','Kategori','Tutar','Para birimi','Ödeme şekli','Hasta','Fatura no','Açıklama']:['Date','Type','Category','Amount','Currency','Payment method','Patient','Invoice no','Description'];
+  var headTr=['Tarih','Tür','Kategori','Tutar','Para birimi','Ödeme şekli','Hasta','Fatura no','Açıklama'];
+  var head=['Date','Type','Category','Amount','Currency','Payment method','Patient','Invoice no','Description'].map(function(e,i){return mxTr(e,headTr[i]);});
   var lines=[head.map(q).join(';')].concat(fnEntries.slice().reverse().map(function(e){var p=e.patients;
     return [mxDate(e.entry_date),e.kind==='income'?mxTr('Income','Gelir'):mxTr('Expense','Gider'),fnCat(e.category),Number(e.amount).toFixed(2).replace('.',','),e.currency||'',fnMeth(e.method),p?(p.name||'')+' '+(p.surname||''):'',e.invoice_no||'',e.description||''].map(q).join(';');}));
   var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
@@ -1926,7 +1931,7 @@ function fnCsv(){
 
 // ============ RECALLS & REVIEWS ============
 var RC_RULE_TR={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP']};
-function rcRule(l){var x=RC_RULE_TR[l];return x?(LANG==='tr'?x[1]:x[0]):l;}
+function rcRule(l){var x=RC_RULE_TR[l];return x?mxTr(x[0],x[1]):l;}
 async function rcLoad(){
   var until=mxIso(new Date(Date.now()+7*864e5));
   var r=await Promise.all([db.rpc('get_recalls',{p_clinic_id:cid,p_until:until}),db.rpc('get_review_requests',{p_clinic_id:cid}),db.from('clinic').select('*').eq('id',cid).single()]);
@@ -2099,8 +2104,8 @@ async function ptSend(wa){
   if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
   var url='https://aafclinic.com/hasta?t='+encodeURIComponent(r.data.token);
   if(wa){ph=mxWaDigits(ph);
-    var msg=mxTr('Hello '+(p.name||'')+', here is your '+(clinic.name||'')+' patient portal: '+url+'\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
-      'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' hasta portalınız: '+url+'\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.');
+    var msg=mxTrV('Hello [name], here is your [clinic] patient portal: [link]\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
+      'Merhaba [name], [clinic] hasta portalınız: [link]\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.',{name:p.name||'',clinic:clinic.name||'',link:url});
     var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await ptLoad(selPid);mxWaOpen(wu,document.getElementById('ptMsg'));return;}
   await navigator.clipboard.writeText(url);await ptLoad(selPid);
   var mm=document.getElementById('ptMsg');if(mm){mm.textContent=mxTr('Copied','Kopyalandı');mm.style.color='#3AB06A';}
@@ -2153,8 +2158,8 @@ async function psSend(wa){
   var url='https://aafclinic.com/foto?t='+encodeURIComponent(r.data.token);
   if(wa){
     ph=mxWaDigits(ph);
-    var msg=mxTr('Hello '+(p.name||'')+', '+(clinic.name||'')+' is sharing your photos with you: '+url+' (The link is valid until '+mxDate(r.data.expires_at)+'.)',
-      'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak fotoğraflarınızı paylaşıyoruz: '+url+' (Link '+mxDate(r.data.expires_at)+' tarihine kadar geçerlidir.)');
+    var msg=mxTrV('Hello [name], [clinic] is sharing your photos with you: [link] (The link is valid until [date].)',
+      'Merhaba [name], [clinic] olarak fotoğraflarınızı paylaşıyoruz: [link] (Link [date] tarihine kadar geçerlidir.)',{name:p.name||'',clinic:clinic.name||'',link:url,date:mxDate(r.data.expires_at)});
     var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await psOpen();mxWaOpen(wu,document.getElementById('psMsg'));return;
   }
   await navigator.clipboard.writeText(url);await psOpen();
@@ -2304,8 +2309,8 @@ async function inSend(){
   if(!ph){var m=document.getElementById('inMsg');m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
   ph=mxWaDigits(ph);
   var url=await inCreate();if(!url){return;}
-  var msg=mxTr('Hello '+(p.name||'')+', before your treatment '+(clinic.name||'')+' kindly asks you to fill in a short health form (2 min): '+url,
-    'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): '+url);
+  var msg=mxTrV('Hello [name], before your treatment [clinic] kindly asks you to fill in a short health form (2 min): [link]',
+    'Merhaba [name], [clinic] olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): [link]',{name:p.name||'',clinic:clinic.name||'',link:url});
   var wa='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);
   mxWaOpen(wa,document.getElementById('inMsg'));
 }
@@ -2339,7 +2344,7 @@ function bkLink(){document.getElementById('bkLink').textContent=document.getElem
 function bkCodes(){var has=document.getElementById('bkSlug').value.trim(),u=bkUrl(),q=document.getElementById('bkQr');if(!q)return;
   if(!has){q.innerHTML='';document.getElementById('bkBtnCode').value='';document.getElementById('bkEmbedCode').value='';return;}
   try{var qr=qrcode(0,'M');qr.addData(u);qr.make();q.innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});}catch(e){q.innerHTML='';}
-  var light=document.getElementById('bkLight').checked,label=LANG==='tr'?'Online Randevu Al':'Book Online';
+  var light=document.getElementById('bkLight').checked,label=mxTr('Book Online','Online Randevu Al');
   var bg=light?'#9A7B4C':'#B89A6A',fg=light?'#FFFFFF':'#12101E';
   document.getElementById('bkBtnCode').value='<a href="'+u+'" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;background:'+bg+';color:'+fg+';border-radius:10px;font:600 16px -apple-system,Segoe UI,Roboto,sans-serif;text-decoration:none">'+label+'</a>';
   var eu=u+'&embed=1'+(light?'&theme=light':'');
@@ -2387,7 +2392,7 @@ async function bkLoad(){
   soFill();
   var r=await db.from('clinic_booking_settings').select('*').eq('clinic_id',cid).maybeSingle();
   bkData=r.data||{enabled:false,slug:bkSlugify(clinic.name||''),slot_minutes:30,min_notice_hours:2,max_days_ahead:30,intro:'',
-    services:[{name:(LANG==='tr'?'Muayene / Konsültasyon':'Consultation'),duration:30}],
+    services:[{name:mxTr('Consultation','Muayene / Konsültasyon'),duration:30}],
     hours:{'1':[['09:00','18:00']],'2':[['09:00','18:00']],'3':[['09:00','18:00']],'4':[['09:00','18:00']],'5':[['09:00','18:00']],'6':[['10:00','14:00']],'7':[]}};
   document.getElementById('bkEnabled').checked=!!bkData.enabled;
   document.getElementById('bkIntake').checked=bkData.intake_enabled!==false;
@@ -2698,15 +2703,18 @@ var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','E
 var I18N_PREFIX=[['Downloading photo ','Fotoğraf indiriliyor '],['Loading image ','Görsel yükleniyor '],['Could not read the file: ','Dosya okunamadı: '],
   ['Delete ','Sil: '],['Import ','İçe aktar: '],['Column ','Sütun '],['TOTAL: ','TOPLAM: ']];
 var LANG='en';
+var PANEL_LANGS=[['tr','Türkçe'],['en','English'],['de','Deutsch'],['es','Español'],['fr','Français'],['it','Italiano'],['pt','Português'],['ru','Русский'],['ko','한국어'],['zh','中文']];
+var LANG_LOC={tr:'tr-TR',en:'en-US',de:'de-DE',es:'es-ES',fr:'fr-FR',it:'it-IT',pt:'pt-PT',ru:'ru-RU',ko:'ko-KR',zh:'zh-CN'};
 function trText(t){
-  if(LANG!=='tr'||!t)return t;
+  if(LANG==='en'||!t)return t;
   var k=t.trim(); if(!k)return t;
-  if(I18N_TR.hasOwnProperty(k))return t.replace(k,I18N_TR[k]);
-  for(var i=0;i<I18N_PREFIX.length;i++){if(k.indexOf(I18N_PREFIX[i][0])===0)return t.replace(I18N_PREFIX[i][0],I18N_PREFIX[i][1]);}
+  var D=LANG==='tr'?I18N_TR:((window.PANEL_I18N||{})[LANG]||{});
+  if(Object.prototype.hasOwnProperty.call(D,k))return t.replace(k,D[k]);
+  for(var i=0;i<I18N_PREFIX.length;i++){if(k.indexOf(I18N_PREFIX[i][0])===0)return t.replace(I18N_PREFIX[i][0],LANG==='tr'?I18N_PREFIX[i][1]:(D[I18N_PREFIX[i][0]]||I18N_PREFIX[i][0]));}
   return t;
 }
 function trNode(root){
-  if(LANG!=='tr'||!root)return;
+  if(LANG==='en'||!root)return;
   if(root.nodeType===3){var n=trText(root.nodeValue);if(n!==root.nodeValue)root.nodeValue=n;return;}
   if(root.nodeType!==1||root.tagName==='SCRIPT'||root.tagName==='STYLE')return;
   ['placeholder','title'].forEach(function(a){if(root.hasAttribute&&root.hasAttribute(a)){var v=root.getAttribute(a),n=trText(v);if(n!==v)root.setAttribute(a,n);}});
@@ -2728,10 +2736,11 @@ function setPanelLang(l){
   var q=(new URLSearchParams(location.search).get('lang')||'').toLowerCase(),saved=null;
   try{saved=localStorage.getItem('aafc_lang');}catch(e){}
   var nav=(navigator.languages&&navigator.languages[0]||navigator.language||'en').toLowerCase();
-  LANG=(q==='tr'||q==='en')?q:(saved||(nav.indexOf('tr')===0?'tr':'en'));
+  var ok=function(c){return PANEL_LANGS.some(function(x){return x[0]===c;});};
+  LANG=ok(q)?q:(ok(saved)?saved:(ok(nav.slice(0,2))?nav.slice(0,2):'en'));
   document.documentElement.lang=LANG;
-  document.querySelectorAll('.langbtn').forEach(function(b){b.textContent=LANG==='tr'?'EN':'TR';});
-  if(LANG!=='tr')return;
+  document.querySelectorAll('.langsel').forEach(function(s){s.innerHTML=PANEL_LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===LANG?' selected':'')+'>'+x[1]+'</option>';}).join('');});
+  if(LANG==='en')return;
   document.title='AAFC Panel';
   trNode(document.body);
   new MutationObserver(function(ms){ms.forEach(function(m){

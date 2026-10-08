@@ -117,6 +117,14 @@ if (window.location.search.includes('code=')) {
   <link rel="canonical" href="https://aafclinic.com/" />
   <link rel="alternate" hreflang="tr" href="https://aafclinic.com/?lang=tr" />
   <link rel="alternate" hreflang="en" href="https://aafclinic.com/?lang=en" />
+  <link rel="alternate" hreflang="de" href="https://aafclinic.com/?lang=de" />
+  <link rel="alternate" hreflang="es" href="https://aafclinic.com/?lang=es" />
+  <link rel="alternate" hreflang="fr" href="https://aafclinic.com/?lang=fr" />
+  <link rel="alternate" hreflang="it" href="https://aafclinic.com/?lang=it" />
+  <link rel="alternate" hreflang="pt" href="https://aafclinic.com/?lang=pt" />
+  <link rel="alternate" hreflang="ru" href="https://aafclinic.com/?lang=ru" />
+  <link rel="alternate" hreflang="ko" href="https://aafclinic.com/?lang=ko" />
+  <link rel="alternate" hreflang="zh" href="https://aafclinic.com/?lang=zh" />
 </head>
 <body>
 
@@ -126,7 +134,7 @@ if (window.location.search.includes('code=')) {
     <a href="#features" data-en="Features" data-tr="Özellikler">Features</a>
     <a href="#pricing" data-en="Pricing" data-tr="Fiyatlandırma">Pricing</a>
     <a href="privacy.html" data-en="Privacy" data-tr="Gizlilik">Privacy</a>
-    <a href="#" id="langToggle" class="login-btn" onclick="toggleLang();return false;" style="margin-right:8px;">TR</a>
+    <select id="langToggle" onchange="setLang(this.value)" aria-label="Language" style="margin:0 8px 0 16px;cursor:pointer;font:inherit;font-size:13px;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:8px;padding:7px 6px;max-width:120px"></select>
     <a href="panel.html" class="login-btn" data-en="Login" data-tr="Giriş">Login</a>
   </div>
 </nav>
@@ -478,22 +486,28 @@ if (window.location.search.includes('code=')) {
 </footer>
 
 
+<script src="site-i18n.js"></script>
 <script>
+var SITE_LANGS=[['tr','TR · Türkçe'],['en','EN · English'],['de','DE · Deutsch'],['es','ES · Español'],['fr','FR · Français'],['it','IT · Italiano'],['pt','PT · Português'],['ru','RU · Русский'],['ko','KO · 한국어'],['zh','ZH · 中文']];
 function setLang(next){
+  if(!SITE_LANGS.some(function(x){return x[0]===next;})) next='en';
   document.documentElement.setAttribute('data-lang', next);
   document.documentElement.lang = next;
-  document.querySelectorAll('[data-'+next+']').forEach(function(el){ el.textContent = el.getAttribute('data-'+next); });
-  document.querySelectorAll('[data-'+next+'-html]').forEach(function(el){ el.innerHTML = el.getAttribute('data-'+next+'-html'); });
-  var t=document.getElementById('langToggle'); if(t) t.textContent = next === 'en' ? 'TR' : 'EN';
+  var D = (window.SITE_I18N||{})[next] || {};
+  var pick = function(en, own){ return next==='en' ? en : (own!=null ? own : (D.hasOwnProperty(en) ? D[en] : en)); };
+  document.querySelectorAll('[data-en]').forEach(function(el){ el.textContent = pick(el.getAttribute('data-en'), next==='tr'?el.getAttribute('data-tr'):null); });
+  document.querySelectorAll('[data-en-html]').forEach(function(el){ el.innerHTML = pick(el.getAttribute('data-en-html'), next==='tr'?el.getAttribute('data-tr-html'):null); });
+  var t=document.getElementById('langToggle');
+  if(t){ t.innerHTML = SITE_LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===next?' selected':'')+'>'+x[1]+'</option>';}).join(''); }
   try { localStorage.setItem('aafc_lang', next); } catch(e) {}
 }
-function toggleLang(){ setLang((document.documentElement.getAttribute('data-lang') || 'en') === 'en' ? 'tr' : 'en'); }
 (function(){
   var q = (new URLSearchParams(location.search).get('lang') || '').toLowerCase();
   var saved = null; try { saved = localStorage.getItem('aafc_lang'); } catch(e) {}
   var nav = (navigator.languages && navigator.languages[0] || navigator.language || 'en').toLowerCase();
-  var lang = (q === 'tr' || q === 'en') ? q : (saved || (nav.indexOf('tr') === 0 ? 'tr' : 'en'));
-  if (lang === 'tr') setLang('tr');
+  var ok = function(c){ return SITE_LANGS.some(function(x){return x[0]===c;}); };
+  var lang = ok(q) ? q : (ok(saved) ? saved : (ok(nav.slice(0,2)) ? nav.slice(0,2) : 'en'));
+  setLang(lang);
 })();
 </script>
 </body>

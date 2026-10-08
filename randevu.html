@@ -34,6 +34,11 @@ h1{font-size:24px;font-weight:600;margin-top:10px;line-height:1.25}
 label{display:block;font-size:12px;color:var(--mid);margin:12px 0 6px}
 select.phcc{flex:none;width:112px;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:13px 6px;color:var(--cream);font-size:15px;font-family:inherit;outline:none}
 .phw{display:flex;gap:8px}
+.drs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.dr{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:9px 22px 9px 12px;color:var(--cream);font:inherit;font-size:14px;cursor:pointer;text-align:left;position:relative}
+.dr i{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%}
+.dr small{color:var(--dim);font-size:11px}
+.dr.sel{border-color:var(--gold);background:rgba(184,154,106,.14)}
 input,textarea{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none}
 input:focus,textarea:focus{border-color:var(--gold)}
 textarea{resize:vertical;min-height:70px}
@@ -191,6 +196,20 @@ const LC = (() => {
 })();
 const L = LANGS[LC];
 const W = WL[LC] || WL.en;
+const DRL = {
+  tr: ['Doktor', 'Fark etmez'], en: ['Doctor', 'Any doctor'], de: ['Arzt/Ärztin', 'Egal'], es: ['Médico', 'Cualquiera'],
+  fr: ['Médecin', 'Peu importe'], it: ['Medico', 'Indifferente'], pt: ['Médico', 'Qualquer um'], ru: ['Врач', 'Любой врач'],
+  ko: ['의사', '상관없음'], zh: ['医生', '不限'],
+};
+const DR = DRL[LC] || DRL.en;
+const hasDr = () => (st.info?.practitioners || []).length > 1;
+const drArg = () => ((st.info?.practitioners || []).length ? { p_practitioner: st.prac || null } : {});
+async function pickDoctor(id) {
+  st.prac = id; st.date = null; st.time = null; st.times = []; st.days = null; render();
+  st.days = await rpc('booking_days', { p_slug: slug, p_service: st.service.name, ...drArg() }).catch(() => []);
+  if (st.days.length) await pickDate(st.days[0], true);
+  render();
+}
 const locale = LOCALES[LC];
 document.documentElement.lang = LC;
 document.title = L.title;
@@ -232,7 +251,7 @@ async function pickService(i, silent) {
   st.service = st.info.services[i];
   st.date = null; st.time = null; st.times = []; st.days = null;
   if (!silent) render();
-  st.days = await rpc('booking_days', { p_slug: slug, p_service: st.service.name }).catch(() => []);
+  st.days = await rpc('booking_days', { p_slug: slug, p_service: st.service.name, ...drArg() }).catch(() => []);
   if (st.days.length) await pickDate(st.days[0], true);
   render();
 }
@@ -240,7 +259,7 @@ async function pickService(i, silent) {
 async function pickDate(d, silent) {
   st.date = d; st.time = null; st.times = null;
   if (!silent) render();
-  st.times = await rpc('booking_slots', { p_slug: slug, p_date: d, p_service: st.service.name }).catch(() => []);
+  st.times = await rpc('booking_slots', { p_slug: slug, p_date: d, p_service: st.service.name, ...drArg() }).catch(() => []);
   if (!silent) render();
 }
 
@@ -255,7 +274,7 @@ async function doBook(ev) {
   try {
     const r = await rpc('booking_create', {
       p_slug: slug, p_date: st.date, p_time: st.time, p_service: st.service.name,
-      p_name: f.nm.value, p_phone: pcJoin(f.phc.value, f.ph.value), p_note: f.nt.value || null,
+      p_name: f.nm.value, p_phone: pcJoin(f.phc.value, f.ph.value), p_note: f.nt.value || null, ...drArg(),
     });
     if (r && r.ok) {
       st.result = { ...r, name: f.nm.value.trim() };
@@ -263,7 +282,7 @@ async function doBook(ev) {
       st.err = L.errors[r?.error] || L.errors.generic;
       if (r?.error === 'taken') {
         st.time = null;
-        st.times = await rpc('booking_slots', { p_slug: slug, p_date: st.date, p_service: st.service.name }).catch(() => []);
+        st.times = await rpc('booking_slots', { p_slug: slug, p_date: st.date, p_service: st.service.name, ...drArg() }).catch(() => []);
       }
     }
   } catch (e) { st.err = L.errors.generic; }
@@ -354,6 +373,7 @@ function render(keepForm) {
     h += `<div class="card ok"><div class="tick">✓</div><h1 style="font-size:20px">${L.done}</h1>
       <div class="sub" style="margin-top:8px">${esc(st.service.name)}</div>
       <div style="font-size:18px;margin-top:6px;font-weight:600">${esc(longDate(r.date))} · ${esc(r.time)}</div>
+      ${r.practitioner ? `<div class="sub" style="margin-top:6px">${DR[0]}: <b style="color:var(--cream)">${esc(r.practitioner)}</b></div>` : ''}
       <div class="sub" style="margin-top:10px">${L.doneSub}</div>
       ${i.phone ? `<a class="btn wa" style="display:block;text-decoration:none" href="${waHref()}" target="_blank" rel="noopener">${L.wa}</a>` : ''}
       <a class="btn ghost" style="display:block;text-decoration:none" href="${icsHref()}" download="randevu.ics">${L.cal}</a>
@@ -379,6 +399,10 @@ function render(keepForm) {
 
     // 2) date + time
     h += `<div class="card"><div class="step">2 · ${L.date}</div>`;
+    if (hasDr()) {
+      h += `<div class="sub" style="margin:0 0 6px">${DR[0]}</div><div class="drs">${[{ id: null, name: DR[1] }, ...st.info.practitioners].map((p) =>
+        `<button class="dr ${(st.prac || null) === p.id ? 'sel' : ''}" onclick="pickDoctor(${p.id ? `'${p.id}'` : 'null'})">${p.color ? `<i style="background:${esc(p.color)}"></i>` : ''}<span>${esc(p.name)}</span>${p.title ? `<small>${esc(p.title)}</small>` : ''}</button>`).join('')}</div>`;
+    }
     if (st.days === null) h += `<div class="spin"></div>`;
     else if (!st.days.length) h += `<div class="muted">${L.noDays}</div>`;
     else {

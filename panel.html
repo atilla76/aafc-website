@@ -380,10 +380,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <input class="bk-in" type="time" id="blStart" value="13:00" style="color-scheme:dark"><span class="hint" style="margin:0">–</span>
           <input class="bk-in" type="time" id="blEnd" value="15:00" style="color-scheme:dark">
           <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="blAll"> All day</label>
+          <select class="bk-in" id="blPrac" style="display:none"></select>
           <input class="bk-in" id="blReason" placeholder="Reason (e.g. Surgery)" style="flex:1;min-width:160px">
           <button class="bimp" onclick="blAdd()">Block time</button>
         </div>
         <div class="imp-wrap"><table class="fmt" id="blList"></table></div>
+      </div>
+      <div class="imp-step">
+        <h3>Doctors</h3>
+        <div class="hint">For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.</div>
+        <div class="bk-row">
+          <input class="bk-in" id="prName" placeholder="Name (e.g. Dr. Jane Smith)" style="flex:1;min-width:160px">
+          <input class="bk-in" id="prTitle" placeholder="Title / speciality (optional)" style="flex:1;min-width:140px">
+          <button class="bimp" onclick="prAdd()">Add</button>
+        </div>
+        <div id="prList"></div>
       </div>
       <div class="imp-step">
         <h3>Phone country code</h3>
@@ -1139,7 +1150,7 @@ window._appts=[];
 async function loadAppts(){
   apptDate=parseDate(document.getElementById('apptDate').value);
   if(document.getElementById('blDate'))document.getElementById('blDate').value=fmtDate(apptDate);
-  apptBlocks();blLoad();cfLoad();rsLoad();pcClinicLoad();wlLoad('apptWl',fmtDate(apptDate));
+  apptBlocks();blLoad();cfLoad();rsLoad();pcClinicLoad();prLoad();wlLoad('apptWl',fmtDate(apptDate));
   var el=document.getElementById('apptList');
   el.innerHTML='<div class="loader">Loading...</div>';
   try{
@@ -1925,6 +1936,48 @@ async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_pat
 
 // ============ ROOMS & DEVICES ============
 var apExtras={};
+
+// ---- doctors (clinic_practitioners) ----
+var prRows=[],apPracMap={};
+async function prFetch(){var r=await db.from('clinic_practitioners').select('*').eq('clinic_id',cid).order('sort').order('name');prRows=r.data||[];return prRows;}
+function prName(id){var x=prRows.find(function(p){return p.id===id;});return x?x.name:'';}
+function prColor(id){var x=prRows.find(function(p){return p.id===id;});return (x&&x.color)||'#B89A6A';}
+async function prLoad(){
+  await prFetch();var box=document.getElementById('prList');if(!box)return;
+  box.innerHTML=prRows.length?'<table class="fmt">'+prRows.map(function(x){return '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+mxE(x.color||'#B89A6A')+';margin-right:8px"></span>'+
+    '<b style="'+(x.active?'':'opacity:.45')+'">'+mxE(x.name)+'</b>'+(x.title?'<div class="hint" style="margin:0">'+mxE(x.title)+'</div>':'')+'</td><td style="font-size:12px;color:rgba(245,241,235,.6)">'+
+    [x.active?'':mxTr('Inactive','Pasif'),x.active&&!x.online?mxTr('Online off','Online kapalı'):'',x.hours?mxTr('Own hours','Kendi saatleri'):mxTr('Clinic hours','Klinik saatleri')].filter(Boolean).join(' · ')+'</td><td style="text-align:right">'+
+    '<a href="#" onclick="prEdit(\''+x.id+'\');return false" style="color:#D4B896;font-size:12px">'+mxTr('Edit','Düzenle')+'</a></td></tr>';}).join('')+'</table>'
+    :'<div class="hint" style="margin:0">'+mxTr('No doctors yet. A single-doctor clinic does not need this.','Henüz doktor eklenmedi. Tek doktorlu klinikte eklemeniz gerekmez.')+'</div>';
+  var bs=document.getElementById('blPrac');if(bs){var act=prRows.filter(function(p){return p.active;});bs.style.display=act.length?'':'none';
+    bs.innerHTML='<option value="">'+mxTr('Whole clinic','Tüm klinik')+'</option>'+act.map(function(p){return '<option value="'+p.id+'">'+mxE(p.name)+'</option>';}).join('');}
+  if(prRows.length)blLoad();
+}
+async function prAdd(){var n=mxV('prName');if(!n)return;
+  var r=await db.from('clinic_practitioners').insert({clinic_id:cid,name:n,title:mxV('prTitle')||null,color:RS_COLORS[prRows.length%RS_COLORS.length],sort:prRows.length});
+  if(r.error){alert(r.error.message);return;}document.getElementById('prName').value='';document.getElementById('prTitle').value='';prLoad();}
+var PR_DAYS=[[1,'Monday','Pazartesi'],[2,'Tuesday','Salı'],[3,'Wednesday','Çarşamba'],[4,'Thursday','Perşembe'],[5,'Friday','Cuma'],[6,'Saturday','Cumartesi'],[7,'Sunday','Pazar']];
+function prEdit(id){var x=prRows.find(function(p){return p.id===id;});if(!x)return;var h=x.hours;
+  var rows=PR_DAYS.map(function(d){var r=h&&h[d[0]]&&h[d[0]][0];var on=h?!!r:d[0]<=5;
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><label style="width:120px;display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="prD'+d[0]+'"'+(on?' checked':'')+'> '+mxTr(d[1],d[2])+'</label>'+
+      '<input class="mi" type="time" id="prS'+d[0]+'" value="'+(r?r[0]:'09:00')+'" style="margin:0;width:110px;color-scheme:dark"><span>–</span><input class="mi" type="time" id="prE'+d[0]+'" value="'+(r?r[1]:'18:00')+'" style="margin:0;width:110px;color-scheme:dark"></div>';}).join('');
+  mxOpen(mxTr('Doctor','Doktor'),
+    '<input class="mi" id="prEdName" value="'+mxE(x.name)+'" placeholder="'+mxTr('Name','Ad')+'">'+
+    '<input class="mi" id="prEdTitle" value="'+mxE(x.title||'')+'" placeholder="'+mxTr('Title / speciality (optional)','Unvan / uzmanlık (isteğe bağlı)')+'">'+
+    '<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="checkbox" id="prEdOnline"'+(x.online?' checked':'')+'> '+mxTr('Show in online booking','Online randevuda göster')+'</label>'+
+    '<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:12px"><input type="checkbox" id="prEdActive"'+(x.active?' checked':'')+'> '+mxTr('Active','Aktif')+'</label>'+
+    '<div class="hint" style="margin:0 0 6px">'+mxTr('WORKING HOURS','ÇALIŞMA SAATLERİ')+'</div>'+
+    '<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:6px"><input type="radio" name="prHm" value="clinic"'+(h?'':' checked')+' onchange="prHm()"> '+mxTr('Clinic hours','Klinik saatleri')+'</label>'+
+    '<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="radio" name="prHm" value="own"'+(h?' checked':'')+' onchange="prHm()"> '+mxTr('Own hours','Kendi saatleri')+'</label>'+
+    '<div id="prHours" style="display:'+(h?'block':'none')+'">'+rows+'</div><div class="err" id="prErr" style="display:none"></div>',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),fn:function(){prSave(id);}}]);
+}
+function prHm(){var own=document.querySelector('input[name=prHm]:checked').value==='own';document.getElementById('prHours').style.display=own?'block':'none';}
+async function prSave(id){var n=mxV('prEdName');if(!n)return;var own=document.querySelector('input[name=prHm]:checked').value==='own',hours=null;
+  if(own){hours={};for(var d=1;d<=7;d++){var on=document.getElementById('prD'+d).checked,a=document.getElementById('prS'+d).value,b=document.getElementById('prE'+d).value;hours[d]=on&&a&&b&&a<b?[[a,b]]:[];}}
+  var r=await db.from('clinic_practitioners').update({name:n,title:mxV('prEdTitle')||null,online:document.getElementById('prEdOnline').checked,active:document.getElementById('prEdActive').checked,hours:hours}).eq('id',id);
+  if(r.error){var e=document.getElementById('prErr');e.textContent=r.error.message;e.style.display='block';return;}
+  mxClose();prLoad();}
 var RS_COLORS=['#B89A6A','#6C63A8','#2A9E8A','#C0614A','#D4963A','#4A90C2','#9C5FA8','#7A8B3C'],rsRows=[],apResMap={},apResFilter=null;
 async function rsLoad(){
   var r=await db.from('clinic_resources').select('*').eq('clinic_id',cid).order('sort').order('name');rsRows=r.data||[];
@@ -1942,7 +1995,8 @@ async function rsRename(id){var x=rsRows.find(function(r){return r.id===id;});va
   await db.from('clinic_resources').update({name:n.trim()}).eq('id',id);rsLoad();}
 async function rsToggle(id){var x=rsRows.find(function(r){return r.id===id;});await db.from('clinic_resources').update({active:!x.active}).eq('id',id);rsLoad();}
 async function apRes(items){
-  var r=await db.rpc('get_appointment_extras',{p_clinic_id:cid,p_date:fmtDate(apptDate)});apResMap={};apExtras={};
+  var rr=await Promise.all([db.rpc('get_appointment_extras',{p_clinic_id:cid,p_date:fmtDate(apptDate)}),db.rpc('get_appointment_practitioners',{p_clinic_id:cid,p_date:fmtDate(apptDate)}),prRows.length?Promise.resolve(null):prFetch()]);
+  var r=rr[0];apResMap={};apExtras={};apPracMap={};(rr[1].data||[]).forEach(function(x){apPracMap[x.appointment_id]=x.practitioner_id;});
   (r.data||[]).forEach(function(x){apResMap[x.appointment_id]=x.resource_ids||[];apExtras[x.appointment_id]=x;});
   if(!rsRows.length){var q=await db.from('clinic_resources').select('*').eq('clinic_id',cid).order('sort').order('name');rsRows=q.data||[];}
   items.forEach(function(a,i){var ex=apExtras[a.appointment_id],box=document.getElementById('apx_'+i);if(!box||!ex)return;
@@ -1954,14 +2008,21 @@ async function apRes(items){
   items.forEach(function(a,i){var ids=apResMap[a.appointment_id]||[],box=document.getElementById('apx_'+i);if(!box||!ids.length)return;
     box.insertAdjacentHTML('beforeend',ids.map(function(id){var x=rsRows.find(function(r){return r.id===id;});if(!x)return '';
       return '<span style="background:'+mxE(x.color||'#B89A6A')+'33;border-radius:6px;padding:2px 8px;font-size:12px">'+(x.kind==='device'?'⚙︎ ':'🚪 ')+mxE(x.name)+'</span>';}).join(''));});
-  var act=rsRows.filter(function(r){return r.active;}),f=document.getElementById('apptResF');
+  var actP=prRows.filter(function(r){return r.active;});
+  if(actP.length)items.forEach(function(a,i){var box=document.getElementById('apx_'+i);if(!box)return;var cur=apPracMap[a.appointment_id]||'';
+    var opts=prRows.filter(function(p){return p.active||p.id===cur;});
+    box.insertAdjacentHTML('afterbegin','<select class="bk-in" style="padding:2px 6px;font-size:12px;height:auto;border-color:'+(cur?mxE(prColor(cur))+'99':'rgba(245,241,235,.15)')+'" onchange="apPracSet(\''+a.appointment_id+'\',this)"><option value="">👤 '+mxTr('No doctor','Doktor yok')+'</option>'+
+      opts.map(function(p){return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>👤 '+mxE(p.name)+'</option>';}).join('')+'</select>');});
+  var act=actP.concat(rsRows.filter(function(r){return r.active;})),f=document.getElementById('apptResF');
   f.innerHTML=act.length&&items.length?[null].concat(act).map(function(x){var on=apResFilter===(x?x.id:null);
     return '<button class="bimp2" style="padding:4px 12px;font-size:12px;'+(on?'border-color:#B89A6A;color:#D4B896':'')+'" onclick="apResSet('+(x?'\''+x.id+'\'':'null')+')">'+(x?mxE(x.name):mxTr('All','Tümü'))+'</button>';}).join(''):'';
   apResApply(items);
 }
 function apResSet(id){apResFilter=id;apRes(window._appts||[]);}
 function apResApply(items){var cards=document.querySelectorAll('#apptList .list-card');
-  items.forEach(function(a,i){if(cards[i])cards[i].style.display=!apResFilter||(apResMap[a.appointment_id]||[]).indexOf(apResFilter)>=0?'':'none';});}
+  items.forEach(function(a,i){if(cards[i])cards[i].style.display=!apResFilter||apPracMap[a.appointment_id]===apResFilter||(apResMap[a.appointment_id]||[]).indexOf(apResFilter)>=0?'':'none';});}
+async function apPracSet(aid,el){var v=el.value||null;var r=await db.from('appointments').update({practitioner_id:v}).eq('id',aid);
+  if(r.error){apMsg(r.error.message,true);el.value=apPracMap[aid]||'';return;}apPracMap[aid]=v;el.style.borderColor=v?prColor(v)+'99':'rgba(245,241,235,.15)';}
 
 // ============ BOOKING WAITING LIST ============
 var WL_MSG={tr:['Merhaba [name], [date] için beklediğiniz randevuda yer açıldı. Bize yazabilir ya da buradan randevu alabilirsiniz: [link]','Merhaba [name], randevu için yer açıldı. Bize yazabilir ya da buradan randevu alabilirsiniz: [link]'],
@@ -2345,13 +2406,14 @@ async function blLoad(){
   var r=await db.from('clinic_time_blocks').select('*').eq('clinic_id',cid).gte('block_date',mxIso(new Date())).order('block_date').order('start_time');
   var rows=r.data||[],t=document.getElementById('blList');
   t.innerHTML=rows.length?rows.map(function(b){var s=String(b.start_time).slice(0,5),e=String(b.end_time).slice(0,5);
-    return '<tr><td>'+mxDate(b.block_date)+'</td><td>'+(s==='00:00'&&e==='23:59'?trText('All day'):s+' – '+e)+'</td><td>'+bkEsc(b.reason||'')+'</td><td><button class="bk-x" onclick="blDel(\''+b.id+'\')">✕</button></td></tr>';}).join('')
+    return '<tr><td>'+mxDate(b.block_date)+'</td><td>'+(s==='00:00'&&e==='23:59'?trText('All day'):s+' – '+e)+'</td><td>'+bkEsc([prName(b.practitioner_id),b.reason].filter(Boolean).join(' · '))+'</td><td><button class="bk-x" onclick="blDel(\''+b.id+'\')">✕</button></td></tr>';}).join('')
     :'<tr><td style="color:rgba(245,241,235,.4)">'+trText('No blocked times.')+'</td></tr>';
 }
 async function blAdd(){
   var all=document.getElementById('blAll').checked,s=all?'00:00':document.getElementById('blStart').value,e=all?'23:59':document.getElementById('blEnd').value;
   if(!document.getElementById('blDate').value||!s||!e||e<=s){apMsg(trText('End time must be after start time.'),true);return;}
-  var r=await db.from('clinic_time_blocks').insert({clinic_id:cid,block_date:document.getElementById('blDate').value,start_time:s,end_time:e,reason:document.getElementById('blReason').value.trim()||null});
+  var bp=document.getElementById('blPrac').value||null;
+  var r=await db.from('clinic_time_blocks').insert({clinic_id:cid,block_date:document.getElementById('blDate').value,start_time:s,end_time:e,reason:document.getElementById('blReason').value.trim()||null,practitioner_id:bp});
   if(r.error){apMsg(r.error.message,true);return;}document.getElementById('blReason').value='';blLoad();apptBlocks();
 }
 async function blDel(id){await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();apptBlocks();}
@@ -2510,7 +2572,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ön Bilgi Formu</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12101E">
+<style>
+:root{--ink:#12101E;--ink2:#1C1929;--gold:#B89A6A;--goldlt:#D4B896;--cream:#F5F1EB;--mid:rgba(245,241,235,.62);--dim:rgba(245,241,235,.38);--line:rgba(255,255,255,.08);--green:#3AB06A;--red:#C0614A}
+html.light{--ink:#FFFFFF;--ink2:#F7F5F1;--gold:#9A7B4C;--goldlt:#7A5F36;--cream:#1C1929;--mid:rgba(28,25,41,.68);--dim:rgba(28,25,41,.45);--line:rgba(0,0,0,.10)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+html.embed,html.embed body{background:transparent}
+.wrap{max-width:600px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:600}
+h1{font-size:24px;font-weight:600;margin-top:10px;line-height:1.25}
+.sub{color:var(--mid);font-size:14px;margin-top:6px;line-height:1.5}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:6px 16px;margin-top:16px}
+.q{padding:14px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:none}
+.q.miss .qt{color:var(--red)}
+.qt{font-size:15px;line-height:1.45}
+.yn{display:flex;gap:8px;margin-top:10px}
+.yn button{flex:1;padding:11px 0;border-radius:10px;border:1px solid var(--line);background:var(--ink);color:var(--cream);font-size:15px;cursor:pointer;font-family:inherit}
+.yn button.sel.y{background:rgba(192,97,74,.16);border-color:var(--red);color:var(--red);font-weight:600}
+.yn button.sel.n{background:rgba(58,176,106,.14);border-color:var(--green);color:var(--green);font-weight:600}
+input,textarea{width:100%;margin-top:10px;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none}
+input:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:80px}
+.chk{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--mid);line-height:1.5;margin-top:16px;cursor:pointer}
+.chk input{width:22px;height:22px;margin:0;flex:0 0 22px;accent-color:var(--gold)}
+.btn{width:100%;margin-top:16px;padding:15px;border:none;border-radius:12px;background:var(--gold);color:var(--ink);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit}
+html.light .btn{color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.err{color:var(--red);font-size:14px;margin-top:12px}
+.ok{text-align:center;padding:22px 0}
+.ok .tick{width:64px;height:64px;border-radius:50%;background:rgba(58,176,106,.15);color:var(--green);font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.foot{margin-top:28px;text-align:center;color:var(--dim);font-size:11px}
+.foot a{color:var(--dim)}
+.spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+<script>(function(){var q=new URLSearchParams(location.search),c=document.documentElement.classList;if(q.get('theme')==='light')c.add('light');if(q.get('embed')==='1')c.add('embed');})();</script>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<script>
+const SU = 'https://hugxacklprzujswtaike.supabase.co';
+const SK = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+
+// [key, hasDetail]
+const QS = [['pregnant'], ['allergy', 1], ['meds', 1], ['anticoag'], ['chronic', 1], ['autoimmune'], ['neuro'],
+  ['isotretinoin'], ['herpes'], ['keloid'], ['skin_infection'], ['prev_aesthetic', 1], ['perm_filler'], ['smoking']];
+
+const LANGS = {
+tr: { title: 'Ön Bilgi Formu', hi: (n) => n ? `Sayın ${n},` : 'Merhaba,', intro: 'İşleminizin güvenli olması için lütfen aşağıdaki soruları yanıtlayın. Yaklaşık 2 dakika sürer.',
+  yes: 'Evet', no: 'Hayır', detail: 'Lütfen belirtin', note: 'Eklemek istediğiniz bir şey var mı? (isteğe bağlı)',
+  consent: 'Verdiğim bilgilerin doğru olduğunu ve yalnızca tedavim için kliniğimle paylaşılacağını onaylıyorum.',
+  submit: 'Formu gönder', sending: 'Gönderiliyor…', done: 'Teşekkürler!', doneSub: 'Formunuz kliniğe iletildi.',
+  completed: 'Bu form daha önce doldurulmuş. Teşekkürler.', expired: 'Bu formun süresi dolmuş. Lütfen kliniği arayın.',
+  notFound: 'Form bulunamadı.', errMissing: 'Lütfen işaretli soruları yanıtlayın.', errConsent: 'Lütfen onay kutusunu işaretleyin.',
+  generic: 'Bir sorun oluştu, lütfen tekrar deneyin.', call: 'Ara',
+  q: { pregnant: 'Hamile misiniz, hamilelik planlıyor musunuz ya da emziriyor musunuz?',
+    allergy: 'Bilinen bir alerjiniz var mı? (ilaç, lokal anestezik/lidokain, lateks, gıda vb.)',
+    meds: 'Düzenli kullandığınız ilaç veya takviye var mı?',
+    anticoag: 'Kan sulandırıcı veya pıhtılaşmayı etkileyen bir şey kullanıyor musunuz? (aspirin, warfarin, omega-3, E vitamini, ginkgo vb.)',
+    chronic: 'Kronik bir hastalığınız var mı? (diyabet, kalp, tansiyon, epilepsi, kanama bozukluğu, kanser vb.)',
+    autoimmune: 'Otoimmün veya romatizmal bir hastalığınız var mı? (lupus, romatoid artrit, skleroderma vb.)',
+    neuro: 'Kas veya sinir hastalığınız var mı? (myastenia gravis, ALS vb.)',
+    isotretinoin: 'Son 6 ayda akne ilacı (isotretinoin: Roaccutane, Zoretanin vb.) kullandınız mı?',
+    herpes: 'Sık uçuk (herpes) çıkar mı?',
+    keloid: 'Yaralarınız kabarık iz (keloid) bırakarak mı iyileşir?',
+    skin_infection: 'Uygulama bölgesinde şu an aktif sivilce, enfeksiyon, yara veya döküntü var mı?',
+    prev_aesthetic: 'Daha önce estetik işlem yaptırdınız mı? (botoks, dolgu, iple askı, lazer vb.)',
+    perm_filler: 'Kalıcı veya yarı kalıcı dolgu yaptırdınız mı?',
+    smoking: 'Sigara kullanıyor musunuz?' },
+  d: { allergy: 'Neye alerjiniz var?', meds: 'İlaç / takviye adları', chronic: 'Hangi hastalık?', prev_aesthetic: 'Hangi işlem, ne zaman?' } },
+en: { title: 'Pre-visit Health Form', hi: (n) => n ? `Dear ${n},` : 'Hello,', intro: 'To keep your treatment safe, please answer the questions below. It takes about 2 minutes.',
+  yes: 'Yes', no: 'No', detail: 'Please specify', note: 'Anything else you would like to add? (optional)',
+  consent: 'I confirm that the information I have given is accurate and will only be shared with my clinic for my treatment.',
+  submit: 'Submit form', sending: 'Sending…', done: 'Thank you!', doneSub: 'Your form has been sent to the clinic.',
+  completed: 'This form has already been completed. Thank you.', expired: 'This form has expired. Please call the clinic.',
+  notFound: 'Form not found.', errMissing: 'Please answer the highlighted questions.', errConsent: 'Please tick the confirmation box.',
+  generic: 'Something went wrong, please try again.', call: 'Call',
+  q: { pregnant: 'Are you pregnant, planning a pregnancy or breastfeeding?',
+    allergy: 'Do you have any known allergies? (medication, local anaesthetic/lidocaine, latex, food, etc.)',
+    meds: 'Do you take any medication or supplements regularly?',
+    anticoag: 'Do you take blood thinners or anything that affects clotting? (aspirin, warfarin, omega-3, vitamin E, ginkgo, etc.)',
+    chronic: 'Do you have a chronic illness? (diabetes, heart disease, high blood pressure, epilepsy, bleeding disorder, cancer, etc.)',
+    autoimmune: 'Do you have an autoimmune or rheumatic disease? (lupus, rheumatoid arthritis, scleroderma, etc.)',
+    neuro: 'Do you have a muscle or nerve disease? (myasthenia gravis, ALS, etc.)',
+    isotretinoin: 'Have you taken acne medication (isotretinoin, e.g. Roaccutane) in the last 6 months?',
+    herpes: 'Do you get cold sores (herpes) often?',
+    keloid: 'Do your wounds heal with raised scars (keloids)?',
+    skin_infection: 'Is there currently active acne, infection, a wound or a rash in the treatment area?',
+    prev_aesthetic: 'Have you had aesthetic treatments before? (botox, fillers, thread lift, laser, etc.)',
+    perm_filler: 'Have you had permanent or semi-permanent fillers?',
+    smoking: 'Do you smoke?' },
+  d: { allergy: 'What are you allergic to?', meds: 'Medication / supplement names', chronic: 'Which illness?', prev_aesthetic: 'Which treatment, and when?' } },
+de: { title: 'Gesundheitsfragebogen', hi: (n) => n ? `Liebe/r ${n},` : 'Hallo,', intro: 'Damit Ihre Behandlung sicher ist, beantworten Sie bitte die folgenden Fragen. Das dauert etwa 2 Minuten.',
+  yes: 'Ja', no: 'Nein', detail: 'Bitte angeben', note: 'Möchten Sie noch etwas ergänzen? (optional)',
+  consent: 'Ich bestätige, dass meine Angaben korrekt sind und nur für meine Behandlung an meine Praxis weitergegeben werden.',
+  submit: 'Formular senden', sending: 'Wird gesendet…', done: 'Vielen Dank!', doneSub: 'Ihr Formular wurde an die Praxis gesendet.',
+  completed: 'Dieses Formular wurde bereits ausgefüllt. Vielen Dank.', expired: 'Dieses Formular ist abgelaufen. Bitte rufen Sie die Praxis an.',
+  notFound: 'Formular nicht gefunden.', errMissing: 'Bitte beantworten Sie die markierten Fragen.', errConsent: 'Bitte setzen Sie das Häkchen zur Bestätigung.',
+  generic: 'Etwas ist schiefgelaufen, bitte erneut versuchen.', call: 'Anrufen',
+  q: { pregnant: 'Sind Sie schwanger, planen Sie eine Schwangerschaft oder stillen Sie?',
+    allergy: 'Haben Sie bekannte Allergien? (Medikamente, Lokalanästhetika/Lidocain, Latex, Lebensmittel usw.)',
+    meds: 'Nehmen Sie regelmäßig Medikamente oder Nahrungsergänzungsmittel ein?',
+    anticoag: 'Nehmen Sie Blutverdünner oder etwas, das die Gerinnung beeinflusst? (Aspirin, Warfarin, Omega-3, Vitamin E, Ginkgo usw.)',
+    chronic: 'Haben Sie eine chronische Erkrankung? (Diabetes, Herzerkrankung, Bluthochdruck, Epilepsie, Gerinnungsstörung, Krebs usw.)',
+    autoimmune: 'Haben Sie eine Autoimmun- oder rheumatische Erkrankung? (Lupus, rheumatoide Arthritis, Sklerodermie usw.)',
+    neuro: 'Haben Sie eine Muskel- oder Nervenerkrankung? (Myasthenia gravis, ALS usw.)',
+    isotretinoin: 'Haben Sie in den letzten 6 Monaten ein Aknemedikament (Isotretinoin) eingenommen?',
+    herpes: 'Bekommen Sie häufig Lippenherpes?',
+    keloid: 'Heilen Ihre Wunden mit wulstigen Narben (Keloiden) ab?',
+    skin_infection: 'Gibt es im Behandlungsbereich derzeit aktive Akne, eine Infektion, eine Wunde oder einen Ausschlag?',
+    prev_aesthetic: 'Hatten Sie bereits ästhetische Behandlungen? (Botox, Filler, Fadenlifting, Laser usw.)',
+    perm_filler: 'Hatten Sie permanente oder semipermanente Filler?',
+    smoking: 'Rauchen Sie?' },
+  d: { allergy: 'Wogegen sind Sie allergisch?', meds: 'Namen der Medikamente / Präparate', chronic: 'Welche Erkrankung?', prev_aesthetic: 'Welche Behandlung und wann?' } },
+es: { title: 'Formulario previo de salud', hi: (n) => n ? `Estimado/a ${n}:` : 'Hola:', intro: 'Para que su tratamiento sea seguro, responda a las siguientes preguntas. Se tarda unos 2 minutos.',
+  yes: 'Sí', no: 'No', detail: 'Indíquelo, por favor', note: '¿Desea añadir algo más? (opcional)',
+  consent: 'Confirmo que la información facilitada es correcta y que solo se compartirá con mi clínica para mi tratamiento.',
+  submit: 'Enviar formulario', sending: 'Enviando…', done: '¡Gracias!', doneSub: 'Su formulario se ha enviado a la clínica.',
+  completed: 'Este formulario ya se ha completado. Gracias.', expired: 'Este formulario ha caducado. Llame a la clínica, por favor.',
+  notFound: 'Formulario no encontrado.', errMissing: 'Responda a las preguntas marcadas, por favor.', errConsent: 'Marque la casilla de confirmación, por favor.',
+  generic: 'Algo salió mal, inténtelo de nuevo.', call: 'Llamar',
+  q: { pregnant: '¿Está embarazada, planea un embarazo o está en periodo de lactancia?',
+    allergy: '¿Tiene alguna alergia conocida? (medicamentos, anestésico local/lidocaína, látex, alimentos, etc.)',
+    meds: '¿Toma algún medicamento o suplemento de forma habitual?',
+    anticoag: '¿Toma anticoagulantes o algo que afecte a la coagulación? (aspirina, warfarina, omega-3, vitamina E, ginkgo, etc.)',
+    chronic: '¿Tiene alguna enfermedad crónica? (diabetes, cardiopatía, hipertensión, epilepsia, trastorno de la coagulación, cáncer, etc.)',
+    autoimmune: '¿Tiene alguna enfermedad autoinmune o reumática? (lupus, artritis reumatoide, esclerodermia, etc.)',
+    neuro: '¿Tiene alguna enfermedad muscular o nerviosa? (miastenia gravis, ELA, etc.)',
+    isotretinoin: '¿Ha tomado medicación para el acné (isotretinoína) en los últimos 6 meses?',
+    herpes: '¿Le salen calenturas (herpes labial) con frecuencia?',
+    keloid: '¿Sus heridas cicatrizan con cicatrices abultadas (queloides)?',
+    skin_infection: '¿Hay actualmente acné activo, infección, herida o erupción en la zona a tratar?',
+    prev_aesthetic: '¿Se ha realizado tratamientos estéticos antes? (bótox, rellenos, hilos tensores, láser, etc.)',
+    perm_filler: '¿Se ha puesto rellenos permanentes o semipermanentes?',
+    smoking: '¿Fuma?' },
+  d: { allergy: '¿A qué es alérgico/a?', meds: 'Nombres de medicamentos / suplementos', chronic: '¿Qué enfermedad?', prev_aesthetic: '¿Qué tratamiento y cuándo?' } },
+fr: { title: 'Questionnaire de santé', hi: (n) => n ? `Bonjour ${n},` : 'Bonjour,', intro: 'Pour que votre soin se déroule en toute sécurité, merci de répondre aux questions ci-dessous. Cela prend environ 2 minutes.',
+  yes: 'Oui', no: 'Non', detail: 'Merci de préciser', note: 'Souhaitez-vous ajouter quelque chose ? (facultatif)',
+  consent: 'Je confirme que les informations fournies sont exactes et ne seront partagées qu’avec ma clinique pour mon traitement.',
+  submit: 'Envoyer le formulaire', sending: 'Envoi…', done: 'Merci !', doneSub: 'Votre formulaire a été transmis à la clinique.',
+  completed: 'Ce formulaire a déjà été rempli. Merci.', expired: 'Ce formulaire a expiré. Merci d’appeler la clinique.',
+  notFound: 'Formulaire introuvable.', errMissing: 'Merci de répondre aux questions signalées.', errConsent: 'Merci de cocher la case de confirmation.',
+  generic: 'Un problème est survenu, veuillez réessayer.', call: 'Appeler',
+  q: { pregnant: 'Êtes-vous enceinte, prévoyez-vous une grossesse ou allaitez-vous ?',
+    allergy: 'Avez-vous des allergies connues ? (médicaments, anesthésique local/lidocaïne, latex, aliments, etc.)',
+    meds: 'Prenez-vous régulièrement des médicaments ou des compléments ?',
+    anticoag: 'Prenez-vous des anticoagulants ou un produit qui agit sur la coagulation ? (aspirine, warfarine, oméga-3, vitamine E, ginkgo, etc.)',
+    chronic: 'Avez-vous une maladie chronique ? (diabète, maladie cardiaque, hypertension, épilepsie, trouble de la coagulation, cancer, etc.)',
+    autoimmune: 'Avez-vous une maladie auto-immune ou rhumatismale ? (lupus, polyarthrite rhumatoïde, sclérodermie, etc.)',
+    neuro: 'Avez-vous une maladie musculaire ou nerveuse ? (myasthénie, SLA, etc.)',
+    isotretinoin: 'Avez-vous pris un traitement contre l’acné (isotrétinoïne) au cours des 6 derniers mois ?',
+    herpes: 'Avez-vous souvent des boutons de fièvre (herpès) ?',
+    keloid: 'Vos plaies cicatrisent-elles en formant des cicatrices épaisses (chéloïdes) ?',
+    skin_infection: 'Y a-t-il actuellement de l’acné active, une infection, une plaie ou une éruption sur la zone à traiter ?',
+    prev_aesthetic: 'Avez-vous déjà eu des soins esthétiques ? (botox, injections de comblement, fils tenseurs, laser, etc.)',
+    perm_filler: 'Avez-vous eu des produits de comblement permanents ou semi-permanents ?',
+    smoking: 'Fumez-vous ?' },
+  d: { allergy: 'À quoi êtes-vous allergique ?', meds: 'Noms des médicaments / compléments', chronic: 'Quelle maladie ?', prev_aesthetic: 'Quel soin, et quand ?' } },
+it: { title: 'Questionario sanitario', hi: (n) => n ? `Gentile ${n},` : 'Salve,', intro: 'Per la sicurezza del trattamento, risponda alle domande qui sotto. Ci vogliono circa 2 minuti.',
+  yes: 'Sì', no: 'No', detail: 'Specificare', note: 'Vuole aggiungere qualcosa? (facoltativo)',
+  consent: 'Confermo che le informazioni fornite sono corrette e saranno condivise solo con la mia clinica per il mio trattamento.',
+  submit: 'Invia modulo', sending: 'Invio…', done: 'Grazie!', doneSub: 'Il modulo è stato inviato alla clinica.',
+  completed: 'Questo modulo è già stato compilato. Grazie.', expired: 'Questo modulo è scaduto. Chiami la clinica.',
+  notFound: 'Modulo non trovato.', errMissing: 'Risponda alle domande evidenziate.', errConsent: 'Spunti la casella di conferma.',
+  generic: 'Si è verificato un problema, riprovi.', call: 'Chiama',
+  q: { pregnant: 'È incinta, sta pianificando una gravidanza o sta allattando?',
+    allergy: 'Ha allergie note? (farmaci, anestetico locale/lidocaina, lattice, alimenti, ecc.)',
+    meds: 'Assume regolarmente farmaci o integratori?',
+    anticoag: 'Assume anticoagulanti o sostanze che influiscono sulla coagulazione? (aspirina, warfarin, omega-3, vitamina E, ginkgo, ecc.)',
+    chronic: 'Ha una malattia cronica? (diabete, cardiopatia, ipertensione, epilessia, disturbi della coagulazione, tumore, ecc.)',
+    autoimmune: 'Ha una malattia autoimmune o reumatica? (lupus, artrite reumatoide, sclerodermia, ecc.)',
+    neuro: 'Ha una malattia muscolare o nervosa? (miastenia gravis, SLA, ecc.)',
+    isotretinoin: 'Ha assunto farmaci per l’acne (isotretinoina) negli ultimi 6 mesi?',
+    herpes: 'Le capita spesso l’herpes labiale?',
+    keloid: 'Le sue ferite guariscono con cicatrici in rilievo (cheloidi)?',
+    skin_infection: 'Nella zona da trattare sono presenti ora acne attiva, infezioni, ferite o eruzioni?',
+    prev_aesthetic: 'Ha già fatto trattamenti estetici? (botox, filler, fili di trazione, laser, ecc.)',
+    perm_filler: 'Ha fatto filler permanenti o semipermanenti?',
+    smoking: 'Fuma?' },
+  d: { allergy: 'A cosa è allergico/a?', meds: 'Nomi di farmaci / integratori', chronic: 'Quale malattia?', prev_aesthetic: 'Quale trattamento e quando?' } },
+pt: { title: 'Questionário de saúde', hi: (n) => n ? `Caro/a ${n},` : 'Olá,', intro: 'Para que o seu tratamento seja seguro, responda às perguntas abaixo. Demora cerca de 2 minutos.',
+  yes: 'Sim', no: 'Não', detail: 'Especifique', note: 'Quer acrescentar algo? (opcional)',
+  consent: 'Confirmo que as informações fornecidas são verdadeiras e serão partilhadas apenas com a minha clínica para o meu tratamento.',
+  submit: 'Enviar formulário', sending: 'A enviar…', done: 'Obrigado!', doneSub: 'O seu formulário foi enviado para a clínica.',
+  completed: 'Este formulário já foi preenchido. Obrigado.', expired: 'Este formulário expirou. Ligue para a clínica.',
+  notFound: 'Formulário não encontrado.', errMissing: 'Responda às perguntas assinaladas.', errConsent: 'Assinale a caixa de confirmação.',
+  generic: 'Ocorreu um problema, tente novamente.', call: 'Ligar',
+  q: { pregnant: 'Está grávida, a planear uma gravidez ou a amamentar?',
+    allergy: 'Tem alguma alergia conhecida? (medicamentos, anestésico local/lidocaína, látex, alimentos, etc.)',
+    meds: 'Toma regularmente algum medicamento ou suplemento?',
+    anticoag: 'Toma anticoagulantes ou algo que afete a coagulação? (aspirina, varfarina, ómega-3, vitamina E, ginkgo, etc.)',
+    chronic: 'Tem alguma doença crónica? (diabetes, doença cardíaca, hipertensão, epilepsia, distúrbio de coagulação, cancro, etc.)',
+    autoimmune: 'Tem alguma doença autoimune ou reumática? (lúpus, artrite reumatoide, esclerodermia, etc.)',
+    neuro: 'Tem alguma doença muscular ou neurológica? (miastenia gravis, ELA, etc.)',
+    isotretinoin: 'Tomou medicação para o acne (isotretinoína) nos últimos 6 meses?',
+    herpes: 'Tem herpes labial com frequência?',
+    keloid: 'As suas feridas cicatrizam com cicatrizes elevadas (queloides)?',
+    skin_infection: 'Há neste momento acne ativa, infeção, ferida ou erupção na zona a tratar?',
+    prev_aesthetic: 'Já fez tratamentos estéticos? (botox, preenchimentos, fios tensores, laser, etc.)',
+    perm_filler: 'Já fez preenchimentos permanentes ou semipermanentes?',
+    smoking: 'Fuma?' },
+  d: { allergy: 'É alérgico/a a quê?', meds: 'Nomes dos medicamentos / suplementos', chronic: 'Qual doença?', prev_aesthetic: 'Que tratamento e quando?' } },
+ru: { title: 'Анкета о здоровье', hi: (n) => n ? `Уважаемый(ая) ${n},` : 'Здравствуйте,', intro: 'Чтобы процедура прошла безопасно, пожалуйста, ответьте на вопросы ниже. Это займёт около 2 минут.',
+  yes: 'Да', no: 'Нет', detail: 'Уточните, пожалуйста', note: 'Хотите что-то добавить? (необязательно)',
+  consent: 'Подтверждаю, что указанные сведения верны и будут переданы только моей клинике для лечения.',
+  submit: 'Отправить анкету', sending: 'Отправка…', done: 'Спасибо!', doneSub: 'Ваша анкета отправлена в клинику.',
+  completed: 'Эта анкета уже заполнена. Спасибо.', expired: 'Срок действия анкеты истёк. Пожалуйста, позвоните в клинику.',
+  notFound: 'Анкета не найдена.', errMissing: 'Пожалуйста, ответьте на отмеченные вопросы.', errConsent: 'Пожалуйста, отметьте галочку подтверждения.',
+  generic: 'Что-то пошло не так, попробуйте ещё раз.', call: 'Позвонить',
+  q: { pregnant: 'Вы беременны, планируете беременность или кормите грудью?',
+    allergy: 'Есть ли у вас известная аллергия? (лекарства, местные анестетики/лидокаин, латекс, продукты и т. п.)',
+    meds: 'Принимаете ли вы регулярно лекарства или добавки?',
+    anticoag: 'Принимаете ли вы препараты, разжижающие кровь или влияющие на свёртываемость? (аспирин, варфарин, омега-3, витамин E, гинкго и т. п.)',
+    chronic: 'Есть ли у вас хроническое заболевание? (диабет, болезни сердца, гипертония, эпилепсия, нарушение свёртываемости, онкология и т. п.)',
+    autoimmune: 'Есть ли у вас аутоиммунное или ревматическое заболевание? (волчанка, ревматоидный артрит, склеродермия и т. п.)',
+    neuro: 'Есть ли у вас заболевание мышц или нервной системы? (миастения, БАС и т. п.)',
+    isotretinoin: 'Принимали ли вы препараты от акне (изотретиноин) за последние 6 месяцев?',
+    herpes: 'Часто ли у вас бывает герпес на губах?',
+    keloid: 'Заживают ли ваши раны с образованием выпуклых рубцов (келоидов)?',
+    skin_infection: 'Есть ли сейчас в зоне процедуры активные высыпания, инфекция, рана или сыпь?',
+    prev_aesthetic: 'Делали ли вы ранее эстетические процедуры? (ботокс, филлеры, нитевой лифтинг, лазер и т. п.)',
+    perm_filler: 'Вводили ли вам перманентные или полуперманентные филлеры?',
+    smoking: 'Вы курите?' },
+  d: { allergy: 'На что у вас аллергия?', meds: 'Названия лекарств / добавок', chronic: 'Какое заболевание?', prev_aesthetic: 'Какая процедура и когда?' } },
+ko: { title: '사전 건강 문진표', hi: (n) => n ? `${n}님,` : '안녕하세요,', intro: '안전한 시술을 위해 아래 질문에 답해 주세요. 약 2분 정도 걸립니다.',
+  yes: '예', no: '아니요', detail: '자세히 적어 주세요', note: '추가로 알려 주실 내용이 있나요? (선택)',
+  consent: '제공한 정보가 사실이며 저의 치료를 위해 병원에만 공유된다는 것에 동의합니다.',
+  submit: '제출하기', sending: '전송 중…', done: '감사합니다!', doneSub: '문진표가 병원에 전달되었습니다.',
+  completed: '이미 작성된 문진표입니다. 감사합니다.', expired: '문진표 기한이 지났습니다. 병원에 전화해 주세요.',
+  notFound: '문진표를 찾을 수 없습니다.', errMissing: '표시된 질문에 답해 주세요.', errConsent: '확인란에 체크해 주세요.',
+  generic: '문제가 발생했습니다. 다시 시도해 주세요.', call: '전화',
+  q: { pregnant: '임신 중이거나 임신 계획이 있거나 수유 중이신가요?',
+    allergy: '알려진 알레르기가 있나요? (약물, 국소마취제/리도카인, 라텍스, 음식 등)',
+    meds: '정기적으로 복용하는 약이나 보충제가 있나요?',
+    anticoag: '혈액 희석제나 응고에 영향을 주는 것을 복용하나요? (아스피린, 와파린, 오메가-3, 비타민 E, 은행잎 등)',
+    chronic: '만성 질환이 있나요? (당뇨, 심장질환, 고혈압, 뇌전증, 출혈성 질환, 암 등)',
+    autoimmune: '자가면역 또는 류마티스 질환이 있나요? (루푸스, 류마티스 관절염, 경피증 등)',
+    neuro: '근육 또는 신경 질환이 있나요? (중증근무력증, 루게릭병 등)',
+    isotretinoin: '최근 6개월 내 여드름 약(이소트레티노인)을 복용했나요?',
+    herpes: '입술 포진(헤르페스)이 자주 생기나요?',
+    keloid: '상처가 아물 때 부풀어 오른 흉터(켈로이드)가 생기나요?',
+    skin_infection: '시술 부위에 현재 여드름, 감염, 상처 또는 발진이 있나요?',
+    prev_aesthetic: '이전에 미용 시술을 받은 적이 있나요? (보톡스, 필러, 실리프팅, 레이저 등)',
+    perm_filler: '영구 또는 반영구 필러를 맞은 적이 있나요?',
+    smoking: '흡연하시나요?' },
+  d: { allergy: '무엇에 알레르기가 있나요?', meds: '약 / 보충제 이름', chronic: '어떤 질환인가요?', prev_aesthetic: '어떤 시술을 언제 받았나요?' } },
+zh: { title: '术前健康问卷', hi: (n) => n ? `${n}，您好：` : '您好：', intro: '为确保治疗安全，请回答以下问题，大约需要 2 分钟。',
+  yes: '是', no: '否', detail: '请说明', note: '还有其他需要补充的吗？（选填）',
+  consent: '我确认所填信息真实准确，且仅会提供给我的诊所用于本人治疗。',
+  submit: '提交问卷', sending: '正在提交…', done: '谢谢！', doneSub: '您的问卷已发送至诊所。',
+  completed: '此问卷已填写，谢谢。', expired: '此问卷已过期，请致电诊所。',
+  notFound: '未找到问卷。', errMissing: '请回答标出的问题。', errConsent: '请勾选确认框。',
+  generic: '出现问题，请重试。', call: '致电',
+  q: { pregnant: '您是否怀孕、计划怀孕或正在哺乳？',
+    allergy: '您是否有已知过敏？（药物、局部麻醉药/利多卡因、乳胶、食物等）',
+    meds: '您是否经常服用药物或保健品？',
+    anticoag: '您是否服用抗凝药或影响凝血的物品？（阿司匹林、华法林、鱼油、维生素 E、银杏等）',
+    chronic: '您是否有慢性疾病？（糖尿病、心脏病、高血压、癫痫、凝血障碍、癌症等）',
+    autoimmune: '您是否有自身免疫或风湿性疾病？（狼疮、类风湿关节炎、硬皮病等）',
+    neuro: '您是否有肌肉或神经疾病？（重症肌无力、渐冻症等）',
+    isotretinoin: '过去 6 个月内是否服用过痤疮药物（异维A酸）？',
+    herpes: '您是否经常长唇疱疹？',
+    keloid: '您的伤口愈合后是否容易形成凸起的瘢痕（瘢痕疙瘩）？',
+    skin_infection: '治疗部位目前是否有活动性痤疮、感染、伤口或皮疹？',
+    prev_aesthetic: '您以前做过医美项目吗？（肉毒素、填充、埋线提升、激光等）',
+    perm_filler: '您是否注射过永久或半永久填充剂？',
+    smoking: '您吸烟吗？' },
+  d: { allergy: '对什么过敏？', meds: '药物 / 保健品名称', chronic: '哪种疾病？', prev_aesthetic: '什么项目，何时做的？' } },
+};
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+document.documentElement.lang = LC;
+document.title = L.title;
+
+const app = document.getElementById('app');
+const st = { info: null, ans: {}, det: {}, note: '', ok: false, busy: false, err: '', miss: [], consent: false, done: false };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+if (document.documentElement.classList.contains('embed') && window.parent !== window) {
+  const post = () => window.parent.postMessage({ aafcBooking: 'intake', aafcIntake: 1, h: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
+  new ResizeObserver(post).observe(document.body);
+}
+
+async function rpc(fn, body) {
+  const r = await fetch(`${SU}/rest/v1/rpc/${fn}`, {
+    method: 'POST', headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+
+function head() {
+  const i = st.info || {};
+  return `<div class="brand">${esc((i.clinic || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`;
+}
+function foot() {
+  const i = st.info || {};
+  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a> · ` : ''}AAFC</div>`;
+}
+function msg(t, tick) {
+  app.innerHTML = head() + `<div class="card ok">${tick ? '<div class="tick">✓</div>' : ''}<div class="sub" style="font-size:15px">${t}</div></div>` + foot();
+}
+
+async function init() {
+  if (!TOKEN) return msg(L.notFound);
+  try { st.info = await rpc('intake_info', { p_token: TOKEN }); } catch (e) { st.info = null; }
+  if (!st.info) return msg(L.notFound);
+  if (st.info.status === 'completed') return msg(L.completed, true);
+  if (st.info.status === 'expired') return msg(L.expired);
+  render();
+}
+
+function setAns(k, v) { st.ans[k] = v; st.miss = st.miss.filter((x) => x !== k); if (!st.miss.length && st.err === L.errMissing) st.err = ''; render(); }
+
+function render() {
+  if (st.done) {
+    app.innerHTML = head() + `<div class="card ok"><div class="tick">✓</div><h1 style="font-size:20px">${L.done}</h1><div class="sub">${L.doneSub}</div></div>` + foot();
+    return;
+  }
+  // keep typed text
+  document.querySelectorAll('[data-det]').forEach((el) => { st.det[el.dataset.det] = el.value; });
+  const nt = document.getElementById('nt'); if (nt) st.note = nt.value;
+  const ck = document.getElementById('ck'); if (ck) st.consent = ck.checked;
+
+  let h = head() + `<div class="sub" style="margin-top:10px">${esc(L.hi(st.info.first_name))}<br>${L.intro}</div><div class="card">`;
+  for (const [k, hasD] of QS) {
+    const v = st.ans[k];
+    h += `<div class="q ${st.miss.includes(k) ? 'miss' : ''}" id="q_${k}"><div class="qt">${L.q[k]}</div>
+      <div class="yn"><button type="button" class="y ${v === 'yes' ? 'sel' : ''}" onclick="setAns('${k}','yes')">${L.yes}</button>
+      <button type="button" class="n ${v === 'no' ? 'sel' : ''}" onclick="setAns('${k}','no')">${L.no}</button></div>
+      ${hasD && v === 'yes' ? `<input data-det="${k}" maxlength="300" placeholder="${esc(L.d[k] || L.detail)}" value="${esc(st.det[k] || '')}">` : ''}</div>`;
+  }
+  h += `<div class="q"><div class="qt">${L.note}</div><textarea id="nt" maxlength="1000">${esc(st.note)}</textarea></div></div>
+    <label class="chk"><input type="checkbox" id="ck" ${st.consent ? 'checked' : ''}><span>${L.consent}</span></label>
+    ${st.err ? `<div class="err">${esc(st.err)}</div>` : ''}
+    <button class="btn" onclick="submitForm()" ${st.busy ? 'disabled' : ''}>${st.busy ? L.sending : L.submit}</button>`;
+  app.innerHTML = h + foot();
+}
+
+async function submitForm() {
+  if (st.busy) return;
+  render(); // sync typed values into state
+  st.miss = QS.map(([k]) => k).filter((k) => !st.ans[k]);
+  if (st.miss.length) {
+    st.err = L.errMissing; render();
+    document.getElementById('q_' + st.miss[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (!st.consent) { st.err = L.errConsent; render(); return; }
+  const answers = { ...st.ans, note: st.note };
+  for (const [k, hasD] of QS) if (hasD && st.ans[k] === 'yes' && st.det[k]) answers[k + '_detail'] = st.det[k];
+  st.busy = true; st.err = ''; render();
+  try {
+    const r = await rpc('intake_submit', { p_token: TOKEN, p_answers: answers, p_lang: LC });
+    st.busy = false;
+    if (r && r.ok) { st.done = true; render(); window.scrollTo(0, 0); return; }
+    if (r?.error === 'completed') return msg(L.completed, true);
+    if (r?.error === 'expired') return msg(L.expired);
+    st.err = L.generic;
+  } catch (e) { st.busy = false; st.err = L.generic; }
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

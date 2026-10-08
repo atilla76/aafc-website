@@ -155,6 +155,18 @@ const ZH = mk({ title: '在线预约', service: '选择服务', date: '日期和
   notFound: '未找到该预约页面或已关闭。', errors: { name: '请输入姓名。', phone: '请输入有效的电话号码。', taken: '该时间刚被预约，请选择其他时间。',
     limit: '尝试次数过多，请致电诊所。', generic: '出现问题，请重试。' },
   waMsg: (n, s, d, t) => `您好，我已为 ${n} 在线预约 ${d} ${t} 的「${s}」。`, call: '致电', kvkk: '您的信息仅为本次预约提供给诊所。' });
+const FORM_CTA = {
+  tr: ['Ön bilgi formunu doldurun', 'Muayeneden önce 2 dakikalık sağlık formunu doldurursanız işleminiz daha hızlı ve güvenli olur.', 'Formu doldur'],
+  en: ['Fill in the health form', 'Completing the 2-minute health form before your visit makes your treatment faster and safer.', 'Fill in the form'],
+  de: ['Gesundheitsfragebogen ausfüllen', 'Wenn Sie den 2-minütigen Fragebogen vorab ausfüllen, wird Ihre Behandlung schneller und sicherer.', 'Fragebogen ausfüllen'],
+  es: ['Rellene el formulario de salud', 'Si rellena el formulario de 2 minutos antes de la visita, su tratamiento será más rápido y seguro.', 'Rellenar formulario'],
+  fr: ['Remplissez le questionnaire de santé', 'Remplir ce questionnaire de 2 minutes avant votre visite rend votre soin plus rapide et plus sûr.', 'Remplir le questionnaire'],
+  it: ['Compili il questionario sanitario', 'Compilare il questionario di 2 minuti prima della visita rende il trattamento più rapido e sicuro.', 'Compila il questionario'],
+  pt: ['Preencha o questionário de saúde', 'Preencher o questionário de 2 minutos antes da consulta torna o tratamento mais rápido e seguro.', 'Preencher questionário'],
+  ru: ['Заполните анкету о здоровье', 'Заполнив 2-минутную анкету до визита, вы сделаете процедуру быстрее и безопаснее.', 'Заполнить анкету'],
+  ko: ['건강 문진표를 작성해 주세요', '방문 전 2분 문진표를 작성하시면 시술이 더 빠르고 안전해집니다.', '문진표 작성'],
+  zh: ['请填写健康问卷', '就诊前花 2 分钟填写问卷，可让治疗更快速、更安全。', '填写问卷'],
+};
 const LANGS = { tr: TR, en: EN, de: DE, es: ES, fr: FR, it: IT, pt: PT, ru: RU, ko: KO, zh: ZH };
 const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
 const LC = (() => {
@@ -279,6 +291,12 @@ function render(keepForm) {
       ${i.phone ? `<a class="btn wa" style="display:block;text-decoration:none" href="${waHref()}" target="_blank" rel="noopener">${L.wa}</a>` : ''}
       <a class="btn ghost" style="display:block;text-decoration:none" href="${icsHref()}" download="randevu.ics">${L.cal}</a>
       </div>`;
+    if (r.intake) {
+      const c = FORM_CTA[LC] || FORM_CTA.en, q = new URLSearchParams(location.search);
+      const fu = `form?t=${encodeURIComponent(r.intake)}&lang=${LC}${q.get('theme') ? '&theme=' + encodeURIComponent(q.get('theme')) : ''}${q.get('embed') ? '&embed=1' : ''}`;
+      h += `<div class="card" style="border-color:var(--gold)"><div class="step">${c[0]}</div><div class="sub" style="margin-top:0">${c[1]}</div>
+        <a class="btn" style="display:block;text-decoration:none;text-align:center" href="${fu}">${c[2]}</a></div>`;
+    }
     app.innerHTML = h + foot();
     return;
   }

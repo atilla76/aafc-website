@@ -1539,6 +1539,9 @@ function mxOpen(title,body,btns){
   document.getElementById('mxModal').style.display='flex';
 }
 function mxClose(){document.getElementById('mxModal').style.display='none';}
+// WhatsApp after an async step: browsers may block the pop-up, so also show a clickable button
+function mxWaOpen(url,el){try{window.open(url,'_blank');}catch(e){}
+  if(el){el.innerHTML='<a class="btn bwa" style="display:inline-block;margin-top:6px" href="'+url+'" target="_blank" rel="noopener">📱 '+mxTr('Open WhatsApp','WhatsApp\'ı aç')+'</a>';el.style.color='';}}
 function mxV(id){var e=document.getElementById(id);return e?e.value.trim():'';}
 function mxNum(s){s=String(s||'').replace(/\s/g,'');if(!s)return null;var c=s.lastIndexOf(','),d=s.lastIndexOf('.');
   if(c>=0&&d>=0)s=c>d?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');
@@ -1917,16 +1920,15 @@ async function ptLoad(pid){
 async function ptSend(wa){
   var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,''),m=document.getElementById('ptMsg');
   if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
-  var w=wa?window.open('about:blank','_blank'):null;
   var r=await db.rpc('create_patient_portal',{p_patient_id:selPid});
-  if(r.error||!r.data){if(w)w.close();m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
+  if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
   var url='https://aafclinic.com/hasta?t='+encodeURIComponent(r.data.token);
   if(wa){if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
     var msg=mxTr('Hello '+(p.name||'')+', here is your '+(clinic.name||'')+' patient portal: '+url+'\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
       'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' hasta portalınız: '+url+'\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.');
-    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);if(w)w.location=wu;else window.open(wu,'_blank');}
-  else{await navigator.clipboard.writeText(url);}
-  ptLoad(selPid);
+    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await ptLoad(selPid);mxWaOpen(wu,document.getElementById('ptMsg'));return;}
+  await navigator.clipboard.writeText(url);await ptLoad(selPid);
+  var mm=document.getElementById('ptMsg');if(mm){mm.textContent=mxTr('Copied','Kopyalandı');mm.style.color='#3AB06A';}
 }
 async function ptRevoke(){if(!ptActive||!confirm(mxTr('Revoke the portal link? The patient will no longer be able to sign in.','Portal linki iptal edilsin mi? Hasta artık giriş yapamaz.')))return;
   await db.from('patient_portals').update({revoked_at:new Date().toISOString()}).eq('id',ptActive.id);ptLoad(selPid);}
@@ -1971,17 +1973,17 @@ async function psSend(wa){
   if(!ids.length){m.textContent=mxTr('Choose the photos to send to the patient','Hastaya gönderilecek fotoğrafları seçin');m.style.color='#C0614A';return;}
   var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,'');
   if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
-  var w=wa?window.open('about:blank','_blank'):null;
   var r=await db.rpc('create_photo_share',{p_patient_id:selPid,p_photo_ids:ids,p_days:parseInt(mxV('psDays'))||30,p_note:mxV('psNote')||null});
-  if(r.error||!r.data){if(w)w.close();m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
+  if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
   var url='https://aafclinic.com/foto?t='+encodeURIComponent(r.data.token);
   if(wa){
     if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
     var msg=mxTr('Hello '+(p.name||'')+', '+(clinic.name||'')+' is sharing your photos with you: '+url+' (The link is valid until '+mxDate(r.data.expires_at)+'.)',
       'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak fotoğraflarınızı paylaşıyoruz: '+url+' (Link '+mxDate(r.data.expires_at)+' tarihine kadar geçerlidir.)');
-    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);if(w)w.location=wu;else window.open(wu,'_blank');
-  }else{await navigator.clipboard.writeText(url);}
-  psOpen();
+    var wu='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);await psOpen();mxWaOpen(wu,document.getElementById('psMsg'));return;
+  }
+  await navigator.clipboard.writeText(url);await psOpen();
+  var mm=document.getElementById('psMsg');if(mm){mm.textContent=mxTr('Copied','Kopyalandı');mm.style.color='#3AB06A';}
 }
 async function psRevoke(id){
   if(!confirm(mxTr('Revoke this link? The patient will no longer see the photos.','Link iptal edilsin mi? Hasta artık fotoğrafları göremez.')))return;
@@ -2120,18 +2122,17 @@ function inRender(){
 async function inCreate(){
   var r=await db.rpc('create_intake_form',{p_patient_id:selPid});
   if(r.error||!r.data){var m=document.getElementById('inMsg');if(m){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';}return null;}
-  var url=inUrl(r.data.token);inLoad(selPid);return url;
+  var url=inUrl(r.data.token);await inLoad(selPid);return url;
 }
 async function inSend(){
   var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,'');
   if(!ph){var m=document.getElementById('inMsg');m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
   if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
-  var w=window.open('about:blank','_blank');
-  var url=await inCreate();if(!url){if(w)w.close();return;}
+  var url=await inCreate();if(!url){return;}
   var msg=mxTr('Hello '+(p.name||'')+', before your treatment '+(clinic.name||'')+' kindly asks you to fill in a short health form (2 min): '+url,
     'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): '+url);
   var wa='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);
-  if(w)w.location=wa;else window.open(wa,'_blank');
+  mxWaOpen(wa,document.getElementById('inMsg'));
 }
 async function inCopy(){
   var url=await inCreate();if(!url)return;

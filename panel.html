@@ -107,6 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .modal.on{display:flex}
 .mbox{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
 .mbox h3{font-size:18px;font-weight:400;margin-bottom:20px}
+.phw{display:flex;gap:6px}.phw .phcc{width:118px;flex:none;padding:10px 6px}.phw .phcc option{background:#1C1929}
 .mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none;font-family:inherit}
 .mi:focus{border-color:rgba(184,154,106,0.4)}
 .mbt{display:flex;gap:10px;margin-top:8px}
@@ -382,6 +383,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="imp-wrap"><table class="fmt" id="blList"></table></div>
       </div>
       <div class="imp-step">
+        <h3>Phone country code</h3>
+        <div class="hint">Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.</div>
+        <div class="bk-row">
+          <select class="bk-in" id="pcClinic" style="min-width:240px"></select>
+          <button class="bimp" onclick="pcClinicSave()">Save</button>
+          <span class="hint" id="pcMsg" style="margin:0"></span>
+        </div>
+      </div>
+      <div class="imp-step">
         <h3>Rooms &amp; devices</h3>
         <div class="hint">If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.</div>
         <div class="bk-row">
@@ -591,7 +601,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <input class="mi" type="text" id="mName" placeholder="First Name"/>
     <input class="mi" type="text" id="mSur" placeholder="Last Name"/>
     <input class="mi" type="date" id="mDob"/>
-    <input class="mi" type="tel" id="mPhone" placeholder="Phone"/>
+    <div class="phw"><select class="mi phcc" id="mPhoneCc" title="Country code"></select><input class="mi" type="tel" id="mPhone" placeholder="Phone"/></div>
     <input class="mi" type="text" id="mCity" placeholder="City"/>
     <input class="mi" type="text" id="mNid" placeholder="National ID (TC Kimlik No)" inputmode="numeric" maxlength="11"/>
     <input class="mi" type="email" id="mEmail" placeholder="E-mail"/>
@@ -770,7 +780,7 @@ function renderP(list){
     var p=list[i];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
     h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
-    h+='<div class="pm">'+[p.birth_date,p.phone].filter(Boolean).join(' · ')+'</div></div>';
+    h+='<div class="pm">'+[p.birth_date,mxPhoneFmt(p.phone)].filter(Boolean).join(' · ')+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -788,11 +798,11 @@ async function selP(id){
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
   document.getElementById('dName').textContent=(p.name||'')+' '+(p.surname||'');
-  document.getElementById('dMeta').textContent=[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ');
+  document.getElementById('dMeta').textContent=[p.birth_date,mxPhoneFmt(p.phone),p.city].filter(Boolean).join(' · ');
   var ih='';
   ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+(p.name||'')+' '+(p.surname||'')+'</span></div>';
   ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
-  ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone||'-')+'</span></div>';
+  ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone?mxE(mxPhoneFmt(p.phone)):'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">City</span><span class="iv">'+(p.city||'-')+'</span></div>';
   if(p.national_id)ih+='<div class="ir"><span class="il">National ID (TC Kimlik No)</span><span class="iv">'+mxE(p.national_id)+'</span></div>';
   if(p.email)ih+='<div class="ir"><span class="il">E-mail</span><span class="iv">'+mxE(p.email)+'</span></div>';
@@ -1007,7 +1017,7 @@ function openAdd(){
   document.getElementById('mName').value='';
   document.getElementById('mSur').value='';
   document.getElementById('mDob').value='';
-  document.getElementById('mPhone').value='';
+  phSet('mPhone','');
   document.getElementById('mCity').value='';
   document.getElementById('mNid').value='';
   document.getElementById('mEmail').value='';
@@ -1023,7 +1033,7 @@ function openEdit(){
   document.getElementById('mName').value=selPt.name||'';
   document.getElementById('mSur').value=selPt.surname||'';
   document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];
-  document.getElementById('mPhone').value=selPt.phone||'';
+  phSet('mPhone',selPt.phone||'');
   document.getElementById('mCity').value=selPt.city||'';
   document.getElementById('mNid').value=selPt.national_id||'';
   document.getElementById('mEmail').value=selPt.email||'';
@@ -1047,7 +1057,7 @@ async function savePt(){
     name:name,
     surname:document.getElementById('mSur').value||null,
     birth_date:document.getElementById('mDob').value||null,
-    phone:document.getElementById('mPhone').value||null,
+    phone:phGet('mPhone')||null,
     city:document.getElementById('mCity').value||null,
     national_id:nid||null,
     email:document.getElementById('mEmail').value.trim()||null,
@@ -1125,7 +1135,7 @@ window._appts=[];
 async function loadAppts(){
   apptDate=parseDate(document.getElementById('apptDate').value);
   if(document.getElementById('blDate'))document.getElementById('blDate').value=fmtDate(apptDate);
-  apptBlocks();blLoad();cfLoad();rsLoad();wlLoad('apptWl',fmtDate(apptDate));
+  apptBlocks();blLoad();cfLoad();rsLoad();pcClinicLoad();wlLoad('apptWl',fmtDate(apptDate));
   var el=document.getElementById('apptList');
   el.innerHTML='<div class="loader">Loading...</div>';
   try{
@@ -1144,7 +1154,7 @@ async function loadAppts(){
       var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
       h+='<div class="list-card"><div class="row1"><div>';
       h+='<div class="name">'+(name?mxE(name):'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
-      h+='<div class="meta">'+(phone?'📞 '+mxE(phone)+' · ':'')+mxE(time)+(a.notes?' · '+mxE(a.notes):'')+'</div>';
+      h+='<div class="meta">'+(phone?'📞 '+mxE(mxPhoneFmt(phone))+' · ':'')+mxE(time)+(a.notes?' · '+mxE(a.notes):'')+'</div>';
       h+='<div class="ap-extra" id="apx_'+i+'" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
         (a.patient_id?'':'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="apCreatePt('+i+')">+ '+mxTr('Create patient record','Hasta kaydı aç')+'</button>')+'</div>';
       h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
@@ -1189,7 +1199,7 @@ function apCreatePt(i){
   openAdd();
   document.getElementById('mName').value=parts.length>1?parts.slice(0,-1).join(' '):(parts[0]||'');
   document.getElementById('mSur').value=parts.length>1?parts[parts.length-1]:'';
-  document.getElementById('mPhone').value=a.patient_phone_temp||'';
+  phSet('mPhone',a.patient_phone_temp||'');
   apAfterSave=true;
 }
 
@@ -1552,7 +1562,28 @@ function mxDate(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');
 function mxIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function mxMoney(v){var n=Number(v||0),a=Math.abs(n);var s=a.toLocaleString(LANG==='tr'?'tr-TR':'en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});return (n<0?'−':'')+(curSym()||'')+s;}
 function mxQty(v){var n=Number(v||0);return n%1?n.toFixed(2).replace(/0+$/,''):String(n);}
-function mxWaDigits(phone){var d=String(phone||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.length===11&&d[0]==='0')d='9'+d;if(d.length===10&&d[0]==='5')d='90'+d;return d;}
+var PC_LIST=[['TR','90','Türkiye'],['DE','49','Deutschland'],['GB','44','United Kingdom'],['US','1','United States / Canada'],['NL','31','Nederland'],['FR','33','France'],['IT','39','Italia'],['ES','34','España'],['RU','7','Россия / Қазақстан'],['AZ','994','Azərbaycan'],['AE','971','UAE'],['SA','966','Saudi Arabia'],['KR','82','대한민국'],['CN','86','中国'],
+['AL','355','Shqipëria'],['AM','374','Armenia'],['AT','43','Österreich'],['AU','61','Australia'],['BA','387','Bosna i Hercegovina'],['BE','32','Belgium'],['BG','359','България'],['BH','973','Bahrain'],['BR','55','Brasil'],['BY','375','Беларусь'],['CH','41','Schweiz / Suisse'],['CY','357','Κύπρος'],['CZ','420','Česko'],['DK','45','Danmark'],['DZ','213','Algeria'],['EG','20','Egypt'],['FI','358','Suomi'],['GE','995','Georgia'],['GR','30','Ελλάδα'],['HR','385','Hrvatska'],['HU','36','Magyarország'],['IE','353','Ireland'],['IL','972','Israel'],['IN','91','India'],['IQ','964','Iraq'],['IR','98','Iran'],['JO','962','Jordan'],['JP','81','日本'],['KG','996','Кыргызстан'],['KW','965','Kuwait'],['LB','961','Lebanon'],['LU','352','Luxembourg'],['LY','218','Libya'],['MA','212','Morocco'],['MD','373','Moldova'],['ME','382','Crna Gora'],['MK','389','North Macedonia'],['MX','52','México'],['NO','47','Norge'],['OM','968','Oman'],['PH','63','Philippines'],['PK','92','Pakistan'],['PL','48','Polska'],['PT','351','Portugal'],['QA','974','Qatar'],['RO','40','România'],['RS','381','Srbija'],['SE','46','Sverige'],['SY','963','Syria'],['TM','993','Türkmenistan'],['TN','216','Tunisia'],['UA','380','Україна'],['UZ','998','Oʻzbekiston'],['XK','383','Kosova']];
+function pcFlag(iso){return iso.replace(/./g,function(c){return String.fromCodePoint(0x1F1E6+c.charCodeAt(0)-65);});}
+function pcDefault(){if(clinic&&clinic.phone_country)return clinic.phone_country;var rg=((navigator.language||'').split('-')[1]||'').toUpperCase();var m=PC_LIST.find(function(c){return c[0]===rg;});return m?m[1]:'90';}
+function pcOptions(sel){var seen={};return PC_LIST.map(function(c){var dup=seen[c[1]];seen[c[1]]=1;return '<option value="'+c[1]+'"'+(c[1]===sel&&!dup?' selected':'')+' title="'+mxE(c[2])+'">'+pcFlag(c[0])+' +'+c[1]+' '+mxE(c[2])+'</option>';}).join('');}
+function pcSplit(v,fb){var t=String(v||'').trim();if(!t)return [fb,''];var d=t.replace(/\D/g,'');
+  if(t[0]==='+'||d.indexOf('00')===0){if(d.indexOf('00')===0)d=d.slice(2);for(var L=4;L>=1;L--){if(d.length<=L)continue;var p=d.slice(0,L);if(PC_LIST.some(function(c){return c[1]===p;}))return [p,d.slice(L)];}return [fb,d];}
+  return [fb,t];}
+function pcJoin(dial,nat){var n=String(nat||'').replace(/\D/g,'');if(!n)return '';if(n.indexOf('00')===0)return '+'+n.slice(2);
+  if(dial==='7'&&n.length===11&&n[0]==='8')n=n.slice(1);n=n.replace(/^0+/,'');if(n.length>10&&n.indexOf(dial)===0)n=n.slice(dial.length);return '+'+dial+n;}
+function mxNormPhone(v,cc){var t=String(v||'').trim();if(!t)return '';var d=t.replace(/\D/g,'');if(!d)return t;if(t[0]==='+')return '+'+d;if(d.indexOf('00')===0)return '+'+d.slice(2);
+  cc=cc||pcDefault();if(cc==='7'&&d.length===11&&d[0]==='8')return '+7'+d.slice(1);
+  if(d[0]==='0'){d=d.replace(/^0+/,'');if(d.length>10&&d.indexOf(cc)===0)return '+'+d;return '+'+cc+d;}
+  var rest=d.length-cc.length;if(d.indexOf(cc)===0&&rest>=8&&rest<=11)return '+'+d;return '+'+cc+d;}
+function mxPhoneFmt(v){var p=String(v||'').trim();if(p[0]!=='+')return p;var sp=pcSplit(p,'');if(!sp[0])return p;var n=sp[1],g=[];
+  if(n.length===10)g=[n.slice(0,3),n.slice(3,6),n.slice(6,8),n.slice(8)];else for(var i=0;i<n.length;i+=3)g.push(n.slice(i,i+3));return '+'+sp[0]+' '+g.join(' ');}
+function phSet(id,v){var sp=pcSplit(v,pcDefault());var s=document.getElementById(id+'Cc');s.innerHTML=pcOptions(sp[0]);if(!s.value){s.insertAdjacentHTML('afterbegin','<option value="'+sp[0]+'" selected>+'+sp[0]+'</option>');}document.getElementById(id).value=sp[1];}
+function phGet(id){return pcJoin(document.getElementById(id+'Cc').value,document.getElementById(id).value);}
+function pcClinicLoad(){var s=document.getElementById('pcClinic');if(!s)return;s.innerHTML=pcOptions(pcDefault());}
+async function pcClinicSave(){var v=document.getElementById('pcClinic').value;var r=await db.from('clinic').update({phone_country:v}).eq('id',cid);var m=document.getElementById('pcMsg');
+  if(r.error){m.textContent=r.error.message;m.style.color='#C0614A';return;}clinic.phone_country=v;m.textContent=mxTr('Saved','Kaydedildi');m.style.color='#3AB06A';setTimeout(function(){m.textContent='';},2500);}
+function mxWaDigits(phone){return mxNormPhone(phone).replace('+','');}
 function mxWa(phone,msg){var d=mxWaDigits(phone);
   return 'https://wa.me/'+d+'?text='+encodeURIComponent(msg);}
 function mxFill(tpl,name,proc,extra){
@@ -1888,7 +1919,7 @@ async function wlLoad(el,date){
 }
 function wlTable(el,rows){
   return '<table class="fmt" style="margin-top:6px">'+rows.map(function(w,i){
-    return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([w.phone,w.service_name].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
+    return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([mxPhoneFmt(w.phone),w.service_name].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
       '<td>'+(w.wanted_date?mxDate(w.wanted_date):mxTr('Any day','Herhangi bir gün'))+'</td>'+
       '<td>'+(w.status==='notified'?'<span style="color:#3AB06A">✓ '+mxTr('Notified','Haber verildi')+'</span>':'')+'</td>'+
       '<td style="text-align:right;white-space:nowrap"><button class="btn bwa" onclick="wlNotify(\''+el+'\','+i+')">📱 '+mxTr('Slot opened, notify','Yer açıldı, haber ver')+'</button> '+
@@ -2413,7 +2444,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

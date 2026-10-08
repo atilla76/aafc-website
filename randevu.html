@@ -32,6 +32,8 @@ h1{font-size:24px;font-weight:600;margin-top:10px;line-height:1.25}
 .time{padding:12px 0;border-radius:10px;border:1px solid var(--line);background:var(--ink);color:var(--cream);font-size:15px;cursor:pointer;font-family:inherit}
 .time.sel{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600}
 label{display:block;font-size:12px;color:var(--mid);margin:12px 0 6px}
+select.phcc{flex:none;width:112px;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:13px 6px;color:var(--cream);font-size:15px;font-family:inherit;outline:none}
+.phw{display:flex;gap:8px}
 input,textarea{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none}
 input:focus,textarea:focus{border-color:var(--gold)}
 textarea{resize:vertical;min-height:70px}
@@ -253,7 +255,7 @@ async function doBook(ev) {
   try {
     const r = await rpc('booking_create', {
       p_slug: slug, p_date: st.date, p_time: st.time, p_service: st.service.name,
-      p_name: f.nm.value, p_phone: f.ph.value, p_note: f.nt.value || null,
+      p_name: f.nm.value, p_phone: pcJoin(f.phc.value, f.ph.value), p_note: f.nt.value || null,
     });
     if (r && r.ok) {
       st.result = { ...r, name: f.nm.value.trim() };
@@ -278,7 +280,7 @@ async function doWait(ev) {
     const any = document.getElementById('wa')?.checked;
     const r = await rpc('booking_waitlist_join', {
       p_slug: slug, p_service: st.service?.name || null, p_date: any ? null : (st.date || null),
-      p_name: f.wn.value, p_phone: f.wp.value, p_note: f.wt.value || null, p_lang: LC,
+      p_name: f.wn.value, p_phone: pcJoin(f.wpc.value, f.wp.value), p_note: f.wt.value || null, p_lang: LC,
     });
     if (r && r.ok) { st.wl = false; st.wlDone = true; }
     else st.err = L.errors[r?.error] || L.errors.generic;
@@ -298,10 +300,44 @@ function icsHref() {
   return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
 }
 
+const PC_LIST = [['TR','90','Türkiye'],['DE','49','Deutschland'],['GB','44','United Kingdom'],['US','1','United States / Canada'],['NL','31','Nederland'],['FR','33','France'],['IT','39','Italia'],['ES','34','España'],['RU','7','Россия / Қазақстан'],['AZ','994','Azərbaycan'],['AE','971','UAE'],['SA','966','Saudi Arabia'],['KR','82','대한민국'],['CN','86','中国'],
+['AL','355','Shqipëria'],['AM','374','Armenia'],['AT','43','Österreich'],['AU','61','Australia'],['BA','387','Bosna i Hercegovina'],['BE','32','Belgium'],['BG','359','България'],['BH','973','Bahrain'],['BR','55','Brasil'],['BY','375','Беларусь'],['CH','41','Schweiz / Suisse'],['CY','357','Κύπρος'],['CZ','420','Česko'],['DK','45','Danmark'],['DZ','213','Algeria'],['EG','20','Egypt'],['FI','358','Suomi'],['GE','995','Georgia'],['GR','30','Ελλάδα'],['HR','385','Hrvatska'],['HU','36','Magyarország'],['IE','353','Ireland'],['IL','972','Israel'],['IN','91','India'],['IQ','964','Iraq'],['IR','98','Iran'],['JO','962','Jordan'],['JP','81','日本'],['KG','996','Кыргызстан'],['KW','965','Kuwait'],['LB','961','Lebanon'],['LU','352','Luxembourg'],['LY','218','Libya'],['MA','212','Morocco'],['MD','373','Moldova'],['ME','382','Crna Gora'],['MK','389','North Macedonia'],['MX','52','México'],['NO','47','Norge'],['OM','968','Oman'],['PH','63','Philippines'],['PK','92','Pakistan'],['PL','48','Polska'],['PT','351','Portugal'],['QA','974','Qatar'],['RO','40','România'],['RS','381','Srbija'],['SE','46','Sverige'],['SY','963','Syria'],['TM','993','Türkmenistan'],['TN','216','Tunisia'],['UA','380','Україна'],['UZ','998','Oʻzbekiston'],['XK','383','Kosova']];
+const pcFlag = (iso) => iso.replace(/./g, (c) => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65));
+function pcDefault() {
+  if (st.dial) return st.dial;
+  if (st.info && st.info.phone_country) return st.info.phone_country;
+  const rg = ((navigator.language || '').split('-')[1] || '').toUpperCase();
+  const m = PC_LIST.find((c) => c[0] === rg);
+  return m ? m[1] : '90';
+}
+function pcSelect(id) {
+  const sel = pcDefault();
+  return `<select id="${id}" class="phcc" aria-label="Country code" onchange="st.dial=this.value">` +
+    PC_LIST.map((c) => `<option value="${c[1]}"${c[1] === sel ? ' selected' : ''}>${pcFlag(c[0])} +${c[1]} ${esc(c[2])}</option>`).join('') + '</select>';
+}
+function pcJoin(dial, nat) {
+  let n = String(nat || '').replace(/\D/g, '');
+  if (!n) return '';
+  if (String(nat).trim().startsWith('+')) return '+' + n;
+  if (n.startsWith('00')) return '+' + n.slice(2);
+  if (dial === '7' && n.length === 11 && n[0] === '8') n = n.slice(1);
+  n = n.replace(/^0+/, '');
+  if (n.length > 10 && n.startsWith(dial)) n = n.slice(dial.length);
+  return '+' + dial + n;
+}
+function normPhone(v, cc) {
+  const t = String(v || '').trim(); let d = t.replace(/\D/g, '');
+  if (!d) return '';
+  if (t.startsWith('+')) return d;
+  if (d.startsWith('00')) return d.slice(2);
+  cc = cc || '90';
+  if (d[0] === '0') { d = d.replace(/^0+/, ''); return d.length > 10 && d.startsWith(cc) ? d : cc + d; }
+  const rest = d.length - cc.length;
+  return d.startsWith(cc) && rest >= 8 && rest <= 11 ? d : cc + d;
+}
+
 function waHref() {
-  let d = String(st.info.phone || '').replace(/\D/g, '');
-  if (d.length === 11 && d.startsWith('0')) d = '9' + d;
-  if (d.length === 10 && d.startsWith('5')) d = '90' + d;
+  const d = normPhone(st.info.phone, st.info.phone_country || '90');
   return `https://wa.me/${d}?text=${encodeURIComponent(L.waMsg(st.result.name, st.service.name, longDate(st.result.date), st.result.time))}`;
 }
 
@@ -363,7 +399,7 @@ function render(keepForm) {
         <form onsubmit="doWait(event)" autocomplete="on">
           <input class="hp" name="website" tabindex="-1" autocomplete="off">
           <label for="wn">${L.name}</label><input id="wn" name="wn" autocomplete="name" required minlength="3" maxlength="80">
-          <label for="wp">${L.phone}</label><input id="wp" name="wp" type="tel" inputmode="tel" autocomplete="tel" required placeholder="${LC === 'tr' ? '05xx xxx xx xx' : '+'}">
+          <label for="wp">${L.phone}</label><div class="phw">${pcSelect('wpc')}<input id="wp" name="wp" type="tel" inputmode="tel" autocomplete="tel-national" required></div>
           <label for="wt">${W.note}</label><input id="wt" name="wt" maxlength="300">
           ${st.date ? `<label style="display:flex;gap:8px;align-items:center;color:var(--cream);font-size:14px;margin-top:14px"><input type="checkbox" id="wa" style="width:20px;height:20px;margin:0"> ${W.any}</label>` : ''}
           ${st.err ? `<div class="err">${esc(st.err)}</div>` : ''}
@@ -379,7 +415,7 @@ function render(keepForm) {
         <form onsubmit="doBook(event)" autocomplete="on">
           <input class="hp" name="website" tabindex="-1" autocomplete="off">
           <label for="nm">${L.name}</label><input id="nm" name="nm" autocomplete="name" required minlength="3" maxlength="80">
-          <label for="ph">${L.phone}</label><input id="ph" name="ph" type="tel" inputmode="tel" autocomplete="tel" required placeholder="${LC === 'tr' ? '05xx xxx xx xx' : '+'}">
+          <label for="ph">${L.phone}</label><div class="phw">${pcSelect('phc')}<input id="ph" name="ph" type="tel" inputmode="tel" autocomplete="tel-national" required></div>
           <label for="nt">${L.note}</label><textarea id="nt" name="nt" maxlength="300"></textarea>
           ${st.err ? `<div class="err">${esc(st.err)}</div>` : ''}
           <button class="btn" ${st.busy ? 'disabled' : ''}>${st.busy ? L.loading : L.book}</button>

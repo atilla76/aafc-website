@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Randevunuz</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12101E">
+<style>
+:root{--ink:#12101E;--ink2:#1C1929;--gold:#B89A6A;--goldlt:#D4B896;--cream:#F5F1EB;--mid:rgba(245,241,235,.62);--dim:rgba(245,241,235,.38);--line:rgba(255,255,255,.08);--green:#3AB06A;--red:#C0614A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:520px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:600}
+h1{font-size:24px;font-weight:600;margin-top:10px}
+.sub{color:var(--mid);font-size:14px;margin-top:6px;line-height:1.5}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+.big{font-size:20px;font-weight:600;margin-top:4px}
+.btn{display:block;width:100%;margin-top:12px;padding:15px;border:none;border-radius:12px;background:var(--gold);color:var(--ink);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none}
+.btn.ok{background:var(--green);color:#fff}
+.btn.ghost{background:transparent;color:var(--mid);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+.btn:disabled{opacity:.5}
+.state{text-align:center;padding:6px 0}
+.state .ic{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px}
+.foot{margin-top:28px;text-align:center;color:var(--dim);font-size:11px}
+.foot a{color:var(--dim)}
+.spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<script>
+const SU = 'https://hugxacklprzujswtaike.supabase.co';
+const SK = 'sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
+const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+const LANGS = {
+  tr: { title: 'Randevunuz', hi: (n) => n ? `Merhaba ${n},` : 'Merhaba,', ask: 'Randevunuza gelebilecek misiniz?', yes: 'Geliyorum ✓', no: 'İptal etmek istiyorum',
+    sure: 'Randevunuz iptal edilecek. Emin misiniz?', sureYes: 'Evet, iptal et', back: 'Vazgeç', confirmed: 'Teşekkürler, randevunuz teyit edildi.',
+    cancelled: 'Randevunuz iptal edildi. Yeni bir randevu için bizi arayabilirsiniz.', past: 'Bu randevunun tarihi geçti.', inactive: 'Bu randevu artık aktif değil.',
+    notFound: 'Randevu bulunamadı.', error: 'Bir sorun oluştu, lütfen tekrar deneyin.', call: 'Ara', cal: 'Takvime ekle', change: 'Saati değiştirmek için bizi arayın.', min: 'dk' },
+  en: { title: 'Your appointment', hi: (n) => n ? `Hello ${n},` : 'Hello,', ask: 'Will you be able to come?', yes: 'I’ll be there ✓', no: 'I want to cancel',
+    sure: 'Your appointment will be cancelled. Are you sure?', sureYes: 'Yes, cancel', back: 'Go back', confirmed: 'Thank you, your appointment is confirmed.',
+    cancelled: 'Your appointment has been cancelled. Call us to book a new one.', past: 'This appointment is in the past.', inactive: 'This appointment is no longer active.',
+    notFound: 'Appointment not found.', error: 'Something went wrong, please try again.', call: 'Call', cal: 'Add to calendar', change: 'Call us to change the time.', min: 'min' },
+  de: { title: 'Ihr Termin', hi: (n) => n ? `Hallo ${n},` : 'Hallo,', ask: 'Können Sie zu Ihrem Termin kommen?', yes: 'Ich komme ✓', no: 'Ich möchte absagen',
+    sure: 'Ihr Termin wird abgesagt. Sind Sie sicher?', sureYes: 'Ja, absagen', back: 'Zurück', confirmed: 'Danke, Ihr Termin ist bestätigt.',
+    cancelled: 'Ihr Termin wurde abgesagt. Rufen Sie uns für einen neuen Termin an.', past: 'Dieser Termin liegt in der Vergangenheit.', inactive: 'Dieser Termin ist nicht mehr aktiv.',
+    notFound: 'Termin nicht gefunden.', error: 'Etwas ist schiefgelaufen, bitte erneut versuchen.', call: 'Anrufen', cal: 'Zum Kalender hinzufügen', change: 'Rufen Sie uns an, um die Zeit zu ändern.', min: 'Min.' },
+  es: { title: 'Su cita', hi: (n) => n ? `Hola ${n}:` : 'Hola:', ask: '¿Podrá venir a su cita?', yes: 'Asistiré ✓', no: 'Quiero cancelar',
+    sure: 'Su cita se cancelará. ¿Está seguro/a?', sureYes: 'Sí, cancelar', back: 'Volver', confirmed: 'Gracias, su cita está confirmada.',
+    cancelled: 'Su cita se ha cancelado. Llámenos para pedir una nueva.', past: 'Esta cita ya ha pasado.', inactive: 'Esta cita ya no está activa.',
+    notFound: 'Cita no encontrada.', error: 'Algo salió mal, inténtelo de nuevo.', call: 'Llamar', cal: 'Añadir al calendario', change: 'Llámenos para cambiar la hora.', min: 'min' },
+  fr: { title: 'Votre rendez-vous', hi: (n) => n ? `Bonjour ${n},` : 'Bonjour,', ask: 'Pourrez-vous venir à votre rendez-vous ?', yes: 'Je serai là ✓', no: 'Je souhaite annuler',
+    sure: 'Votre rendez-vous sera annulé. Êtes-vous sûr(e) ?', sureYes: 'Oui, annuler', back: 'Retour', confirmed: 'Merci, votre rendez-vous est confirmé.',
+    cancelled: 'Votre rendez-vous a été annulé. Appelez-nous pour en prendre un nouveau.', past: 'Ce rendez-vous est passé.', inactive: 'Ce rendez-vous n’est plus actif.',
+    notFound: 'Rendez-vous introuvable.', error: 'Un problème est survenu, veuillez réessayer.', call: 'Appeler', cal: 'Ajouter au calendrier', change: 'Appelez-nous pour changer l’heure.', min: 'min' },
+  it: { title: 'Il suo appuntamento', hi: (n) => n ? `Gentile ${n},` : 'Salve,', ask: 'Riuscirà a venire all’appuntamento?', yes: 'Ci sarò ✓', no: 'Voglio annullare',
+    sure: 'L’appuntamento verrà annullato. È sicuro/a?', sureYes: 'Sì, annulla', back: 'Indietro', confirmed: 'Grazie, il suo appuntamento è confermato.',
+    cancelled: 'L’appuntamento è stato annullato. Ci chiami per prenderne uno nuovo.', past: 'Questo appuntamento è già passato.', inactive: 'Questo appuntamento non è più attivo.',
+    notFound: 'Appuntamento non trovato.', error: 'Si è verificato un problema, riprovi.', call: 'Chiama', cal: 'Aggiungi al calendario', change: 'Ci chiami per cambiare l’orario.', min: 'min' },
+  pt: { title: 'A sua consulta', hi: (n) => n ? `Olá ${n},` : 'Olá,', ask: 'Vai conseguir vir à consulta?', yes: 'Vou estar presente ✓', no: 'Quero cancelar',
+    sure: 'A sua consulta será cancelada. Tem a certeza?', sureYes: 'Sim, cancelar', back: 'Voltar', confirmed: 'Obrigado, a sua consulta está confirmada.',
+    cancelled: 'A sua consulta foi cancelada. Ligue-nos para marcar outra.', past: 'Esta consulta já passou.', inactive: 'Esta consulta já não está ativa.',
+    notFound: 'Consulta não encontrada.', error: 'Ocorreu um problema, tente novamente.', call: 'Ligar', cal: 'Adicionar ao calendário', change: 'Ligue-nos para mudar a hora.', min: 'min' },
+  ru: { title: 'Ваша запись', hi: (n) => n ? `Здравствуйте, ${n}!` : 'Здравствуйте!', ask: 'Сможете ли вы прийти?', yes: 'Приду ✓', no: 'Хочу отменить',
+    sure: 'Запись будет отменена. Вы уверены?', sureYes: 'Да, отменить', back: 'Назад', confirmed: 'Спасибо, ваша запись подтверждена.',
+    cancelled: 'Запись отменена. Позвоните нам, чтобы записаться снова.', past: 'Эта запись уже прошла.', inactive: 'Эта запись больше не активна.',
+    notFound: 'Запись не найдена.', error: 'Что-то пошло не так, попробуйте ещё раз.', call: 'Позвонить', cal: 'Добавить в календарь', change: 'Чтобы изменить время, позвоните нам.', min: 'мин' },
+  ko: { title: '내 예약', hi: (n) => n ? `${n}님, 안녕하세요.` : '안녕하세요.', ask: '예약 시간에 오실 수 있나요?', yes: '방문할게요 ✓', no: '예약을 취소할게요',
+    sure: '예약이 취소됩니다. 계속할까요?', sureYes: '네, 취소합니다', back: '돌아가기', confirmed: '감사합니다. 예약이 확인되었습니다.',
+    cancelled: '예약이 취소되었습니다. 새 예약은 전화로 문의해 주세요.', past: '이미 지난 예약입니다.', inactive: '더 이상 유효하지 않은 예약입니다.',
+    notFound: '예약을 찾을 수 없습니다.', error: '문제가 발생했습니다. 다시 시도해 주세요.', call: '전화', cal: '캘린더에 추가', change: '시간 변경은 전화로 문의해 주세요.', min: '분' },
+  zh: { title: '您的预约', hi: (n) => n ? `${n}，您好：` : '您好：', ask: '您能按时前来吗？', yes: '我会到 ✓', no: '我要取消',
+    sure: '您的预约将被取消，确定吗？', sureYes: '确定取消', back: '返回', confirmed: '谢谢，您的预约已确认。',
+    cancelled: '您的预约已取消。如需重新预约，请致电我们。', past: '此预约已过期。', inactive: '此预约已失效。',
+    notFound: '未找到预约。', error: '出现问题，请重试。', call: '致电', cal: '添加到日历', change: '如需更改时间，请致电我们。', min: '分钟' },
+};
+const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+document.documentElement.lang = LC;
+document.title = L.title;
+const app = document.getElementById('app');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let D = null, asking = false, busy = false, err = '';
+
+async function rpc(fn, body) {
+  const r = await fetch(`${SU}/rest/v1/rpc/${fn}`, { method: 'POST', headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+const longDate = (iso) => new Date(iso + 'T12:00:00').toLocaleDateString(LOCALES[LC], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+function icsHref() {
+  const p = (n) => String(n).padStart(2, '0');
+  const s = new Date(`${D.date}T${D.time}:00`), e = new Date(s.getTime() + (D.duration || 30) * 60000);
+  const f = (d) => `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AAFC//Appointment//TR', 'BEGIN:VEVENT', `UID:${TOKEN}@aafclinic.com`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`,
+    `SUMMARY:${(D.service ? D.service + ' - ' : '') + (D.clinic || '')}`, `LOCATION:${String(D.address || '').replace(/\n/g, ' ')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+}
+function foot() {
+  return `<div class="foot">${D && D.phone ? `<a href="tel:${esc(String(D.phone).replace(/\s/g, ''))}">${L.call}: ${esc(D.phone)}</a> · ` : ''}AAFC</div>`;
+}
+function state(icon, color, text) {
+  return `<div class="state"><div class="ic" style="background:${color}22;color:${color}">${icon}</div><div style="font-size:16px;line-height:1.5">${text}</div></div>`;
+}
+
+function render() {
+  if (!D) return;
+  let h = `<div class="brand">${esc(String(D.clinic || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>
+    <div class="sub">${esc(L.hi(D.first_name))}</div>
+    <div class="card"><div class="sub" style="margin:0">${esc(longDate(D.date))}</div><div class="big">${esc(D.time)}${D.service ? ' · ' + esc(D.service) : ''}</div>
+    ${D.doctor ? `<div class="sub">${esc(D.doctor)}</div>` : ''}${D.address ? `<div class="sub">${esc(D.address)}</div>` : ''}</div><div class="card">`;
+  if (D.patient_cancelled || D.status === 'cancelled') h += state('✕', '#C0614A', D.patient_cancelled ? L.cancelled : L.inactive);
+  else if (D.past) h += state('⏱', '#B89A6A', L.past);
+  else if (D.status !== 'planned') h += state('•', '#B89A6A', L.inactive);
+  else if (asking) {
+    h += `<div style="font-size:16px;text-align:center">${L.sure}</div>
+      <button class="btn danger" ${busy ? 'disabled' : ''} onclick="act('cancel')">${L.sureYes}</button>
+      <button class="btn ghost" onclick="asking=false;render()">${L.back}</button>`;
+  } else {
+    if (D.confirmed) h += state('✓', '#3AB06A', L.confirmed);
+    else h += `<div style="font-size:16px;text-align:center">${L.ask}</div><button class="btn ok" ${busy ? 'disabled' : ''} onclick="act('confirm')">${L.yes}</button>`;
+    h += `<a class="btn ghost" href="${icsHref()}" download="randevu.ics">${L.cal}</a>
+      <button class="btn danger" onclick="asking=true;render()">${L.no}</button>
+      <div class="sub" style="text-align:center;margin-top:12px">${L.change}</div>`;
+  }
+  if (err) h += `<div class="sub" style="color:var(--red);text-align:center">${esc(err)}</div>`;
+  app.innerHTML = h + '</div>' + foot();
+}
+
+async function act(a) {
+  if (busy) return;
+  busy = true; err = ''; render();
+  try {
+    const r = await rpc('appt_confirm', { p_token: TOKEN, p_action: a });
+    if (!r || !r.ok) err = r && r.error === 'past' ? L.past : r && r.error === 'not_planned' ? L.inactive : L.error;
+    D = await rpc('appt_confirm_info', { p_token: TOKEN }) || D;
+  } catch (e) { err = L.error; }
+  busy = false; asking = false; render();
+}
+
+(async () => {
+  if (TOKEN.length < 20) { app.innerHTML = `<div class="card">${state('?', '#B89A6A', L.notFound)}</div>`; return; }
+  try { D = await rpc('appt_confirm_info', { p_token: TOKEN }); } catch (e) { D = null; }
+  if (!D) { app.innerHTML = `<div class="card">${state('?', '#B89A6A', L.notFound)}</div>`; return; }
+  render();
+})();
+</script>
+</body>
+</html>

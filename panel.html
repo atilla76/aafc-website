@@ -290,6 +290,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <div class="mb">
             <div class="sec">PATIENT INFO</div>
             <div class="ibox" id="pInfo"></div>
+            <div class="ibox" id="pIntake" style="margin-top:10px"></div>
             <div class="sec">BEFORE / AFTER COMPARISON</div>
             <div class="cw">
               <div class="cs">
@@ -454,6 +455,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="imp-step">
         <h3>Booking page</h3>
         <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bkEnabled"> Accept online bookings</label></div>
+        <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bkIntake"> Ask for a health form after online booking</label></div>
         <div class="bk-row"><span class="hint" style="margin:0">aafclinic.com/randevu?k=</span><input class="bk-in" id="bkSlug" placeholder="your-clinic" style="width:220px" oninput="bkLink()"></div>
         <div class="bk-row"><span class="bk-link" id="bkLink"></span></div>
         <div class="bk-row"><button class="bimp2" onclick="bkCopy()">Copy link</button><button class="bimp2" onclick="bkOpen()">Open page</button><span id="bkMsg" class="hint" style="margin:0"></span></div>
@@ -775,8 +777,9 @@ async function selP(id){
   if(p.national_id)ih+='<div class="ir"><span class="il">National ID (TC Kimlik No)</span><span class="iv">'+mxE(p.national_id)+'</span></div>';
   if(p.email)ih+='<div class="ir"><span class="il">E-mail</span><span class="iv">'+mxE(p.email)+'</span></div>';
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
-  if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+p.notes+'</span></div>';
+  if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
+  inLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
@@ -1759,6 +1762,75 @@ async function rcLoad(){
 async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 
+// ============ HEALTH FORM (patient_intake_forms) ============
+var IN_Q=[['pregnant','Pregnancy / breastfeeding','Gebelik / emzirme'],['allergy','Allergy','Alerji'],['meds','Regular medication / supplements','Düzenli ilaç / takviye'],
+ ['anticoag','Blood thinners','Kan sulandırıcı'],['chronic','Chronic illness','Kronik hastalık'],['autoimmune','Autoimmune / rheumatic disease','Otoimmün / romatizmal hastalık'],
+ ['neuro','Muscle / nerve disease','Kas / sinir hastalığı'],['isotretinoin','Isotretinoin in last 6 months','Son 6 ayda isotretinoin'],['herpes','Frequent cold sores (herpes)','Sık uçuk (herpes)'],
+ ['keloid','Keloid tendency','Keloid eğilimi'],['skin_infection','Active infection / acne in area','Bölgede aktif enfeksiyon / akne'],['prev_aesthetic','Previous aesthetic treatment','Önceki estetik işlem'],
+ ['perm_filler','Permanent / semi-permanent filler','Kalıcı / yarı kalıcı dolgu'],['smoking','Smoking','Sigara']];
+var IN_RISK=['pregnant','allergy','anticoag','chronic','autoimmune','neuro','isotretinoin','herpes','keloid','skin_infection','perm_filler'];
+var inForms=[];
+function inLabel(k){for(var i=0;i<IN_Q.length;i++)if(IN_Q[i][0]===k)return mxTr(IN_Q[i][1],IN_Q[i][2]);return k;}
+function inFlagText(f,k){var d=((f.answers||{})[k+'_detail']||'').trim();return inLabel(k)+(d?': '+d:'');}
+function inUrl(tok){return 'https://aafclinic.com/form?t='+encodeURIComponent(tok)+'&lang='+(LANG==='tr'?'tr':'en');}
+async function inLoad(pid){
+  var box=document.getElementById('pIntake');box.innerHTML='<div class="hint" style="margin:0">…</div>';
+  var r=await db.from('patient_intake_forms').select('id,token,status,answers,flags,created_at,expires_at,completed_at,reviewed_at').eq('patient_id',pid).is('deleted_at',null).order('created_at',{ascending:false}).limit(10);
+  if(selPid!==pid)return;
+  inForms=r.data||[];inRender();
+}
+function inRender(){
+  var box=document.getElementById('pIntake');
+  var done=inForms.filter(function(f){return f.status==='completed';}),pend=inForms.filter(function(f){return f.status==='pending';});
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:13px;color:#F5F1EB">'+mxTr('Health form','Ön bilgi formu')+'</b>'+
+    '<span><button class="bimp2" onclick="inSend()">'+mxTr('Send via WhatsApp','WhatsApp ile gönder')+'</button> <button class="bimp2" onclick="inCopy()">'+mxTr('Copy link','Linki kopyala')+'</button></span></div>';
+  if(done.length){
+    var f=done[0],fl=f.flags||[];
+    h+='<div style="margin-top:8px;font-size:13px;color:#3AB06A">✓ '+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+' <a href="#" onclick="inView(\''+f.id+'\');return false" style="color:#D4B896;margin-left:8px">'+mxTr('View answers','Yanıtları gör')+'</a></div>';
+    h+=fl.length?'<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">'+fl.map(function(k){return '<span style="background:rgba(192,97,74,.14);border:1px solid rgba(192,97,74,.45);color:#E08A73;border-radius:8px;padding:3px 8px;font-size:12px">⚠ '+mxE(inFlagText(f,k))+'</span>';}).join('')+'</div>'
+      :'<div style="margin-top:6px;font-size:12px;color:#3AB06A">'+mxTr('No risk flags','Risk işareti yok')+'</div>';
+  }else if(pend.length){
+    var ex=new Date(pend[0].expires_at)<new Date();
+    h+='<div style="margin-top:8px;font-size:13px;color:rgba(245,241,235,.6)">'+(ex?mxTr('Expired','Süresi doldu'):mxTr('Sent, not filled in yet','Gönderildi, henüz doldurulmadı')+' · '+mxDate(pend[0].created_at))+'</div>';
+  }else h+='<div style="margin-top:8px;font-size:13px;color:rgba(245,241,235,.4)">'+mxTr('No form sent yet','Henüz form gönderilmedi')+'</div>';
+  h+='<div id="inMsg" class="hint" style="margin:6px 0 0"></div>';
+  box.innerHTML=h;
+}
+async function inCreate(){
+  var r=await db.rpc('create_intake_form',{p_patient_id:selPid});
+  if(r.error||!r.data){var m=document.getElementById('inMsg');if(m){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';}return null;}
+  var url=inUrl(r.data.token);inLoad(selPid);return url;
+}
+async function inSend(){
+  var p=selPt||{},ph=String(p.phone||'').replace(/\D/g,'');
+  if(!ph){var m=document.getElementById('inMsg');m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
+  if(ph.length===11&&ph[0]==='0')ph='9'+ph;if(ph.length===10&&ph[0]==='5')ph='90'+ph;
+  var w=window.open('about:blank','_blank');
+  var url=await inCreate();if(!url){if(w)w.close();return;}
+  var msg=mxTr('Hello '+(p.name||'')+', before your treatment '+(clinic.name||'')+' kindly asks you to fill in a short health form (2 min): '+url,
+    'Merhaba '+(p.name||'')+', '+(clinic.name||'')+' olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): '+url);
+  var wa='https://wa.me/'+ph+'?text='+encodeURIComponent(msg);
+  if(w)w.location=wa;else window.open(wa,'_blank');
+}
+async function inCopy(){
+  var url=await inCreate();if(!url)return;
+  await navigator.clipboard.writeText(url);
+  var m=document.getElementById('inMsg');if(m){m.textContent=mxTr('Copied','Kopyalandı');m.style.color='#3AB06A';}
+}
+function inView(id){
+  var f=inForms.find(function(x){return x.id===id;});if(!f)return;
+  var a=f.answers||{};
+  var h='<div class="hint" style="margin:0 0 10px">'+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+'</div><table style="width:100%;border-collapse:collapse">'+IN_Q.map(function(q){
+    var k=q[0],y=a[k]==='yes',warn=y&&IN_RISK.indexOf(k)>=0,d=(a[k+'_detail']||'').trim();
+    var c=a[k]==null?'rgba(245,241,235,.4)':warn?'#E08A73':y?'#D4B896':'#3AB06A';
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,.08)"><td style="padding:9px 4px;font-size:13px;color:'+(warn?'#E08A73':'#F5F1EB')+'">'+(warn?'⚠ ':'')+mxE(inLabel(k))+
+      (d?'<div style="color:rgba(245,241,235,.6);font-size:12px;margin-top:3px">'+mxE(d)+'</div>':'')+'</td><td style="padding:9px 4px;text-align:right;font-weight:600;font-size:13px;color:'+c+'">'+
+      (a[k]==null?'-':y?mxTr('Yes','Evet'):mxTr('No','Hayır'))+'</td></tr>';}).join('')+'</table>';
+  if((a.note||'').trim())h+='<div class="hint" style="margin:14px 0 4px">'+mxTr("Patient's note",'Hastanın notu')+'</div><div style="font-size:13px;white-space:pre-wrap">'+mxE(a.note)+'</div>';
+  mxOpen(mxTr('Health form','Ön bilgi formu'),h,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
+  if(!f.reviewed_at){db.from('patient_intake_forms').update({reviewed_at:new Date().toISOString()}).eq('id',f.id).then(function(){f.reviewed_at=new Date().toISOString();});}
+}
+
 // ============ ONLINE BOOKING ============
 var BK_DAYS=[['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['7','Sunday']];
 var bkData=null;
@@ -1789,6 +1861,7 @@ async function bkLoad(){
     services:[{name:(LANG==='tr'?'Muayene / Konsültasyon':'Consultation'),duration:30}],
     hours:{'1':[['09:00','18:00']],'2':[['09:00','18:00']],'3':[['09:00','18:00']],'4':[['09:00','18:00']],'5':[['09:00','18:00']],'6':[['10:00','14:00']],'7':[]}};
   document.getElementById('bkEnabled').checked=!!bkData.enabled;
+  document.getElementById('bkIntake').checked=bkData.intake_enabled!==false;
   document.getElementById('bkSlug').value=bkData.slug||'';
   document.getElementById('bkIntro').value=bkData.intro||'';
   document.getElementById('bkSlot').value=bkData.slot_minutes;
@@ -1820,7 +1893,7 @@ async function bkSave(){
   var slug=bkSlugify(document.getElementById('bkSlug').value);document.getElementById('bkSlug').value=slug;bkLink();
   if(slug.length<3){bkMsg('Link name must be at least 3 characters',true);return;}
   var svcs=bkReadSvcs();if(!svcs.length){bkMsg('Add at least one service',true);return;}
-  var row={clinic_id:cid,enabled:document.getElementById('bkEnabled').checked,slug:slug,intro:document.getElementById('bkIntro').value.trim()||null,
+  var row={clinic_id:cid,enabled:document.getElementById('bkEnabled').checked,intake_enabled:document.getElementById('bkIntake').checked,slug:slug,intro:document.getElementById('bkIntro').value.trim()||null,
     services:svcs,hours:bkReadHours(),slot_minutes:parseInt(document.getElementById('bkSlot').value)||30,
     min_notice_hours:parseInt(document.getElementById('bkNotice').value)||0,max_days_ahead:parseInt(document.getElementById('bkAhead').value)||30,updated_at:new Date().toISOString()};
   var r=await db.from('clinic_booking_settings').upsert(row,{onConflict:'clinic_id'});
@@ -2017,7 +2090,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

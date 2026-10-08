@@ -1192,6 +1192,8 @@ function apCreatePt(i){
   apAfterSave=true;
 }
 
+function apConfirmLine(a){var ex=apExtras[a.appointment_id];if(!ex||!ex.confirm_token||(a.status&&a.status!=='planned'))return '';
+  return '\n\n'+mxTr('To confirm or cancel your appointment:','Randevunuzu teyit etmek veya iptal etmek için:')+'\nhttps://aafclinic.com/r?t='+encodeURIComponent(ex.confirm_token);}
 function normPhone(p){return (p||'').replace(/[^0-9+]/g,'');}
 
 function buildReminder(a){
@@ -1199,7 +1201,7 @@ function buildReminder(a){
   var name=(a.patient_name||a.patient_name_temp||'').trim();
   var date=a.appointment_date?new Date(a.appointment_date).toLocaleDateString():'';
   var time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
-  if(!tpl)return 'Dear '+name+', this is a reminder for your appointment on '+date+' at '+time+'.';
+  if(!tpl)return 'Dear '+name+', this is a reminder for your appointment on '+date+' at '+time+'.'+apConfirmLine(a);
   var m=tpl;
   m=m.replace(/\[ad\]/g,name).replace(/\[tarih\]/g,date).replace(/\[saat\]/g,time);
   m=m.replace(/\[name\]/g,name).replace(/\[date\]/g,date).replace(/\[time\]/g,time);
@@ -1210,7 +1212,8 @@ function buildReminder(a){
   m=m.replace(/\[имя\]/g,name).replace(/\[дата\]/g,date).replace(/\[время\]/g,time);
   m=m.replace(/\[이름\]/g,name).replace(/\[날짜\]/g,date).replace(/\[시간\]/g,time);
   m=m.replace(/\[姓名\]/g,name).replace(/\[日期\]/g,date).replace(/\[时间\]/g,time);
-  return m;
+  ['[klinik]','[clinic]','[clinica]','[clínica]','[clinique]','[клиника]','[클리닉]','[诊所]'].forEach(function(p){m=m.split(p).join((clinic&&clinic.name)||'');});
+  return m+apConfirmLine(a);
 }
 
 function sendWA(i){
@@ -1819,6 +1822,7 @@ async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_sou
 async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
 
 // ============ ROOMS & DEVICES ============
+var apExtras={};
 var RS_COLORS=['#B89A6A','#6C63A8','#2A9E8A','#C0614A','#D4963A','#4A90C2','#9C5FA8','#7A8B3C'],rsRows=[],apResMap={},apResFilter=null;
 async function rsLoad(){
   var r=await db.from('clinic_resources').select('*').eq('clinic_id',cid).order('sort').order('name');rsRows=r.data||[];
@@ -1836,9 +1840,15 @@ async function rsRename(id){var x=rsRows.find(function(r){return r.id===id;});va
   await db.from('clinic_resources').update({name:n.trim()}).eq('id',id);rsLoad();}
 async function rsToggle(id){var x=rsRows.find(function(r){return r.id===id;});await db.from('clinic_resources').update({active:!x.active}).eq('id',id);rsLoad();}
 async function apRes(items){
-  var r=await db.rpc('get_appointment_resources',{p_clinic_id:cid,p_date:fmtDate(apptDate)});apResMap={};
-  (r.data||[]).forEach(function(x){apResMap[x.appointment_id]=x.resource_ids||[];});
+  var r=await db.rpc('get_appointment_extras',{p_clinic_id:cid,p_date:fmtDate(apptDate)});apResMap={};apExtras={};
+  (r.data||[]).forEach(function(x){apResMap[x.appointment_id]=x.resource_ids||[];apExtras[x.appointment_id]=x;});
   if(!rsRows.length){var q=await db.from('clinic_resources').select('*').eq('clinic_id',cid).order('sort').order('name');rsRows=q.data||[];}
+  items.forEach(function(a,i){var ex=apExtras[a.appointment_id],box=document.getElementById('apx_'+i);if(!box||!ex)return;
+    var ch=function(t,c){return '<span style="color:'+c+';border:1px solid '+c+'66;border-radius:6px;padding:2px 8px;font-size:12px">'+t+'</span>';};
+    if(ex.patient_cancelled_at)box.insertAdjacentHTML('afterbegin',ch('✕ '+mxTr('Cancelled by patient','Hasta iptal etti'),'#E08A73'));
+    else if(ex.confirmed_at)box.insertAdjacentHTML('afterbegin',ch('✓ '+mxTr('Confirmed','Teyit etti'),'#3AB06A'));
+    if(ex.no_show_count>0)box.insertAdjacentHTML('beforeend',ch('⚠ '+ex.no_show_count+' '+mxTr('no-shows','kez gelmedi'),'#D4963A'));
+  });
   items.forEach(function(a,i){var ids=apResMap[a.appointment_id]||[],box=document.getElementById('apx_'+i);if(!box||!ids.length)return;
     box.insertAdjacentHTML('beforeend',ids.map(function(id){var x=rsRows.find(function(r){return r.id===id;});if(!x)return '';
       return '<span style="background:'+mxE(x.color||'#B89A6A')+'33;border-radius:6px;padding:2px 8px;font-size:12px">'+(x.kind==='device'?'⚙︎ ':'🚪 ')+mxE(x.name)+'</span>';}).join(''));});

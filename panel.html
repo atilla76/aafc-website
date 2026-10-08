@@ -293,6 +293,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div class="sec">PATIENT INFO</div>
             <div class="ibox" id="pInfo"></div>
             <div class="ibox" id="pIntake" style="margin-top:10px"></div>
+            <div class="ibox" id="pDx" style="margin-top:10px;display:none"></div>
             <div class="ibox" id="pPkg" style="margin-top:10px"></div>
             <div class="ibox" id="pPortal" style="margin-top:10px"></div>
             <div class="sec">BEFORE / AFTER COMPARISON</div>
@@ -316,6 +317,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div id="vDetail" style="display:none">
               <div class="sec">VISIT INFO</div>
               <div class="ibox" id="vInfo"></div>
+              <div class="sec">DIAGNOSIS (ICD-10)</div>
+              <div class="ibox" id="vDx"></div>
               <div id="nWrap">
                 <div class="sec">PROCEDURES</div>
                 <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vProc" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
@@ -809,7 +812,7 @@ async function selP(id){
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
   document.getElementById('pInfo').innerHTML=ih;
-  inLoad(id);pkLoad(id);ptLoad(id);
+  inLoad(id);pkLoad(id);ptLoad(id);pDxLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
@@ -922,6 +925,7 @@ async function selV(id){
   vi+='<div class="ir"><span class="il">Region</span><span class="iv">'+(v.region||'-')+'</span></div>';
   vi+='<div class="ir"><span class="il">Date</span><span class="iv">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
   document.getElementById('vInfo').innerHTML=vi;
+  dxLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vSaveMsg').textContent='';
@@ -1549,6 +1553,68 @@ function mxOpen(title,body,btns){
   document.getElementById('mxModal').style.display='flex';
 }
 function mxClose(){document.getElementById('mxModal').style.display='none';}
+// ---- ICD-10 diagnoses ----
+var dxSel=[],dxVid=null,dxSeq=0,dxTimer=null;
+function dxBadge(c,pri){return '<span style="display:inline-block;min-width:46px;padding:2px 7px;border-radius:6px;font:700 12px monospace;'+(pri?'background:rgba(184,154,106,.18);border:1px solid #B89A6A;color:#B89A6A':'background:rgba(245,241,235,.06);border:1px solid rgba(245,241,235,.12);color:#F5F1EB')+'">'+mxE(c)+'</span>';}
+async function dxLoad(vid){
+  var box=document.getElementById('vDx');box.innerHTML='<div class="hint" style="margin:0">…</div>';
+  var r=await db.rpc('get_visit_diagnoses',{p_visit_id:vid,p_lang:LANG});
+  if(selVid!==vid)return;
+  dxSel=(r.data||[]).map(function(d){return {code:d.code,name:d.name};});
+  var h=dxSel.length?dxSel.map(function(d,i){return '<div style="display:flex;gap:10px;align-items:flex-start;padding:4px 0">'+dxBadge(d.code,i===0)+'<span style="flex:1;font-size:14px">'+mxE(d.name||'')+(i===0?' <span style="color:#B89A6A;font-size:12px">· '+mxTr('Primary diagnosis','Ana tanı')+'</span>':'')+'</span></div>';}).join('')
+    :'<div class="hint" style="margin:0">'+mxTr('No diagnosis entered','Tanı girilmedi')+'</div>';
+  h+='<div style="margin-top:8px"><button class="btn bedit" onclick="dxOpen(\''+vid+'\')">'+(dxSel.length?mxTr('Edit','Düzenle'):'+ '+mxTr('Add diagnosis','Tanı ekle'))+'</button></div>';
+  box.innerHTML=h;
+}
+function dxOpen(vid){
+  dxVid=vid;dxSel=dxSel.slice();
+  mxOpen(mxTr('Diagnosis (ICD-10)','Tanı (ICD-10)'),
+    '<div id="dxChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>'+
+    '<div class="hint" id="dxHint" style="margin:0 0 8px;font-size:11px"></div>'+
+    '<input class="mi" id="dxQ" placeholder="'+mxE(mxTr('Search code or diagnosis (e.g. L81.1, melasma)','Kod veya tanı ara (ör. L81.1, melazma)'))+'" oninput="dxType()" autocomplete="off">'+
+    '<div class="hint" id="dxHead" style="margin:0 0 4px;font-size:10px;letter-spacing:.16em">'+mxTr('FREQUENTLY USED AND AESTHETIC DIAGNOSES','SIK KULLANILANLAR VE ESTETİK TANILAR')+'</div>'+
+    '<div id="dxRes" style="max-height:46vh;overflow:auto"></div>',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),fn:dxSave}]);
+  dxChips();dxSearch('');setTimeout(function(){var q=document.getElementById('dxQ');if(q)q.focus();},50);
+}
+function dxChips(){
+  var c=document.getElementById('dxChips');if(!c)return;
+  c.innerHTML=dxSel.map(function(d,i){return '<span title="'+mxE(d.name||'')+'" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:14px;cursor:pointer;'+(i===0?'background:rgba(184,154,106,.18);border:1px solid #B89A6A;color:#B89A6A':'background:rgba(245,241,235,.06);border:1px solid rgba(245,241,235,.12)')+'" onclick="dxPrimary('+i+')">'+(i===0?'★':'☆')+' <b style="font-family:monospace">'+mxE(d.code)+'</b><span onclick="event.stopPropagation();dxRemove('+i+')" style="opacity:.6;padding-left:2px">✕</span></span>';}).join('');
+  document.getElementById('dxHint').textContent=dxSel.length>1?mxTr('Click a code to make it primary','Ana tanı yapmak için koda tıklayın'):'';
+}
+function dxPrimary(i){if(i>0){dxSel.unshift(dxSel.splice(i,1)[0]);dxChips();}}
+function dxRemove(i){dxSel.splice(i,1);dxChips();dxRenderRes();}
+var dxResRows=[];
+function dxType(){clearTimeout(dxTimer);var q=document.getElementById('dxQ').value.trim();dxTimer=setTimeout(function(){dxSearch(q);},250);
+  document.getElementById('dxHead').style.display=q?'none':'block';}
+async function dxSearch(q){
+  var my=++dxSeq;var r=await db.rpc('search_icd10',{p_q:q,p_lang:LANG,p_limit:q?60:100});
+  if(my!==dxSeq)return;dxResRows=r.data||[];dxRenderRes();
+}
+function dxRenderRes(){
+  var el=document.getElementById('dxRes');if(!el)return;
+  if(!dxResRows.length){el.innerHTML='<div class="hint" style="padding:10px 0">'+mxTr('No results','Sonuç yok')+'</div>';return;}
+  el.innerHTML=dxResRows.map(function(d,i){var on=dxSel.some(function(x){return x.code===d.code;});
+    return '<div onclick="dxToggle('+i+')" style="display:flex;gap:10px;align-items:center;padding:7px 4px;border-bottom:1px solid rgba(245,241,235,.06);cursor:pointer">'+dxBadge(d.code,false)+
+      '<div style="flex:1"><div style="font-size:13px">'+mxE(d.name||'')+'</div>'+(d.name_en&&d.name_en!==d.name?'<div style="font-size:11px;color:rgba(245,241,235,.4)">'+mxE(d.name_en)+'</div>':'')+'</div>'+
+      '<span style="font-size:18px;color:'+(on?'#B89A6A':'rgba(245,241,235,.3)')+'">'+(on?'✓':'+')+'</span></div>';}).join('');
+}
+function dxToggle(i){var d=dxResRows[i];var k=dxSel.findIndex(function(x){return x.code===d.code;});
+  if(k>=0)dxSel.splice(k,1);else dxSel.push({code:d.code,name:d.name});dxChips();dxRenderRes();}
+async function dxSave(){
+  var r=await db.rpc('set_visit_diagnoses',{p_visit_id:dxVid,p_codes:dxSel.map(function(d){return d.code;})});
+  if(r.error){alert(r.error.message);return;}
+  mxClose();dxLoad(dxVid);if(selPid)pDxLoad(selPid);
+}
+async function pDxLoad(pid){
+  var box=document.getElementById('pDx');
+  var r=await db.rpc('get_patient_diagnoses',{p_patient_id:pid,p_lang:LANG});
+  if(selPid!==pid)return;var rows=r.data||[];
+  if(!rows.length){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='block';
+  box.innerHTML='<div class="sec" style="margin-top:0">'+mxTr('DIAGNOSES','TANILAR')+'</div>'+rows.map(function(d){return '<div style="display:flex;gap:10px;align-items:flex-start;padding:4px 0">'+dxBadge(d.code,false)+'<span style="flex:1;font-size:14px">'+mxE(d.name||'')+'</span><span class="hint" style="margin:0;white-space:nowrap">'+mxDate(d.last_date)+(d.times>1?' · '+d.times+' '+mxTr('visits','vizit'):'')+'</span></div>';}).join('');
+}
+
 // WhatsApp after an async step: browsers may block the pop-up, so also show a clickable button
 function mxWaOpen(url,el){try{window.open(url,'_blank');}catch(e){}
   if(el){el.innerHTML='<a class="btn bwa" style="display:inline-block;margin-top:6px" href="'+url+'" target="_blank" rel="noopener">📱 '+mxTr('Open WhatsApp','WhatsApp\'ı aç')+'</a>';el.style.color='';}}
@@ -2444,7 +2510,7 @@ async function impLoadBatches(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

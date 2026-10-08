@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hasta Portalı</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12101E">
+<style>
+:root{--ink:#12101E;--ink2:#1C1929;--gold:#B89A6A;--goldlt:#D4B896;--cream:#F5F1EB;--mid:rgba(245,241,235,.62);--dim:rgba(245,241,235,.38);--line:rgba(255,255,255,.08);--green:#3AB06A;--red:#C0614A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:600}
+h1{font-size:24px;font-weight:600;margin-top:10px}
+.sub{color:var(--mid);font-size:14px;margin-top:6px;line-height:1.5}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.step{font-size:11px;letter-spacing:1.5px;color:var(--gold);font-weight:600;text-transform:uppercase;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .t{font-size:15px}.row .s{font-size:12px;color:var(--mid);margin-top:2px}
+.chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.btn{display:inline-block;padding:10px 14px;border:none;border-radius:10px;background:var(--gold);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--goldlt);border:1px solid var(--gold)}
+.btn.block{display:block;width:100%;text-align:center;padding:14px;font-size:16px;margin-top:12px}
+.bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}.bar div{height:100%;background:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grid button{border:0;padding:0;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:3/4;cursor:pointer}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.pin{width:100%;text-align:center;letter-spacing:12px;font-size:28px;padding:14px;background:var(--ink);border:1px solid var(--line);border-radius:12px;color:var(--cream);font-family:inherit;outline:none;margin-top:14px}
+.pin:focus{border-color:var(--gold)}
+.err{color:var(--red);font-size:14px;margin-top:10px;text-align:center}
+.muted{color:var(--dim);font-size:13px;padding:6px 0}
+.lbx{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;flex-direction:column;z-index:10}
+.lbx.on{display:flex}.lbx .img{flex:1;display:flex;align-items:center;justify-content:center}.lbx img{max-width:100%;max-height:100%;object-fit:contain}
+.lbx .b{display:flex;justify-content:space-between;padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.lbx button{background:rgba(255,255,255,.1);color:var(--cream);border:0;border-radius:10px;padding:10px 16px;font-size:16px;cursor:pointer}
+.foot{margin-top:28px;text-align:center;color:var(--dim);font-size:11px;line-height:1.8}.foot a{color:var(--dim)}
+.spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<div class="lbx" id="lbx"><div class="img"><img id="lbImg" alt=""></div>
+  <div class="b"><button onclick="lb(-1)">‹</button><span id="lbC" style="color:var(--mid);align-self:center;font-size:13px"></span><button onclick="lb(1)">›</button><button onclick="document.getElementById('lbx').classList.remove('on')">✕</button></div></div>
+<script>
+const FN = 'https://hugxacklprzujswtaike.supabase.co/functions/v1/patient-portal';
+const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+const LANGS = {
+  tr: { title: 'Hasta Portalı', hi: (n) => n ? `Merhaba ${n}` : 'Merhaba', pinAsk: 'Güvenliğiniz için kayıtlı telefon numaranızın son 4 hanesini girin.', go: 'Giriş', wrong: 'Hatalı giriş, lütfen tekrar deneyin.', locked: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar deneyin.',
+    upcoming: 'Yaklaşan randevular', noUpcoming: 'Planlanmış randevunuz yok.', confirmed: 'Teyit edildi', manage: 'Teyit / iptal', book: 'Yeni randevu al', packages: 'Paketleriniz', used: 'kullanıldı', left: 'kalan', expired: 'Süresi doldu',
+    forms: 'Ön bilgi formu', fill: 'Formu doldur', filled: 'Dolduruldu', consents: 'Onam formlarınız', open: 'PDF', photos: 'Fotoğraflarınız', visits: 'Ziyaretleriniz',
+    valid: (d) => `Bu link ${d} tarihine kadar geçerlidir. Lütfen başkalarıyla paylaşmayın.`, expiredLink: 'Bu linkin süresi dolmuş. Lütfen kliniğinizle iletişime geçin.', revoked: 'Bu link artık geçerli değil.', notFound: 'Link bulunamadı.', error: 'Bir sorun oluştu, lütfen tekrar deneyin.', call: 'Ara' },
+  en: { title: 'Patient Portal', hi: (n) => n ? `Hello ${n}` : 'Hello', pinAsk: 'For your security, enter the last 4 digits of your registered phone number.', go: 'Sign in', wrong: 'Incorrect, please try again.', locked: 'Too many wrong attempts. Please try again in 1 hour.',
+    upcoming: 'Upcoming appointments', noUpcoming: 'You have no planned appointments.', confirmed: 'Confirmed', manage: 'Confirm / cancel', book: 'Book a new appointment', packages: 'Your packages', used: 'used', left: 'left', expired: 'Expired',
+    forms: 'Health form', fill: 'Fill in the form', filled: 'Completed', consents: 'Your consent forms', open: 'PDF', photos: 'Your photos', visits: 'Your visits',
+    valid: (d) => `This link is valid until ${d}. Please do not share it.`, expiredLink: 'This link has expired. Please contact your clinic.', revoked: 'This link is no longer valid.', notFound: 'Link not found.', error: 'Something went wrong, please try again.', call: 'Call' },
+  de: { title: 'Patientenportal', hi: (n) => n ? `Hallo ${n}` : 'Hallo', pinAsk: 'Geben Sie zu Ihrer Sicherheit die letzten 4 Ziffern Ihrer hinterlegten Telefonnummer ein.', go: 'Anmelden', wrong: 'Falsch, bitte erneut versuchen.', locked: 'Zu viele Fehlversuche. Bitte in 1 Stunde erneut versuchen.',
+    upcoming: 'Anstehende Termine', noUpcoming: 'Sie haben keine geplanten Termine.', confirmed: 'Bestätigt', manage: 'Bestätigen / absagen', book: 'Neuen Termin buchen', packages: 'Ihre Pakete', used: 'verwendet', left: 'übrig', expired: 'Abgelaufen',
+    forms: 'Gesundheitsfragebogen', fill: 'Ausfüllen', filled: 'Ausgefüllt', consents: 'Ihre Einwilligungen', open: 'PDF', photos: 'Ihre Fotos', visits: 'Ihre Besuche',
+    valid: (d) => `Dieser Link ist gültig bis ${d}. Bitte nicht weitergeben.`, expiredLink: 'Dieser Link ist abgelaufen. Bitte wenden Sie sich an Ihre Praxis.', revoked: 'Dieser Link ist nicht mehr gültig.', notFound: 'Link nicht gefunden.', error: 'Etwas ist schiefgelaufen, bitte erneut versuchen.', call: 'Anrufen' },
+  es: { title: 'Portal del paciente', hi: (n) => n ? `Hola ${n}` : 'Hola', pinAsk: 'Por seguridad, introduzca los 4 últimos dígitos de su teléfono registrado.', go: 'Entrar', wrong: 'Incorrecto, inténtelo de nuevo.', locked: 'Demasiados intentos fallidos. Inténtelo de nuevo en 1 hora.',
+    upcoming: 'Próximas citas', noUpcoming: 'No tiene citas programadas.', confirmed: 'Confirmada', manage: 'Confirmar / cancelar', book: 'Pedir nueva cita', packages: 'Sus paquetes', used: 'usadas', left: 'restantes', expired: 'Caducado',
+    forms: 'Formulario de salud', fill: 'Rellenar', filled: 'Completado', consents: 'Sus consentimientos', open: 'PDF', photos: 'Sus fotos', visits: 'Sus visitas',
+    valid: (d) => `Este enlace es válido hasta el ${d}. No lo comparta.`, expiredLink: 'Este enlace ha caducado. Contacte con su clínica.', revoked: 'Este enlace ya no es válido.', notFound: 'Enlace no encontrado.', error: 'Algo salió mal, inténtelo de nuevo.', call: 'Llamar' },
+  fr: { title: 'Espace patient', hi: (n) => n ? `Bonjour ${n}` : 'Bonjour', pinAsk: 'Pour votre sécurité, saisissez les 4 derniers chiffres de votre numéro de téléphone enregistré.', go: 'Entrer', wrong: 'Incorrect, veuillez réessayer.', locked: 'Trop de tentatives. Réessayez dans 1 heure.',
+    upcoming: 'Rendez-vous à venir', noUpcoming: 'Aucun rendez-vous prévu.', confirmed: 'Confirmé', manage: 'Confirmer / annuler', book: 'Prendre un rendez-vous', packages: 'Vos forfaits', used: 'utilisées', left: 'restantes', expired: 'Expiré',
+    forms: 'Questionnaire de santé', fill: 'Remplir', filled: 'Rempli', consents: 'Vos consentements', open: 'PDF', photos: 'Vos photos', visits: 'Vos visites',
+    valid: (d) => `Ce lien est valable jusqu’au ${d}. Merci de ne pas le partager.`, expiredLink: 'Ce lien a expiré. Contactez votre clinique.', revoked: 'Ce lien n’est plus valide.', notFound: 'Lien introuvable.', error: 'Un problème est survenu, veuillez réessayer.', call: 'Appeler' },
+  it: { title: 'Area paziente', hi: (n) => n ? `Salve ${n}` : 'Salve', pinAsk: 'Per sicurezza, inserisca le ultime 4 cifre del suo numero di telefono registrato.', go: 'Entra', wrong: 'Errato, riprovi.', locked: 'Troppi tentativi errati. Riprovi tra 1 ora.',
+    upcoming: 'Prossimi appuntamenti', noUpcoming: 'Nessun appuntamento in programma.', confirmed: 'Confermato', manage: 'Conferma / annulla', book: 'Prenota un appuntamento', packages: 'I suoi pacchetti', used: 'usate', left: 'rimaste', expired: 'Scaduto',
+    forms: 'Questionario sanitario', fill: 'Compila', filled: 'Compilato', consents: 'I suoi consensi', open: 'PDF', photos: 'Le sue foto', visits: 'Le sue visite',
+    valid: (d) => `Questo link è valido fino al ${d}. Non lo condivida.`, expiredLink: 'Questo link è scaduto. Contatti la clinica.', revoked: 'Questo link non è più valido.', notFound: 'Link non trovato.', error: 'Si è verificato un problema, riprovi.', call: 'Chiama' },
+  pt: { title: 'Portal do paciente', hi: (n) => n ? `Olá ${n}` : 'Olá', pinAsk: 'Por segurança, introduza os 4 últimos dígitos do seu telefone registado.', go: 'Entrar', wrong: 'Incorreto, tente novamente.', locked: 'Demasiadas tentativas. Tente novamente dentro de 1 hora.',
+    upcoming: 'Próximas consultas', noUpcoming: 'Não tem consultas marcadas.', confirmed: 'Confirmada', manage: 'Confirmar / cancelar', book: 'Marcar nova consulta', packages: 'Os seus pacotes', used: 'usadas', left: 'restantes', expired: 'Expirado',
+    forms: 'Questionário de saúde', fill: 'Preencher', filled: 'Preenchido', consents: 'Os seus consentimentos', open: 'PDF', photos: 'As suas fotos', visits: 'As suas visitas',
+    valid: (d) => `Este link é válido até ${d}. Não o partilhe.`, expiredLink: 'Este link expirou. Contacte a sua clínica.', revoked: 'Este link já não é válido.', notFound: 'Link não encontrado.', error: 'Ocorreu um problema, tente novamente.', call: 'Ligar' },
+  ru: { title: 'Кабинет пациента', hi: (n) => n ? `Здравствуйте, ${n}` : 'Здравствуйте', pinAsk: 'Для безопасности введите последние 4 цифры вашего номера телефона.', go: 'Войти', wrong: 'Неверно, попробуйте ещё раз.', locked: 'Слишком много ошибок. Попробуйте через 1 час.',
+    upcoming: 'Ближайшие записи', noUpcoming: 'Нет запланированных записей.', confirmed: 'Подтверждено', manage: 'Подтвердить / отменить', book: 'Записаться снова', packages: 'Ваши абонементы', used: 'использовано', left: 'осталось', expired: 'Истёк',
+    forms: 'Анкета о здоровье', fill: 'Заполнить', filled: 'Заполнена', consents: 'Ваши согласия', open: 'PDF', photos: 'Ваши фото', visits: 'Ваши визиты',
+    valid: (d) => `Ссылка действует до ${d}. Не пересылайте её.`, expiredLink: 'Срок действия ссылки истёк. Свяжитесь с клиникой.', revoked: 'Ссылка больше не действует.', notFound: 'Ссылка не найдена.', error: 'Что-то пошло не так, попробуйте ещё раз.', call: 'Позвонить' },
+  ko: { title: '환자 포털', hi: (n) => n ? `${n}님, 안녕하세요` : '안녕하세요', pinAsk: '보안을 위해 등록된 전화번호 마지막 4자리를 입력하세요.', go: '들어가기', wrong: '틀렸습니다. 다시 시도해 주세요.', locked: '시도 횟수를 초과했습니다. 1시간 후 다시 시도해 주세요.',
+    upcoming: '다가오는 예약', noUpcoming: '예정된 예약이 없습니다.', confirmed: '확인됨', manage: '확인 / 취소', book: '새 예약하기', packages: '내 패키지', used: '사용', left: '남음', expired: '만료',
+    forms: '건강 문진표', fill: '작성하기', filled: '작성 완료', consents: '내 동의서', open: 'PDF', photos: '내 사진', visits: '방문 기록',
+    valid: (d) => `이 링크는 ${d}까지 유효합니다. 다른 사람과 공유하지 마세요.`, expiredLink: '링크가 만료되었습니다. 병원에 문의해 주세요.', revoked: '더 이상 유효하지 않은 링크입니다.', notFound: '링크를 찾을 수 없습니다.', error: '문제가 발생했습니다. 다시 시도해 주세요.', call: '전화' },
+  zh: { title: '患者中心', hi: (n) => n ? `${n}，您好` : '您好', pinAsk: '为了您的安全，请输入登记手机号的后 4 位。', go: '进入', wrong: '输入错误，请重试。', locked: '错误次数过多，请 1 小时后再试。',
+    upcoming: '即将到来的预约', noUpcoming: '您没有已安排的预约。', confirmed: '已确认', manage: '确认 / 取消', book: '新的预约', packages: '我的套餐', used: '已用', left: '剩余', expired: '已过期',
+    forms: '健康问卷', fill: '填写问卷', filled: '已填写', consents: '我的知情同意书', open: 'PDF', photos: '我的照片', visits: '就诊记录',
+    valid: (d) => `此链接有效期至 ${d}，请勿转发。`, expiredLink: '链接已过期，请联系诊所。', revoked: '此链接已失效。', notFound: '未找到链接。', error: '出现问题，请重试。', call: '致电' },
+};
+const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+document.documentElement.lang = LC;
+document.title = L.title;
+const app = document.getElementById('app');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (iso, o) => { try { return new Date(String(iso).slice(0, 10) + 'T12:00:00').toLocaleDateString(LOCALES[LC], o || { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return iso; } };
+let D = null, pinErr = '', head0 = null, photos = [], cur = 0;
+const KEY = 'aafc_portal_' + TOKEN.slice(0, 8);
+const ss = { get() { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, set(v) { try { sessionStorage.setItem(KEY, v); } catch (e) {} } };
+
+async function call(pin) {
+  const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: TOKEN, pin: pin || '' }), cache: 'no-store' });
+  return r.json();
+}
+function brand(name) { return `<div class="brand">${esc(String(name || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div>`; }
+function msg(t) { app.innerHTML = brand(head0 && head0.clinic) + `<h1>${L.title}</h1><div class="card"><div class="muted" style="text-align:center">${t}</div></div>`; }
+
+function pinScreen() {
+  app.innerHTML = brand(head0 && head0.clinic) + `<h1>${esc(L.hi(head0 && head0.first_name))}</h1><div class="sub">${L.pinAsk}</div>
+    <form class="card" onsubmit="tryPin(event)"><input class="pin" id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="4" pattern="[0-9]*" autofocus>
+    ${pinErr ? `<div class="err">${esc(pinErr)}</div>` : ''}<button class="btn block">${L.go}</button></form>`;
+  setTimeout(() => document.getElementById('pin')?.focus(), 50);
+}
+async function tryPin(ev) {
+  ev.preventDefault();
+  const pin = document.getElementById('pin').value.trim();
+  if (pin.length !== 4) return;
+  await load(pin);
+}
+async function load(pin) {
+  let r;
+  try { r = await call(pin); } catch (e) { return msg(L.error); }
+  const s = r && r.status;
+  if (s === 'ok') { ss.set(pin || ''); D = r; return render(); }
+  if (s === 'pin_required') { head0 = r; pinErr = ''; return pinScreen(); }
+  if (s === 'wrong_pin') { pinErr = L.wrong; ss.set(''); return pinScreen(); }
+  if (s === 'locked') { pinErr = L.locked; ss.set(''); return pinScreen(); }
+  return msg(s === 'expired' ? L.expiredLink : s === 'revoked' ? L.revoked : s === 'not_found' ? L.notFound : L.error);
+}
+
+function render() {
+  const c = D.clinic || {};
+  let h = brand(c.name) + `<h1>${esc(L.hi(D.patient && D.patient.first_name))}</h1>`;
+  // upcoming
+  h += `<div class="card"><div class="step">${L.upcoming}</div>`;
+  if (!D.upcoming.length) h += `<div class="muted">${L.noUpcoming}</div>`;
+  for (const a of D.upcoming) {
+    h += `<div class="row"><div><div class="t">${esc(fmt(a.date, { weekday: 'long', day: 'numeric', month: 'long' }))} · <b>${esc(a.time)}</b></div>
+      <div class="s">${esc(a.service || '')}${a.confirmed ? ` <span class="chip" style="background:rgba(58,176,106,.15);color:var(--green)">✓ ${L.confirmed}</span>` : ''}</div></div>
+      ${a.token ? `<a class="btn ghost" href="r?t=${encodeURIComponent(a.token)}&lang=${LC}">${L.manage}</a>` : ''}</div>`;
+  }
+  if (c.booking_slug) h += `<a class="btn block" href="randevu?k=${encodeURIComponent(c.booking_slug)}&lang=${LC}">${L.book}</a>`;
+  h += `</div>`;
+  // forms
+  const pend = D.forms.find((f) => f.status === 'pending' && f.token), done = D.forms.find((f) => f.status === 'completed');
+  if (pend || done) {
+    h += `<div class="card"><div class="step">${L.forms}</div><div class="row"><div class="t">${pend ? '📝 ' + L.forms : '✓ ' + L.filled + ' · ' + esc(fmt(done.completed_at))}</div>
+      ${pend ? `<a class="btn" href="form?t=${encodeURIComponent(pend.token)}&lang=${LC}">${L.fill}</a>` : ''}</div></div>`;
+  }
+  // packages
+  if (D.packages.length) {
+    h += `<div class="card"><div class="step">${L.packages}</div>` + D.packages.map((p) => `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between">
+      <div class="t">${esc(p.name)}</div>${p.status === 'expired' ? `<span class="chip" style="color:var(--red)">${L.expired}</span>` : ''}</div>
+      <div class="bar"><div style="width:${Math.min(100, p.used / Math.max(1, p.total) * 100)}%"></div></div>
+      <div class="s">${p.used}/${p.total} ${L.used} · <b style="color:var(--goldlt)">${p.remaining} ${L.left}</b>${p.expires_at ? ' · ' + esc(fmt(p.expires_at)) : ''}</div></div>`).join('') + `</div>`;
+  }
+  // photos
+  photos = D.photos || [];
+  if (photos.length) h += `<div class="card"><div class="step">${L.photos}</div><div class="grid">${photos.map((p, i) => `<button onclick="lbOpen(${i})"><img loading="lazy" src="${esc(p.url)}" alt=""></button>`).join('')}</div></div>`;
+  // consents
+  if (D.consents.length) h += `<div class="card"><div class="step">${L.consents}</div>` + D.consents.map((x) => `<div class="row"><div><div class="t">${esc(x.name || '')}</div><div class="s">${esc(fmt(x.signed_at))}</div></div>
+      ${x.url ? `<a class="btn ghost" href="${esc(x.url)}" target="_blank" rel="noopener">${L.open}</a>` : ''}</div>`).join('') + `</div>`;
+  // visits
+  if (D.visits.length) h += `<div class="card"><div class="step">${L.visits}</div><div class="sub" style="margin:0">${D.visits.map((v) => esc(fmt(v.date))).join(' · ')}</div></div>`;
+  h += `<div class="muted" style="text-align:center;margin-top:14px">${esc(L.valid(fmt(D.expires_at)))}</div>
+    <div class="foot">${c.phone ? `<a href="tel:${esc(String(c.phone).replace(/\s/g, ''))}">${L.call}: ${esc(c.phone)}</a><br>` : ''}${c.address ? esc(c.address) + '<br>' : ''}${c.website ? esc(c.website) + ' · ' : ''}AAFC</div>`;
+  app.innerHTML = h;
+}
+function lbOpen(i) { cur = i; lbShow(); document.getElementById('lbx').classList.add('on'); }
+function lb(d) { cur = (cur + d + photos.length) % photos.length; lbShow(); }
+function lbShow() { document.getElementById('lbImg').src = photos[cur].url; document.getElementById('lbC').textContent = `${cur + 1} / ${photos.length} · ${fmt(photos[cur].date)}`; }
+
+(async () => {
+  if (TOKEN.length < 20) return msg(L.notFound);
+  await load(ss.get());
+})();
+</script>
+</body>
+</html>

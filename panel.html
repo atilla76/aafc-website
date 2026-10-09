@@ -235,6 +235,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bimp:disabled{opacity:.4;cursor:default}
 .bimp2{background:rgba(245,241,235,0.06);color:#F5F1EB;border:1px solid rgba(245,241,235,0.15);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
 .imp-wrap{overflow-x:auto;max-height:260px;overflow-y:auto}
+.mg-drop{padding:30px 20px}
+.mg-file{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:10px 14px;margin-bottom:8px}
+.mg-file .ic{font-size:20px}.mg-file .nm{font-weight:600;font-size:14px;color:#F5F1EB}.mg-file .mt{font-size:12px;color:rgba(245,241,235,0.5)}
+.mg-file select{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.15);color:#F5F1EB;border-radius:8px;padding:6px 8px;font-size:13px;font-family:inherit}
+.mg-file select option{background:#1C1929}
+.mg-file .lk{font-size:12px;color:#B89A6A;cursor:pointer}
+.mg-map{width:100%;margin-top:6px}
+.mg-log div{padding:7px 0;font-size:14px;color:rgba(245,241,235,0.8);border-bottom:1px solid rgba(245,241,235,0.06)}
+.mg-help{background:rgba(245,241,235,0.03);border:1px dashed rgba(245,241,235,0.15);border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
+.mg-help a{color:#B89A6A;font-weight:600}
 .imp-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .imp-modes button{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.12);color:rgba(245,241,235,0.7);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 .imp-modes button.on{background:rgba(184,154,106,0.15);border-color:#B89A6A;color:#B89A6A}
@@ -500,10 +510,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2 id="impTitle">Import Patients</h2><div class="sub" id="impSub">Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.</div></div>
       </div>
-      <div class="imp-modes" id="impModes"></div>
+      <div class="imp-modes" id="impModes" style="display:none"></div>
       <div class="imp-guide" id="impGuide"></div>
 
-      <div id="impExcel">
+      <div id="mig">
+        <div class="imp-step">
+          <h3 id="mgT1"></h3>
+          <div class="hint" id="mgH1"></div>
+          <div class="imp-drop mg-drop" id="mgDrop"><div id="mgDropTxt"></div>
+            <div class="imp-actions" style="justify-content:center;margin-top:12px">
+              <button class="bimp" onclick="event.stopPropagation();document.getElementById('mgFiles').click()" id="mgBtnFiles"></button>
+              <button class="bimp2" onclick="event.stopPropagation();document.getElementById('mgDir').click()" id="mgBtnDir"></button>
+            </div>
+          </div>
+          <input type="file" id="mgFiles" multiple accept=".xlsx,.xls,.csv,.zip,.jpg,.jpeg,.png,.webp,.heic,.heif" style="display:none" onchange="migAddFiles(this.files);this.value=''">
+          <input type="file" id="mgDir" webkitdirectory directory multiple style="display:none" onchange="migAddFiles(this.files,true);this.value=''">
+          <div id="mgList" style="margin-top:14px"></div>
+          <div class="imp-actions" id="mgActions" style="margin-top:12px"></div>
+        </div>
+        <div class="imp-step" id="mgPrevStep" style="display:none">
+          <h3 id="mgT2"></h3>
+          <div class="imp-nums" id="mgNums"></div>
+          <div class="hint" id="mgPrevHint"></div>
+          <div class="imp-wrap"><table class="fmt" id="mgIssues"></table></div>
+          <div class="imp-actions" id="mgPrevActions" style="margin-top:12px"></div>
+        </div>
+        <div class="imp-step" id="mgRunStep" style="display:none">
+          <h3 id="mgT3"></h3>
+          <div id="mgLog" class="mg-log"></div>
+        </div>
+        <div class="mg-help" id="mgHelp"></div>
+      </div>
+
+      <div id="impExcel" style="display:none">
       <div class="imp-step">
         <h3>1 · Choose file</h3>
         <div class="hint" id="impFileHint">.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.</div>
@@ -531,7 +570,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       </div>
 
       <div id="impPhotos" style="display:none">
-        <div class="imp-step">
+        <div class="imp-step" id="ipStep1">
           <h3 id="ipT1"></h3>
           <div class="hint" id="ipH1"></div>
           <div class="imp-actions">
@@ -859,7 +898,7 @@ function switchTab(name){
   if(name==='agenda')loadAgenda();
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
-  if(name==='import'){impSetMode(impMode);impLoadBatches();}
+  if(name==='import'){migInit();impLoadBatches();}
   if(name==='booking')bkLoad();
   if(name==='stock')stLoad();
   if(name==='finance')fnLoad();
@@ -2741,8 +2780,7 @@ var IMP_FIELDS_V=[
 ];
 IMP_REASONS.patient_not_found='Patient not found';IMP_REASONS.ambiguous_patient='More than one patient';IMP_REASONS.bad_date='Date not recognised';IMP_REASONS.duplicate_visit='Already in the archive';
 
-function impSetMode(m){
-  impMode=m;
+function impLabels(){
   IMP_FIELDS_V[0].l=mxTr('Patient no (old program)','Hasta no (eski program)');IMP_FIELDS_V[1].l=mxTr('National ID (TC Kimlik No)','TC Kimlik No');
   IMP_FIELDS_V[2].l=mxTr('Patient name (or full name)','Hasta adı (veya ad soyad)');IMP_FIELDS_V[3].l=mxTr('Last name','Soyad');IMP_FIELDS_V[4].l=mxTr('Phone','Telefon');
   IMP_FIELDS_V[5].l=mxTr('Visit date *','Vizit tarihi *');IMP_FIELDS_V[6].l=mxTr('Procedure','İşlem');IMP_FIELDS_V[7].l=mxTr('Notes','Notlar');
@@ -2750,6 +2788,9 @@ function impSetMode(m){
   IMP_REASONS.patient_not_found=mxTr('Patient not found — import the patient list first','Hasta bulunamadı — önce hasta listesini aktarın');
   IMP_REASONS.ambiguous_patient=mxTr('More than one patient with this name — add patient no or phone','Bu adla birden fazla hasta var — hasta no veya telefon ekleyin');
   IMP_REASONS.bad_date=mxTr('Date not recognised','Tarih tanınmadı');IMP_REASONS.duplicate_visit=mxTr('Already in the archive','Arşivde zaten var');
+}
+function impSetMode(m){
+  impMode=m;impLabels();
   IMP_FIELDS=m==='visits'?IMP_FIELDS_V:IMP_FIELDS_P;
   var modes=[['patients','1 · '+mxTr('Patients','Hastalar')],['visits','2 · '+mxTr('Visit history','Vizit geçmişi')],['photos','3 · '+mxTr('Photos','Fotoğraflar')]];
   document.getElementById('impModes').innerHTML=modes.map(function(x){return '<button class="'+(x[0]===m?'on':'')+'" onclick="impSetMode(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
@@ -2779,7 +2820,7 @@ function impSetMode(m){
 }
 
 // ---------- photos ----------
-var ipFiles=[],ipGroups=[],ipPts=[],ipPtByLabel={},ipSource='',ipStop=false,ipRunning=false;
+var ipStepNo=2,ipFiles=[],ipGroups=[],ipPts=[],ipPtByLabel={},ipSource='',ipStop=false,ipRunning=false;
 var IP_EXT=/\.(jpe?g|png|webp|heic|heif|bmp|gif|tiff?)$/i;
 function ipInitTexts(){
   document.getElementById('ipT1').textContent='1 · '+mxTr('Choose the photo folder','Fotoğraf klasörünü seçin');
@@ -2931,27 +2972,38 @@ async function ipPrepare(files){
   files.forEach(function(f){f.done=!!(f.key&&done[f.key]);});
   hp();ipRenderGroups();
 }
+function ipFolderName(g){ // folder name usable as a patient name (has letters, not a date)
+  if(!g||g.key.charAt(0)==='#'||g.key.charAt(0)==='(')return '';
+  var last=g.key.split('/').pop();if(ipDateIn(last))return '';
+  return /[A-Za-zÀ-ɏͰ-ϿЀ-ӿ가-힣一-鿿]/.test(last)?last:'';
+}
 function ipPtName(id){var p=ipPts.find(function(x){return x.id===id;});return p?(p.name+' '+(p.surname||'')).trim():'';}
 function ipRenderGroups(){
-  var matched=ipGroups.filter(function(g){return g.pid&&!g.skip;}),un=ipGroups.filter(function(g){return !g.pid&&!g.skip;});
+  var matched=ipGroups.filter(function(g){return g.pid&&!g.skip;}),un=ipGroups.filter(function(g){return !g.pid&&!g.create&&!g.skip;}),nw=ipGroups.filter(function(g){return !g.pid&&g.create;});
   var nFiles=0,nDone=0;matched.forEach(function(g){g.files.forEach(function(f){if(f.done)nDone++;else nFiles++;});});
+  nw.forEach(function(g){nFiles+=g.files.length;});
   var nUn=0;un.forEach(function(g){nUn+=g.files.length;});
-  document.getElementById('ipT2').textContent='2 · '+mxTr('Check the matches','Eşleşmeleri kontrol edin');
+  document.getElementById('ipT2').textContent=ipStepNo+' · '+mxTr('Check the matches','Eşleşmeleri kontrol edin');
   document.getElementById('ipNums').innerHTML=
     '<div class="imp-num"><div class="n" style="color:#3AB06A">'+nFiles+'</div><div class="l">'+mxTr('photos to import','aktarılacak fotoğraf')+'</div></div>'+
     '<div class="imp-num"><div class="n">'+matched.length+'</div><div class="l">'+mxTr('patients matched','eşleşen hasta')+'</div></div>'+
+    (nw.length?'<div class="imp-num"><div class="n" style="color:#B89A6A">'+nw.length+'</div><div class="l">'+mxTr('new patients','yeni hasta')+'</div></div>':'')+
     '<div class="imp-num"><div class="n" style="color:#D4963A">'+nUn+'</div><div class="l">'+mxTr('photos without patient','hastası bulunamayan fotoğraf')+'</div></div>'+
     (nDone?'<div class="imp-num"><div class="n" style="color:rgba(245,241,235,0.5)">'+nDone+'</div><div class="l">'+mxTr('already imported','zaten aktarılmış')+'</div></div>':'');
-  document.getElementById('ipH2').textContent=un.length?mxTr('Folders without a patient: type a name to choose the patient, or leave empty to skip them.','Hastası bulunamayan klasörler: hastayı seçmek için ad yazın veya atlamak için boş bırakın.'):mxTr('All folders are matched.','Tüm klasörler eşleşti.');
+  document.getElementById('ipH2').textContent=un.length?mxTr('Folders without a patient: choose the patient, add it as a new patient, or leave it to skip.','Hastası bulunamayan klasörler: hastayı seçin, yeni hasta olarak ekleyin ya da boş bırakıp atlayın.'):mxTr('All folders are matched.','Tüm klasörler eşleşti.');
   var h='<tr><th>'+mxTr('Folder','Klasör')+'</th><th>'+mxTr('Photos','Fotoğraflar')+'</th><th>'+mxTr('Patient','Hasta')+'</th><th></th></tr>';
   ipGroups.forEach(function(g,i){
     var n=g.files.length,dates={};g.files.forEach(function(f){if(f.pathDate)dates[f.pathDate]=1;});
-    var cell=g.pid?'<span style="color:#3AB06A">✓ '+mxE(ipPtName(g.pid))+'</span>':'<input class="ip-in" list="ipPtList" placeholder="'+mxE(mxTr('Type patient name…','Hasta adı yazın…'))+'" onchange="ipAssign('+i+',this.value)">';
+    var cell=g.pid?'<span style="color:#3AB06A">✓ '+mxE(ipPtName(g.pid))+'</span>':
+      g.create?'<span style="color:#B89A6A">＋ '+mxE(mxTr('New patient','Yeni hasta'))+': '+mxE(ipFolderName(g))+'</span> <a class="lk" style="color:rgba(245,241,235,0.5);cursor:pointer;font-size:11px" onclick="ipGroups['+i+'].create=false;ipRenderGroups()">'+mxTr('undo','geri al')+'</a>':
+      '<input class="ip-in" list="ipPtList" placeholder="'+mxE(mxTr('Type patient name…','Hasta adı yazın…'))+'" onchange="ipAssign('+i+',this.value)"> '+
+      (ipFolderName(g)?'<a style="color:#B89A6A;cursor:pointer;font-size:12px;white-space:nowrap" onclick="ipGroups['+i+'].create=true;ipRenderGroups()">＋ '+mxTr('New patient','Yeni hasta')+'</a>':'');
     h+='<tr style="'+(g.skip?'opacity:.4':'')+'"><td>'+mxE(g.key.charAt(0)==='#'?mxTr('(file names)','(dosya adları)'):g.key)+'</td><td>'+n+(Object.keys(dates).length?' · '+Object.keys(dates).length+' '+mxTr('dates','tarih'):'')+'</td><td>'+cell+'</td><td>'+
       (g.pid?'<a style="color:rgba(245,241,235,0.5);cursor:pointer;font-size:11px" onclick="ipGroups['+i+'].pid=null;ipRenderGroups()">'+mxTr('change','değiştir')+'</a>':'')+'</td></tr>';
   });
   document.getElementById('ipGroups').innerHTML=h;
-  document.getElementById('ipActions').innerHTML=nFiles?'<button class="bimp" onclick="ipRun()">'+mxTrV('Import [n] photos','[n] fotoğraf aktar',{n:nFiles})+'</button>':'<span class="hint">'+mxTr('Nothing new to import.','Aktarılacak yeni kayıt yok.')+'</span>';
+  var bulk=un.filter(function(g){return ipFolderName(g);}).length>1?'<button class="bimp2" onclick="ipGroups.forEach(function(g){if(!g.pid&&!g.skip&&ipFolderName(g))g.create=true;});ipRenderGroups()">'+mxTr('Add all unmatched folders as new patients','Eşleşmeyen tüm klasörleri yeni hasta olarak ekle')+'</button> ':'';
+  document.getElementById('ipActions').innerHTML=bulk+(nFiles?'<button class="bimp" onclick="ipRun()">'+mxTrV('Import [n] photos','[n] fotoğraf aktar',{n:nFiles})+'</button>':'<span class="hint">'+mxTr('Nothing new to import.','Aktarılacak yeni kayıt yok.')+'</span>');
   document.getElementById('ipMatchStep').style.display='block';
   document.getElementById('ipRunStep').style.display='none';
 }
@@ -2999,15 +3051,22 @@ async function ipResize(blob){
 }
 async function ipRun(){
   if(ipRunning)return;
-  var todo=[];ipGroups.forEach(function(g){if(g.pid&&!g.skip)g.files.forEach(function(f){if(!f.done){f.pid=g.pid;todo.push(f);}});});
-  if(!todo.length)return;
-  todo.sort(function(x,y){return (x.angle==null?1:0)-(y.angle==null?1:0);});
+  var any=ipGroups.some(function(g){return !g.skip&&(g.pid&&g.files.some(function(f){return !f.done;})||(!g.pid&&g.create));});
+  if(!any)return;
   var b=await db.rpc('import_photos_begin',{p_clinic_id:cid,p_file_name:ipSource||'photos'});
   if(b.error){alert('Error: '+b.error.message);return;}
+  for(var gi=0;gi<ipGroups.length;gi++){var g0=ipGroups[gi];
+    if(!g0.pid&&g0.create&&!g0.skip){
+      var np=await db.rpc('import_photo_patient',{p_batch_id:b.data,p_name:ipFolderName(g0)});
+      if(np.error){alert('Error: '+np.error.message);continue;}
+      g0.pid=np.data;g0.create=false;g0.files.forEach(function(f){f.key=g0.pid+'|'+f.path+'|'+f.size;f.done=false;});
+    }}
+  var todo=[];ipGroups.forEach(function(g){if(g.pid&&!g.skip)g.files.forEach(function(f){if(!f.done){f.pid=g.pid;todo.push(f);}});});
+  todo.sort(function(x,y){return (x.angle==null?1:0)-(y.angle==null?1:0);});
   var batch=b.data,ok=0,skip=0,fails=[],i=0,t0=Date.now();ipStop=false;ipRunning=true;
   document.getElementById('ipMatchStep').style.display='none';
   document.getElementById('ipRunStep').style.display='block';
-  document.getElementById('ipT3').textContent='3 · '+mxTr('Importing photos','Fotoğraflar aktarılıyor');
+  document.getElementById('ipT3').textContent=(ipStepNo+1)+' · '+mxTr('Importing photos','Fotoğraflar aktarılıyor');
   document.getElementById('ipFails').innerHTML='';
   document.getElementById('ipRunActions').innerHTML='<button class="bimp2" onclick="ipStop=true;this.disabled=true">'+mxTr('Stop','Durdur')+'</button>';
   window.onbeforeunload=function(){return 'x';};
@@ -3044,7 +3103,193 @@ async function ipRun(){
   if(fails.length)document.getElementById('ipFails').innerHTML='<tr><th>'+mxTr('File','Dosya')+'</th><th>'+mxTr('Error','Hata')+'</th></tr>'+fails.slice(0,200).map(function(x){return '<tr><td>'+mxE(x.path)+'</td><td>'+mxE(x.msg)+'</td></tr>';}).join('');
   document.getElementById('ipRunActions').innerHTML='<button class="bimp2" onclick="impUndo(\''+batch+'\',\'photos\')">'+mxTr('Undo this import','Bu aktarımı geri al')+'</button>'+
     (ipStop||fails.length?' <button class="bimp" onclick="ipRenderGroups()">'+mxTr('Back to the list','Listeye dön')+'</button>':'');
-  impLoadBatches();loadStats();
+  impLoadBatches();loadStats();loadPts();
+}
+</script>
+<script>
+// ============ MIGRATION: one screen for patients + visit history + photos ============
+var migSheets=[],migPhotos=[],migSrc=[],migBusy=false;
+var MIG_SHEET=/\.(xlsx|xls|csv)$/i;
+function migInit(){
+  impLabels();
+  document.getElementById('impTitle').textContent=mxTr('Move from your old program','Eski programdan taşı');
+  document.getElementById('impSub').textContent=mxTr('Patients, visit history and photos in one go.','Hastalar, vizit geçmişi ve fotoğraflar tek seferde.');
+  document.getElementById('impGuide').innerHTML=mxTr('<b>How:</b><ol><li>Export what you can from your old program: the patient list and the treatment / visit list as Excel or CSV, and the photo folder (or a ZIP).</li><li>Drop them all here at once — we work out which file is which. You can check and change it below.</li><li>Press Preview, then Start. Patients come first, then visits, then photos. Duplicates are skipped and every step can be undone.</li></ol>','<b>Nasıl:</b><ol><li>Eski programınızdan alabildiğiniz her şeyi dışa aktarın: hasta listesi ve işlem / vizit listesi (Excel veya CSV), fotoğraf klasörü (veya ZIP).</li><li>Hepsini birlikte buraya bırakın — hangi dosyanın ne olduğunu biz ayırırız. Aşağıda kontrol edip değiştirebilirsiniz.</li><li>Önizle’ye, sonra Başlat’a basın. Önce hastalar, sonra vizitler, en son fotoğraflar aktarılır. Mükerrerler atlanır, her adım geri alınabilir.</li></ol>');
+  document.getElementById('mgT1').textContent='1 · '+mxTr('Add your files','Dosyalarınızı ekleyin');
+  document.getElementById('mgH1').textContent=mxTr('Excel / CSV lists, a photo folder or ZIP — any combination. You can add more files one after another.','Excel / CSV listeleri, fotoğraf klasörü veya ZIP — hangisi varsa. Dosyaları art arda ekleyebilirsiniz.');
+  document.getElementById('mgDropTxt').textContent=mxTr('Drop files and folders here','Dosyaları ve klasörleri buraya bırakın');
+  document.getElementById('mgBtnFiles').textContent=mxTr('Choose files (Excel, CSV, ZIP)','Dosya seç (Excel, CSV, ZIP)');
+  document.getElementById('mgBtnDir').textContent=mxTr('Choose photo folder','Fotoğraf klasörü seç');
+  document.getElementById('mgHelp').innerHTML=mxTr('<b>Can’t export from your old program?</b> Write to <a href="mailto:support@aafclinic.com?subject=Data%20migration">support@aafclinic.com</a> and we will move it for you. Please don’t send patient data by e-mail — we will give you a secure upload link.','<b>Eski programdan dışa aktaramıyor musunuz?</b> <a href="mailto:support@aafclinic.com?subject=Veri%20ta%C5%9F%C4%B1ma">support@aafclinic.com</a> adresine yazın, sizin yerinize taşıyalım. Hasta verisini e-postayla göndermeyin — size güvenli bir yükleme bağlantısı veririz.');
+  document.getElementById('impPrevHint').textContent=mxTr('Every import can be undone: what it added is removed (records you have changed since then are kept).','Her aktarım geri alınabilir: eklediği kayıtlar silinir (sonradan üzerinde işlem yaptığınız kayıtlar korunur).');
+  migRender();
+}
+function migParse(name,u8){
+  var wb;
+  if(/\.(csv|txt)$/i.test(name)){
+    var txt=new TextDecoder('utf-8').decode(u8);
+    if(txt.indexOf('�')>=0){try{txt=new TextDecoder('windows-1254').decode(u8);}catch(_){}}
+    if(txt.charCodeAt(0)===0xFEFF)txt=txt.slice(1);
+    wb=XLSX.read(txt,{type:'string',cellDates:true,raw:true});
+  }else wb=XLSX.read(u8,{type:'array',cellDates:true});
+  var ws=wb.Sheets[wb.SheetNames[0]];
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}).map(function(r){return r.map(function(c){
+    if(c instanceof Date&&!isNaN(c)){var d=new Date(c.getTime()+12*3600*1000);return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear();}
+    return c==null?'':String(c);});});
+  rows=rows.filter(function(r){return r.some(function(c){return String(c).trim()!=='';});});
+  return {head:(rows[0]||[]).map(function(h){return String(h).trim();}),rows:rows.slice(1)};
+}
+function migGuess(head,fields,contains){
+  var used={},m={};
+  fields.forEach(function(f){
+    var g=-1;head.forEach(function(h,i){if(g<0&&!used[i]&&f.m.indexOf(impNorm(h))>=0)g=i;});
+    if(g<0&&contains)head.forEach(function(h,i){var n=impNorm(h);if(g<0&&!used[i]&&f.m.some(function(x){return x.length>=5&&n.indexOf(x)>=0;}))g=i;});
+    if(g>=0)used[g]=1;m[f.k]=g;});
+  return m;
+}
+function migDetect(sh){
+  sh.mapP=migGuess(sh.head,IMP_FIELDS_P,false);sh.mapV=migGuess(sh.head,IMP_FIELDS_V,true);
+  var v=sh.mapV,who=v.name>=0||v.external_id>=0||v.national_id>=0||v.phone>=0;
+  sh.type=(v.date>=0&&v.procedures>=0&&who)?'visits':(sh.mapP.name>=0?'patients':(v.date>=0&&who?'visits':'skip'));
+}
+async function migAddSheet(name,u8){
+  if(typeof XLSX==='undefined'){alert('Excel reader could not be loaded. Check your internet connection and reload.');return;}
+  try{var r=migParse(name,u8);if(!r.rows.length)return;var sh={name:name,head:r.head,rows:r.rows,open:false};migDetect(sh);migSheets.push(sh);}
+  catch(e){alert(mxTr('Could not read the file: ','Dosya okunamadı: ')+name);}
+}
+async function migAddFiles(list,isDir){
+  list=Array.prototype.slice.call(list||[]); // copy now: the input is cleared right after
+  if(migBusy)return;migBusy=true;sp(mxTr('Reading files…','Dosyalar okunuyor…'));
+  try{
+    for(var i=0;i<list.length;i++){
+      var f=list[i],path=f.webkitRelativePath||f.name;
+      if(/(^|\/)__MACOSX\//.test(path)||/(^|\/)\./.test(path))continue;
+      if(MIG_SHEET.test(f.name))await migAddSheet(f.name,new Uint8Array(await f.arrayBuffer()));
+      else if(/\.zip$/i.test(f.name))await migAddZip(f);
+      else if(IP_EXT.test(f.name))migPhotos.push({path:path,size:f.size,mod:f.lastModified,blob:function(x){return function(){return Promise.resolve(x);};}(f)});
+    }
+    if(isDir&&list[0])migSrc.push((list[0].webkitRelativePath||'').split('/')[0]);
+  }finally{hp();migBusy=false;}
+  migRender();
+}
+async function migAddZip(file){
+  var z=await JSZip.loadAsync(file),jobs=[];
+  z.forEach(function(path,e){
+    if(e.dir||/(^|\/)__MACOSX\//.test(path))return;
+    if(MIG_SHEET.test(path))jobs.push(e.async('uint8array').then(function(u){return migAddSheet(path.split('/').pop(),u);}));
+    else if(IP_EXT.test(path))migPhotos.push({path:file.name.replace(/\.zip$/i,'')+'/'+path,size:(e._data&&e._data.uncompressedSize)||0,mod:e.date?e.date.getTime():Date.now(),blob:function(){return e.async('blob');}});
+  });
+  await Promise.all(jobs);migSrc.push(file.name);
+}
+(function(){
+  var d=document.getElementById('mgDrop');if(!d)return;
+  d.addEventListener('dragover',function(e){e.preventDefault();d.classList.add('over');});
+  d.addEventListener('dragleave',function(){d.classList.remove('over');});
+  d.addEventListener('drop',async function(e){
+    e.preventDefault();d.classList.remove('over');
+    var items=e.dataTransfer.items,entries=[],files=[];
+    for(var i=0;i<items.length;i++){var en=items[i].webkitGetAsEntry&&items[i].webkitGetAsEntry();if(en)entries.push(en);}
+    var walk=function(en,pre){return new Promise(function(res){
+      if(en.isFile){en.file(function(fl){try{Object.defineProperty(fl,'webkitRelativePath',{value:pre+fl.name});}catch(_){}files.push(fl);res();},function(){res();});}
+      else{var rd=en.createReader(),acc=[];var more=function(){rd.readEntries(async function(es){if(!es.length){for(var k=0;k<acc.length;k++)await walk(acc[k],pre+en.name+'/');res();}else{acc=acc.concat(es);more();}},function(){res();});};more();}
+    });};
+    for(var j=0;j<entries.length;j++){await walk(entries[j],'');if(entries[j].isDirectory)migSrc.push(entries[j].name);}
+    migAddFiles(files);
+  });
+})();
+function migTypeLabel(t){return t==='patients'?mxTr('Patient list','Hasta listesi'):t==='visits'?mxTr('Visit history','Vizit geçmişi'):mxTr('Do not import','Aktarma');}
+function migRender(){
+  var h='';
+  migSheets.forEach(function(sh,i){
+    var fields=sh.type==='visits'?IMP_FIELDS_V:IMP_FIELDS_P,map=sh.type==='visits'?sh.mapV:sh.mapP;
+    h+='<div class="mg-file"><span class="ic">📄</span><div style="flex:1;min-width:160px"><div class="nm">'+mxE(sh.name)+'</div><div class="mt">'+mxTrV('[n] rows','[n] satır',{n:sh.rows.length.toLocaleString(LANG_LOC[LANG]||'en-US')})+'</div></div>'+
+      '<select onchange="migSheets['+i+'].type=this.value;migRender()">'+['patients','visits','skip'].map(function(t){return '<option value="'+t+'"'+(t===sh.type?' selected':'')+'>'+migTypeLabel(t)+'</option>';}).join('')+'</select>'+
+      (sh.type!=='skip'?'<a class="lk" onclick="migSheets['+i+'].open=!migSheets['+i+'].open;migRender()">'+mxTr('Columns','Sütunlar')+(sh.open?' ▴':' ▾')+'</a>':'')+
+      '<a class="lk" style="color:rgba(245,241,235,0.4)" onclick="migSheets.splice('+i+',1);migRender()">✕</a>';
+    if(sh.open&&sh.type!=='skip'){
+      h+='<div class="mg-map imp-map">'+fields.map(function(f){
+        return '<div><label>'+mxE(f.l)+'</label><select onchange="migSetMap('+i+',\''+f.k+'\',this.value)"><option value="-1">— '+mxTr('skip','atla')+' —</option>'+
+          sh.head.map(function(hh,ci){return '<option value="'+ci+'"'+(map[f.k]===ci?' selected':'')+'>'+mxE(hh||('#'+(ci+1)))+'</option>';}).join('')+'</select></div>';}).join('')+'</div>';
+    }
+    h+='</div>';
+  });
+  if(migPhotos.length){
+    var folders={};migPhotos.forEach(function(f){var a=f.path.split('/');folders[a.length>2?a[1]:a[0]]=1;});
+    h+='<div class="mg-file"><span class="ic">🖼️</span><div style="flex:1"><div class="nm">'+mxTrV('[n] photos','[n] fotoğraf',{n:migPhotos.length.toLocaleString(LANG_LOC[LANG]||'en-US')})+'</div><div class="mt">'+mxE(migSrc.join(', '))+'</div></div>'+
+      '<a class="lk" style="color:rgba(245,241,235,0.4)" onclick="migPhotos=[];migSrc=[];migRender()">✕</a></div>';
+  }
+  document.getElementById('mgList').innerHTML=h;
+  var ready=migSheets.some(function(s){return s.type!=='skip';})||migPhotos.length;
+  document.getElementById('mgActions').innerHTML=ready?'<button class="bimp" onclick="migPreview()">'+mxTr('Preview','Önizle')+'</button> <button class="bimp2" onclick="migSheets=[];migPhotos=[];migSrc=[];migRender();document.getElementById(\'mgPrevStep\').style.display=\'none\'">'+mxTr('Clear','Temizle')+'</button>':'';
+  document.getElementById('impGuide').style.display=ready?'none':'block';
+}
+function migSetMap(i,k,v){var sh=migSheets[i];(sh.type==='visits'?sh.mapV:sh.mapP)[k]=parseInt(v,10);}
+function migRows(sh){
+  var fields=sh.type==='visits'?IMP_FIELDS_V:IMP_FIELDS_P,map=sh.type==='visits'?sh.mapV:sh.mapP;
+  return sh.rows.map(function(r){var o={};fields.forEach(function(f){if(map[f.k]>=0){var v=r[map[f.k]];o[f.k]=(v==null?'':String(v)).trim();}});return o;});
+}
+function migCheck(sh){
+  var m=sh.type==='visits'?sh.mapV:sh.mapP;
+  if(sh.type==='patients'&&m.name<0)return mxTrV('[file]: match the name column.','[file]: ad sütununu eşleştirin.',{file:sh.name});
+  if(sh.type==='visits'&&m.date<0)return mxTrV('[file]: match the date column.','[file]: tarih sütununu eşleştirin.',{file:sh.name});
+  if(sh.type==='visits'&&m.name<0&&m.external_id<0&&m.national_id<0&&m.phone<0)return mxTrV('[file]: match at least one patient column (patient no, ID no, name or phone).','[file]: en az bir hasta sütunu eşleştirin (hasta no, TC no, ad veya telefon).',{file:sh.name});
+  return null;
+}
+async function migPreview(){
+  var act=migSheets.filter(function(s){return s.type!=='skip';});
+  for(var i=0;i<act.length;i++){var e=migCheck(act[i]);if(e){act[i].open=true;migRender();alert(e);return;}}
+  sp(mxTr('Checking…','Kontrol ediliyor…'));
+  var np=0,nv=0,nvp=0,dup=0,inv=0,iss=[];
+  try{
+    for(var j=0;j<act.length;j++){var sh=act[j],rows=migRows(sh),r;
+      if(sh.type==='patients')r=await db.rpc('import_patients',{p_clinic_id:cid,p_rows:rows,p_dry_run:true,p_file_name:sh.name});
+      else r=await db.rpc('import_visits',{p_clinic_id:cid,p_rows:rows,p_dry_run:true,p_file_name:sh.name,p_create_missing:true});
+      if(r.error)throw r.error;var d=r.data;
+      if(sh.type==='patients')np+=d.inserted;else{nv+=d.inserted;nvp+=d.patients_created||0;}
+      dup+=d.duplicates;inv+=d.invalid;(d.issues||[]).forEach(function(x){if(iss.length<60)iss.push([sh.name,x]);});
+    }
+  }catch(e){hp();alert('Error: '+(e.message||e));return;}
+  hp();
+  var hasP=act.some(function(s){return s.type==='patients';});
+  document.getElementById('mgT2').textContent='2 · '+mxTr('Preview — nothing saved yet','Önizleme — henüz kaydedilmedi');
+  document.getElementById('mgNums').innerHTML=
+    (hasP?'<div class="imp-num"><div class="n" style="color:#3AB06A">'+np+'</div><div class="l">'+mxTr('new patients','yeni hasta')+'</div></div>':'')+
+    (act.some(function(s){return s.type==='visits';})?'<div class="imp-num"><div class="n" style="color:#3AB06A">'+nv+'</div><div class="l">'+mxTr('visits','vizit')+'</div></div>':'')+
+    (migPhotos.length?'<div class="imp-num"><div class="n" style="color:#3AB06A">'+migPhotos.length+'</div><div class="l">'+mxTr('photos','fotoğraf')+'</div></div>':'')+
+    '<div class="imp-num"><div class="n" style="color:#D4963A">'+dup+'</div><div class="l">'+mxTr('duplicates skipped','mükerrer atlandı')+'</div></div>'+
+    (inv?'<div class="imp-num"><div class="n" style="color:#E05555">'+inv+'</div><div class="l">'+mxTr('rows with a problem','sorunlu satır')+'</div></div>':'');
+  document.getElementById('mgPrevHint').textContent=(nvp?mxTrV('Patients in the visit list who are not in your archive (up to [n]) will be added as new patients.','Vizit listesinde olup arşivinizde olmayan hastalar (en fazla [n]) yeni hasta olarak eklenecek.',{n:nvp})+' ':'')+
+    (migPhotos.length?mxTr('Photos are matched to patients after the lists are imported; you can check the matches before they are uploaded.','Fotoğraflar listeler aktarıldıktan sonra hastalarla eşleştirilir; yüklemeden önce eşleşmeleri kontrol edebilirsiniz.'):'');
+  document.getElementById('mgIssues').innerHTML=iss.length?'<tr><th>'+mxTr('File','Dosya')+'</th><th>Row</th><th>Note</th><th>Detail</th></tr>'+iss.map(function(a){var x=a[1];
+    return '<tr><td>'+mxE(a[0])+'</td><td>'+(x.row+1)+'</td><td>'+mxE(IMP_REASONS[x.reason]||x.reason)+'</td><td>'+mxE(x.name||x.value||'')+'</td></tr>';}).join(''):'';
+  document.getElementById('mgPrevActions').innerHTML='<button class="bimp" onclick="migRun()">'+mxTr('Start import','Aktarmayı başlat')+'</button>';
+  document.getElementById('mgPrevStep').style.display='block';
+}
+async function migRun(){
+  if(migBusy)return;migBusy=true;
+  var act=migSheets.filter(function(s){return s.type!=='skip';});
+  act.sort(function(a,b){return (a.type==='patients'?0:1)-(b.type==='patients'?0:1);});
+  var log=document.getElementById('mgLog');log.innerHTML='';document.getElementById('mgHelp').style.display='none';
+  document.getElementById('mgPrevStep').style.display='none';document.getElementById('mgRunStep').style.display='block';
+  document.getElementById('mgT3').textContent='3 · '+mxTr('Importing','Aktarılıyor');
+  var add=function(t){var d=document.createElement('div');d.textContent=t;log.appendChild(d);return d;};
+  try{
+    for(var i=0;i<act.length;i++){var sh=act[i],line=add('⏳ '+sh.name),r;
+      if(sh.type==='patients'){r=await db.rpc('import_patients',{p_clinic_id:cid,p_rows:migRows(sh),p_dry_run:false,p_file_name:sh.name});if(r.error)throw r.error;
+        line.textContent='✓ '+sh.name+' — '+mxTrV('[n] patients added','[n] hasta eklendi',{n:r.data.inserted})+(r.data.duplicates?' · '+r.data.duplicates+' '+mxTr('duplicates skipped','mükerrer atlandı'):'');}
+      else{r=await db.rpc('import_visits',{p_clinic_id:cid,p_rows:migRows(sh),p_dry_run:false,p_file_name:sh.name,p_create_missing:true});if(r.error)throw r.error;
+        line.textContent='✓ '+sh.name+' — '+mxTrV('[n] visits added','[n] vizit eklendi',{n:r.data.inserted})+(r.data.patients_created?' · '+mxTrV('[n] new patients','[n] yeni hasta',{n:r.data.patients_created}):'')+(r.data.duplicates?' · '+r.data.duplicates+' '+mxTr('duplicates skipped','mükerrer atlandı'):'');}
+    }
+  }catch(e){add('✕ '+(e.message||e));migBusy=false;impLoadBatches();return;}
+  migBusy=false;impLoadBatches();loadPts();loadStats();
+  if(migPhotos.length){
+    add('⏳ '+mxTr('Matching photos to patients…','Fotoğraflar hastalarla eşleştiriliyor…'));
+    document.getElementById('impPhotos').style.display='block';document.getElementById('ipStep1').style.display='none';ipStepNo=4;
+    ipSource=migSrc.join(', ')||'photos';
+    await ipPrepare(migPhotos);
+    log.lastChild.textContent='→ '+mxTr('Check the photo matches below and press Import.','Aşağıdaki fotoğraf eşleşmelerini kontrol edip Aktar’a basın.');
+    document.getElementById('ipMatchStep').scrollIntoView({behavior:'smooth'});
+  }else add('✓ '+mxTr('Done','Tamamlandı'));
 }
 </script>
 <script>

@@ -2771,7 +2771,7 @@ function impSetMode(m){
   }else{
     T.textContent=mxTr('Import photos','Fotoğrafları içe aktar');
     S.textContent=mxTr('Before/after photos from your old program or computer folders, added to the right patient and date.','Eski programınızdaki veya bilgisayar klasörlerinizdeki önce/sonra fotoğrafları doğru hastaya ve tarihe eklenir.');
-    G.innerHTML=mxTr('<b>How:</b><ol><li>Copy the photo folder of your old program to the computer (or export it as ZIP). Usually there is one folder per patient.</li><li>Folder names are matched to patients by patient no, ID no or name (e.g. “1043 Jane Smith”). Folders that cannot be matched can be assigned by hand.</li><li>The visit date comes from a date in the folder or file name (2023-05-14, 14.05.2023, IMG_20230514…); otherwise from the photo itself.</li><li>Photos of the same day form one visit (5 photos per visit, like the app). Photos already imported are skipped, so you can safely run it again.</li></ol>Supported: JPG, PNG, WEBP (HEIC only in Safari — convert to JPG otherwise). Keep this page open until it finishes.','<b>Nasıl:</b><ol><li>Eski programınızın fotoğraf klasörünü bilgisayara kopyalayın (veya ZIP olarak dışa aktarın). Genelde her hastanın bir klasörü vardır.</li><li>Klasör adları hastalarla hasta no, TC no veya ad ile eşleştirilir (ör. “1043 Ayşe Yılmaz”). Eşleşmeyen klasörleri elle seçebilirsiniz.</li><li>Vizit tarihi klasör veya dosya adındaki tarihten alınır (2023-05-14, 14.05.2023, IMG_20230514…); yoksa fotoğrafın kendi tarihinden.</li><li>Aynı günün fotoğrafları bir vizit olur (uygulamadaki gibi vizit başına 5 fotoğraf). Daha önce aktarılanlar atlanır; işlemi güvenle tekrar çalıştırabilirsiniz.</li></ol>Desteklenen: JPG, PNG, WEBP (HEIC yalnızca Safari’de — diğer tarayıcılarda JPG’ye çevirin). Bitene kadar bu sayfayı açık tutun.');
+    G.innerHTML=mxTr('<b>How:</b><ol><li>Copy the photo folder of your old program to the computer (or export it as ZIP). Usually there is one folder per patient.</li><li>Folder names are matched to patients by patient no, ID no or name (e.g. “1043 Jane Smith”). Folders that cannot be matched can be assigned by hand.</li><li>The visit date comes from a date in the folder or file name (2023-05-14, 14.05.2023, IMG_20230514…); otherwise from the photo itself.</li><li>Photos of the same day form one visit (5 photos per visit, like the app). Photos already imported are skipped, so you can safely run it again.</li></ol>','<b>Nasıl:</b><ol><li>Eski programınızın fotoğraf klasörünü bilgisayara kopyalayın (veya ZIP olarak dışa aktarın). Genelde her hastanın bir klasörü vardır.</li><li>Klasör adları hastalarla hasta no, TC no veya ad ile eşleştirilir (ör. “1043 Ayşe Yılmaz”). Eşleşmeyen klasörleri elle seçebilirsiniz.</li><li>Vizit tarihi klasör veya dosya adındaki tarihten alınır (2023-05-14, 14.05.2023, IMG_20230514…); yoksa fotoğrafın kendi tarihinden.</li><li>Aynı günün fotoğrafları bir vizit olur (uygulamadaki gibi vizit başına 5 fotoğraf). Daha önce aktarılanlar atlanır; işlemi güvenle tekrar çalıştırabilirsiniz.</li></ol>')+mxTr('Supported: JPG, PNG, WEBP and iPhone photos (HEIC). Keep this page open until it finishes.','Desteklenen: JPG, PNG, WEBP ve iPhone fotoğrafları (HEIC). Bitene kadar bu sayfayı açık tutun.');
     document.getElementById('impPrevHint').textContent=mxTr('An import can be undone: imported photos and their empty visits are removed.','Bir aktarım geri alınabilir: aktarılan fotoğraflar ve boş kalan vizitleri silinir.');
     ipInitTexts();
   }
@@ -2843,6 +2843,18 @@ function ipAngle(name){
   if(/(^| )(front|on|onden|frontal|anterior|face)( |$)/.test(n))return 0;
   return null;
 }
+function ipTiffDate(b,t){ // b: DataView, t: offset of the TIFF header (II*\0 / MM\0*)
+  try{
+    var le=b.getUint16(t)===0x4949;
+    var g16=function(x){return b.getUint16(x,le);},g32=function(x){return b.getUint32(x,le);};
+    var readDir=function(dir){var n=g16(dir),res={};for(var i=0;i<n;i++){var e=dir+2+i*12;res[g16(e)]={type:g16(e+2),cnt:g32(e+4),val:e+8};}return res;};
+    var ifd0=readDir(t+g32(t+4)),str=function(en){if(!en)return null;var p=en.cnt<=4?en.val:t+g32(en.val),s='';for(var i=0;i<en.cnt-1&&p+i<b.byteLength;i++)s+=String.fromCharCode(b.getUint8(p+i));return s;};
+    var dto=null;if(ifd0[0x8769]){var ex=readDir(t+g32(ifd0[0x8769].val));dto=str(ex[0x9003])||str(ex[0x9004]);}
+    dto=dto||str(ifd0[0x0132]);
+    if(dto){var m=dto.match(/^(\d{4}):(\d{2}):(\d{2})/);if(m&&m[1]>'1989')return m[1]+'-'+m[2]+'-'+m[3];}
+  }catch(e){}
+  return null;
+}
 async function ipExifDate(blob){
   try{
     var b=new DataView(await blob.slice(0,131072).arrayBuffer());
@@ -2851,16 +2863,7 @@ async function ipExifDate(blob){
     while(o<b.byteLength-4){
       var mk=b.getUint16(o);if((mk&0xFF00)!==0xFF00)return null;
       var ln=b.getUint16(o+2);
-      if(mk===0xFFE1&&b.getUint32(o+4)===0x45786966){
-        var t=o+10,le=b.getUint16(t)===0x4949;
-        var g16=function(x){return b.getUint16(x,le);},g32=function(x){return b.getUint32(x,le);};
-        var readDir=function(dir){var n=g16(dir),res={};for(var i=0;i<n;i++){var e=dir+2+i*12;res[g16(e)]={type:g16(e+2),cnt:g32(e+4),val:e+8};}return res;};
-        var ifd0=readDir(t+g32(t+4)),str=function(en){if(!en)return null;var p=t+g32(en.val),s='';for(var i=0;i<en.cnt-1&&p+i<b.byteLength;i++)s+=String.fromCharCode(b.getUint8(p+i));return s;};
-        var dto=null;if(ifd0[0x8769]){var ex=readDir(t+g32(ifd0[0x8769].val));dto=str(ex[0x9003])||str(ex[0x9004]);}
-        dto=dto||str(ifd0[0x0132]);
-        if(dto){var m=dto.match(/^(\d{4}):(\d{2}):(\d{2})/);if(m&&m[1]>'1989')return m[1]+'-'+m[2]+'-'+m[3];}
-        return null;
-      }
+      if(mk===0xFFE1&&b.getUint32(o+4)===0x45786966)return ipTiffDate(b,o+10);
       o+=2+ln;
     }
   }catch(e){}
@@ -2959,6 +2962,31 @@ async function ipAssign(i,label){
   g.files.forEach(function(f){f.done=!!done[f.key];});
   ipRenderGroups();
 }
+var ipLibs=null;
+function ipLoadScript(u){return new Promise(function(res,rej){var x=document.createElement('script');x.src=u;x.onload=res;x.onerror=function(){rej(new Error('load '+u));};document.head.appendChild(x);});}
+function ipHeicLibs(){ // loaded only when an iPhone HEIC photo is imported
+  if(!ipLibs)ipLibs=(window.heic2any?Promise.resolve():ipLoadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js')).catch(function(e){ipLibs=null;throw e;});
+  return ipLibs;
+}
+function ipIsHeic(f,blob){return /\.hei[cf]$/i.test(f.path)||/hei[cf]/i.test((blob&&blob.type)||'');}
+async function ipHeicDate(blob){ // HEIC keeps a normal Exif/TIFF block inside the file
+  try{
+    var u=new Uint8Array(await blob.arrayBuffer()),dv=new DataView(u.buffer);
+    for(var i=0;i<u.length-10;i++){
+      if(u[i]===0x45&&u[i+1]===0x78&&u[i+2]===0x69&&u[i+3]===0x66&&u[i+4]===0&&u[i+5]===0&&
+         ((u[i+6]===0x4D&&u[i+7]===0x4D&&u[i+9]===0x2A)||(u[i+6]===0x49&&u[i+7]===0x49&&u[i+8]===0x2A))){
+        var d=ipTiffDate(dv,i+6);if(d)return d;
+      }
+    }
+  }catch(e){}
+  return null;
+}
+async function ipHeicToJpeg(blob){
+  try{var b=await createImageBitmap(blob);if(b.close)b.close();return blob;}catch(e){} // Safari decodes HEIC natively
+  await ipHeicLibs();
+  var out=await heic2any({blob:blob,toType:'image/jpeg',quality:0.92});
+  return Array.isArray(out)?out[0]:out;
+}
 async function ipResize(blob){
   var bmp;
   try{bmp=await createImageBitmap(blob,{imageOrientation:'from-image'});}
@@ -2989,8 +3017,9 @@ async function ipRun(){
     while(i<todo.length&&!ipStop){
       var f=todo[i++];
       try{
-        var blob=await f.blob();
-        var date=f.pathDate||await ipExifDate(blob)||new Date(f.mod||Date.now()).toISOString().slice(0,10);
+        var blob=await f.blob(),heic=ipIsHeic(f,blob);
+        var date=f.pathDate||(heic?await ipHeicDate(blob):await ipExifDate(blob))||new Date(f.mod||Date.now()).toISOString().slice(0,10);
+        if(heic)blob=await ipHeicToJpeg(blob);
         var jpg=await ipResize(blob);
         var name='photo_imp_'+batch.slice(0,8)+'_'+Math.random().toString(36).slice(2,10)+'_'+Date.now()+'.jpg';
         var up=await db.storage.from(BUCKET).upload(name,jpg,{contentType:'image/jpeg',upsert:false});
@@ -3000,7 +3029,7 @@ async function ipRun(){
         if(r.data&&r.data.skipped)skip++;else{ok++;f.done=true;}
       }catch(e){
         var msg=(e&&e.message)||String(e);
-        if(/\.hei[cf]$/i.test(f.path))msg=mxTr('HEIC is not supported by this browser — convert to JPG or use Safari','HEIC bu tarayıcıda desteklenmiyor — JPG’ye çevirin veya Safari kullanın');
+        if(/\.hei[cf]$/i.test(f.path))msg=mxTr('This iPhone (HEIC) photo could not be converted','Bu iPhone (HEIC) fotoğrafı dönüştürülemedi')+' — '+msg;
         fails.push({path:f.path,msg:msg});
       }
       upd();

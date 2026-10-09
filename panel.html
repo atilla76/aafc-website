@@ -554,13 +554,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="tcontent" id="tab-stats" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
-        <div><h2>Statistics</h2><div class="sub">Clinic activity across periods</div></div>
-      </div>
-      <div id="statsBody"><div class="loader">Loading...</div></div>
-      <div class="tab-head" style="margin-top:24px">
-        <div><h2>Reports</h2></div>
+        <div><h2>Statistics</h2><div class="sub" id="repSub">Clinic activity across periods</div></div>
         <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repLoad()"><option value="month">This Month</option><option value="year">This Year</option><option value="12m">Last 12 months</option></select></div>
       </div>
+      <div id="statsBody" style="display:none"></div>
       <div id="repBody"></div>
     </div>
   </div>
@@ -753,12 +750,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="imp-actions"><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
       </div>
       <div id="stAlerts"></div>
-      <div class="imp-step"><h3>Products</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="stProducts"></table></div></div>
+      <div class="imp-step"><h3>Products <span id="stValue" style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)"></span></h3><div class="pfl" id="stFilters" style="border:none;padding:0 0 10px"></div><div class="imp-wrap" style="max-height:none"><table class="fmt" id="stProducts"></table></div></div>
       <div class="imp-step" id="stLotsBox" style="display:none">
         <h3 id="stLotsTitle"></h3>
         <div class="imp-actions" style="margin-bottom:8px"><button class="bimp" onclick="stLotModal()">+ Receive lot</button><button class="bimp2" onclick="stProductModal(stSel)">Edit product</button></div>
         <div class="imp-wrap" style="max-height:none"><table class="fmt" id="stLots"></table></div>
         <div id="stRecipients"></div>
+        <div id="stMoves"></div>
       </div>
     </div>
   </div>
@@ -775,6 +773,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <button class="bimp" onclick="fnEntryModal()">+ Add entry</button>
         </div>
       </div>
+      <div id="fnToday"></div>
       <div class="imp-nums" id="fnTotals"></div>
       <div class="tabs" style="border:none;padding:0;margin-bottom:10px">
         <button class="tab on" data-fn="entries" onclick="fnView('entries')">ENTRIES</button>
@@ -792,6 +791,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="tab-head">
         <div><h2>Recalls &amp; Reviews</h2><div class="sub">Patients due for a control or repeat treatment, and patients to ask for a Google review.</div></div>
       </div>
+      <div id="rcSummary"></div>
       <div class="imp-step"><h3>Due recalls (next 7 days and overdue)</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="rcList"></table></div></div>
       <div class="imp-step"><h3>Ask for a Google review</h3><div class="imp-wrap" style="max-height:none"><table class="fmt" id="rvList"></table></div></div>
     </div>
@@ -1841,58 +1841,56 @@ function sendSMS(i){
 }
 
 // ============ STATS ============
-async function loadStatsTab(){
-  var el=document.getElementById('statsBody');
-  el.innerHTML='<div class="loader">Loading...</div>';
-  try{
-    var r=await db.rpc('get_clinic_stats',{p_clinic_id:cid});
-    if(r.error)throw r.error;
-    var data=r.data;
-    if(!data){el.innerHTML='<div class="loader">No data.</div>';return;}
-    var thisMonth=getPeriod(data,'this_month');
-    var lastMonth=getPeriod(data,'last_month');
-    var thisYear=getPeriod(data,'this_year');
-    var lastYear=getPeriod(data,'last_year');
-    var allTime=getPeriod(data,'all_time');
-    var h='<div class="stat-grid">';
-    h+=statCard('This Month',thisMonth,lastMonth,'vs last month');
-    h+=statCard('Last Month',lastMonth);
-    h+=statCard('This Year',thisYear,lastYear,'vs last year');
-    h+=statCard('Last Year',lastYear);
-    h+=statCard('All Time',allTime);
-    h+='</div>';
-    el.innerHTML=h;
-  }catch(e){el.innerHTML='<div class="loader">Could not load statistics.</div>';}
-  repLoad();
-}
+async function loadStatsTab(){repLoad();}
 var REP_CAT={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP'],'Diğer':['Other','Diğer'],'Lipoliz':['Lipolysis','Lipoliz'],
   'Gençlik aşısı':['Skin booster','Gençlik aşısı'],'İp / lifting':['Threads / lifting','İp / lifting'],'Peeling':['Peeling','Peeling'],'Cihaz / lazer':['Device / laser','Cihaz / lazer'],'Muayene':['Consultation','Muayene']};
 function repCat(c){var x=REP_CAT[c];return x?mxTr(x[0],x[1]):c;}
 async function repLoad(){
-  var b=document.getElementById('repBody');b.innerHTML='<div class="loader">Loading...</div>';
-  var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate()),v=document.getElementById('repRange').value;
-  var f=v==='year'?new Date(now.getFullYear(),0,1):v==='12m'?new Date(now.getFullYear()-1,now.getMonth(),now.getDate()+1):new Date(now.getFullYear(),now.getMonth(),1);
-  var r=await db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)});
-  if(r.error||!r.data){b.innerHTML='<div class="loader">Could not load statistics.</div>';return;}
-  var d=r.data,pt=d.patients||{},ap=d.appointments||{},h='';
-  function kpis(arr){return '<div class="imp-nums">'+arr.map(function(x){return '<div class="imp-num"><div class="n" style="color:'+(x[2]||'#F5F1EB')+'">'+x[0]+'</div><div class="l">'+x[1]+'</div></div>';}).join('')+'</div>';}
+  var b=document.getElementById('repBody');b.innerHTML='<div class="loader">'+mxE(mxTr('Loading...','Yükleniyor...'))+'</div>';
+  var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate()),v=document.getElementById('repRange').value,f,pf,pt;
+  if(v==='year'){f=new Date(now.getFullYear(),0,1);pf=new Date(now.getFullYear()-1,0,1);pt=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());}
+  else if(v==='12m'){f=new Date(now.getFullYear()-1,now.getMonth(),now.getDate()+1);pf=new Date(f.getFullYear()-1,f.getMonth(),f.getDate());pt=new Date(f.getTime()-864e5);}
+  else{f=new Date(now.getFullYear(),now.getMonth(),1);pf=new Date(now.getFullYear(),now.getMonth()-1,1);var ld=new Date(now.getFullYear(),now.getMonth(),0).getDate();pt=new Date(pf.getFullYear(),pf.getMonth(),Math.min(now.getDate(),ld));}
+  document.getElementById('repSub').textContent=dmy(mxIso(f))+' – '+dmy(mxIso(t));
+  var days=Math.round((t-f)/864e5)+1;
+  var rr=await Promise.all([db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(pf),p_to:mxIso(pt)}),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:days})]);
+  var r=rr[0];
+  if(r.error||!r.data){b.innerHTML='<div class="loader">'+mxE(mxTr('Could not load statistics.','İstatistikler yüklenemedi.'))+' <a href="#" onclick="repLoad();return false" style="color:#B89A6A">'+mxE(mxTr('Try again','Tekrar dene'))+'</a></div>';return;}
+  var d=r.data,p=rr[1].data||{},rs=rr[2].data||{},pt0=d.patients||{},pp=p.patients||{},ap=d.appointments||{},h='';
+  function delta(c,pv,lowGood){c=Number(c||0);pv=Number(pv||0);if(pv<=0)return '';var x=Math.round((c-pv)/pv*100);if(!x)return '<div class="l" style="color:rgba(245,241,235,.5)">= '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';var good=lowGood?x<0:x>0;
+    return '<div class="l" style="color:'+(good?'#6FCF97':'#F0A28F')+';font-weight:700">'+(x>0?'▲':'▼')+' %'+Math.abs(x)+' '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';}
+  function tile(val,lab,sub){return '<div class="imp-num" style="text-align:left"><div class="l">'+mxE(lab)+'</div><div class="n">'+val+'</div>'+(sub||'')+'</div>';}
   function bars(rows,color,lab,val){if(!rows.length)return '';var max=Math.max.apply(null,rows.map(function(x){return Number(val(x)[0]);}));
-    return rows.map(function(x){var v=val(x);return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(lab(x))+'</span><span style="color:rgba(245,241,235,.6)">'+v[1]+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:'+color+';width:'+(max>0?Number(v[0])/max*100:0)+'%"></div></div></div>';}).join('');}
-  var seen=Number(pt.seen||0);
-  h+='<div class="imp-step"><h3>'+mxTr('Patients','Hastalar')+'</h3>'+kpis([[pt['new']||0,mxTr('New Patients','Yeni Hastalar'),'#6C63A8'],[seen,mxTr('Patients seen','Gelen hasta'),'#2A9E8A'],
-    [seen?'%'+Math.round(100*Number(pt.returning||0)/seen):'—',mxTr('Returning share','Eski hasta oranı'),'#B89A6A'],[pt.repeat_rate_12m!=null?'%'+pt.repeat_rate_12m:'—',mxTr('Repeat rate (12 mo)','Tekrar gelen (12 ay)'),'#3AB06A']])+'</div>';
-  if((d.procedures||[]).length)h+='<div class="imp-step"><h3>'+mxTr('Procedures','İşlemler')+'</h3>'+bars(d.procedures,'#2A9E8A',function(x){return repCat(x.category);},function(x){return [x.visits,x.visits+(x.controls?' + '+x.controls+' '+mxTr('controls','kontrol'):'')];})+'</div>';
-  if(d.is_admin&&d.revenue){var rv=d.revenue,cnt=Number(rv.count||0);
-    h+='<div class="imp-step"><h3>'+mxTr('Revenue','Ciro')+'</h3>'+kpis([[mxMoney(rv.total),mxTr('Total collected','Toplam tahsilat'),'#3AB06A'],[cnt?mxMoney(Math.round(rv.total/cnt)):'—',mxTr('Average ticket','Ortalama işlem'),'#B89A6A']])+
-      ((rv.by_category||[]).length?bars(rv.by_category,'#3AB06A',function(x){return repCat(x.category);},function(x){return [x.total,mxMoney(x.total)+' · '+x.count];}):'<div style="font-size:12px;color:rgba(245,241,235,.45)">'+mxTr('No payments recorded in this period. Add them in Accounting.','Bu dönemde tahsilat kaydı yok. Ödemeleri Muhasebe\'den girin.')+'</div>')+'</div>';}
-  h+='<div class="imp-step"><h3>'+mxTr('Appointments','Randevular')+'</h3>'+kpis([[ap.total||0,mxTr('Total','Toplam')],[ap.online||0,'Online','#6C63A8'],[ap.cancelled||0,mxTr('Cancelled','İptal'),'#D4963A'],[ap.no_show||0,mxTr('No-show','Gelmedi'),'#C0614A']])+'</div>';
-  if(d.is_admin&&(d.stock||[]).length)h+='<div class="imp-step"><h3>'+mxTr('Product usage','Ürün tüketimi')+'</h3><table class="fmt">'+d.stock.map(function(x){return '<tr><td>'+mxE(x.name)+'</td><td>'+mxQty(x.used)+' '+(x.unit==='ml'?'ml':'u')+'</td><td>'+(Number(x.used_cost)>0?mxMoney(x.used_cost):'')+'</td><td style="color:#C0614A">'+(Number(x.wasted)>0?mxTr('Waste','Fire')+': '+mxQty(x.wasted):'')+'</td></tr>';}).join('')+'</table></div>';
+    return rows.map(function(x){var v=val(x);return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(lab(x))+'</span><span style="font-weight:700">'+v[1]+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:'+color+';width:'+(max>0?Number(v[0])/max*100:0)+'%"></div></div></div>';}).join('');}
+  var seen=Number(pt0.seen||0),visits=Number(pt0.visits||0)+Number(pt0.controls||0),pvisits=Number(pp.visits||0)+Number(pp.controls||0);
+  var rev=d.is_admin&&d.revenue?d.revenue:null,prev=p.revenue||{};
+  h+='<div class="imp-nums" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">'+
+    (rev?tile(mxMoney(rev.total),mxTr('Revenue','Ciro'),delta(rev.total,prev.total)):tile(seen,mxTr('Patients seen','Gelen hasta'),delta(seen,pp.seen)))+
+    tile(pt0['new']||0,mxTr('New Patients','Yeni Hastalar'),delta(pt0['new'],pp['new']))+
+    tile(visits,mxTr('Visits + follow-ups','Vizit + kontrol'),delta(visits,pvisits))+
+    tile(pt0.repeat_rate_12m!=null?'%'+pt0.repeat_rate_12m:'—',mxTr('Repeat rate (12 mo)','Tekrar gelen (12 ay)'),seen?'<div class="l">'+mxE(mxTr('Returning share','Eski hasta oranı'))+' %'+Math.round(100*Number(pt0.returning||0)/seen)+'</div>':'')+'</div>';
   var m=d.monthly||[];
-  if(m.length){function chart(key,color,money){var vals=m.map(function(x){return Number(x[key]||0);}),max=Math.max.apply(null,vals.concat([0]));
-      return '<div style="display:flex;align-items:flex-end;gap:4px;height:130px;margin:6px 0 14px">'+vals.map(function(v,i){return '<div style="flex:1;text-align:center"><div style="font-size:9px;color:rgba(245,241,235,.5)">'+(v?(money?(v>=1000?Math.round(v/1000)+'K':v):v):'')+'</div><div style="height:'+(max?2+90*v/max:2)+'px;background:'+color+';opacity:'+(i===vals.length-1?1:.6)+';border-radius:3px"></div><div style="font-size:9px;color:rgba(245,241,235,.4);margin-top:3px">'+m[i].month.slice(5)+'</div></div>';}).join('')+'</div>';}
-    h+='<div class="imp-step"><h3>'+mxTr('Last 12 months','Son 12 ay')+'</h3><div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('Visits','Vizitler')+'</div>'+chart('visits','#2A9E8A')+
-      '<div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('New Patients','Yeni Hastalar')+'</div>'+chart('new_patients','#6C63A8')+
-      (d.is_admin?'<div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxTr('Income','Gelir')+'</div>'+chart('income','#3AB06A',true):'')+'</div>';}
+  if(m.length){var loc=LANG==='zh'?'zh-CN':LANG,inc=m.map(function(x){return Number(x.income||0);}),vis=m.map(function(x){return Number(x.visits||0);}),mi=Math.max.apply(null,inc.concat([0])),mv=Math.max.apply(null,vis.concat([0]));
+    function ml(ym){try{return new Date(ym+'-01T00:00:00').toLocaleDateString(loc,{month:'short'});}catch(e){return ym.slice(5);}}
+    h+='<div class="imp-step"><h3>'+mxE(mxTr('Last 12 months','Son 12 ay'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+(d.is_admin?'<span style="color:#B89A6A">■</span> '+mxE(mxTr('Revenue','Ciro'))+' &nbsp;':'')+'<span style="color:#8E86D6">■</span> '+mxE(mxTr('Visits','Vizitler'))+'</span></h3>'+
+      '<div style="display:flex;align-items:flex-end;gap:6px;height:150px;margin:8px 0 4px">'+m.map(function(x,i){var last=i===m.length-1;
+        return '<div style="flex:1;text-align:center"><div style="height:126px;display:flex;align-items:flex-end;justify-content:center;gap:2px">'+
+          (d.is_admin?'<div title="'+mxE(mxMoney(inc[i]))+'" style="width:40%;height:'+(mi?2+120*inc[i]/mi:2)+'px;background:#B89A6A;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div>':'')+
+          '<div title="'+vis[i]+'" style="width:'+(d.is_admin?40:60)+'%;height:'+(mv?2+120*vis[i]/mv:2)+'px;background:#8E86D6;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div></div>'+
+          '<div style="font-size:10px;color:'+(last?'#F5F1EB':'rgba(245,241,235,.45)')+';margin-top:4px">'+mxE(ml(x.month))+(x.month.slice(5)==='01'?' '+x.month.slice(2,4):'')+'</div></div>';}).join('')+'</div></div>';}
+  if((d.procedures||[]).length){var rc={};((rev&&rev.by_category)||[]).forEach(function(x){rc[x.category]=x.total;});
+    h+='<div class="imp-step"><h3>'+mxE(mxTr('Procedures','İşlemler'))+'</h3>'+bars(d.procedures,'#B89A6A',function(x){return repCat(x.category);},function(x){return [x.visits,x.visits+(x.controls?' + '+x.controls:'')+(rev&&rc[x.category]?' · '+mxMoney(rc[x.category]):'')];})+
+      (rev&&!Number(rev.total)?'<div style="font-size:12px;color:rgba(245,241,235,.45)">'+mxE(mxTr('No payments recorded in this period. Add them in Accounting.','Bu dönemde tahsilat kaydı yok. Ödemeleri Muhasebe\'den girin.'))+'</div>':'')+'</div>';}
+  var tot=Number(ap.total||0);function pc(n){return tot?'%'+Math.round(100*Number(n||0)/tot):'—';}
+  var sent=Number(rs.sent||0),bk=Number(rs.booked||0);
+  h+='<div class="imp-step"><h3>'+mxE(mxTr('Appointments & recall','Randevular ve geri çağırma'))+'</h3><div class="imp-nums" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+
+    tile(pc(ap.no_show),mxTr('No-show','Gelmedi'),'<div class="l" style="color:#D4963A">'+(ap.no_show||0)+' / '+tot+'</div>')+
+    tile(pc(ap.cancelled),mxTr('Cancelled','İptal'),'<div class="l">'+(ap.cancelled||0)+' / '+tot+'</div>')+
+    tile(pc(ap.online),mxTr('Online','Online'),'<div class="l" style="color:#B7B0F0">'+(ap.online||0)+'</div>')+
+    tile(sent?'%'+Math.round(100*bk/sent):'—',mxTr('Recall conversion','Geri çağırma dönüşümü'),'<div class="l">'+mxE(sent?mxTrV('[s] messages sent → [b] patients booked','[s] mesaj gönderildi → [b] hasta randevu aldı',{s:sent,b:bk}):mxTr('No recall messages sent in this period','Bu dönemde geri çağırma mesajı gönderilmedi'))+'</div>')+'</div></div>';
+  if(d.is_admin&&(d.stock||[]).length){var mx=Math.max.apply(null,d.stock.map(function(x){return Number(x.used_cost||0);}).concat([0]));
+    h+='<div class="imp-step"><h3>'+mxE(mxTr('Product usage','Ürün tüketimi'))+'</h3>'+d.stock.map(function(x){var u=Number(x.used||0)+Number(x.wasted||0),wr=u?Math.round(100*Number(x.wasted||0)/u):0;
+      return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(x.name)+' · '+mxQty(x.used)+' '+(x.unit==='ml'?'ml':'u')+'</span><span style="font-weight:700">'+(Number(x.used_cost)>0?mxMoney(x.used_cost)+' · ':'')+mxE(mxTrV('waste [n]%','fire %[n]',{n:wr}))+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:#8E86D6;width:'+(mx>0?Number(x.used_cost||0)/mx*100:0)+'%"></div></div></div>';}).join('')+'</div>';}
   b.innerHTML=h;
 }
 
@@ -2164,31 +2162,56 @@ function mxTrV(en,tr,v){var t=mxTr(en,tr);Object.keys(v||{}).forEach(function(k)
 
 // ============ STOCK ============
 var stProds=[],stBal={},stSel=null;
+var stFilter='all',stOv={};
+function stIsLow(p){var b=stBal[p.id]||{};return b.tracked&&p.min_stock!=null&&Number(b.remaining)<=Number(p.min_stock);}
+function stIsExp(p){var b=stBal[p.id]||{};return b.next_expiry&&new Date(b.next_expiry)<new Date(Date.now()+60*864e5);}
+function stIsOpen(p){return !!(stOv[p.id]&&stOv[p.id].open_lot_no);}
+function stSetFilter(k){stFilter=k;stRender();}
 async function stLoad(){
   var r=await Promise.all([
     db.from('clinic_products').select('*').eq('clinic_id',cid).eq('is_active',true).order('name'),
     db.from('stock_product_balance').select('*').eq('clinic_id',cid),
-    db.from('stock_alerts').select('*').eq('clinic_id',cid)]);
+    db.from('stock_alerts').select('*').eq('clinic_id',cid),
+    db.rpc('get_stock_overview',{p_clinic_id:cid})]);
   stProds=r[0].data||[];stBal={};(r[1].data||[]).forEach(function(b){stBal[b.product_id]=b;});
+  stOv={};(Array.isArray(r[3].data)?r[3].data:[]).forEach(function(o){stOv[o.product_id]=o;});
   var al=r[2].data||[];
   document.getElementById('stAlerts').innerHTML=al.length?'<div class="imp-step" style="border-color:rgba(212,150,58,.4)"><h3 style="color:#D4963A">Alerts</h3>'+al.map(function(a){
     var t=a.alert==='low_stock'?'Low stock':a.alert==='expiring'?'Expiring soon':'Opened vial expired';
     var d=a.alert==='expiring'?(a.detail||'').split(' ').map(function(x,i){return i===1?mxDate(x):x;}).join(' · '):a.detail;
     return '<div style="font-size:13px;padding:3px 0"><b>'+mxE(a.name)+'</b> — <span>'+t+'</span> · '+mxE(d)+'</div>';}).join('')+'</div>':'';
-  var t=document.getElementById('stProducts');
-  if(!stProds.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No products yet. Add a product, then receive a lot.</td></tr>';return;}
-  t.innerHTML='<tr><th>Product</th><th>Unit</th><th>Remaining</th><th>Next expiry</th><th>Min stock</th></tr>'+stProds.map(function(p){
-    var b=stBal[p.id]||{},low=b.tracked&&p.min_stock!=null&&Number(b.remaining)<=Number(p.min_stock);
-    return '<tr style="cursor:pointer" onclick="stOpen(\''+p.id+'\')"><td><b>'+mxE(p.name)+'</b></td><td>'+(p.unit==='ml'?'ml':'u')+'</td><td style="color:'+(low?'#D4963A':'#F5F1EB')+'">'+(b.tracked?mxQty(b.remaining):'—')+'</td><td>'+mxDate(b.next_expiry)+'</td><td>'+(p.min_stock!=null?mxQty(p.min_stock):'')+'</td></tr>';}).join('');
+  stRender();
   if(stSel)stOpen(stSel.id);
+}
+function stRender(){
+  var t=document.getElementById('stProducts');
+  var val=Object.keys(stOv).reduce(function(a,k){return a+Number(stOv[k].value||0);},0);
+  document.getElementById('stValue').textContent=stProds.length?'· '+mxTrV('[n] products','[n] ürün',{n:stProds.length})+(val>0?' · '+mxMoney(val):''):'';
+  var lowN=stProds.filter(stIsLow).length,expN=stProds.filter(stIsExp).length,opN=stProds.filter(stIsOpen).length;
+  document.getElementById('stFilters').innerHTML=stProds.length?[['all',mxTr('All','Tümü')],['low',mxTr('Low','Kritik')+(lowN?' · '+lowN:'')],['exp',mxTr('Expires ≤60 d','SKT 60 gün')+(expN?' · '+expN:'')],['open',mxTr('Open vial','Açık şişe')+(opN?' · '+opN:'')]].map(function(x){return '<button class="'+(x[0]===stFilter?'on':'')+'" onclick="stSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join(''):'';
+  if(!stProds.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No products yet. Add a product, then receive a lot.</td></tr>';return;}
+  var list=stProds.filter(function(p){return stFilter==='low'?stIsLow(p):stFilter==='exp'?stIsExp(p):stFilter==='open'?stIsOpen(p):true;});
+  list.sort(function(a,b){function rk(p){return stIsLow(p)?0:stIsExp(p)?1:2;}return rk(a)-rk(b)||String(a.name).localeCompare(String(b.name));});
+  if(!list.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">'+mxE(mxTr('No results','Sonuç yok'))+'</td></tr>';return;}
+  t.innerHTML='<tr><th>Product</th><th>Remaining</th><th>'+mxE(mxTr('Lasts','Ne kadar yeter'))+'</th><th>Next expiry</th><th>'+mxE(mxTr('Open vial','Açık şişe'))+'</th><th>'+mxE(mxTr('Value','Değer'))+'</th></tr>'+list.map(function(p){
+    var b=stBal[p.id]||{},o=stOv[p.id]||{},low=stIsLow(p),exp=stIsExp(p),u=p.unit==='ml'?'ml':'u',rem=Number(b.remaining||0),used=Number(o.used_30d||0);
+    var w=used>0?rem/(used/30)/7:null,lasts=w==null?'':(w<1?mxTrV('~[n] days','~[n] gün',{n:Math.floor(w*7)}):mxTrV('~[n] weeks','~[n] hafta',{n:Math.floor(w)}));
+    var scale=Math.max(rem,Number(p.min_stock||0)*2,1),col=low?'#F0A28F':exp?'#D4963A':'#B89A6A';
+    var bar='<div style="height:5px;background:rgba(245,241,235,.08);border-radius:3px;margin-top:4px;position:relative;width:120px"><div style="height:5px;border-radius:3px;background:'+col+';width:'+Math.min(100,rem/scale*100)+'%"></div>'+(p.min_stock!=null?'<span style="position:absolute;left:'+Math.min(100,Number(p.min_stock)/scale*100)+'%;top:-3px;width:2px;height:11px;background:rgba(245,241,235,.5)"></span>':'')+'</div>';
+    var open='';if(o.open_lot_no){var left=o.open_until?Math.floor((new Date(o.open_until)-new Date())/864e5):null;open='LOT '+mxE(o.open_lot_no)+(left==null?'':' · '+(left<0?mxTr('expired','süresi doldu'):mxTrV('[n] days left','[n] gün kaldı',{n:left})));}
+    return '<tr style="cursor:pointer" onclick="stOpen(\''+p.id+'\')"><td><b>'+mxE(p.name)+'</b>'+(p.min_stock!=null?'<div style="font-size:11px;color:rgba(245,241,235,.5)">min '+mxQty(p.min_stock)+' '+u+'</div>':'')+'</td><td><span style="color:'+col+';font-weight:700">'+(b.tracked?mxQty(rem)+' '+u:'—')+'</span>'+(b.tracked?bar:'')+'</td><td>'+mxE(lasts)+'</td><td style="color:'+(exp?'#D4963A':'inherit')+'">'+mxDate(b.next_expiry)+'</td><td style="color:#B7B0F0">'+open+'</td><td>'+(Number(o.value)>0?mxMoney(o.value):'')+'</td></tr>';}).join('');
 }
 async function stOpen(id){
   stSel=stProds.find(function(p){return p.id===id;});if(!stSel)return;
   document.getElementById('stLotsBox').style.display='block';
   document.getElementById('stLotsTitle').textContent=stSel.name;
   document.getElementById('stRecipients').innerHTML='';
-  var r=await db.from('stock_lot_balance').select('*').eq('product_id',id).order('expiry_date',{ascending:true,nullsFirst:false});
-  var lots=r.data||[],u=stSel.unit==='ml'?'ml':'u',t=document.getElementById('stLots');
+  var rr=await Promise.all([db.from('stock_lot_balance').select('*').eq('product_id',id).order('expiry_date',{ascending:true,nullsFirst:false}),db.rpc('get_stock_movements',{p_product_id:id,p_limit:50})]);
+  var r=rr[0],lots=r.data||[],u=stSel.unit==='ml'?'ml':'u',t=document.getElementById('stLots');
+  var mv=Array.isArray(rr[1].data)?rr[1].data:[];
+  var kl={'in':mxTr('Received','Giriş'),'use':mxTr('Used','Kullanım'),'waste':mxTr('Waste','Fire'),'adjust':mxTr('Count','Sayım'),'return':mxTr('Returned','İade')};
+  document.getElementById('stMoves').innerHTML=mv.length?'<div class="sec" style="margin-top:14px">'+mxE(mxTr('Movements','Hareketler'))+'</div><table class="fmt">'+mv.map(function(m){var q=Number(m.quantity||0);
+    return '<tr><td>'+mxDate(m.created_at)+'</td><td>'+mxE(kl[m.kind]||m.kind)+' · LOT '+mxE(m.lot_no||'')+'</td><td>'+mxE([m.patient_name,m.kind==='in'?m.supplier:null,m.note&&m.note!=='scan'&&m.note!=='panel'?m.note:null].filter(Boolean).join(' · '))+'</td><td style="text-align:right;font-weight:700;color:'+(q>0?'#6FCF97':m.kind==='waste'?'#D4963A':'#F0A28F')+'">'+(q>0?'+':'−')+mxQty(Math.abs(q))+' '+u+'</td></tr>';}).join('')+'</table>':'';
   if(!lots.length){t.innerHTML='<tr><td style="color:rgba(245,241,235,.4)">No lots received</td></tr>';return;}
   t.innerHTML='<tr><th>Lot / serial no</th><th>Expiry date</th><th>Opened</th><th>Remaining</th><th></th></tr>'+lots.map(function(l){
     var soon=l.expiry_date&&new Date(l.expiry_date)<new Date(Date.now()+30*864e5);
@@ -2235,10 +2258,10 @@ function stLotModal(){
 async function stOpenLot(id){await db.rpc('open_stock_lot',{p_lot_id:id});stLoad();}
 function stMove(id,kind){
   mxOpen(kind==='waste'?'Waste / disposal':'Count adjustment',
-    '<input class="mi" id="smQty" placeholder="Quantity">'+(kind==='adjust'?'<div style="font-size:12px;color:rgba(245,241,235,.45);margin-top:-6px">Enter + for surplus, − for shortage</div>':''),
+    '<input class="mi" id="smQty" placeholder="Quantity">'+(kind==='adjust'?'<div style="font-size:12px;color:rgba(245,241,235,.45);margin-top:-6px">Enter + for surplus, − for shortage</div>':'')+'<input class="mi" id="smNote" placeholder="'+mxE(mxTr('Note (optional)','Not (isteğe bağlı)'))+'">',
     [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
       var q=mxNum(mxV('smQty').replace('−','-'));if(!q){return;}
-      var r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:id,kind:kind,quantity:kind==='adjust'?q:-Math.abs(q)});
+      var r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:id,kind:kind,quantity:kind==='adjust'?q:-Math.abs(q),note:mxV('smNote')||null});
       if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]);
 }
 async function stRecip(id,lotNo){
@@ -2257,7 +2280,11 @@ var FN_CAT_L={treatment:['Treatment','İşlem / tedavi'],consultation:['Consulta
 var FN_M_L={cash:['Cash','Nakit'],card:['Card','Kart'],transfer:['Bank transfer','Havale / EFT'],other:['Other','Diğer']};
 function fnCat(c){var x=FN_CAT_L[c]||[c,c];return mxTr(x[0],x[1]);}
 function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return mxTr(x[0],x[1]);}
-var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null;
+var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null,fnFilter='all',fnEinv=false;
+function fnUninv(e){return e.kind==='income'&&e.einvoice_status!=='issued'&&!String(e.invoice_no||'').trim();}
+function fnDelta(c,p,lowGood){c=Number(c||0);p=Number(p||0);if(p<=0)return '';var x=Math.round((c-p)/p*100);if(!x)return '';var good=lowGood?x<0:x>0;
+  return '<div class="l" style="color:'+(good?'#6FCF97':'#F0A28F')+';font-weight:700">'+(x>0?'▲':'▼')+' %'+Math.abs(x)+' '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';}
+function fnSetFilter(k){fnFilter=k;fnView('entries');}
 function fnRange(){var y=document.getElementById('fnMode').value==='y';var a=fnAnchor;
   return y?[new Date(a.getFullYear(),0,1),new Date(a.getFullYear(),11,31)]:[a,new Date(a.getFullYear(),a.getMonth()+1,0)];}
 function fnShift(d){var y=document.getElementById('fnMode').value==='y';fnAnchor=y?new Date(fnAnchor.getFullYear()+d,fnAnchor.getMonth(),1):new Date(fnAnchor.getFullYear(),fnAnchor.getMonth()+d,1);fnLoad();}
@@ -2266,17 +2293,32 @@ async function fnLoad(){
   if(!fnAdmin){document.getElementById('fnBody').innerHTML='<div class="imp-step">'+mxTr('Accounting is available to admin users only.','Muhasebe yalnızca yönetici kullanıcılara açıktır.')+'</div>';return;}
   var r=fnRange(),y=document.getElementById('fnMode').value==='y';
   document.getElementById('fnPeriod').textContent=y?String(fnAnchor.getFullYear()):fnAnchor.toLocaleDateString(LANG_LOC[LANG]||'en-US',{month:'long',year:'numeric'});
+  var pr=y?[new Date(fnAnchor.getFullYear()-1,0,1),new Date(fnAnchor.getFullYear()-1,11,31)]:[new Date(fnAnchor.getFullYear(),fnAnchor.getMonth()-1,1),new Date(fnAnchor.getFullYear(),fnAnchor.getMonth(),0)];
+  var today=mxIso(new Date());
   var res=await Promise.all([
     db.from('finance_entries').select('*, patients(name, surname)').eq('clinic_id',cid).is('deleted_at',null).gte('entry_date',mxIso(r[0])).lte('entry_date',mxIso(r[1])).order('entry_date',{ascending:false}).order('created_at',{ascending:false}),
     db.rpc('finance_summary',{p_clinic_id:cid,p_from:mxIso(r[0]),p_to:mxIso(r[1])}),
-    db.rpc('get_receivables',{p_clinic_id:cid})]);
+    db.rpc('get_receivables',{p_clinic_id:cid}),
+    db.rpc('finance_summary',{p_clinic_id:cid,p_from:mxIso(pr[0]),p_to:mxIso(pr[1])}),
+    db.from('finance_entries').select('amount,kind').eq('clinic_id',cid).is('deleted_at',null).eq('entry_date',today),
+    db.rpc('day_cash_summary',{p_clinic_id:cid,p_date:today}),
+    db.rpc('get_einvoice_settings')]);
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
-  var inc=Number(fnSum.income||0),exp=Number(fnSum.expense||0);
+  var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
+  fnEinv=!!(res[6].data&&res[6].data.enabled);
+  var closed=!!cd.closing;
+  document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
+    '<div style="font-size:22px">'+(closed?'🔒':'🔓')+'</div><div style="flex:1"><b style="font-size:15px">'+mxE(mxTr('Today','Bugün'))+' '+mxMoney(td)+'</b><div style="font-size:12px;color:rgba(245,241,235,.6)">'+
+    mxE(closed?mxTr('Till closed ✓','Kasa kapatıldı ✓'):mxTrV('Till not closed · cash [amount]','Kasa kapatılmadı · nakit [amount]',{amount:mxMoney(cd.cash_in||0)}))+'</div></div>'+
+    '<button class="'+(closed?'bimp2':'bimp')+'" onclick="fnView(\'cash\')">'+mxE(closed?mxTr('View','Gör'):mxTr('Close till','Kasayı kapat'))+'</button></div>';
+  var inc=Number(fnSum.income||0),exp=Number(fnSum.expense||0),recv=fnRecv.reduce(function(s,x){return s+Number(x.balance||0);},0),od=fnRecv.reduce(function(s,x){return s+Number(x.overdue_amount||0);},0);
+  var un=fnEntries.filter(fnUninv).length;
   document.getElementById('fnTotals').innerHTML=
-    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+mxMoney(inc)+'</div><div class="l">Income</div></div>'+
-    '<div class="imp-num"><div class="n" style="color:#C0614A">'+mxMoney(exp)+'</div><div class="l">Expense</div></div>'+
-    '<div class="imp-num"><div class="n" style="color:'+(inc-exp>=0?'#B89A6A':'#C0614A')+'">'+mxMoney(inc-exp)+'</div><div class="l">Net</div></div>'+
-    '<div class="imp-num"><div class="n" style="color:#D4963A">'+mxMoney(fnRecv.reduce(function(s,x){return s+Number(x.balance||0);},0))+'</div><div class="l">Total receivable</div></div>';
+    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+mxMoney(inc)+'</div><div class="l">Income</div>'+fnDelta(inc,ps.income)+'</div>'+
+    '<div class="imp-num"><div class="n" style="color:#C0614A">'+mxMoney(exp)+'</div><div class="l">Expense</div>'+fnDelta(exp,ps.expense,true)+'</div>'+
+    '<div class="imp-num"><div class="n" style="color:'+(inc-exp>=0?'#B89A6A':'#C0614A')+'">'+mxMoney(inc-exp)+'</div><div class="l">Net</div>'+fnDelta(inc-exp,Number(ps.income||0)-Number(ps.expense||0))+'</div>'+
+    '<div class="imp-num" style="cursor:pointer" onclick="fnView(\'recv\')"><div class="n" style="color:#D4963A">'+mxMoney(recv)+'</div><div class="l">Total receivable</div>'+(od>0?'<div class="l" style="color:#F0A28F;font-weight:700">'+mxE(mxTrV('[amount] overdue','[amount] gecikmiş',{amount:mxMoney(od)}))+'</div>':'')+'</div>'+
+    (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
   fnView(fnTab);
 }
 function fnView(v){
@@ -2284,10 +2326,13 @@ function fnView(v){
   var b=document.getElementById('fnBody');
   if(v==='cash'){fnCashRender();return;}
   if(v==='entries'){
-    if(!fnEntries.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
-    b.innerHTML='<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+fnEntries.map(function(e){
+    var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
+    var chips='<div class="pfl" style="border:none;padding:0 0 10px">'+fl.map(function(x){return '<button class="'+(x[0]===fnFilter?'on':'')+'" onclick="fnSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>';
+    var list=fnEntries.filter(function(e){return fnFilter==='all'?true:fnFilter==='income'||fnFilter==='expense'?e.kind===fnFilter:fnFilter==='uninvoiced'?fnUninv(e):e.method===fnFilter;});
+    if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
+    b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
-      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' ✓':'')+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
   }else if(v==='recv'){
     if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
@@ -2403,28 +2448,50 @@ function fnCsv(){
 // ============ RECALLS & REVIEWS ============
 var RC_RULE_TR={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP']};
 function rcRule(l){var x=RC_RULE_TR[l];return x?mxTr(x[0],x[1]):l;}
+var rcAsk={};
+// WhatsApp opened: ask before removing the patient from the list (the message may not have been sent)
+function rcAskSet(kind,i){rcAsk[kind+i]=true;setTimeout(rcRender,300);}
+function rcAskHtml(kind,i){return '<span style="font-size:12px;margin-right:6px">'+mxE(mxTr('Did you send the message?','Mesajı gönderdiniz mi?'))+'</span><button class="btn" style="background:#25D366;color:#0b2b17;border:0" onclick="rcAnswer(\''+kind+'\','+i+',true)">'+mxE(mxTr('Yes','Evet'))+'</button> <button class="btn bedit" onclick="rcAnswer(\''+kind+'\','+i+',false)">'+mxE(mxTr('No','Hayır'))+'</button>';}
+async function rcAnswer(kind,i,yes){delete rcAsk[kind+i];if(yes){await (kind==='rc'?rcMark(i,'sent'):rvMark(i,'sent'));}else rcRender();}
+async function rcSkip(kind,i){var x=(kind==='rc'?window._rc:window._rv)[i];await (kind==='rc'?rcMark(i,'dismissed'):rvMark(i,'dismissed'));
+  mxUndoToast(mxTrV('[name] skipped','[name] atlandı',{name:((x.patient_name||'')+' '+(x.patient_surname||'')).trim()}),async function(){
+    if(kind==='rc')await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:'undone'});
+    else await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:'undone'});
+    rcLoad();});}
+function mxUndoToast(text,undo){var t=document.getElementById('mxToast');if(!t){t=document.createElement('div');t.id='mxToast';t.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#2A2638;color:#F5F1EB;padding:12px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:flex;gap:16px;align-items:center;font-size:13px;z-index:9999';document.body.appendChild(t);}
+  t.innerHTML='<span>'+mxE(text)+'</span><a href="#" style="color:#B89A6A;font-weight:700">'+mxE(mxTr('Undo','Geri al'))+'</a>';t.style.display='flex';
+  t.querySelector('a').onclick=function(e){e.preventDefault();t.style.display='none';undo();};clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},6000);}
+var _rcData=null;
 async function rcLoad(){
+  rcAsk={};
   var until=mxIso(new Date(Date.now()+7*864e5));
-  var r=await Promise.all([db.rpc('get_recalls',{p_clinic_id:cid,p_until:until}),db.rpc('get_review_requests',{p_clinic_id:cid}),db.from('clinic').select('*').eq('id',cid).single()]);
+  var r=await Promise.all([db.rpc('get_recalls',{p_clinic_id:cid,p_until:until}),db.rpc('get_review_requests',{p_clinic_id:cid}),db.from('clinic').select('*').eq('id',cid).single(),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:30})]);
+  _rcData=r;rcRender();
+}
+function rcRender(){
+  var r=_rcData;if(!r)return;
   var rc=r[0].data||[],rv=r[1].data||[];if(r[2].data)clinic=r[2].data;
+  var st=r[3].data||{},od=rc.filter(function(x){return Number(x.days_overdue||0)>0;}).length;
+  document.getElementById('rcSummary').innerHTML='<div class="imp-step" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap"><span><b style="font-size:18px;color:#F0A28F">'+od+'</b> '+mxE(mxTr('overdue','gecikmiş'))+'</span><span><b style="font-size:18px">'+(rc.length-od)+'</b> '+mxE(mxTr('this week','bu hafta'))+'</span><span style="flex:1"></span>'+
+    (Number(st.sent||0)?'<span style="color:#6FCF97;font-weight:600">'+mxE(mxTrV('30 days: [s] sent → [b] booked','30 günde [s] mesaj → [b] randevu',{s:st.sent,b:st.booked}))+'</span>':'')+'</div>';
   var t=document.getElementById('rcList');
   t.innerHTML=rc.length?'<tr><th>Patient</th><th>Phone</th><th>Procedure</th><th>Type</th><th>Due date</th><th></th></tr>'+rc.map(function(x,i){
     var name=(x.patient_name||'')+' '+(x.patient_surname||''),ctl=x.kind==='control';
     var tpl=(ctl?clinic.recall_control_message:clinic.recall_repeat_message)||(ctl?mxTr('Hi [name], it is time for your check-up after your [procedure]. Shall we book an appointment for you? — [clinic]','Merhaba [ad], [islem] sonrası kontrol zamanınız geldi. Size uygun bir gün için randevu oluşturalım mı? — [klinik]'):mxTr('Hi [name], it has been a while since your last [procedure]. Shall we book a touch-up at a time that suits you? — [clinic]','Merhaba [ad], son [islem] uygulamanızın üzerinden zaman geçti. Tazeleme için size uygun bir gün ayarlayalım mı? — [klinik]'));
     var od=Number(x.days_overdue||0);
     return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxE(rcRule(x.rule_label))+'</td><td>'+(ctl?mxTr('Control','Kontrol'):mxTr('Repeat','Tekrar'))+'</td><td style="color:'+(od>0?'#C0614A':'inherit')+'">'+mxDate(x.due_date)+'</td><td style="white-space:nowrap">'+
-      (x.patient_phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,mxFill(tpl,name,rcRule(x.rule_label)))+'" onclick="rcMark('+i+',\'sent\')">WhatsApp</a> ':'')+
-      '<button class="btn bedit" onclick="rcMark('+i+',\'dismissed\')">'+mxTr('Skip','Atla')+'</button></td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to call back right now.','Şu an geri çağrılacak hasta yok.')+'</td></tr>';
+      (rcAsk['rc'+i]?rcAskHtml('rc',i):(x.patient_phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,mxFill(tpl,name,rcRule(x.rule_label)))+'" onclick="rcAskSet(\'rc\','+i+')">WhatsApp</a> ':'')+
+      '<button class="btn bedit" onclick="rcSkip(\'rc\','+i+')">'+mxTr('Skip','Atla')+'</button>')+'</td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to call back right now.','Şu an geri çağrılacak hasta yok.')+'</td></tr>';
   window._rc=rc;window._rv=rv;
   var link=clinic.google_review_url||'',v=document.getElementById('rvList');
   if(!link){v.innerHTML='<tr><td style="color:rgba(245,241,235,.5)">'+mxTr('Add your Google review link in the app (Settings › Reminders).','Önce Google yorum linkinizi uygulamadan ekleyin (Ayarlar › Hatırlatıcılar).')+'</td></tr>';return;}
   v.innerHTML=rv.length?'<tr><th>Patient</th><th>Phone</th><th>Visit</th><th>Procedure</th><th></th></tr>'+rv.map(function(x,i){var name=(x.patient_name||'')+' '+(x.patient_surname||'');
     var msg=mxFill(clinic.review_message||mxTr('Hi [name], thank you for choosing us. We would be very happy if you shared your experience on Google: [link] — [clinic]','Merhaba [ad], bizi tercih ettiğiniz için teşekkür ederiz. Deneyiminizi Google\'da paylaşırsanız çok mutlu oluruz: [link] — [klinik]'),name,'',{'[link]':link});
     if(msg.indexOf(link)<0)msg+='\n'+link;
-    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxDate(x.visit_date)+'</td><td>'+mxE(x.procedures||'')+'</td><td style="white-space:nowrap"><a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,msg)+'" onclick="rvMark('+i+',\'sent\')">WhatsApp</a> <button class="btn bedit" onclick="rvMark('+i+',\'dismissed\')">'+mxTr('Skip','Atla')+'</button></td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to ask for a review right now','Şu an yorum istenecek hasta yok')+'</td></tr>';
+    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxDate(x.visit_date)+'</td><td>'+mxE(x.procedures||'')+'</td><td style="white-space:nowrap">'+(rcAsk['rv'+i]?rcAskHtml('rv',i):'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,msg)+'" onclick="rcAskSet(\'rv\','+i+')">WhatsApp</a> <button class="btn bedit" onclick="rcSkip(\'rv\','+i+')">'+mxTr('Skip','Atla')+'</button>')+'</td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to ask for a review right now','Şu an yorum istenecek hasta yok')+'</td></tr>';
 }
-async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
-async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});setTimeout(rcLoad,s==='sent'?1500:0);}
+async function rcMark(i,s){var x=window._rc[i];await db.rpc('mark_recall',{p_source_visit_id:x.source_visit_id,p_rule_id:x.rule_id,p_kind:x.kind,p_status:s});await rcLoad();}
+async function rvMark(i,s){var x=window._rv[i];await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:s});await rcLoad();}
 
 // ============ ROOMS & DEVICES ============
 var apExtras={};

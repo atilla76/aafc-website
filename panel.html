@@ -50,6 +50,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .tcontent.on{display:flex}
 /* HOME */
 .hm-wrap{max-width:1100px}
+.bkp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;max-width:1100px}
+.bkp-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.bkp-card .e{font-size:26px}.bkp-card .t{font-size:15px;font-weight:600;color:#F5F1EB}.bkp-card .d{font-size:13px;color:rgba(245,241,235,0.6);line-height:1.5;flex:1}
+.bkp-card.rec{border-color:rgba(184,154,106,0.5);background:rgba(184,154,106,0.07)}
+.bkp-card .btn{align-self:flex-start;margin-top:6px}
+.bkp-note{max-width:1100px;margin-top:18px;font-size:13px;color:rgba(245,241,235,0.6);background:rgba(58,176,106,0.07);border:1px solid rgba(58,176,106,0.25);border-radius:12px;padding:12px 16px;line-height:1.6}
 .hm-hi{font-size:26px;font-weight:400;color:#F5F1EB;margin:2px 0 6px}
 .hm-date{font-size:12px;letter-spacing:1px;color:#B89A6A;text-transform:uppercase}
 .hm-line{font-size:14px;color:rgba(245,241,235,0.55);margin-bottom:20px}
@@ -284,15 +290,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 </div>
 
 <div class="app" id="app">
-  <div class="banner">
-    <div class="bt"><strong>Backup and Export</strong> — Download all clinic data including photos</div>
-    <div class="bts">
-      <button class="btn bzip" onclick="dlZIP()">ZIP with photos</button>
-      <button class="btn bhtml" onclick="dlHTML()">HTML Report</button>
-      <button class="btn bjson" onclick="dlJSON()">JSON</button>
-      <button class="btn bcsv" onclick="dlCSV()">CSV</button>
-    </div>
-  </div>
 
   <!-- TABS -->
   <div class="tabs">
@@ -302,11 +299,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">APPOINTMENTS</button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
     <button class="tab" data-tab="import" onclick="switchTab('import')">IMPORT</button>
+    <button class="tab" data-tab="backup" onclick="switchTab('backup')">BACKUP</button>
     <button class="tab" data-tab="booking" onclick="switchTab('booking')">ONLINE BOOKING</button>
     <button class="tab" data-tab="recall" onclick="switchTab('recall')">RECALLS</button>
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
+  </div>
+
+  <!-- BACKUP TAB -->
+  <div class="tcontent" id="tab-backup" style="flex-direction:column">
+    <div class="tab-content"><div id="bkpBody"></div></div>
   </div>
 
   <!-- HOME TAB -->
@@ -895,6 +898,7 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===name);});
   document.querySelectorAll('.tcontent').forEach(function(c){c.classList.toggle('on',c.id==='tab-'+name);});
   if(name==='home')hmLoad();
+  if(name==='backup')bkpRender();
   if(name==='agenda')loadAgenda();
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
@@ -3293,6 +3297,20 @@ async function migRun(){
 }
 </script>
 <script>
+// ============ BACKUP & EXPORT TAB ============
+function bkpRender(){
+  var c=[
+    ['🗂️',mxTr('ZIP with photos','Fotoğraflı ZIP'),mxTr('All patients, visits, photos and documents in folders. Recommended for a full backup.','Tüm hastalar, vizitler, fotoğraflar ve belgeler klasörler halinde. Tam yedek için önerilir.'),'bzip','dlZIP()',1],
+    ['📑',mxTr('HTML Report','HTML Rapor'),mxTr('A readable report with photos that opens in any browser.','Her tarayıcıda açılan, fotoğraflı okunabilir rapor.'),'bhtml','dlHTML()'],
+    ['🧾','JSON',mxTr('All records in a machine-readable format, e.g. to move to another program.','Tüm kayıtlar makine okunur biçimde; örneğin başka bir programa aktarmak için.'),'bjson','dlJSON()'],
+    ['📊','CSV',mxTr('Patients, visit dates, regions and photo list — opens in Excel.','Hastalar, vizit tarihleri, bölgeler ve fotoğraf listesi — Excel’de açılır.'),'bcsv','dlCSV()']
+  ];
+  document.getElementById('bkpBody').innerHTML='<div class="tab-head"><div><h2>'+mxTr('Backup and Export','Yedekleme ve Dışa Aktarma')+'</h2><div class="sub">'+mxTr('Download all clinic data, including photos.','Fotoğraflar dahil tüm klinik verisini indirin.')+'</div></div></div>'+
+    '<div class="bkp-grid">'+c.map(function(x){return '<div class="bkp-card'+(x[5]?' rec':'')+'"><div class="e">'+x[0]+'</div><div class="t">'+mxE(x[1])+'</div><div class="d">'+mxE(x[2])+'</div><button class="btn '+x[3]+'" onclick="'+x[4]+'">'+mxTr('Download','İndir')+'</button></div>';}).join('')+'</div>'+
+    '<div class="bkp-note">✓ '+mxTr('Your data is already backed up automatically in the cloud; these downloads are an extra copy. To download a single patient, open the patient and use the buttons there.','Verileriniz bulutta zaten otomatik yedeklenir; bu indirmeler ek bir kopyadır. Tek bir hastayı indirmek için hastayı açıp oradaki butonları kullanın.')+'</div>';
+}
+</script>
+<script>
 // ============ HOME (get_home_summary + setup wizard) ============
 var hmSum=null,hmSetupOpen=false;
 function hmGreeting(){var h=new Date().getHours();var g=h<12?mxTr('Good morning','Günaydın'):(h<18?mxTr('Good afternoon','İyi günler'):mxTr('Good evening','İyi akşamlar'));var who=((clinic&&(clinic.doctor||clinic.name))||'').trim();return who?g+', '+who:g;}
@@ -3422,7 +3440,7 @@ var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','E
 'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
 'Sign Out':'Çıkış','Help':'Yardım','HELP':'YARDIM','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
 'ZIP with photos':'Fotoğraflı ZIP','HTML Report':'HTML Rapor',
-'HOME':'ANA SAYFA','PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
+'HOME':'ANA SAYFA','BACKUP':'YEDEKLEME','PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
 'Search patients...':'Hasta ara...','+ Add':'+ Ekle','Add Patient':'Hasta Ekle','Edit Patient':'Hastayı Düzenle','View Patient':'Hastayı Gör',
 'First Name':'Ad','Last Name':'Soyad','Last name':'Soyad','Name':'Ad','Phone':'Telefon','City':'Şehir','Notes':'Notlar','NOTES':'NOTLAR','Note':'Not',
 'Birth date':'Doğum tarihi','DOB':'Doğum T.','DOB: ':'Doğum T.: ','Cancel':'İptal','Save':'Kaydet','Saved':'Kaydedildi','Delete':'Sil','Edit':'Düzenle',

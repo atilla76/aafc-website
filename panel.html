@@ -2058,6 +2058,7 @@ var WL_MSG={tr:['Merhaba [name], [date] için beklediğiniz randevuda yer açıl
  zh:['[name]您好，[date] 有空位了。请回复我们或在此预约：[link]','[name]您好，现在有空位了。请回复我们或在此预约：[link]']};
 var wlRows={},wlSlug=null;
 async function wlLoad(el,date){
+  if(!prRows.length)await prFetch();
   var box=document.getElementById(el);if(!box)return;
   var r=await db.rpc('get_waitlist',{p_clinic_id:cid,p_date:date});var rows=r.data||[];wlRows[el]=rows;
   if(wlSlug===null){var b=await db.from('clinic_booking_settings').select('slug').eq('clinic_id',cid).maybeSingle();wlSlug=(b.data&&b.data.slug)||'';}
@@ -2067,7 +2068,7 @@ async function wlLoad(el,date){
 }
 function wlTable(el,rows){
   return '<table class="fmt" style="margin-top:6px">'+rows.map(function(w,i){
-    return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([mxPhoneFmt(w.phone),w.service_name].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
+    return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([mxPhoneFmt(w.phone),w.service_name,w.practitioner_id?'👤 '+prName(w.practitioner_id):''].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
       '<td>'+(w.wanted_date?mxDate(w.wanted_date):mxTr('Any day','Herhangi bir gün'))+'</td>'+
       '<td>'+(w.status==='notified'?'<span style="color:#3AB06A">✓ '+mxTr('Notified','Haber verildi')+'</span>':'')+'</td>'+
       '<td style="text-align:right;white-space:nowrap"><button class="btn bwa" onclick="wlNotify(\''+el+'\','+i+')">📱 '+mxTr('Slot opened, notify','Yer açıldı, haber ver')+'</button> '+

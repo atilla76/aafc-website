@@ -299,7 +299,7 @@ async function doWait(ev) {
     const any = document.getElementById('wa')?.checked;
     const r = await rpc('booking_waitlist_join', {
       p_slug: slug, p_service: st.service?.name || null, p_date: any ? null : (st.date || null),
-      p_name: f.wn.value, p_phone: pcJoin(f.wpc.value, f.wp.value), p_note: f.wt.value || null, p_lang: LC,
+      p_name: f.wn.value, p_phone: pcJoin(f.wpc.value, f.wp.value), p_note: f.wt.value || null, p_lang: LC, ...drArg(),
     });
     if (r && r.ok) { st.wl = false; st.wlDone = true; }
     else st.err = L.errors[r?.error] || L.errors.generic;
@@ -420,6 +420,7 @@ function render(keepForm) {
     else if (st.wl) {
       h += `<div class="card"><div class="step"><span>${W.title}</span><span class="chg" onclick="st.wl=false;render()">✕</span></div>
         ${st.date ? `<div class="sub" style="margin-top:0">${esc(W.sub(longDate(st.date)))}</div>` : ''}
+        ${hasDr() && st.prac ? `<div class="sub" style="margin-top:0">${DR[0]}: <b style="color:var(--cream)">${esc((st.info.practitioners.find((p) => p.id === st.prac) || {}).name || '')}</b></div>` : ''}
         <form onsubmit="doWait(event)" autocomplete="on">
           <input class="hp" name="website" tabindex="-1" autocomplete="off">
           <label for="wn">${L.name}</label><input id="wn" name="wn" autocomplete="name" required minlength="3" maxlength="80">

@@ -48,6 +48,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 /* CONTENT */
 .tcontent{flex:1;overflow:hidden;display:none}
 .tcontent.on{display:flex}
+/* HOME */
+.hm-wrap{max-width:1100px}
+.hm-hi{font-size:26px;font-weight:400;color:#F5F1EB;margin:2px 0 6px}
+.hm-date{font-size:12px;letter-spacing:1px;color:#B89A6A;text-transform:uppercase}
+.hm-line{font-size:14px;color:rgba(245,241,235,0.55);margin-bottom:20px}
+.hm-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+.hm-card{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:16px;padding:18px;margin-bottom:18px}
+.hm-h{font-size:12px;letter-spacing:1px;color:#B89A6A;font-weight:600;text-transform:uppercase;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hm-h a{color:#B89A6A;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:600}
+.hm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hm-stat .v{font-size:28px;font-weight:700}.hm-stat .l{font-size:12px;color:rgba(245,241,235,0.5)}
+.hm-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:14px;background:rgba(245,241,235,0.06)}
+.hm-alert{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;margin-bottom:8px;cursor:pointer;border:1px solid}
+.hm-alert .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.hm-alert .t{font-size:14px;font-weight:600;color:#F5F1EB}.hm-alert .s{font-size:12px;color:rgba(245,241,235,0.55);margin-top:2px}
+.hm-next{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid rgba(245,241,235,0.06);cursor:pointer}
+.hm-next:first-child{border-top:none}
+.hm-next .tm{width:56px;font-weight:700;font-size:15px;color:#F5F1EB}.hm-next .tm small{display:block;font-weight:400;font-size:11px;color:rgba(245,241,235,0.4)}
+.hm-next .cl{width:4px;height:36px;border-radius:2px;flex:none}
+.hm-next .nm{font-size:14px;font-weight:600;color:#F5F1EB}.hm-next .sb2{font-size:12px;color:rgba(245,241,235,0.5)}
+.hm-tag{margin-left:auto;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:600;white-space:nowrap}
+.hm-sc{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.hm-sc button{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:14px;padding:14px;text-align:left;color:#F5F1EB;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:78px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.hm-sc button.pri{background:rgba(184,154,106,0.12);border-color:rgba(184,154,106,0.4)}
+.hm-sc button:hover{border-color:#B89A6A}
+.hm-sc .e{font-size:20px}
+.hm-setup{border-color:rgba(184,154,106,0.45)}
+.hm-step{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px;color:#F5F1EB}
+.hm-step .ck{width:20px;height:20px;border-radius:50%;border:2px solid rgba(245,241,235,0.35);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;color:#12101E}
+.hm-step.done{color:rgba(245,241,235,0.4);text-decoration:line-through}.hm-step.done .ck{background:#3AB06A;border-color:#3AB06A}
+.hm-step .go{margin-left:auto;font-size:12px;color:#B89A6A;cursor:pointer;text-decoration:none;font-weight:600}
+.hm-step .inapp{margin-left:auto;white-space:nowrap;font-size:11px;color:rgba(245,241,235,0.4);text-decoration:none}
+.hm-prog{flex:1;height:6px;border-radius:3px;background:rgba(245,241,235,0.08);overflow:hidden}.hm-prog i{display:block;height:100%;background:#B89A6A}
+@media(max-width:900px){.hm-grid{grid-template-columns:1fr}.hm-stats{grid-template-columns:repeat(2,1fr)}}
 .layout{display:flex;flex:1;overflow:hidden;width:100%}
 .sb{width:280px;min-width:280px;background:rgba(245,241,235,0.03);border-right:1px solid rgba(245,241,235,0.08);display:flex;flex-direction:column}
 .sh{padding:12px 16px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
@@ -245,7 +279,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab on" data-tab="patients" onclick="switchTab('patients')">PATIENTS</button>
+    <button class="tab on" data-tab="home" onclick="switchTab('home')">HOME</button>
+    <button class="tab" data-tab="patients" onclick="switchTab('patients')">PATIENTS</button>
     <button class="tab" data-tab="agenda" onclick="switchTab('agenda')">AGENDA</button>
     <button class="tab" data-tab="appointments" onclick="switchTab('appointments')">APPOINTMENTS</button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">STATISTICS</button>
@@ -256,8 +291,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
   </div>
 
+  <!-- HOME TAB -->
+  <div class="tcontent on" id="tab-home" style="flex-direction:column">
+    <div class="tab-content"><div id="hmBody"><div class="loader">Loading...</div></div></div>
+  </div>
+
   <!-- PATIENTS TAB -->
-  <div class="tcontent on" id="tab-patients">
+  <div class="tcontent" id="tab-patients">
     <div class="layout">
       <div class="sb">
         <div class="sh">
@@ -767,12 +807,14 @@ async function showApp(user){
   var today=fmtDate(new Date());
   document.getElementById('agendaDate').value=today;
   document.getElementById('apptDate').value=today;
+  hmLoad();
 }
 
 // ============ TABS ============
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===name);});
   document.querySelectorAll('.tcontent').forEach(function(c){c.classList.toggle('on',c.id==='tab-'+name);});
+  if(name==='home')hmLoad();
   if(name==='agenda')loadAgenda();
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
@@ -2624,6 +2666,104 @@ async function impLoadBatches(){
 }
 </script>
 <script>
+// ============ HOME (get_home_summary + setup wizard) ============
+var hmSum=null,hmSetupOpen=false;
+function hmGreeting(){var h=new Date().getHours();var g=h<12?mxTr('Good morning','Günaydın'):(h<18?mxTr('Good afternoon','İyi günler'):mxTr('Good evening','İyi akşamlar'));var who=((clinic&&(clinic.doctor||clinic.name))||'').trim();return who?g+', '+who:g;}
+function hmGoAppts(){switchTab('appointments');}
+function hmSteps(st){
+  var b=function(k){return st&&st[k]===true;};
+  var a=[
+    {k:'info',t:mxTr('Clinic info and logo','Klinik bilgileri ve logo'),d:b('info'),go:null},
+    {k:'patient',t:mxTr('Add your first patient','İlk hastayı ekle'),d:b('patient'),go:"switchTab('patients');openAdd()"},
+    {k:'photo',t:mxTr('Take your first photo','İlk fotoğrafı çek'),d:b('photo'),go:null},
+    {k:'reminder',t:mxTr('Set up reminder messages','Hatırlatma mesajlarını ayarla'),d:b('reminder'),go:null},
+    {k:'booking',t:mxTr('Turn on online booking','Online randevuyu aç'),d:b('booking'),go:"switchTab('booking')"}
+  ];
+  if(st&&st.admin===true)a.push({k:'team',t:mxTr('Invite a team member','Ekip arkadaşı davet et'),d:b('team'),go:null});
+  return a;
+}
+async function hmSetHidden(h){await db.rpc('set_setup_hidden',{p_hidden:h});hmSetupOpen=!h;hmLoad();}
+function hmSetupHtml(st,forced){
+  var steps=hmSteps(st),done=steps.filter(function(x){return x.d;}).length;
+  var h='<div class="hm-card hm-setup"><div class="hm-h"><span>'+mxTr('Setup wizard','Kurulum sihirbazı')+' · '+done+'/'+steps.length+'</span>'+
+    (st.hidden?'<a onclick="hmSetHidden(false)">'+mxTr('Show on home screen','Ana ekranda göster')+'</a>':'<a onclick="hmSetHidden(true)">'+mxTr('Hide','Gizle')+' ✕</a>')+'</div>'+
+    '<div style="font-size:16px;color:#F5F1EB;margin-bottom:10px">'+mxTr('Get your clinic ready in 5 minutes','Kliniğini 5 dakikada hazırla')+'</div>'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="hm-prog"><i style="width:'+(steps.length?Math.round(done*100/steps.length):0)+'%"></i></div></div>';
+  steps.forEach(function(x){
+    h+='<div class="hm-step'+(x.d?' done':'')+'"><span class="ck">'+(x.d?'✓':'')+'</span><span>'+mxE(x.t)+'</span>'+
+      (x.d?'':(x.go?'<a class="go" onclick="'+x.go+'">'+mxTr('Go','Git')+' →</a>':'<span class="inapp">'+mxTr('In the mobile app','Mobil uygulamada')+'</span>'))+'</div>';
+  });
+  return h+'</div>';
+}
+function hmAlert(tone,icon,title,sub,on){
+  var c={red:'224,85,85',amber:'212,150,58',gold:'184,154,106',teal:'42,158,138'}[tone];
+  return '<div class="hm-alert" style="background:rgba('+c+',0.10);border-color:rgba('+c+',0.35)" onclick="'+on+'"><div class="ic" style="background:rgba('+c+',0.2)">'+icon+'</div><div style="min-width:0"><div class="t">'+mxE(title)+'</div>'+(sub?'<div class="s">'+mxE(sub)+'</div>':'')+'</div></div>';
+}
+async function hmLoad(){
+  var el=document.getElementById('hmBody');if(!el||!cid)return;
+  var n=new Date(),hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  var r=await db.rpc('get_home_summary',{p_clinic_id:cid,p_date:fmtDate(new Date(n.getTime()-n.getTimezoneOffset()*60000)),p_now:hm});
+  if(r.error){el.innerHTML='<div class="loader">'+mxE(r.error.message)+'</div>';return;}
+  hmSum=r.data||{};hmRender();
+}
+function hmRender(){
+  var s=hmSum||{},t=s.today||{},el=document.getElementById('hmBody');
+  var total=t.total||0,conf=t.confirmed||0,onl=t.online||0,canc=t.cancelled||0,st=s.setup||{};
+  var dt='';try{dt=new Date().toLocaleDateString(LANG_LOC[LANG]||'en-US',{weekday:'long',day:'numeric',month:'long'});}catch(e){}
+  var h='<div class="hm-wrap"><div class="hm-date">'+mxE(dt)+'</div><div class="hm-hi">'+mxE(hmGreeting())+'</div>'+
+    '<div class="hm-line">'+(total?mxTrV('[n] appointments today · first at [time]','Bugün [n] randevu var · ilki [time]',{n:total,time:t.first_time||'—'}):mxTr('No appointments today','Bugün randevu yok'))+'</div>';
+  var steps=hmSteps(st),pend=steps.filter(function(x){return !x.d;}).length;
+  var showSetup=pend>0&&(!st.hidden||hmSetupOpen);
+  h+='<div class="hm-grid"><div>';
+  if(showSetup)h+=hmSetupHtml(st);
+  // today
+  var all=total+canc;
+  h+='<div class="hm-card" style="cursor:pointer" onclick="hmGoAppts()"><div class="hm-h"><span>'+mxTr('Today','Bugün')+'</span><a>'+mxTr('Appointment Book','Randevu Defteri')+' →</a></div><div class="hm-stats">'+
+    '<div class="hm-stat"><div class="v" style="color:#F5F1EB">'+total+'</div><div class="l">'+mxTr('Appointments','Randevular')+'</div></div>'+
+    '<div class="hm-stat"><div class="v" style="color:#3AB06A">'+conf+'</div><div class="l">'+mxTr('Confirmed','Onaylı')+'</div></div>'+
+    '<div class="hm-stat"><div class="v" style="color:#B89A6A">'+onl+'</div><div class="l">'+mxTr('Online','Online')+'</div></div>'+
+    '<div class="hm-stat"><div class="v" style="color:#E05555">'+canc+'</div><div class="l">'+mxTr('Cancelled','İptal')+'</div></div></div>'+
+    (all?'<div class="hm-bar">'+(conf?'<i style="flex:'+conf+';background:#3AB06A"></i>':'')+(total-conf>0?'<i style="flex:'+(total-conf)+';background:#B89A6A"></i>':'')+(canc?'<i style="flex:'+canc+';background:#E05555"></i>':'')+'</div>':'')+'</div>';
+  // next
+  var nx=s.next||[];
+  h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Next appointments','Sıradaki randevular')+'</span><a onclick="hmGoAppts()">'+mxTr('All','Tümü')+' →</a></div>';
+  if(!nx.length)h+='<div style="color:rgba(245,241,235,0.4);font-size:13px">'+mxTr('No more appointments today','Bugün başka randevu yok')+'</div>';
+  nx.forEach(function(a){
+    var sub=[a.service,a.practitioner,a.resources].filter(function(x){return x;}).join(' · ');
+    var tag='';
+    if(a.confirmed)tag='<span class="hm-tag" style="background:rgba(58,176,106,0.16);color:#3AB06A">'+mxTr('Confirmed','Onaylı')+'</span>';
+    else if(a.intake==='pending')tag='<span class="hm-tag" style="background:rgba(212,150,58,0.16);color:#D4963A">'+mxTr('Form pending','Form bekliyor')+'</span>';
+    else if(a.online)tag='<span class="hm-tag" style="background:rgba(184,154,106,0.16);color:#B89A6A">'+mxTr('New','Yeni')+'</span>';
+    h+='<div class="hm-next" onclick="'+(a.patient_id?"goPatient('"+mxE(a.patient_id)+"')":'hmGoAppts()')+'"><div class="tm">'+mxE(a.time||'')+'<small>'+(a.duration||30)+' '+mxTr('min','dk')+'</small></div>'+
+      '<div class="cl" style="background:'+mxE(a.color||'#6C63A8')+'"></div><div style="min-width:0"><div class="nm">'+mxE(a.name||'')+'</div>'+(sub?'<div class="sb2">'+mxE(sub)+'</div>':'')+'</div>'+tag+'</div>';
+  });
+  h+='</div></div><div>';
+  // attention
+  var al='',c=s.cancellations||{},rf=s.risky_forms||{};
+  if(c.count>0){var f=c.first||{};al+=hmAlert('red','📅',c.count===1?mxTrV('[name] cancelled the [time] appointment','[name] [time] randevusunu iptal etti',{name:f.name||'',time:f.time||''}):c.count+' '+mxTr('patients cancelled their appointment','hasta randevusunu iptal etti'),s.waitlist>0?mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}):'','hmGoAppts()');}
+  else if(s.waitlist>0)al+=hmAlert('gold','⏳',mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}),'','hmGoAppts()');
+  if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
+  if((s.recalls||0)+(s.birthdays||0)>0){var parts=[];if(s.recalls>0)parts.push(s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'));if(s.birthdays>0)parts.push(s.birthdays+' '+mxTr('birthdays today','bugün doğum günü'));al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),parts.join(' · '),"switchTab('recall')");}
+  if(s.installments_due>0)al+=hmAlert('red','💳',mxTrV('[n] instalments due','[n] taksit vadesi geldi',{n:s.installments_due}),'',"switchTab('finance')");
+  if(al)h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Attention','Dikkat')+'</span></div>'+al+'</div>';
+  // shortcuts
+  var sc=[['👤',mxTr('Add patient','Hasta ekle'),"switchTab('patients');openAdd()",1],['👥',mxTr('Patients','Hastalar'),"switchTab('patients')"],
+    ['📅',mxTr('Appointments','Randevular'),'hmGoAppts()'],['🗒️',mxTr('Agenda','Ajanda'),"switchTab('agenda')"],
+    ['🌐',mxTr('Online Booking','Online Randevu'),"switchTab('booking')"],['🔁',mxTr('Recalls','Geri çağır'),"switchTab('recall')"],
+    ['📊',mxTr('Statistics','İstatistikler'),"switchTab('stats')"]];
+  if(s.installments_due!==null&&s.installments_due!==undefined)sc.push(['💰',mxTr('Accounting','Muhasebe'),"switchTab('finance')"]);
+  sc.push(['📦',mxTr('Stock','Stok'),"switchTab('stock')"]);
+  h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Shortcuts','Kısayollar')+'</span></div><div class="hm-sc">'+
+    sc.map(function(x){return '<button'+(x[3]?' class="pri"':'')+' onclick="'+x[2]+'"><span class="e">'+x[0]+'</span>'+mxE(x[1])+'</button>';}).join('')+'</div></div>';
+  if(!showSetup){
+    var dn=steps.length-pend;
+    h+='<div style="font-size:13px;color:rgba(245,241,235,0.5)"><a style="color:#B89A6A;cursor:pointer" onclick="hmSetupOpen=true;hmRender()">'+mxTr('Setup wizard','Kurulum sihirbazı')+' · '+dn+'/'+steps.length+'</a></div>';
+    if(hmSetupOpen)h=h.replace('<div class="hm-grid"><div>','<div class="hm-grid"><div>'+hmSetupHtml(st));
+  }
+  el.innerHTML=h+'</div></div></div>';
+}
+</script>
+<script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
 var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
@@ -2654,7 +2794,7 @@ var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','E
 'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
 'Sign Out':'Çıkış','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
 'ZIP with photos':'Fotoğraflı ZIP','HTML Report':'HTML Rapor',
-'PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
+'HOME':'ANA SAYFA','PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
 'Search patients...':'Hasta ara...','+ Add':'+ Ekle','Add Patient':'Hasta Ekle','Edit Patient':'Hastayı Düzenle','View Patient':'Hastayı Gör',
 'First Name':'Ad','Last Name':'Soyad','Last name':'Soyad','Name':'Ad','Phone':'Telefon','City':'Şehir','Notes':'Notlar','NOTES':'NOTLAR','Note':'Not',
 'Birth date':'Doğum tarihi','DOB':'Doğum T.','DOB: ':'Doğum T.: ','Cancel':'İptal','Save':'Kaydet','Saved':'Kaydedildi','Delete':'Sil','Edit':'Düzenle',

@@ -309,6 +309,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .mg-log div{padding:7px 0;font-size:14px;color:rgba(245,241,235,0.8);border-bottom:1px solid rgba(245,241,235,0.06)}
 .mg-help{background:rgba(245,241,235,0.03);border:1px dashed rgba(245,241,235,0.15);border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
 .mg-help a{color:#B89A6A;font-weight:600}
+.ul-link{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(184,154,106,.08);border:1px solid rgba(184,154,106,.3);border-radius:14px;padding:12px 14px}
+.ul-link code{flex:1;min-width:200px;font-size:12.5px;color:#D4B896;word-break:break-all}
+.ul-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(245,241,235,.07);font-size:13px}
+.ul-row:first-child{border-top:0}
+.ul-row .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ul-row .m{color:rgba(245,241,235,.45);font-size:12px;white-space:nowrap}
+.ul-row button{background:none;border:1px solid rgba(245,241,235,.14);color:#F5F1EB;border-radius:9px;padding:5px 10px;font-size:12px;cursor:pointer}
+.ul-row button.g{border-color:rgba(184,154,106,.5);color:#D4B896}
+.ul-row button.r{color:#E06C6C;border-color:rgba(224,108,108,.35)}
 .imp-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .imp-modes button{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.12);color:rgba(245,241,235,0.7);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 .imp-modes button.on{background:rgba(184,154,106,0.15);border-color:#B89A6A;color:#B89A6A}
@@ -654,6 +663,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <div class="imp-wrap"><table class="fmt" id="ipFails"></table></div>
           <div style="margin-top:14px" class="imp-actions" id="ipRunActions"></div>
         </div>
+      </div>
+
+      <div class="imp-step" id="ulStep">
+        <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px"><h3 id="ulT"></h3><div class="hint" id="ulH"></div></div>
+          <div class="imp-actions" id="ulActs"></div>
+        </div>
+        <div id="ulLink" style="margin-top:12px"></div>
+        <div id="ulFiles" style="margin-top:12px"></div>
       </div>
 
       <div class="imp-step">
@@ -2460,8 +2478,8 @@ async function rcSkip(kind,i){var x=(kind==='rc'?window._rc:window._rv)[i];await
     else await db.rpc('mark_review',{p_patient_id:x.patient_id,p_visit_id:x.visit_id,p_status:'undone'});
     rcLoad();});}
 function mxUndoToast(text,undo){var t=document.getElementById('mxToast');if(!t){t=document.createElement('div');t.id='mxToast';t.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#2A2638;color:#F5F1EB;padding:12px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:flex;gap:16px;align-items:center;font-size:13px;z-index:9999';document.body.appendChild(t);}
-  t.innerHTML='<span>'+mxE(text)+'</span><a href="#" style="color:#B89A6A;font-weight:700">'+mxE(mxTr('Undo','Geri al'))+'</a>';t.style.display='flex';
-  t.querySelector('a').onclick=function(e){e.preventDefault();t.style.display='none';undo();};clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},6000);}
+  t.innerHTML='<span>'+mxE(text)+'</span>'+(undo?'<a href="#" style="color:#B89A6A;font-weight:700">'+mxE(mxTr('Undo','Geri al'))+'</a>':'');t.style.display='flex';
+  if(undo)t.querySelector('a').onclick=function(e){e.preventDefault();t.style.display='none';undo();};clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},6000);}
 var _rcData=null;
 async function rcLoad(){
   rcAsk={};
@@ -3543,10 +3561,86 @@ function migInit(){
   document.getElementById('mgDropTxt').textContent=mxTr('Drop files and folders here','Dosyaları ve klasörleri buraya bırakın');
   document.getElementById('mgBtnFiles').textContent=mxTr('Choose files (Excel, CSV, ZIP)','Dosya seç (Excel, CSV, ZIP)');
   document.getElementById('mgBtnDir').textContent=mxTr('Choose photo folder','Fotoğraf klasörü seç');
-  document.getElementById('mgHelp').innerHTML=mxTr('<b>Can’t export from your old program?</b> Write to <a href="mailto:support@aafclinic.com?subject=Data%20migration">support@aafclinic.com</a> and we will move it for you. Please don’t send patient data by e-mail — we will give you a secure upload link.','<b>Eski programdan dışa aktaramıyor musunuz?</b> <a href="mailto:support@aafclinic.com?subject=Veri%20ta%C5%9F%C4%B1ma">support@aafclinic.com</a> adresine yazın, sizin yerinize taşıyalım. Hasta verisini e-postayla göndermeyin — size güvenli bir yükleme bağlantısı veririz.');
+  document.getElementById('mgHelp').innerHTML=mxTr('<b>Can’t export from your old program, or the files are on another computer?</b> Create a <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">secure upload link</a> below and send it to whoever has the files (your old software company, your assistant). The files arrive here. Need help? Write to <a href="mailto:support@aafclinic.com?subject=Data%20migration">support@aafclinic.com</a> — never send patient data by e-mail.','<b>Eski programdan dışa aktaramıyor musunuz ya da dosyalar başka bir bilgisayarda mı?</b> Aşağıdan <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">güvenli yükleme linki</a> oluşturup dosyalar kimdeyse ona gönderin (eski program firması, asistanınız). Dosyalar buraya gelir. Yardım için <a href="mailto:support@aafclinic.com?subject=Veri%20ta%C5%9F%C4%B1ma">support@aafclinic.com</a> — hasta verisini asla e-postayla göndermeyin.');
+  ulLoad();
   document.getElementById('impPrevHint').textContent=mxTr('Every import can be undone: what it added is removed (records you have changed since then are kept).','Her aktarım geri alınabilir: eklediği kayıtlar silinir (sonradan üzerinde işlem yaptığınız kayıtlar korunur).');
   migRender();
 }
+// ============ SECURE UPLOAD LINK (migration) ============
+var ulData=null;
+function ulUrl(t){return 'https://aafclinic.com/yukle.html?t='+encodeURIComponent(t)+'&lang='+LANG;}
+function ulSize(b){b=Number(b)||0;var u=['B','KB','MB','GB'],i=0;while(b>=1024&&i<3){b/=1024;i++;}return (i?b.toFixed(b<10?1:0):b)+' '+u[i];}
+async function ulLoad(){
+  document.getElementById('ulT').textContent=mxTr('Secure upload link','Güvenli yükleme linki');
+  document.getElementById('ulH').textContent=mxTr('For files you can’t drop here yourself: whoever has the link can upload (no login), nobody can open or download through it. Files stay in your private archive for 30 days after the link ends.','Buraya kendiniz bırakamadığınız dosyalar için: linke sahip olan kişi giriş yapmadan yükleyebilir, link üzerinden hiçbir dosya açılamaz veya indirilemez. Dosyalar link bittikten sonra 30 gün özel arşivinizde kalır.');
+  var r=await db.rpc('get_migration_uploads',{p_clinic_id:cid});
+  if(r.error){ulData=null;document.getElementById('ulActs').innerHTML='';document.getElementById('ulFiles').innerHTML='';
+    document.getElementById('ulLink').innerHTML='<div class="hint">'+mxE(/forbidden/.test(r.error.message||'')?mxTr('Only the clinic admin can create upload links.','Yükleme linkini yalnızca klinik yöneticisi oluşturabilir.'):mxTr('Could not load.','Yüklenemedi.'))+'</div>';return;}
+  ulData=r.data||{};ulRender();
+}
+function ulRender(){
+  var d=ulData||{},l=d.link,files=d.files||[];
+  document.getElementById('ulActs').innerHTML=l?'':'<button class="bimp" onclick="ulCreate()">'+mxE(mxTr('Create link (7 days)','Link oluştur (7 gün)'))+'</button>';
+  document.getElementById('ulLink').innerHTML=l?'<div class="ul-link"><code>'+mxE(ulUrl(l.token))+'</code>'+
+    '<button class="bimp" onclick="ulCopy()">'+mxE(mxTr('Copy','Kopyala'))+'</button>'+
+    '<button class="bimp2" onclick="ulRevoke()">'+mxE(mxTr('Stop link','Linki kapat'))+'</button></div>'+
+    '<div class="hint" style="margin-top:6px">'+mxE(mxTrV('Valid until [date].','[date] tarihine kadar geçerli.',{date:mxDate(l.expires_at)}))+'</div>':'';
+  var h='';
+  if(files.length){
+    h='<div class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>'+mxE(mxTrV('Received files ([n])','Gelen dosyalar ([n])',{n:files.length}))+'</span>'+
+      '<button class="bimp" style="padding:6px 12px;font-size:12px" onclick="ulAddAll()">'+mxE(mxTr('Add all to import','Tümünü aktarıma ekle'))+'</button></div>';
+    h+=files.map(function(f){var ok=ulImportable(f.name);
+      return '<div class="ul-row"><span class="n" title="'+mxE(f.name)+'">'+mxE(f.name)+'</span><span class="m">'+ulSize(f.size)+' · '+mxE(mxDate(f.uploaded_at))+'</span>'+
+        (ok?'<button class="g" onclick="ulAdd(\''+f.id+'\')">'+mxE(mxTr('Add to import','Aktarıma ekle'))+'</button>':'')+
+        '<button onclick="ulSave(\''+f.id+'\')">'+mxE(mxTr('Download','İndir'))+'</button>'+
+        '<button class="r" onclick="ulDel(\''+f.id+'\')">×</button></div>';}).join('');
+  }else if(l)h='<div class="hint">'+mxE(mxTr('No files yet. They appear here as soon as they are uploaded.','Henüz dosya yok. Yüklendikleri anda burada görünür.'))+'</div>';
+  document.getElementById('ulFiles').innerHTML=h;
+}
+function ulImportable(n){return /\.(xlsx|xls|csv|txt|zip|jpe?g|png|webp|heic|heif)$/i.test(n||'');}
+async function ulCreate(){
+  sp(mxTr('Creating…','Oluşturuluyor…'));
+  var r=await db.rpc('create_migration_link',{p_clinic_id:cid,p_days:7});hp();
+  if(r.error){alert(/forbidden/.test(r.error.message||'')?mxTr('Only the clinic admin can create upload links.','Yükleme linkini yalnızca klinik yöneticisi oluşturabilir.'):mxTr('Could not create the link.','Link oluşturulamadı.'));return;}
+  await ulLoad();ulCopy();
+}
+function ulCopy(){var l=ulData&&ulData.link;if(!l)return;var u=ulUrl(l.token);
+  var done=function(){mxUndoToast(mxTr('Link copied','Link kopyalandı'),null);};
+  if(navigator.clipboard)navigator.clipboard.writeText(u).then(done,function(){prompt('',u);});else prompt('',u);}
+async function ulRevoke(){var l=ulData&&ulData.link;if(!l)return;
+  if(!confirm(mxTr('Stop this link? Nobody can upload with it any more. Files already received stay here.','Link kapatılsın mı? Artık bu linkle yükleme yapılamaz. Gelen dosyalar burada kalır.')))return;
+  var r=await db.rpc('revoke_migration_link',{p_id:l.id});if(r.error){alert(mxTr('Error','Hata'));return;}ulLoad();}
+async function ulDel(id){var f=(ulData.files||[]).find(function(x){return x.id===id;});if(!f)return;
+  if(!confirm(mxTrV('Delete “[name]”?','“[name]” silinsin mi?',{name:f.name})))return;
+  var r=await db.rpc('delete_migration_file',{p_id:id});if(r.error){alert(mxTr('Error','Hata'));return;}
+  ulData.files=ulData.files.filter(function(x){return x.id!==id;});ulRender();}
+async function ulBlob(f){
+  var pre=cid+'/'+f.link_id+'/'+f.id+'/',parts=[];
+  for(var i=1;i<=f.parts;i++){
+    var r=await db.storage.from('migration-uploads').download(pre+'p'+('000'+i).slice(-4));
+    if(r.error)throw r.error;parts.push(r.data);
+  }
+  return new Blob(parts);
+}
+function ulFile(f,blob){
+  var base=String(f.name).split('/').pop(),file=new File([blob],base,{lastModified:Date.parse(f.uploaded_at)||Date.now()});
+  if(f.name.indexOf('/')>=0){try{Object.defineProperty(file,'webkitRelativePath',{value:f.name});}catch(e){}}
+  return file;
+}
+async function ulAdd(id,quiet){var f=(ulData.files||[]).find(function(x){return x.id===id;});if(!f)return;
+  if(!quiet)sp(mxTrV('Downloading [name]…','[name] indiriliyor…',{name:f.name}));
+  try{var file=ulFile(f,await ulBlob(f));if(!quiet)hp();await migAddFiles([file]);}
+  catch(e){hp();alert(mxTr('Could not read the file.','Dosya okunamadı.'));return false;}
+  if(!quiet)document.getElementById('mgList').scrollIntoView({behavior:'smooth',block:'center'});
+  return true;}
+async function ulAddAll(){var fs=(ulData.files||[]).filter(function(f){return ulImportable(f.name);});
+  for(var i=0;i<fs.length;i++){sp(mxTrV('Downloading [i] / [n]…','İndiriliyor [i] / [n]…',{i:i+1,n:fs.length}));
+    try{var file=ulFile(fs[i],await ulBlob(fs[i]));hp();await migAddFiles([file]);}catch(e){hp();}}
+  hp();document.getElementById('mgList').scrollIntoView({behavior:'smooth',block:'center'});}
+async function ulSave(id){var f=(ulData.files||[]).find(function(x){return x.id===id;});if(!f)return;
+  sp(mxTrV('Downloading [name]…','[name] indiriliyor…',{name:f.name}));
+  try{var b=await ulBlob(f);hp();var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=String(f.name).split('/').pop();a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},5000);}
+  catch(e){hp();alert(mxTr('Could not download the file.','Dosya indirilemedi.'));}}
 function migParse(name,u8){
   var wb;
   if(/\.(csv|txt)$/i.test(name)){

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Güvenli yükleme</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12101E">
+<style>
+:root{--ink:#12101E;--ink2:#1C1929;--ink3:#26223A;--gold:#B89A6A;--goldlt:#D4B896;--cream:#F5F1EB;--mid:rgba(245,241,235,.62);--dim:rgba(245,241,235,.38);--line:rgba(255,255,255,.08);--green:#5FB58A;--red:#E06C6C}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:600}
+h1{font-size:24px;font-weight:600;margin-top:10px}
+.sub{color:var(--mid);font-size:14px;margin-top:8px;line-height:1.55}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
+.step{font-size:11px;letter-spacing:1.4px;color:var(--mid);font-weight:600;text-transform:uppercase;margin-bottom:10px}
+.drop{border:1.5px dashed rgba(184,154,106,.45);border-radius:16px;padding:26px 14px;text-align:center;transition:.15s}
+.drop.on{background:rgba(184,154,106,.10);border-color:var(--gold)}
+.drop .big{font-size:15px;font-weight:600}
+.drop .hint{color:var(--dim);font-size:12.5px;margin-top:6px;line-height:1.5}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn.gold{background:var(--gold);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,.16)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .nm{flex:1;min-width:0}
+.row .nm b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm span{font-size:12px;color:var(--dim)}
+.bar{height:4px;border-radius:2px;background:var(--ink3);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.st{font-size:12px;font-weight:700;white-space:nowrap}
+.st.ok{color:var(--green)}.st.err{color:var(--red)}.st.wait{color:var(--dim)}.st.up{color:var(--goldlt)}
+.x{background:none;border:0;color:var(--dim);font-size:18px;cursor:pointer;padding:0 4px}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.sum .t{color:var(--mid);font-size:12.5px}
+.okbox{background:rgba(95,181,138,.10);border:1px solid rgba(95,181,138,.35);border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.5;margin-top:12px;display:none}
+.lock{display:flex;gap:10px;align-items:flex-start;color:var(--mid);font-size:12.5px;line-height:1.55}
+.lock svg{flex:none;margin-top:2px}
+.muted{color:var(--dim);font-size:13px;text-align:center;padding:14px 0;line-height:1.5}
+.foot{margin-top:28px;text-align:center;color:var(--dim);font-size:11px;line-height:1.7}
+.spin{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<input type="file" id="inFiles" multiple style="display:none">
+<input type="file" id="inDir" webkitdirectory directory multiple style="display:none">
+<script>
+const FN = 'https://hugxacklprzujswtaike.supabase.co/functions/v1/migration-upload';
+const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+const PART = 40 * 1024 * 1024;       // bucket limit is 50 MB per object
+const MAX_FILE = 5 * 1024 * 1024 * 1024;
+
+const LANGS = {
+  tr: { title: 'Güvenli dosya yükleme', intro: (c) => `${c} için eski programınızdaki dosyaları buraya yükleyin: hasta listesi, işlem/vizit listesi (Excel, CSV), fotoğraf klasörleri (klasör veya ZIP) ya da programın yedek dosyası.`,
+    drop: 'Dosyaları veya klasörleri buraya bırakın', dropHint: 'Her türlü dosya kabul edilir · dosya başına en fazla 5 GB', files: 'Dosya seç', folder: 'Klasör seç',
+    queue: 'Yüklenecekler', start: 'Yüklemeyi başlat', waiting: 'Bekliyor', done: 'Yüklendi', failed: 'Hata', retry: 'Tekrar dene',
+    total: (n, s) => `${n} dosya · ${s}`, allDone: 'Tüm dosyalar güvenle yüklendi. Bu sayfayı kapatabilirsiniz; klinik dosyaları AAFC panelinde görecek.',
+    previous: 'Daha önce yüklenenler', secure: 'Dosyalar şifreli bağlantıyla doğrudan kliniğin özel arşivine gider. Bu link yalnızca yükleme içindir; yüklenen dosyalar buradan açılamaz.',
+    valid: (d) => `Link ${d} tarihine kadar geçerlidir.`, leave: 'Yükleme sürüyor. Sayfadan çıkarsanız yarım kalır.',
+    expired: 'Bu linkin süresi dolmuş. Kliniğinizden yeni bir link isteyin.', revoked: 'Bu link artık geçerli değil.', notFound: 'Link bulunamadı.',
+    error: 'Bir sorun oluştu, lütfen tekrar deneyin.', tooBig: 'Dosya 5 GB sınırını aşıyor', quota: 'Bu link için yükleme sınırı doldu', empty: 'Boş dosya' },
+  en: { title: 'Secure file upload', intro: (c) => `Upload the files from your old software for ${c}: patient list, procedure/visit list (Excel, CSV), photo folders (folder or ZIP) or the program's backup file.`,
+    drop: 'Drop files or folders here', dropHint: 'Any file type · up to 5 GB per file', files: 'Choose files', folder: 'Choose folder',
+    queue: 'To upload', start: 'Start upload', waiting: 'Waiting', done: 'Uploaded', failed: 'Error', retry: 'Retry',
+    total: (n, s) => `${n} files · ${s}`, allDone: 'All files were uploaded securely. You can close this page; the clinic will see them in the AAFC panel.',
+    previous: 'Already uploaded', secure: 'Files go over an encrypted connection straight into the clinic’s private archive. This link is upload-only; uploaded files cannot be opened from here.',
+    valid: (d) => `This link is valid until ${d}.`, leave: 'Upload in progress. Leaving the page will stop it.',
+    expired: 'This link has expired. Please ask your clinic for a new one.', revoked: 'This link is no longer valid.', notFound: 'Link not found.',
+    error: 'Something went wrong, please try again.', tooBig: 'File exceeds the 5 GB limit', quota: 'Upload limit reached for this link', empty: 'Empty file' },
+  de: { title: 'Sicherer Datei-Upload', intro: (c) => `Laden Sie hier die Dateien aus Ihrer bisherigen Software für ${c} hoch: Patientenliste, Behandlungs-/Besuchsliste (Excel, CSV), Fotoordner (Ordner oder ZIP) oder die Sicherungsdatei des Programms.`,
+    drop: 'Dateien oder Ordner hier ablegen', dropHint: 'Alle Dateitypen · bis 5 GB pro Datei', files: 'Dateien wählen', folder: 'Ordner wählen',
+    queue: 'Hochzuladen', start: 'Upload starten', waiting: 'Wartet', done: 'Hochgeladen', failed: 'Fehler', retry: 'Erneut',
+    total: (n, s) => `${n} Dateien · ${s}`, allDone: 'Alle Dateien wurden sicher hochgeladen. Sie können die Seite schließen; die Praxis sieht sie im AAFC-Panel.',
+    previous: 'Bereits hochgeladen', secure: 'Die Dateien gelangen verschlüsselt direkt in das private Archiv der Praxis. Dieser Link dient nur zum Hochladen; Dateien lassen sich hier nicht öffnen.',
+    valid: (d) => `Dieser Link ist gültig bis ${d}.`, leave: 'Upload läuft. Wenn Sie die Seite verlassen, wird er abgebrochen.',
+    expired: 'Dieser Link ist abgelaufen. Bitte fordern Sie bei der Praxis einen neuen an.', revoked: 'Dieser Link ist nicht mehr gültig.', notFound: 'Link nicht gefunden.',
+    error: 'Etwas ist schiefgelaufen, bitte erneut versuchen.', tooBig: 'Datei überschreitet 5 GB', quota: 'Upload-Limit für diesen Link erreicht', empty: 'Leere Datei' },
+  es: { title: 'Subida segura de archivos', intro: (c) => `Suba aquí los archivos de su programa anterior para ${c}: lista de pacientes, lista de tratamientos/visitas (Excel, CSV), carpetas de fotos (carpeta o ZIP) o la copia de seguridad del programa.`,
+    drop: 'Suelte aquí archivos o carpetas', dropHint: 'Cualquier tipo de archivo · hasta 5 GB por archivo', files: 'Elegir archivos', folder: 'Elegir carpeta',
+    queue: 'Pendientes', start: 'Iniciar subida', waiting: 'En espera', done: 'Subido', failed: 'Error', retry: 'Reintentar',
+    total: (n, s) => `${n} archivos · ${s}`, allDone: 'Todos los archivos se subieron de forma segura. Puede cerrar esta página; la clínica los verá en el panel de AAFC.',
+    previous: 'Ya subidos', secure: 'Los archivos viajan cifrados directamente al archivo privado de la clínica. Este enlace solo sirve para subir; los archivos no pueden abrirse desde aquí.',
+    valid: (d) => `Este enlace es válido hasta el ${d}.`, leave: 'Subida en curso. Si sale de la página, se interrumpirá.',
+    expired: 'Este enlace ha caducado. Pida uno nuevo a su clínica.', revoked: 'Este enlace ya no es válido.', notFound: 'Enlace no encontrado.',
+    error: 'Algo salió mal, inténtelo de nuevo.', tooBig: 'El archivo supera 5 GB', quota: 'Se alcanzó el límite de este enlace', empty: 'Archivo vacío' },
+  fr: { title: 'Envoi sécurisé de fichiers', intro: (c) => `Déposez ici les fichiers de votre ancien logiciel pour ${c} : liste des patients, liste des actes/visites (Excel, CSV), dossiers de photos (dossier ou ZIP) ou la sauvegarde du logiciel.`,
+    drop: 'Déposez des fichiers ou dossiers ici', dropHint: 'Tous types de fichiers · jusqu’à 5 Go par fichier', files: 'Choisir des fichiers', folder: 'Choisir un dossier',
+    queue: 'À envoyer', start: 'Lancer l’envoi', waiting: 'En attente', done: 'Envoyé', failed: 'Erreur', retry: 'Réessayer',
+    total: (n, s) => `${n} fichiers · ${s}`, allDone: 'Tous les fichiers ont été envoyés en toute sécurité. Vous pouvez fermer cette page ; la clinique les verra dans le panneau AAFC.',
+    previous: 'Déjà envoyés', secure: 'Les fichiers passent par une connexion chiffrée directement dans l’archive privée de la clinique. Ce lien sert uniquement à l’envoi ; les fichiers ne peuvent pas être ouverts ici.',
+    valid: (d) => `Ce lien est valable jusqu’au ${d}.`, leave: 'Envoi en cours. Quitter la page l’interrompra.',
+    expired: 'Ce lien a expiré. Demandez-en un nouveau à votre clinique.', revoked: 'Ce lien n’est plus valide.', notFound: 'Lien introuvable.',
+    error: 'Un problème est survenu, veuillez réessayer.', tooBig: 'Le fichier dépasse 5 Go', quota: 'Limite d’envoi atteinte pour ce lien', empty: 'Fichier vide' },
+  it: { title: 'Caricamento sicuro dei file', intro: (c) => `Carica qui i file del tuo vecchio programma per ${c}: elenco pazienti, elenco trattamenti/visite (Excel, CSV), cartelle di foto (cartella o ZIP) o il backup del programma.`,
+    drop: 'Trascina qui file o cartelle', dropHint: 'Qualsiasi tipo di file · fino a 5 GB per file', files: 'Scegli file', folder: 'Scegli cartella',
+    queue: 'Da caricare', start: 'Avvia caricamento', waiting: 'In attesa', done: 'Caricato', failed: 'Errore', retry: 'Riprova',
+    total: (n, s) => `${n} file · ${s}`, allDone: 'Tutti i file sono stati caricati in modo sicuro. Puoi chiudere la pagina; la clinica li vedrà nel pannello AAFC.',
+    previous: 'Già caricati', secure: 'I file viaggiano cifrati direttamente nell’archivio privato della clinica. Questo link serve solo a caricare; i file non si possono aprire da qui.',
+    valid: (d) => `Questo link è valido fino al ${d}.`, leave: 'Caricamento in corso. Se esci dalla pagina si interrompe.',
+    expired: 'Questo link è scaduto. Chiedi un nuovo link alla clinica.', revoked: 'Questo link non è più valido.', notFound: 'Link non trovato.',
+    error: 'Si è verificato un problema, riprova.', tooBig: 'Il file supera 5 GB', quota: 'Limite di caricamento raggiunto', empty: 'File vuoto' },
+  pt: { title: 'Envio seguro de ficheiros', intro: (c) => `Envie aqui os ficheiros do seu programa antigo para ${c}: lista de pacientes, lista de procedimentos/visitas (Excel, CSV), pastas de fotos (pasta ou ZIP) ou a cópia de segurança do programa.`,
+    drop: 'Largue aqui ficheiros ou pastas', dropHint: 'Qualquer tipo de ficheiro · até 5 GB por ficheiro', files: 'Escolher ficheiros', folder: 'Escolher pasta',
+    queue: 'Por enviar', start: 'Iniciar envio', waiting: 'A aguardar', done: 'Enviado', failed: 'Erro', retry: 'Tentar de novo',
+    total: (n, s) => `${n} ficheiros · ${s}`, allDone: 'Todos os ficheiros foram enviados em segurança. Pode fechar esta página; a clínica vai vê-los no painel AAFC.',
+    previous: 'Já enviados', secure: 'Os ficheiros seguem por ligação cifrada diretamente para o arquivo privado da clínica. Este link serve apenas para enviar; os ficheiros não podem ser abertos aqui.',
+    valid: (d) => `Este link é válido até ${d}.`, leave: 'Envio em curso. Se sair da página, será interrompido.',
+    expired: 'Este link expirou. Peça um novo à sua clínica.', revoked: 'Este link já não é válido.', notFound: 'Link não encontrado.',
+    error: 'Ocorreu um problema, tente novamente.', tooBig: 'O ficheiro excede 5 GB', quota: 'Limite de envio atingido', empty: 'Ficheiro vazio' },
+  ru: { title: 'Безопасная загрузка файлов', intro: (c) => `Загрузите сюда файлы из прежней программы для ${c}: список пациентов, список процедур/визитов (Excel, CSV), папки с фото (папка или ZIP) или резервную копию программы.`,
+    drop: 'Перетащите сюда файлы или папки', dropHint: 'Любые файлы · до 5 ГБ на файл', files: 'Выбрать файлы', folder: 'Выбрать папку',
+    queue: 'К загрузке', start: 'Начать загрузку', waiting: 'Ожидает', done: 'Загружено', failed: 'Ошибка', retry: 'Повторить',
+    total: (n, s) => `Файлов: ${n} · ${s}`, allDone: 'Все файлы надёжно загружены. Страницу можно закрыть — клиника увидит их в панели AAFC.',
+    previous: 'Уже загружено', secure: 'Файлы передаются по зашифрованному соединению прямо в закрытый архив клиники. Ссылка служит только для загрузки — открыть файлы здесь нельзя.',
+    valid: (d) => `Ссылка действует до ${d}.`, leave: 'Идёт загрузка. Если закрыть страницу, она прервётся.',
+    expired: 'Срок действия ссылки истёк. Попросите у клиники новую.', revoked: 'Ссылка больше не действует.', notFound: 'Ссылка не найдена.',
+    error: 'Что-то пошло не так, попробуйте ещё раз.', tooBig: 'Файл больше 5 ГБ', quota: 'Лимит загрузки по ссылке исчерпан', empty: 'Пустой файл' },
+  ko: { title: '안전한 파일 업로드', intro: (c) => `${c}을(를) 위해 이전 프로그램의 파일을 여기에 올려 주세요: 환자 목록, 시술/방문 목록(Excel, CSV), 사진 폴더(폴더 또는 ZIP), 또는 프로그램 백업 파일.`,
+    drop: '파일이나 폴더를 여기에 끌어 놓으세요', dropHint: '모든 파일 형식 · 파일당 최대 5GB', files: '파일 선택', folder: '폴더 선택',
+    queue: '업로드 대기', start: '업로드 시작', waiting: '대기 중', done: '완료', failed: '오류', retry: '재시도',
+    total: (n, s) => `파일 ${n}개 · ${s}`, allDone: '모든 파일이 안전하게 업로드되었습니다. 이 페이지를 닫아도 됩니다. 병원은 AAFC 패널에서 파일을 확인합니다.',
+    previous: '이미 업로드됨', secure: '파일은 암호화된 연결로 병원의 비공개 보관소에 바로 저장됩니다. 이 링크는 업로드 전용이며 여기서 파일을 열 수 없습니다.',
+    valid: (d) => `이 링크는 ${d}까지 유효합니다.`, leave: '업로드 중입니다. 페이지를 떠나면 중단됩니다.',
+    expired: '링크가 만료되었습니다. 병원에 새 링크를 요청하세요.', revoked: '더 이상 유효하지 않은 링크입니다.', notFound: '링크를 찾을 수 없습니다.',
+    error: '문제가 발생했습니다. 다시 시도해 주세요.', tooBig: '파일이 5GB를 초과합니다', quota: '이 링크의 업로드 한도에 도달했습니다', empty: '빈 파일' },
+  zh: { title: '安全上传文件', intro: (c) => `请在此上传旧系统中${c}的文件：患者名单、项目/就诊记录（Excel、CSV）、照片文件夹（文件夹或 ZIP）或程序备份文件。`,
+    drop: '将文件或文件夹拖到这里', dropHint: '支持任意文件类型 · 单个文件最大 5 GB', files: '选择文件', folder: '选择文件夹',
+    queue: '待上传', start: '开始上传', waiting: '等待中', done: '已上传', failed: '出错', retry: '重试',
+    total: (n, s) => `${n} 个文件 · ${s}`, allDone: '所有文件已安全上传。您可以关闭此页面，诊所会在 AAFC 面板中看到这些文件。',
+    previous: '已上传', secure: '文件通过加密连接直接存入诊所的私有档案。此链接仅用于上传，无法在此打开已上传的文件。',
+    valid: (d) => `此链接有效期至 ${d}。`, leave: '正在上传，离开页面将中断上传。',
+    expired: '链接已过期，请向诊所索取新链接。', revoked: '此链接已失效。', notFound: '未找到链接。',
+    error: '出现问题，请重试。', tooBig: '文件超过 5 GB', quota: '此链接的上传额度已用完', empty: '空文件' },
+};
+const LOCALES = { tr: 'tr-TR', en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', ko: 'ko-KR', zh: 'zh-CN' };
+const LC = (() => {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS[q]) return q;
+  for (const l of (navigator.languages || [navigator.language || 'tr'])) { const c = String(l).slice(0, 2).toLowerCase(); if (LANGS[c]) return c; }
+  return 'tr';
+})();
+const L = LANGS[LC];
+document.documentElement.lang = LC;
+document.title = L.title;
+const app = document.getElementById('app');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtDate = (iso) => { try { return new Date(iso).toLocaleString(LOCALES[LC], { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; } };
+const fmtSize = (b) => { b = Number(b) || 0; const u = ['B', 'KB', 'MB', 'GB']; let i = 0; while (b >= 1024 && i < 3) { b /= 1024; i++; } return (i ? b.toFixed(b < 10 ? 1 : 0) : b) + ' ' + u[i]; };
+
+let INFO = null;
+const Q = [];          // { file, name, state: wait|up|ok|err, pct, err }
+let running = false;
+
+async function call(body) {
+  const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ t: TOKEN }, body)), cache: 'no-store' });
+  let d = {}; try { d = await r.json(); } catch (e) { /* ignore */ }
+  return d;
+}
+
+function head() { return `<div class="brand">${esc(((INFO && INFO.clinic) || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`; }
+function msg(t) { app.innerHTML = head() + `<div class="card"><div class="muted">${t}</div></div><div class="foot">AAFC · aafclinic.com</div>`; }
+
+async function init() {
+  if (!TOKEN) return msg(L.notFound);
+  try { INFO = await call({ action: 'info' }); } catch (e) { return msg(L.error); }
+  if (!INFO || INFO.status !== 'ok') { const s = INFO && INFO.status; INFO = null; return msg(s === 'expired' ? L.expired : s === 'revoked' ? L.revoked : s === 'error' ? L.error : L.notFound); }
+  render();
+}
+
+const LOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B89A6A" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
+
+function render() {
+  const prev = (INFO.files || []);
+  app.innerHTML = head() +
+    `<div class="sub">${esc(L.intro(INFO.clinic || 'AAFC'))}</div>
+    <div class="card">
+      <div class="drop" id="drop"><div class="big">${L.drop}</div><div class="hint">${L.dropHint}</div>
+        <div class="btns"><button class="btn gold" id="bFiles">${L.files}</button><button class="btn ghost" id="bDir">${L.folder}</button></div></div>
+      <div id="qbox" style="display:none;margin-top:14px"><div class="step">${L.queue}</div><div id="qlist"></div>
+        <div class="sum"><span class="t" id="qsum"></span><button class="btn gold" id="bStart">${L.start}</button></div></div>
+      <div class="okbox" id="okbox">${L.allDone}</div>
+    </div>
+    ${prev.length ? `<div class="card"><div class="step">${L.previous}</div>${prev.map((f) => `<div class="row"><div class="nm"><b>${esc(f.name)}</b><span>${fmtSize(f.size)}</span></div><span class="st ok">✓</span></div>`).join('')}</div>` : ''}
+    <div class="card"><div class="lock">${LOCK}<div>${L.secure}<br>${esc(L.valid(fmtDate(INFO.expires_at)))}</div></div></div>
+    <div class="foot">AAFC · aafclinic.com</div>`;
+  const fi = document.getElementById('inFiles'), di = document.getElementById('inDir');
+  document.getElementById('bFiles').onclick = () => fi.click();
+  document.getElementById('bDir').onclick = () => di.click();
+  fi.onchange = () => { add(fi.files); fi.value = ''; };
+  di.onchange = () => { add(di.files); di.value = ''; };
+  document.getElementById('bStart').onclick = start;
+  const d = document.getElementById('drop');
+  d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('on'); });
+  d.addEventListener('dragleave', () => d.classList.remove('on'));
+  d.addEventListener('drop', async (e) => { e.preventDefault(); d.classList.remove('on'); add(await dropped(e.dataTransfer)); });
+}
+
+// folders dropped: walk the entries so the relative path is kept
+async function dropped(dt) {
+  const items = Array.from(dt.items || []).map((i) => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  if (!items.length) return Array.from(dt.files || []);
+  const out = [];
+  async function walk(entry, path) {
+    if (entry.isFile) {
+      const f = await new Promise((res, rej) => entry.file(res, rej));
+      out.push({ file: f, name: path + f.name });
+    } else if (entry.isDirectory) {
+      const r = entry.createReader();
+      let batch;
+      do { batch = await new Promise((res, rej) => r.readEntries(res, rej)); for (const e of batch) await walk(e, path + entry.name + '/'); } while (batch.length);
+    }
+  }
+  for (const e of items) await walk(e, '');
+  return out;
+}
+
+function add(list) {
+  for (const x of Array.from(list || [])) {
+    const file = x.file || x, name = x.name || file.webkitRelativePath || file.name;
+    if (/(^|\/)(\.|__MACOSX\/|Thumbs\.db$|desktop\.ini$)/i.test(name)) continue;
+    if (Q.some((q) => q.name === name && q.file.size === file.size)) continue;
+    const it = { file, name, state: 'wait', pct: 0, err: '' };
+    if (!file.size) { it.state = 'err'; it.err = L.empty; } else if (file.size > MAX_FILE) { it.state = 'err'; it.err = L.tooBig; }
+    Q.push(it);
+  }
+  document.getElementById('okbox').style.display = 'none';
+  drawQ();
+}
+
+function drawQ() {
+  const box = document.getElementById('qbox');
+  if (!box) return;
+  box.style.display = Q.length ? 'block' : 'none';
+  document.getElementById('qlist').innerHTML = Q.map((q, i) => {
+    const st = q.state === 'ok' ? `<span class="st ok">✓ ${L.done}</span>` : q.state === 'err' ? `<span class="st err">${esc(q.err || L.failed)}</span>` :
+      q.state === 'up' ? `<span class="st up">${q.pct}%</span>` : `<span class="st wait">${L.waiting}</span>`;
+    const rm = !running && q.state !== 'ok' ? `<button class="x" onclick="rm(${i})" aria-label="×">×</button>` : '';
+    return `<div class="row"><div class="nm"><b>${esc(q.name)}</b><span>${fmtSize(q.file.size)}</span>${q.state === 'up' ? `<div class="bar"><i style="width:${q.pct}%"></i></div>` : ''}</div>${st}${rm}</div>`;
+  }).join('');
+  const todo = Q.filter((q) => q.state === 'wait' || (q.state === 'err' && q.retry));
+  document.getElementById('qsum').textContent = L.total(Q.length, fmtSize(Q.reduce((a, q) => a + q.file.size, 0)));
+  const b = document.getElementById('bStart');
+  b.disabled = running || !todo.length;
+  b.textContent = Q.some((q) => q.state === 'err' && q.retry) && !Q.some((q) => q.state === 'wait') ? L.retry : L.start;
+}
+function rm(i) { Q.splice(i, 1); drawQ(); }
+
+function put(url, blob, onProg) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest();
+    x.open('PUT', url);
+    x.setRequestHeader('Content-Type', 'application/octet-stream');
+    x.setRequestHeader('x-upsert', 'true');
+    x.upload.onprogress = (e) => { if (e.lengthComputable) onProg(e.loaded); };
+    x.onload = () => (x.status >= 200 && x.status < 300 ? res() : rej(new Error('http ' + x.status)));
+    x.onerror = () => rej(new Error('network'));
+    x.send(blob);
+  });
+}
+
+async function uploadOne(q) {
+  q.state = 'up'; q.pct = 0; q.err = ''; drawQ();
+  const parts = Math.max(1, Math.ceil(q.file.size / PART));
+  if (!q.id) {
+    const b = await call({ action: 'begin', name: q.name, size: q.file.size, parts });
+    if (b.status !== 'ok') throw Object.assign(new Error(b.status), { fatal: ['quota', 'too_big', 'expired', 'revoked', 'not_found'].includes(b.status) });
+    q.id = b.id; q.doneParts = 0;
+  }
+  for (let p = q.doneParts + 1; p <= parts; p++) {
+    const from = (p - 1) * PART, blob = q.file.slice(from, Math.min(q.file.size, from + PART));
+    let ok = false, lastErr = null;
+    for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+      try {
+        const s = await call({ action: 'part', id: q.id, part: p });
+        if (s.status !== 'ok') throw Object.assign(new Error(s.status), { fatal: s.status !== 'error' });
+        await put(s.url, blob, (n) => { q.pct = Math.min(99, Math.floor((from + n) / q.file.size * 100)); drawQ(); });
+        ok = true;
+      } catch (e) { lastErr = e; if (e.fatal) break; await new Promise((r) => setTimeout(r, 1500 * (attempt + 1))); }
+    }
+    if (!ok) throw lastErr;
+    q.doneParts = p;
+  }
+  const d = await call({ action: 'done', id: q.id });
+  if (d.status !== 'ok') throw new Error(d.status);
+  q.state = 'ok'; q.pct = 100; drawQ();
+}
+
+async function start() {
+  if (running) return;
+  running = true;
+  for (const q of Q) if (q.state === 'err' && q.retry) { q.state = 'wait'; q.retry = false; }
+  drawQ();
+  const todo = Q.filter((q) => q.state === 'wait');
+  let i = 0;
+  async function worker() {
+    while (i < todo.length) {
+      const q = todo[i++];
+      try { await uploadOne(q); }
+      catch (e) {
+        const s = e && e.message;
+        q.state = 'err';
+        q.err = s === 'quota' ? L.quota : s === 'too_big' ? L.tooBig : s === 'expired' ? L.expired : s === 'revoked' ? L.revoked : L.failed;
+        q.retry = !(e && e.fatal);
+        drawQ();
+      }
+    }
+  }
+  await Promise.all([worker(), worker()]);
+  running = false;
+  drawQ();
+  if (Q.length && Q.every((q) => q.state === 'ok' || (q.state === 'err' && !q.retry && q.err === L.empty))) document.getElementById('okbox').style.display = 'block';
+}
+
+window.addEventListener('beforeunload', (e) => { if (running) { e.preventDefault(); e.returnValue = L.leave; return L.leave; } });
+init();
+</script>
+</body>
+</html>

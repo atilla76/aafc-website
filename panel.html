@@ -150,6 +150,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .mbox{background:#1C1929;border:1px solid rgba(245,241,235,0.1);border-radius:16px;padding:28px;width:100%;max-width:440px}
 .mbox h3{font-size:18px;font-weight:400;margin-bottom:20px}
 .phw{display:flex;gap:6px}.phw .phcc{width:118px;flex:none;padding:10px 6px}.phw .phcc option{background:#1C1929}
+.pfchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}.pfc{border:1px solid rgba(245,241,235,0.16);background:rgba(245,241,235,0.04);color:rgba(245,241,235,0.7);border-radius:16px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit}.pfc.on{border-color:#B89A6A;color:#B89A6A;background:rgba(184,154,106,0.14);font-weight:600}.pfc.red.on{border-color:#C0614A;color:#E08A75;background:rgba(192,97,74,0.14)}.pflbl{font-size:11px;color:rgba(245,241,235,0.5);margin:2px 0 6px;letter-spacing:.04em}.pfsw{display:flex;gap:8px;align-items:center;font-size:13px;margin:0 0 8px;cursor:pointer}.pfdup{margin:-6px 0 12px;padding:8px 10px;border-radius:8px;background:rgba(212,150,58,0.12);border:1px solid rgba(212,150,58,0.4);font-size:12px}.hchip{display:inline-block;margin:0 4px 4px 0;padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(192,97,74,0.15);color:#E08A75}
 .mi{width:100%;background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:10px 12px;color:#F5F1EB;font-size:13px;margin-bottom:12px;outline:none;font-family:inherit}
 .mi:focus{border-color:rgba(184,154,106,0.4)}
 .mbt{display:flex;gap:10px;margin-top:8px}
@@ -752,17 +753,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <!-- Patient Modal -->
 <div class="modal" id="pModal">
-  <div class="mbox">
+  <div class="mbox" style="max-height:92vh;overflow-y:auto">
     <h3 id="mTitle">Add Patient</h3>
     <input class="mi" type="text" id="mName" placeholder="First Name"/>
     <input class="mi" type="text" id="mSur" placeholder="Last Name"/>
     <input class="mi" type="date" id="mDob"/>
     <div class="phw"><select class="mi phcc" id="mPhoneCc" title="Country code"></select><input class="mi" type="tel" id="mPhone" placeholder="Phone"/></div>
+    <div id="pfDup" class="pfdup" style="display:none"></div>
     <input class="mi" type="text" id="mCity" placeholder="City"/>
-    <input class="mi" type="text" id="mNid" placeholder="National ID (TC Kimlik No)" inputmode="numeric" maxlength="11"/>
+    <div id="pfIdType" class="pfchips"></div>
+    <input class="mi" type="text" id="mNid" placeholder="National ID (TC Kimlik No)" maxlength="20"/>
     <input class="mi" type="email" id="mEmail" placeholder="E-mail"/>
+    <div class="pflbl" id="pfGenderL"></div><div id="pfGender" class="pfchips"></div>
+    <div class="pflbl" id="pfHealthL"></div><div id="pfHealth" class="pfchips"></div>
+    <input class="mi" type="text" id="mAllergy" placeholder="Allergies"/>
     <div class="err" id="mErr" style="margin:-4px 0 10px"></div>
-    <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="mNotes" placeholder="Notes" rows="3" style="resize:none"></textarea><button class="btn bedit micbtn" data-target="mNotes" onclick="vxDictate(this)">🎤</button></div>
+    <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="mNotes" placeholder="Other conditions / medications" rows="3" style="resize:none"></textarea><button class="btn bedit micbtn" data-target="mNotes" onclick="vxDictate(this)">🎤</button></div>
+    <div class="pflbl" id="pfRefL"></div><div id="pfRef" class="pfchips"></div>
+    <div class="pflbl" id="pfPermL"></div>
+    <label class="pfsw"><input type="checkbox" id="mCMsg"/> <span id="mCMsgL"></span></label>
+    <label class="pfsw"><input type="checkbox" id="mCPhoto"/> <span id="mCPhotoL"></span></label>
     <div class="mbt">
       <button class="bcancel" onclick="closeModal()">Cancel</button>
       <button class="bsave" onclick="savePt()">Save</button>
@@ -966,7 +976,12 @@ async function selP(id){
   if(p.national_id)ih+='<div class="ir"><span class="il">National ID (TC Kimlik No)</span><span class="iv">'+mxE(p.national_id)+'</span></div>';
   if(p.email)ih+='<div class="ir"><span class="il">E-mail</span><span class="iv">'+mxE(p.email)+'</span></div>';
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
+  if(p.gender)ih+='<div class="ir"><span class="il">'+mxE(mxTr('Gender','Cinsiyet'))+'</span><span class="iv">'+mxE(pfGenderL(p.gender))+'</span></div>';
+  var hh=pfHealthHtml(p);if(hh)ih+='<div class="ir"><span class="il">'+mxE(mxTr('Health','Sağlık'))+'</span><span class="iv">'+hh+'</span></div>';
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
+  if(p.referral_source)ih+='<div class="ir"><span class="il">'+mxE(mxTr('Source','Kaynak'))+'</span><span class="iv">'+mxE(pfRefL(p.referral_source))+'</span></div>';
+  var cs=[p.consent_messages?mxTr('Messages','Mesaj'):'',p.consent_photo_marketing?mxTr('Photo sharing','Fotoğraf paylaşımı'):''].filter(Boolean);
+  ih+='<div class="ir"><span class="il">'+mxE(mxTr('Permissions','İzinler'))+'</span><span class="iv">'+(cs.length?mxE(cs.join(' · ')):'-')+'</span></div>';
   ih+=enPatientRow(p);
   document.getElementById('pInfo').innerHTML=ih;
   inLoad(id);pkLoad(id);ptLoad(id);pDxLoad(id);
@@ -1185,6 +1200,7 @@ function openAdd(){
   document.getElementById('mEmail').value='';
   document.getElementById('mErr').style.display='none';
   document.getElementById('mNotes').value='';
+  pfLoad(null);
   document.getElementById('pModal').classList.add('on');
 }
 
@@ -1194,15 +1210,84 @@ function openEdit(){
   document.getElementById('mTitle').textContent='Edit Patient';
   document.getElementById('mName').value=selPt.name||'';
   document.getElementById('mSur').value=selPt.surname||'';
-  document.getElementById('mDob').value=(selPt.birth_date||'').split('T')[0];
+  document.getElementById('mDob').value=pfDobToInput(selPt.birth_date);
   phSet('mPhone',selPt.phone||'');
   document.getElementById('mCity').value=selPt.city||'';
   document.getElementById('mNid').value=selPt.national_id||'';
   document.getElementById('mEmail').value=selPt.email||'';
   document.getElementById('mErr').style.display='none';
   document.getElementById('mNotes').value=selPt.notes||'';
+  pfLoad(selPt);
   document.getElementById('pModal').classList.add('on');
 }
+
+
+// ============ PATIENT FORM v2 (gender, foreign, health flags, allergies, referral, consents) ============
+var PF_FLAGS=['anticoag','pregnancy','diabetes','hypertension','autoimmune','herpes','keloid','isotretinoin'];
+var PF_REFS=['instagram','google','friend','online','other'];
+var pfState={gender:null,foreign:false,flags:[],ref:null},pfDupT=null;
+function pfFlagL(k){return {anticoag:mxTr('Blood thinners','Kan sulandırıcı'),pregnancy:mxTr('Pregnancy / breastfeeding','Gebelik / emzirme'),diabetes:mxTr('Diabetes','Diyabet'),hypertension:mxTr('Hypertension','Hipertansiyon'),autoimmune:mxTr('Autoimmune disease','Otoimmün hastalık'),herpes:mxTr('Cold sores (herpes)','Uçuk (herpes)'),keloid:mxTr('Keloid tendency','Keloid eğilimi'),isotretinoin:mxTr('Isotretinoin use','İzotretinoin kullanımı')}[k]||k;}
+function pfRefL(k){return {instagram:'Instagram',google:'Google',friend:mxTr('Referral','Tavsiye'),online:mxTr('Online booking','Online randevu'),other:mxTr('Other','Diğer')}[k]||k;}
+function pfGenderL(k){return {f:mxTr('Female','Kadın'),m:mxTr('Male','Erkek'),o:mxTr('Other','Diğer')}[k]||'';}
+function pfChip(label,on,fn,red){return '<button type="button" class="pfc'+(red?' red':'')+(on?' on':'')+'" onclick="'+fn+'">'+mxE(label)+'</button>';}
+function pfRender(){
+  var tr=enInTurkey(),S=pfState;
+  document.getElementById('pfIdType').innerHTML=tr?pfChip(mxTr('Turkish citizen','T.C. vatandaşı'),!S.foreign,'pfSet(\'foreign\',false)')+pfChip(mxTr('Foreign national','Yabancı'),S.foreign,'pfSet(\'foreign\',true)')+(S.foreign?'<span style="font-size:11px;color:#D4963A;align-self:center">'+mxE(mxTr('Foreign patients are not sent to e-Nabız','Yabancı hastalar e-Nabız\'a gönderilmez'))+'</span>':''):'';
+  var nid=document.getElementById('mNid');
+  nid.placeholder=tr?(S.foreign?mxTr('Passport / foreign ID number','Pasaport / yabancı kimlik no'):mxTr('Turkish ID number (T.C.)','T.C. Kimlik No')):mxTr('National ID','Kimlik no');
+  nid.inputMode=tr&&!S.foreign?'numeric':'text';
+  document.getElementById('pfGenderL').textContent=mxTr('Gender','Cinsiyet');
+  document.getElementById('pfGender').innerHTML=['f','m','o'].map(function(g){return pfChip(pfGenderL(g),S.gender===g,'pfSet(\'gender\',\''+g+'\')');}).join('');
+  document.getElementById('pfHealthL').textContent=mxTr('Health — conditions that may affect treatment','Sağlık — işlemi etkileyebilecek durumlar');
+  document.getElementById('pfHealth').innerHTML=PF_FLAGS.map(function(k){return pfChip(pfFlagL(k),S.flags.indexOf(k)>=0,'pfFlag(\''+k+'\')',true);}).join('');
+  document.getElementById('mAllergy').placeholder=mxTr('Allergies','Alerjiler');
+  document.getElementById('mNotes').placeholder=mxTr('Other conditions / medications','Diğer hastalıklar / ilaçlar');
+  document.getElementById('pfRefL').textContent=mxTr('How did they hear about us?','Bizi nereden duydu?');
+  document.getElementById('pfRef').innerHTML=PF_REFS.map(function(k){return pfChip(pfRefL(k),S.ref===k,'pfSet(\'ref\',\''+k+'\')');}).join('');
+  document.getElementById('pfPermL').textContent=mxTr('Permissions','İzinler');
+  document.getElementById('mCMsgL').textContent=mxTr('Messaging consent (SMS / WhatsApp) — reminders and promotions','Mesaj izni (SMS / WhatsApp) — hatırlatma ve kampanya');
+  document.getElementById('mCPhotoL').textContent=mxTr('Photo sharing consent — before/after may be used in promotion','Fotoğraf paylaşım izni — öncesi/sonrası tanıtımda kullanılabilir');
+}
+function pfSet(k,v){if(k!=='foreign'&&pfState[k]===v)v=null;pfState[k]=v;pfRender();}
+function pfFlag(k){var i=pfState.flags.indexOf(k);if(i>=0)pfState.flags.splice(i,1);else pfState.flags.push(k);pfRender();}
+function pfLoad(p){
+  p=p||{};
+  pfState={gender:p.gender||null,foreign:p.is_foreign===true,flags:(p.health_flags||[]).slice(),ref:p.referral_source||null};
+  document.getElementById('mAllergy').value=p.allergies||'';
+  document.getElementById('mCMsg').checked=p.consent_messages===true;
+  document.getElementById('mCPhoto').checked=p.consent_photo_marketing===true;
+  document.getElementById('pfDup').style.display='none';
+  pfRender();
+}
+function pfData(old){
+  old=old||{};var cm=document.getElementById('mCMsg').checked,cp=document.getElementById('mCPhoto').checked,now=new Date().toISOString();
+  var d={gender:pfState.gender,is_foreign:pfState.foreign,health_flags:pfState.flags,allergies:document.getElementById('mAllergy').value.trim()||null,
+    referral_source:pfState.ref,consent_messages:cm,consent_photo_marketing:cp};
+  if(cm!==(old.consent_messages===true))d.consent_messages_at=cm?now:null;
+  if(cp!==(old.consent_photo_marketing===true))d.consent_photo_marketing_at=cp?now:null;
+  if(pfState.foreign)d.enabiz_enabled=false;else if(old.is_foreign===true)d.enabiz_enabled=null;
+  return d;
+}
+function pfPhoneCheck(){
+  clearTimeout(pfDupT);
+  pfDupT=setTimeout(function(){
+    var el=document.getElementById('pfDup'),d=(phGet('mPhone')||'').replace(/\D/g,'');
+    if(d.length<7){el.style.display='none';return;}
+    var tail=d.slice(-10);
+    var hits=pts.filter(function(p){if(p.id===editPid)return false;var x=(p.phone||'').replace(/\D/g,'');return x.length>=7&&(x.slice(-tail.length)===tail||tail.slice(-x.length)===x);});
+    if(!hits.length){el.style.display='none';return;}
+    el.innerHTML='⚠ '+mxE(mxTrV('A patient with this number exists: [name]','Bu numarayla kayıtlı hasta var: [name]',{name:hits.map(function(p){return (p.name||'')+' '+(p.surname||'');}).join(', ')}))+' <a href="#" style="color:#B89A6A;margin-left:6px" onclick="closeModal();selP(\''+hits[0].id+'\');return false">'+mxE(mxTr('Open','Aç'))+'</a>';
+    el.style.display='block';
+  },400);
+}
+function pfDobToInput(v){v=(v||'').split('T')[0];var m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(v);return m?m[3]+'-'+m[2]+'-'+m[1]:v;}
+function pfDobFromInput(v){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');return m?m[3]+'.'+m[2]+'.'+m[1]:(v||null);}
+function pfHealthHtml(p){
+  var h=(p.health_flags||[]).map(function(k){return '<span class="hchip">'+mxE(pfFlagL(k))+'</span>';}).join('');
+  if(p.allergies)h+='<span class="hchip" style="background:rgba(212,150,58,0.15);color:#D4963A">'+mxE(mxTr('Allergies','Alerjiler')+': '+p.allergies)+'</span>';
+  return h;
+}
+document.addEventListener('DOMContentLoaded',function(){var e=document.getElementById('mPhone');if(e)e.addEventListener('input',pfPhoneCheck);var c=document.getElementById('mPhoneCc');if(c)c.addEventListener('change',pfPhoneCheck);});
 
 function closeModal(){document.getElementById('pModal').classList.remove('on');}
 
@@ -1212,13 +1297,17 @@ function isTckn(t){if(!/^[1-9][0-9]{10}$/.test(t))return false;var d=t.split('')
 async function savePt(){
   var name=document.getElementById('mName').value.trim();
   if(!name){alert('Name is required');return;}
-  var nid=document.getElementById('mNid').value.replace(/\D/g,'');
+  var nidRaw=document.getElementById('mNid').value.replace(/\s/g,'');
+  var tcMode=enInTurkey()&&!pfState.foreign;
+  var nid=tcMode?nidRaw.replace(/\D/g,''):nidRaw.replace(/[^0-9A-Za-z]/g,'');
   var errEl=document.getElementById('mErr');errEl.style.display='none';
-  if(nid&&!isTckn(nid)){errEl.textContent=trText('Invalid TC Kimlik No');errEl.style.display='block';return;}
+  var em=document.getElementById('mEmail').value.trim();
+  if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){errEl.textContent=mxTr('Invalid email address','E-posta adresi geçersiz');errEl.style.display='block';return;}
+  if(tcMode&&/^[0-9]{11}$/.test(nid)&&!isTckn(nid)){errEl.textContent=trText('Invalid TC Kimlik No');errEl.style.display='block';return;}
   var data={
     name:name,
     surname:document.getElementById('mSur').value||null,
-    birth_date:document.getElementById('mDob').value||null,
+    birth_date:pfDobFromInput(document.getElementById('mDob').value),
     phone:phGet('mPhone')||null,
     city:document.getElementById('mCity').value||null,
     national_id:nid||null,
@@ -1226,6 +1315,7 @@ async function savePt(){
     notes:document.getElementById('mNotes').value||null,
     clinic_id:cid
   };
+  Object.assign(data,pfData(editPid?selPt:null));
   var res=editPid?await db.from('patients').update(data).eq('id',editPid):await db.from('patients').insert(data);
   if(res.error){errEl.textContent=res.error.code==='23505'?trText('A patient with this TC Kimlik No is already registered'):(res.error.message||'Error');errEl.style.display='block';return;}
   closeModal();

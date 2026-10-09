@@ -1,21 +1,118 @@
 <!DOCTYPE html>
-<html lang=""en"">
+<html lang="en">
 <head>
-<meta charset=""UTF-8"">
-<meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-<title>Account Deletion - AAFC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Deletion Request — AAFC</title>
+<meta name="description" content="How to request deletion of your AAFC account and data.">
+<link rel="canonical" href="https://aafclinic.com/account-deletion" />
 <style>
-  body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.7; }
-  h1 { color: #C9A96E; } h2 { color: #444; margin-top: 32px; }
-  a { color: #C9A96E; }
-  .cta { display: inline-block; background: #C9A96E; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 16px 0; font-weight: 600; }
-  .cta:hover { background: #b8985e; }
-  .note { background: #f7f3eb; border-left: 4px solid #C9A96E; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
-  ul li { margin-bottom: 8px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; line-height: 1.7; }
+  a { color: #B89A6A; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); flex-wrap: wrap; }
+  .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 3px; }
+  .nav-links { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: rgba(245,241,235,0.6); font-size: 14px; }
+  .nav-links a:hover { color: #F5F1EB; text-decoration: none; }
+  #langSel { cursor: pointer; font: inherit; font-size: 13px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; border-radius: 8px; padding: 6px 6px; }
+  .container { max-width: 760px; margin: 0 auto; padding: 60px 40px 100px; }
+  .disclaimer { background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: rgba(245,241,235,0.7); margin-bottom: 28px; }
+  h1 { font-size: 38px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .updated { color: rgba(245,241,235,0.45); font-size: 14px; margin-bottom: 40px; }
+  h2 { font-size: 22px; font-weight: 500; color: #B89A6A; margin: 36px 0 14px; }
+  h3 { font-size: 17px; font-weight: 600; color: #F5F1EB; margin: 22px 0 10px; }
+  p { color: rgba(245,241,235,0.78); margin-bottom: 14px; font-size: 16px; }
+  strong { color: #F5F1EB; }
+  ul { color: rgba(245,241,235,0.78); margin: 0 0 14px 24px; }
+  ul li { padding: 4px 0; font-size: 16px; }
+  .note, .contact-box { background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 12px; padding: 16px 20px; margin: 18px 0; }
+  .note ul { margin-bottom: 0; }
+  .contact-box { margin-top: 40px; }
+  .contact-box p, .note p { color: rgba(245,241,235,0.85); margin-bottom: 6px; }
+  .cta { display: inline-block; background: #B89A6A; color: #1C1929; padding: 12px 24px; border-radius: 8px; margin: 12px 0 18px; font-weight: 600; }
+  .cta:hover { text-decoration: none; background: #D4B896; }
+  footer { border-top: 1px solid rgba(245,241,235,0.08); padding: 24px 60px; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer p, footer a { font-size: 13px; color: rgba(245,241,235,0.4); }
+  @media (max-width: 600px) { nav { padding: 16px 20px; } .nav-links { gap: 14px; } .container { padding: 40px 20px 60px; } h1 { font-size: 28px; } footer { padding: 20px; flex-direction: column; } }
 </style>
-  <link rel="canonical" href="https://aafclinic.com/account-deletion" />
 </head>
 <body>
+
+<nav>
+  <a href="index.html" class="logo">AAFC</a>
+  <div class="nav-links">
+    <a href="index.html" data-ui="0">Home</a>
+    <a href="privacy.html" data-ui="1">Privacy</a>
+    <a href="terms.html" data-ui="2">Terms</a>
+    <select id="langSel" aria-label="Language" onchange="setLang(this.value)"></select>
+  </div>
+</nav>
+
+<div class="container lang-block" lang="tr" data-lang="tr" hidden>
+<p class="disclaimer">Bu çeviri kolaylık amacıyla sunulmuştur. Çelişki halinde İngilizce metin geçerlidir.</p>
+<h1>Hesap Silme Talebi</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Hesabınızı ve ilişkili verilerinizi silme hakkınıza saygı duyuyoruz. Bu sayfa, AAFC hesabınızın ve hesabınızla ilişkili verilerin silinmesini nasıl talep edebileceğinizi açıklamaktadır.</p>
+
+<h2>Hesap Silme Nasıl Talep Edilir</h2>
+<p>Hesabınızın silinmesini talep etmek için lütfen aşağıdaki bilgileri içeren bir e-postayı destek ekibimize gönderiniz:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Hesap Silme Talebinde Bulun</a>
+
+<p>Alternatif olarak, bize doğrudan şu adrese e-posta gönderebilirsiniz: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Lütfen e-postanıza aşağıdakileri ekleyiniz:</strong>
+  <ul>
+    <li>Kayıtlı e-posta adresiniz</li>
+    <li>Kliniğinizin adı</li>
+    <li>Konu satırı: &quot;Account Deletion Request&quot; (Hesap Silme Talebi)</li>
+  </ul>
+</div>
+
+<h2>Neler Silinir</h2>
+<p>Silme talebinizin teyit edilmesi üzerine aşağıdakileri kalıcı olarak sileceğiz:</p>
+<ul>
+  <li>Kullanıcı hesabınız (e-posta, ad, rol)</li>
+  <li>Klinik bilgileriniz (ad, logo, doktor bilgileri, adres)</li>
+  <li>Tüm hasta kayıtları (adlar, iletişim bilgileri, ziyaret geçmişi, klinik notlar)</li>
+  <li>Tüm hasta fotoğrafları ve öncesi/sonrası karşılaştırmaları</li>
+  <li>Yüklenen tüm belgeler (tedavi kartları, onam formları, ürün barkodları)</li>
+  <li>Uygulama tarafından oluşturulan tüm PDF raporları</li>
+</ul>
+
+<h2>Neler Saklanır</h2>
+<p>Belirli veriler hukuki veya operasyonel nedenlerle saklanabilir:</p>
+<ul>
+  <li><strong>Güvenlik kayıtları:</strong> Oturum açma girişimleri ve güvenlik olayları, dolandırıcılığın önlenmesi amacıyla 90 güne kadar saklanabilir</li>
+  <li><strong>Yasal gereklilikler:</strong> Çok sınırlı durumlarda, Türk tıbbi kayıt tutma mevzuatının gerektirmesi hâlinde anonimleştirilmiş kayıtlar saklanabilir (tıbbi kayıtlar için genellikle 20 yıl; ancak bu yükümlülük AAFC'nin değil, Klinik Kullanıcısının elindeki veriler için geçerlidir)</li>
+  <li><strong>Yedekler:</strong> Verilerin şifrelenmiş yedeklerden tamamen kaldırılması 90 gün içinde tamamlanır</li>
+</ul>
+
+<h2>Zaman Çizelgesi</h2>
+<ul>
+  <li><strong>72 saat içinde:</strong> Talebinizin alındığını teyit edeceğiz</li>
+  <li><strong>7 gün içinde:</strong> Kimliğinizi doğrulamak için bir doğrulama e-postası göndereceğiz</li>
+  <li><strong>30 gün içinde:</strong> Doğrulamanın ardından tüm birincil veriler kalıcı olarak silinecektir</li>
+  <li><strong>90 gün içinde:</strong> Tüm yedek kopyalar temizlenecektir</li>
+</ul>
+
+<h2>Klinik Kullanıcıları İçin Önemli Notlar</h2>
+<div class="note">
+  <p>Klinik Yöneticisi iseniz ve kliniğinizde başka kullanıcılar bulunuyorsa, hesabınızın silinmesi bu kullanıcıları etkileyebilir. Lütfen silme talebinde bulunmadan önce klinik ekibinizle koordinasyon sağlayınız. Aktif bir klinikteki hasta verilerinin silinmesi, sorumlu Klinik Kullanıcısı tarafından uygulama üzerinden gerçekleştirilmelidir.</p>
+</div>
+
+<h2>İletişim</h2>
+<p>Hesap silme süreciyle ilgili sorularınız için lütfen bizimle iletişime geçiniz:</p>
+<ul>
+  <li><strong>E-posta:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>İnternet sitesi:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Gizlilik Politikası:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="en" data-lang="en">
 <h1>Account Deletion Request</h1>
 <p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
 <p>We respect your right to delete your account and associated data. This page explains how to request deletion of your AAFC account and the data associated with it.</p>
@@ -23,11 +120,11 @@
 <h2>How to Request Account Deletion</h2>
 <p>To request deletion of your account, please send an email to our support team with the details below:</p>
 
-<a href=""mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you."" class=""cta"">Request Account Deletion</a>
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Request Account Deletion</a>
 
-<p>Alternatively, you can manually email us at: <a href=""mailto:support@aafclinic.com"">support@aafclinic.com</a></p>
+<p>Alternatively, you can manually email us at: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
 
-<div class=""note"">
+<div class="note">
   <strong>Please include in your email:</strong>
   <ul>
     <li>Your registered email address</li>
@@ -64,18 +161,540 @@
 </ul>
 
 <h2>Important Notes for Clinic Users</h2>
-<div class=""note"">
+<div class="note">
   <p>If you are a Clinic Admin and your clinic has other users, deleting your account may affect them. Please coordinate with your clinic team before requesting deletion. Patient data deletion within an active clinic should be handled by the responsible Clinic User via the app.</p>
 </div>
 
 <h2>Contact</h2>
 <p>If you have any questions about the account deletion process, please contact us:</p>
 <ul>
-  <li><strong>Email:</strong> <a href=""mailto:support@aafclinic.com"">support@aafclinic.com</a></li>
-  <li><strong>Website:</strong> <a href=""https://aafclinic.com"">aafclinic.com</a></li>
-  <li><strong>Privacy Policy:</strong> <a href=""https://aafclinic.com/privacy"">aafclinic.com/privacy</a></li>
+  <li><strong>Email:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Website:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Privacy Policy:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="de" data-lang="de" hidden>
+<p class="disclaimer">Diese Übersetzung dient nur der Information. Im Zweifelsfall ist die englische Fassung maßgeblich.</p>
+<h1>Antrag auf Kontolöschung</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Wir respektieren Ihr Recht, Ihr Konto und die damit verbundenen Daten löschen zu lassen. Auf dieser Seite wird erläutert, wie Sie die Löschung Ihres AAFC-Kontos und der damit verbundenen Daten beantragen können.</p>
+
+<h2>So beantragen Sie die Kontolöschung</h2>
+<p>Um die Löschung Ihres Kontos zu beantragen, senden Sie bitte eine E-Mail mit den nachstehenden Angaben an unser Support-Team:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Kontolöschung beantragen</a>
+
+<p>Alternativ können Sie uns auch direkt eine E-Mail senden an: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Bitte geben Sie in Ihrer E-Mail Folgendes an:</strong>
+  <ul>
+    <li>Ihre registrierte E-Mail-Adresse</li>
+    <li>Den Namen Ihrer Klinik</li>
+    <li>Betreffzeile: &quot;Account Deletion Request&quot; (Antrag auf Kontolöschung)</li>
+  </ul>
+</div>
+
+<h2>Was gelöscht wird</h2>
+<p>Nach Bestätigung Ihres Löschantrags löschen wir dauerhaft:</p>
+<ul>
+  <li>Ihr Benutzerkonto (E-Mail, Name, Rolle)</li>
+  <li>Ihre Klinikinformationen (Name, Logo, Angaben zum Arzt, Anschrift)</li>
+  <li>Sämtliche Patientenakten (Namen, Kontaktdaten, Besuchsverlauf, klinische Notizen)</li>
+  <li>Sämtliche Patientenfotos und Vorher/Nachher-Vergleiche</li>
+  <li>Sämtliche hochgeladenen Dokumente (Behandlungskarten, Einwilligungsformulare, Produkt-Barcodes)</li>
+  <li>Sämtliche von der App erstellten PDF-Berichte</li>
 </ul>
 
-<p style=""margin-top:48px;color:#999;font-size:13px;"">© 2026 AAFC - Aesthetic Archive for Clinics. All rights reserved.</p>
+<h2>Was aufbewahrt wird</h2>
+<p>Bestimmte Daten können aus rechtlichen oder betrieblichen Gründen aufbewahrt werden:</p>
+<ul>
+  <li><strong>Sicherheitsprotokolle:</strong> Anmeldeversuche und Sicherheitsereignisse können zum Zweck der Betrugsprävention bis zu 90 Tage aufbewahrt werden</li>
+  <li><strong>Gesetzliche Anforderungen:</strong> In sehr begrenzten Fällen können anonymisierte Aufzeichnungen aufbewahrt werden, sofern dies nach türkischem Recht zur Führung medizinischer Aufzeichnungen erforderlich ist (für medizinische Unterlagen in der Regel 20 Jahre; dies gilt jedoch für Daten, die beim Klinik-Nutzer und nicht bei AAFC vorliegen)</li>
+  <li><strong>Sicherungskopien:</strong> Die vollständige Entfernung der Daten aus verschlüsselten Sicherungskopien wird innerhalb von 90 Tagen abgeschlossen</li>
+</ul>
+
+<h2>Zeitplan</h2>
+<ul>
+  <li><strong>Innerhalb von 72 Stunden:</strong> Wir bestätigen den Eingang Ihres Antrags</li>
+  <li><strong>Innerhalb von 7 Tagen:</strong> Wir senden Ihnen eine Bestätigungs-E-Mail zur Verifizierung Ihrer Identität</li>
+  <li><strong>Innerhalb von 30 Tagen:</strong> Sämtliche Primärdaten werden nach der Verifizierung dauerhaft gelöscht</li>
+  <li><strong>Innerhalb von 90 Tagen:</strong> Sämtliche Sicherungskopien werden bereinigt</li>
+</ul>
+
+<h2>Wichtige Hinweise für Klinik-Nutzer</h2>
+<div class="note">
+  <p>Wenn Sie Klinik-Administrator sind und Ihre Klinik weitere Nutzer hat, kann sich die Löschung Ihres Kontos auf diese auswirken. Bitte stimmen Sie sich vor der Beantragung der Löschung mit Ihrem Klinikteam ab. Die Löschung von Patientendaten innerhalb einer aktiven Klinik sollte durch den zuständigen Klinik-Nutzer über die App erfolgen.</p>
+</div>
+
+<h2>Kontakt</h2>
+<p>Bei Fragen zum Verfahren der Kontolöschung wenden Sie sich bitte an uns:</p>
+<ul>
+  <li><strong>E-Mail:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Website:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Datenschutzerklärung:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="es" data-lang="es" hidden>
+<p class="disclaimer">Esta traducción se ofrece solo por comodidad. En caso de discrepancia, prevalece la versión en inglés.</p>
+<h1>Solicitud de eliminación de cuenta</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Respetamos su derecho a eliminar su cuenta y los datos asociados. Esta página explica cómo solicitar la eliminación de su cuenta de AAFC y de los datos asociados a ella.</p>
+
+<h2>Cómo solicitar la eliminación de la cuenta</h2>
+<p>Para solicitar la eliminación de su cuenta, envíe un correo electrónico a nuestro equipo de soporte con los datos que se indican a continuación:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Solicitar la eliminación de la cuenta</a>
+
+<p>Como alternativa, puede escribirnos directamente a: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Incluya en su correo electrónico:</strong>
+  <ul>
+    <li>Su dirección de correo electrónico registrada</li>
+    <li>El nombre de su clínica</li>
+    <li>Asunto: &quot;Account Deletion Request&quot; (Solicitud de eliminación de cuenta)</li>
+  </ul>
+</div>
+
+<h2>Qué se elimina</h2>
+<p>Una vez confirmada su solicitud de eliminación, suprimiremos de forma permanente:</p>
+<ul>
+  <li>Su cuenta de usuario (correo electrónico, nombre, rol)</li>
+  <li>La información de su clínica (nombre, logotipo, datos del médico, dirección)</li>
+  <li>Todos los historiales de pacientes (nombres, datos de contacto, historial de visitas, notas clínicas)</li>
+  <li>Todas las fotografías de pacientes y comparaciones de antes/después</li>
+  <li>Todos los documentos cargados (fichas de tratamiento, formularios de consentimiento, códigos de barras de productos)</li>
+  <li>Todos los informes en PDF generados por la aplicación</li>
+</ul>
+
+<h2>Qué se conserva</h2>
+<p>Determinados datos podrán conservarse por motivos legales u operativos:</p>
+<ul>
+  <li><strong>Registros de seguridad:</strong> Los intentos de inicio de sesión y los eventos de seguridad podrán conservarse durante un máximo de 90 días con fines de prevención del fraude</li>
+  <li><strong>Requisitos legales:</strong> En casos muy limitados, podrán conservarse registros anonimizados si así lo exige la legislación turca sobre conservación de registros médicos (normalmente 20 años para los historiales médicos, si bien esto se aplica a los datos en poder del Usuario Clínico, no de AAFC)</li>
+  <li><strong>Copias de seguridad:</strong> La supresión completa de los datos de las copias de seguridad cifradas se completa en un plazo de 90 días</li>
+</ul>
+
+<h2>Plazos</h2>
+<ul>
+  <li><strong>En un plazo de 72 horas:</strong> Acusaremos recibo de su solicitud</li>
+  <li><strong>En un plazo de 7 días:</strong> Le enviaremos un correo electrónico de verificación para confirmar su identidad</li>
+  <li><strong>En un plazo de 30 días:</strong> Todos los datos principales se suprimirán de forma permanente tras la verificación</li>
+  <li><strong>En un plazo de 90 días:</strong> Se depurarán todas las copias de seguridad</li>
+</ul>
+
+<h2>Notas importantes para los Usuarios Clínicos</h2>
+<div class="note">
+  <p>Si usted es Administrador de la Clínica y su clínica tiene otros usuarios, la eliminación de su cuenta puede afectarles. Coordínese con el equipo de su clínica antes de solicitar la eliminación. La supresión de datos de pacientes dentro de una clínica activa debe realizarla el Usuario Clínico responsable a través de la aplicación.</p>
+</div>
+
+<h2>Contacto</h2>
+<p>Si tiene alguna pregunta sobre el proceso de eliminación de la cuenta, póngase en contacto con nosotros:</p>
+<ul>
+  <li><strong>Correo electrónico:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Sitio web:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Política de Privacidad:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="fr" data-lang="fr" hidden>
+<p class="disclaimer">Cette traduction est fournie à titre indicatif. En cas de divergence, la version anglaise prévaut.</p>
+<h1>Demande de suppression de compte</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Nous respectons votre droit de supprimer votre compte et les données qui y sont associées. Cette page explique comment demander la suppression de votre compte AAFC et des données qui y sont associées.</p>
+
+<h2>Comment demander la suppression de votre compte</h2>
+<p>Pour demander la suppression de votre compte, veuillez envoyer un courrier électronique à notre équipe d'assistance en indiquant les informations ci-dessous :</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Demander la suppression du compte</a>
+
+<p>Vous pouvez également nous écrire directement à l'adresse : <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Veuillez indiquer dans votre courrier électronique :</strong>
+  <ul>
+    <li>Votre adresse électronique enregistrée</li>
+    <li>Le nom de votre clinique</li>
+    <li>Objet : &quot;Account Deletion Request&quot; (demande de suppression de compte)</li>
+  </ul>
+</div>
+
+<h2>Données supprimées</h2>
+<p>Dès confirmation de votre demande de suppression, nous supprimerons définitivement :</p>
+<ul>
+  <li>Votre compte utilisateur (adresse électronique, nom, rôle)</li>
+  <li>Les informations relatives à votre clinique (nom, logo, coordonnées du médecin, adresse)</li>
+  <li>L'ensemble des dossiers des patients (noms, coordonnées, historique des consultations, notes cliniques)</li>
+  <li>L'ensemble des photographies des patients et des comparaisons avant/après</li>
+  <li>L'ensemble des documents téléversés (fiches de traitement, formulaires de consentement, codes-barres des produits)</li>
+  <li>L'ensemble des rapports PDF générés par l'application</li>
+</ul>
+
+<h2>Données conservées</h2>
+<p>Certaines données peuvent être conservées pour des raisons juridiques ou opérationnelles :</p>
+<ul>
+  <li><strong>Journaux de sécurité :</strong> les tentatives de connexion et les événements de sécurité peuvent être conservés pendant une durée maximale de 90 jours à des fins de prévention de la fraude</li>
+  <li><strong>Obligations légales :</strong> dans des cas très limités, des enregistrements anonymisés peuvent être conservés si la législation turque relative à la tenue des dossiers médicaux l'exige (généralement 20 ans pour les dossiers médicaux, cette obligation s'appliquant toutefois aux données détenues par l'Utilisateur Clinique et non par AAFC)</li>
+  <li><strong>Sauvegardes :</strong> la suppression complète des données des sauvegardes chiffrées est effectuée dans un délai de 90 jours</li>
+</ul>
+
+<h2>Délais</h2>
+<ul>
+  <li><strong>Sous 72 heures :</strong> nous accuserons réception de votre demande</li>
+  <li><strong>Sous 7 jours :</strong> nous vous enverrons un courrier électronique de vérification afin de confirmer votre identité</li>
+  <li><strong>Sous 30 jours :</strong> l'ensemble des données principales sera définitivement supprimé après vérification</li>
+  <li><strong>Sous 90 jours :</strong> l'ensemble des copies de sauvegarde sera purgé</li>
+</ul>
+
+<h2>Remarques importantes à l'intention des Utilisateurs Cliniques</h2>
+<div class="note">
+  <p>Si vous êtes administrateur de clinique et que votre clinique compte d'autres utilisateurs, la suppression de votre compte peut avoir une incidence sur ces derniers. Veuillez vous concerter avec l'équipe de votre clinique avant de demander la suppression. La suppression des données des patients au sein d'une clinique active doit être effectuée par l'Utilisateur Clinique responsable via l'application.</p>
+</div>
+
+<h2>Contact</h2>
+<p>Pour toute question concernant la procédure de suppression de compte, veuillez nous contacter :</p>
+<ul>
+  <li><strong>Courrier électronique :</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Site web :</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Politique de confidentialité :</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="it" data-lang="it" hidden>
+<p class="disclaimer">Questa traduzione è fornita per comodità. In caso di discrepanza prevale la versione inglese.</p>
+<h1>Richiesta di cancellazione dell'account</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Rispettiamo il Suo diritto di cancellare il Suo account e i dati ad esso associati. Questa pagina illustra come richiedere la cancellazione del Suo account AAFC e dei dati ad esso associati.</p>
+
+<h2>Come richiedere la cancellazione dell'account</h2>
+<p>Per richiedere la cancellazione del Suo account, La preghiamo di inviare un'e-mail al nostro team di assistenza indicando i dati riportati di seguito:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Richiedi la cancellazione dell'account</a>
+
+<p>In alternativa, può scriverci direttamente all'indirizzo: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>La preghiamo di indicare nella Sua e-mail:</strong>
+  <ul>
+    <li>Il Suo indirizzo e-mail registrato</li>
+    <li>Il nome della Sua clinica</li>
+    <li>Oggetto: &quot;Account Deletion Request&quot; (richiesta di cancellazione dell'account)</li>
+  </ul>
+</div>
+
+<h2>Dati che vengono cancellati</h2>
+<p>Alla conferma della Sua richiesta di cancellazione, cancelleremo in modo permanente:</p>
+<ul>
+  <li>Il Suo account utente (e-mail, nome, ruolo)</li>
+  <li>Le informazioni sulla Sua clinica (nome, logo, dati del medico, indirizzo)</li>
+  <li>Tutte le cartelle dei pazienti (nomi, recapiti, storico delle visite, note cliniche)</li>
+  <li>Tutte le fotografie dei pazienti e i confronti prima/dopo</li>
+  <li>Tutti i documenti caricati (schede di trattamento, moduli di consenso, codici a barre dei prodotti)</li>
+  <li>Tutti i report PDF generati dall'app</li>
+</ul>
+
+<h2>Dati che vengono conservati</h2>
+<p>Alcuni dati possono essere conservati per ragioni legali od operative:</p>
+<ul>
+  <li><strong>Registri di sicurezza:</strong> i tentativi di accesso e gli eventi di sicurezza possono essere conservati per un massimo di 90 giorni a fini di prevenzione delle frodi</li>
+  <li><strong>Obblighi di legge:</strong> in casi molto limitati, possono essere conservati dati anonimizzati se richiesto dalla normativa turca in materia di conservazione della documentazione sanitaria (generalmente 20 anni per le cartelle cliniche, obbligo che tuttavia si applica ai dati detenuti dall'Utente Clinica e non ad AAFC)</li>
+  <li><strong>Backup:</strong> la rimozione completa dei dati dai backup cifrati viene completata entro 90 giorni</li>
+</ul>
+
+<h2>Tempistiche</h2>
+<ul>
+  <li><strong>Entro 72 ore:</strong> confermeremo la ricezione della Sua richiesta</li>
+  <li><strong>Entro 7 giorni:</strong> Le invieremo un'e-mail di verifica per confermare la Sua identità</li>
+  <li><strong>Entro 30 giorni:</strong> tutti i dati primari saranno cancellati in modo permanente dopo la verifica</li>
+  <li><strong>Entro 90 giorni:</strong> tutte le copie di backup saranno eliminate</li>
+</ul>
+
+<h2>Note importanti per gli Utenti Clinica</h2>
+<div class="note">
+  <p>Se Lei è un Amministratore della clinica e la Sua clinica dispone di altri utenti, la cancellazione del Suo account potrebbe avere ripercussioni su di essi. La preghiamo di coordinarsi con il team della Sua clinica prima di richiedere la cancellazione. La cancellazione dei dati dei pazienti all'interno di una clinica attiva deve essere gestita dall'Utente Clinica responsabile tramite l'app.</p>
+</div>
+
+<h2>Contatti</h2>
+<p>Per qualsiasi domanda sulla procedura di cancellazione dell'account, La preghiamo di contattarci:</p>
+<ul>
+  <li><strong>E-mail:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Sito web:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Informativa sulla privacy:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="pt" data-lang="pt" hidden>
+<p class="disclaimer">Esta tradução é fornecida apenas por conveniência. Em caso de divergência, prevalece a versão em inglês.</p>
+<h1>Pedido de Eliminação de Conta</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Respeitamos o seu direito de eliminar a sua conta e os dados associados. Esta página explica como solicitar a eliminação da sua conta AAFC e dos dados a ela associados.</p>
+
+<h2>Como solicitar a eliminação da conta</h2>
+<p>Para solicitar a eliminação da sua conta, envie uma mensagem de correio eletrónico à nossa equipa de apoio com os dados indicados abaixo:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Solicitar a eliminação da conta</a>
+
+<p>Em alternativa, pode enviar-nos diretamente uma mensagem para: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Inclua na sua mensagem:</strong>
+  <ul>
+    <li>O seu endereço de correio eletrónico registado</li>
+    <li>O nome da sua clínica</li>
+    <li>Assunto: &quot;Account Deletion Request&quot; (pedido de eliminação de conta)</li>
+  </ul>
+</div>
+
+<h2>O que é eliminado</h2>
+<p>Após a confirmação do seu pedido de eliminação, eliminaremos permanentemente:</p>
+<ul>
+  <li>A sua conta de utilizador (correio eletrónico, nome, função)</li>
+  <li>As informações da sua clínica (nome, logótipo, dados do médico, morada)</li>
+  <li>Todos os registos de pacientes (nomes, contactos, historial de consultas, notas clínicas)</li>
+  <li>Todas as fotografias de pacientes e comparações antes/depois</li>
+  <li>Todos os documentos carregados (fichas de tratamento, formulários de consentimento, códigos de barras de produtos)</li>
+  <li>Todos os relatórios em PDF gerados pela aplicação</li>
+</ul>
+
+<h2>O que é conservado</h2>
+<p>Determinados dados podem ser conservados por razões jurídicas ou operacionais:</p>
+<ul>
+  <li><strong>Registos de segurança:</strong> as tentativas de início de sessão e os eventos de segurança podem ser conservados por um período máximo de 90 dias para efeitos de prevenção de fraude</li>
+  <li><strong>Requisitos legais:</strong> em casos muito limitados, podem ser conservados registos anonimizados, se tal for exigido pela legislação turca relativa à conservação de registos médicos (normalmente 20 anos para os registos médicos, aplicando-se, contudo, aos dados detidos pelo Utilizador Clínico e não pela AAFC)</li>
+  <li><strong>Cópias de segurança:</strong> a remoção total dos dados das cópias de segurança cifradas é concluída no prazo de 90 dias</li>
+</ul>
+
+<h2>Prazos</h2>
+<ul>
+  <li><strong>No prazo de 72 horas:</strong> acusaremos a receção do seu pedido</li>
+  <li><strong>No prazo de 7 dias:</strong> enviaremos uma mensagem de verificação para confirmar a sua identidade</li>
+  <li><strong>No prazo de 30 dias:</strong> todos os dados principais serão permanentemente eliminados após a verificação</li>
+  <li><strong>No prazo de 90 dias:</strong> todas as cópias de segurança serão purgadas</li>
+</ul>
+
+<h2>Notas importantes para Utilizadores Clínicos</h2>
+<div class="note">
+  <p>Se for Administrador da Clínica e a sua clínica tiver outros utilizadores, a eliminação da sua conta poderá afetá-los. Coordene-se com a equipa da sua clínica antes de solicitar a eliminação. A eliminação de dados de pacientes numa clínica ativa deve ser efetuada pelo Utilizador Clínico responsável através da aplicação.</p>
+</div>
+
+<h2>Contacto</h2>
+<p>Se tiver alguma questão sobre o processo de eliminação de conta, contacte-nos:</p>
+<ul>
+  <li><strong>Correio eletrónico:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Sítio web:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Política de Privacidade:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="ru" data-lang="ru" hidden>
+<p class="disclaimer">Перевод предоставлен для удобства. В случае расхождений преимущественную силу имеет версия на английском языке.</p>
+<h1>Запрос на удаление учетной записи</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>Мы уважаем Ваше право на удаление Вашей учетной записи и связанных с ней данных. На этой странице разъясняется, как запросить удаление Вашей учетной записи AAFC и связанных с ней данных.</p>
+
+<h2>Как запросить удаление учетной записи</h2>
+<p>Чтобы запросить удаление Вашей учетной записи, пожалуйста, направьте электронное письмо в нашу службу поддержки, указав приведенные ниже сведения:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">Запросить удаление учетной записи</a>
+
+<p>Вы также можете самостоятельно написать нам по адресу: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>Пожалуйста, укажите в Вашем письме:</strong>
+  <ul>
+    <li>Ваш зарегистрированный адрес электронной почты</li>
+    <li>Название Вашей клиники</li>
+    <li>Тема письма: &quot;Account Deletion Request&quot; (Запрос на удаление учетной записи)</li>
+  </ul>
+</div>
+
+<h2>Какие данные удаляются</h2>
+<p>После подтверждения Вашего запроса на удаление мы безвозвратно удалим:</p>
+<ul>
+  <li>Вашу учетную запись пользователя (адрес электронной почты, имя, роль)</li>
+  <li>Сведения о Вашей клинике (название, логотип, данные врача, адрес)</li>
+  <li>Все записи о пациентах (имена, контактные данные, история визитов, клинические заметки)</li>
+  <li>Все фотографии пациентов и сравнения «до/после»</li>
+  <li>Все загруженные документы (карты процедур, формы согласия, штрихкоды продуктов)</li>
+  <li>Все отчеты в формате PDF, созданные приложением</li>
+</ul>
+
+<h2>Какие данные сохраняются</h2>
+<p>Отдельные данные могут сохраняться по правовым или операционным причинам:</p>
+<ul>
+  <li><strong>Журналы безопасности:</strong> сведения о попытках входа и событиях безопасности могут храниться до 90 дней в целях предотвращения мошенничества</li>
+  <li><strong>Требования законодательства:</strong> в крайне ограниченных случаях обезличенные записи могут сохраняться, если этого требует законодательство Турецкой Республики о ведении медицинской документации (как правило, 20 лет для медицинских записей; однако это относится к данным, находящимся у Пользователя-клиники, а не у AAFC)</li>
+  <li><strong>Резервные копии:</strong> полное удаление данных из зашифрованных резервных копий завершается в течение 90 дней</li>
+</ul>
+
+<h2>Сроки</h2>
+<ul>
+  <li><strong>В течение 72 часов:</strong> мы подтвердим получение Вашего запроса</li>
+  <li><strong>В течение 7 дней:</strong> мы направим Вам письмо для верификации с целью подтверждения Вашей личности</li>
+  <li><strong>В течение 30 дней:</strong> после верификации все основные данные будут безвозвратно удалены</li>
+  <li><strong>В течение 90 дней:</strong> все резервные копии будут уничтожены</li>
+</ul>
+
+<h2>Важные примечания для Пользователей-клиник</h2>
+<div class="note">
+  <p>Если Вы являетесь администратором клиники и в Вашей клинике есть другие пользователи, удаление Вашей учетной записи может затронуть их. Пожалуйста, согласуйте свои действия с командой Вашей клиники до направления запроса на удаление. Удаление данных пациентов в рамках действующей клиники должно осуществляться ответственным Пользователем-клиникой через приложение.</p>
+</div>
+
+<h2>Контактная информация</h2>
+<p>Если у Вас есть какие-либо вопросы относительно процедуры удаления учетной записи, пожалуйста, свяжитесь с нами:</p>
+<ul>
+  <li><strong>Электронная почта:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>Веб-сайт:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>Политика конфиденциальности:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="ko" data-lang="ko" hidden>
+<p class="disclaimer">이 번역본은 편의를 위해 제공됩니다. 내용이 상충하는 경우 영어 원문이 우선합니다.</p>
+<h1>계정 삭제 요청</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>당사는 귀하의 계정 및 관련 데이터를 삭제할 권리를 존중합니다. 본 페이지는 귀하의 AAFC 계정 및 이와 관련된 데이터의 삭제를 요청하는 방법을 설명합니다.</p>
+
+<h2>계정 삭제 요청 방법</h2>
+<p>계정 삭제를 요청하시려면 아래 정보를 기재하여 당사 지원팀으로 이메일을 보내 주십시오:</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">계정 삭제 요청하기</a>
+
+<p>또는 다음 주소로 직접 이메일을 보내실 수 있습니다: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>이메일에 다음 사항을 포함하여 주십시오:</strong>
+  <ul>
+    <li>귀하의 등록된 이메일 주소</li>
+    <li>귀하의 클리닉 명칭</li>
+    <li>제목: &quot;Account Deletion Request&quot;(계정 삭제 요청)</li>
+  </ul>
+</div>
+
+<h2>삭제되는 데이터</h2>
+<p>귀하의 삭제 요청이 확인되면 당사는 다음을 영구적으로 삭제합니다:</p>
+<ul>
+  <li>귀하의 사용자 계정(이메일, 성명, 역할)</li>
+  <li>귀하의 클리닉 정보(명칭, 로고, 의사 정보, 주소)</li>
+  <li>모든 환자 기록(성명, 연락처 정보, 방문 이력, 임상 기록)</li>
+  <li>모든 환자 사진 및 시술 전/후 비교 자료</li>
+  <li>업로드된 모든 문서(치료 카드, 동의서, 제품 바코드)</li>
+  <li>앱에서 생성된 모든 PDF 보고서</li>
+</ul>
+
+<h2>보존되는 데이터</h2>
+<p>일부 데이터는 법적 또는 운영상의 사유로 보존될 수 있습니다:</p>
+<ul>
+  <li><strong>보안 로그:</strong> 로그인 시도 및 보안 이벤트 기록은 부정행위 방지 목적으로 최대 90일간 보존될 수 있습니다</li>
+  <li><strong>법적 요건:</strong> 튀르키예의 의료기록 보존 관련 법령에서 요구하는 경우, 매우 제한적인 경우에 한하여 익명화된 기록이 보존될 수 있습니다(의료기록의 경우 통상 20년이나, 이는 AAFC가 아닌 클리닉 사용자가 보유한 데이터에 적용됩니다)</li>
+  <li><strong>백업:</strong> 암호화된 백업에서의 데이터 완전 삭제는 90일 이내에 완료됩니다</li>
+</ul>
+
+<h2>처리 일정</h2>
+<ul>
+  <li><strong>72시간 이내:</strong> 당사는 귀하의 요청 접수를 확인합니다</li>
+  <li><strong>7일 이내:</strong> 당사는 귀하의 신원을 확인하기 위한 인증 이메일을 발송합니다</li>
+  <li><strong>30일 이내:</strong> 인증 완료 후 모든 주요 데이터가 영구적으로 삭제됩니다</li>
+  <li><strong>90일 이내:</strong> 모든 백업 사본이 영구 삭제됩니다</li>
+</ul>
+
+<h2>클리닉 사용자를 위한 중요 안내</h2>
+<div class="note">
+  <p>귀하가 클리닉 관리자이며 귀하의 클리닉에 다른 사용자가 있는 경우, 귀하의 계정 삭제는 해당 사용자들에게 영향을 미칠 수 있습니다. 삭제를 요청하기 전에 클리닉 팀과 협의하여 주십시오. 운영 중인 클리닉 내의 환자 데이터 삭제는 책임 있는 클리닉 사용자가 앱을 통하여 처리하여야 합니다.</p>
+</div>
+
+<h2>연락처</h2>
+<p>계정 삭제 절차에 관하여 문의 사항이 있으시면 당사로 연락하여 주십시오:</p>
+<ul>
+  <li><strong>이메일:</strong> <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>웹사이트:</strong> <a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>개인정보 처리방침:</strong> <a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+<div class="container lang-block" lang="zh" data-lang="zh" hidden>
+<p class="disclaimer">本译文仅供参考。如有歧义，以英文版本为准。</p>
+<h1>账户删除请求</h1>
+<p><strong>AAFC — Aesthetic Archive for Clinics</strong></p>
+<p>我们尊重您删除账户及相关数据的权利。本页面说明如何请求删除您的 AAFC 账户及与之相关的数据。</p>
+
+<h2>如何请求删除账户</h2>
+<p>如需请求删除您的账户，请向我们的支持团队发送电子邮件，并提供以下信息：</p>
+
+<a href="mailto:support@aafclinic.com?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20AAFC%20account%20and%20all%20associated%20data.%0A%0ARegistered%20email%3A%20%5Byour%20email%5D%0AClinic%20name%3A%20%5Byour%20clinic%20name%5D%0A%0AThank%20you." class="cta">请求删除账户</a>
+
+<p>您也可以手动发送电子邮件至：<a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+
+<div class="note">
+  <strong>请在您的电子邮件中注明：</strong>
+  <ul>
+    <li>您的注册电子邮件地址</li>
+    <li>您的诊所名称</li>
+    <li>邮件主题：&quot;Account Deletion Request&quot;（账户删除请求）</li>
+  </ul>
+</div>
+
+<h2>删除的数据</h2>
+<p>您的删除请求经确认后，我们将永久删除：</p>
+<ul>
+  <li>您的用户账户（电子邮件、姓名、角色）</li>
+  <li>您的诊所信息（名称、标志、医生信息、地址）</li>
+  <li>所有患者记录（姓名、联系信息、就诊历史、临床记录）</li>
+  <li>所有患者照片及治疗前/治疗后对比</li>
+  <li>所有已上传的文件（治疗卡、知情同意书、产品条形码）</li>
+  <li>应用程序生成的所有 PDF 报告</li>
+</ul>
+
+<h2>保留的数据</h2>
+<p>出于法律或运营原因，部分数据可能会被保留：</p>
+<ul>
+  <li><strong>安全日志：</strong>登录尝试及安全事件记录可能为防范欺诈之目的保留最长90天</li>
+  <li><strong>法律要求：</strong>在极为有限的情况下，如土耳其医疗记录保存相关法律有所要求，匿名化记录可能会被保留（医疗记录通常为20年，但此项适用于诊所用户而非 AAFC 所持有的数据）</li>
+  <li><strong>备份：</strong>从加密备份中完全清除数据将在90天内完成</li>
+</ul>
+
+<h2>处理时限</h2>
+<ul>
+  <li><strong>72小时内：</strong>我们将确认收到您的请求</li>
+  <li><strong>7天内：</strong>我们将发送验证邮件以确认您的身份</li>
+  <li><strong>30天内：</strong>验证完成后，所有主要数据将被永久删除</li>
+  <li><strong>90天内：</strong>所有备份副本将被清除</li>
+</ul>
+
+<h2>诊所用户重要须知</h2>
+<div class="note">
+  <p>如您是诊所管理员且您的诊所还有其他用户，删除您的账户可能会对其造成影响。请在提出删除请求之前与您的诊所团队进行协调。在运营中的诊所内删除患者数据，应由负责的诊所用户通过应用程序处理。</p>
+</div>
+
+<h2>联系方式</h2>
+<p>如您对账户删除流程有任何疑问，请联系我们：</p>
+<ul>
+  <li><strong>电子邮件：</strong><a href="mailto:support@aafclinic.com">support@aafclinic.com</a></li>
+  <li><strong>网站：</strong><a href="https://aafclinic.com">aafclinic.com</a></li>
+  <li><strong>隐私政策：</strong><a href="https://aafclinic.com/privacy">aafclinic.com/privacy</a></li>
+</ul>
+</div>
+
+<footer>
+  <p>© 2026 EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</p>
+  <div>
+    <a href="privacy.html" data-ui="1">Privacy</a> · <a href="terms.html" data-ui="2">Terms</a> · <a href="account-deletion.html" data-ui="3">Account Deletion</a> · <a href="index.html" data-ui="0">Home</a>
+  </div>
+</footer>
+
+<script>
+var LANGS=[["tr", "TR · Türkçe"], ["en", "EN · English"], ["de", "DE · Deutsch"], ["es", "ES · Español"], ["fr", "FR · Français"], ["it", "IT · Italiano"], ["pt", "PT · Português"], ["ru", "RU · Русский"], ["ko", "KO · 한국어"], ["zh", "ZH · 中文"]];
+var UI={"en": ["Home", "Privacy", "Terms", "Account Deletion", ""], "tr": ["Ana sayfa", "Gizlilik", "Kullanım Koşulları", "Hesap Silme", "Bu çeviri kolaylık amacıyla sunulmuştur. Çelişki halinde İngilizce metin geçerlidir."], "de": ["Startseite", "Datenschutz", "Nutzungsbedingungen", "Kontolöschung", "Diese Übersetzung dient nur der Information. Im Zweifelsfall ist die englische Fassung maßgeblich."], "es": ["Inicio", "Privacidad", "Términos", "Eliminación de cuenta", "Esta traducción se ofrece solo por comodidad. En caso de discrepancia, prevalece la versión en inglés."], "fr": ["Accueil", "Confidentialité", "Conditions", "Suppression du compte", "Cette traduction est fournie à titre indicatif. En cas de divergence, la version anglaise prévaut."], "it": ["Home", "Privacy", "Termini", "Eliminazione account", "Questa traduzione è fornita per comodità. In caso di discrepanza prevale la versione inglese."], "pt": ["Início", "Privacidade", "Termos", "Eliminação da conta", "Esta tradução é fornecida apenas por conveniência. Em caso de divergência, prevalece a versão em inglês."], "ru": ["Главная", "Конфиденциальность", "Условия", "Удаление аккаунта", "Перевод предоставлен для удобства. В случае расхождений преимущественную силу имеет версия на английском языке."], "ko": ["홈", "개인정보", "이용약관", "계정 삭제", "이 번역본은 편의를 위해 제공됩니다. 내용이 상충하는 경우 영어 원문이 우선합니다."], "zh": ["首页", "隐私", "条款", "删除账户", "本译文仅供参考。如有歧义，以英文版本为准。"]};
+var TITLES={"tr": "Hesap Silme Talebi — AAFC", "en": "Account Deletion Request — AAFC", "de": "Antrag auf Kontolöschung — AAFC", "es": "Solicitud de eliminación de cuenta — AAFC", "fr": "Demande de suppression de compte — AAFC", "it": "Richiesta di cancellazione dell'account — AAFC", "pt": "Pedido de Eliminação de Conta — AAFC", "ru": "Запрос на удаление учетной записи — AAFC", "ko": "계정 삭제 요청 — AAFC", "zh": "账户删除请求 — AAFC"};
+function setLang(l){
+  if(!UI[l])l='en';
+  document.querySelectorAll('.lang-block').forEach(function(b){b.hidden=b.getAttribute('data-lang')!==l;});
+  document.querySelectorAll('[data-ui]').forEach(function(a){a.textContent=UI[l][+a.getAttribute('data-ui')];});
+  document.documentElement.lang=l;document.title=TITLES[l];
+  var s=document.getElementById('langSel');s.innerHTML=LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===l?' selected':'')+'>'+x[1]+'</option>';}).join('');
+  try{localStorage.setItem('aafc_lang',l);}catch(e){}
+}
+(function(){
+  var q=(new URLSearchParams(location.search).get('lang')||'').toLowerCase(),saved=null;
+  try{saved=localStorage.getItem('aafc_lang');}catch(e){}
+  var nav=(navigator.languages&&navigator.languages[0]||navigator.language||'en').toLowerCase().slice(0,2);
+  setLang(UI[q]?q:(UI[saved]?saved:(UI[nav]?nav:'en')));
+})();
+</script>
 </body>
 </html>

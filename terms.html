@@ -1,46 +1,144 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms of Service — AAFC</title>
 <meta name="description" content="Terms of Service for AAFC (Aesthetic Archive for Clinics).">
+<link rel="canonical" href="https://aafclinic.com/terms" />
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; line-height: 1.7; }
   a { color: #B89A6A; text-decoration: none; }
   a:hover { text-decoration: underline; }
-  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); }
+  nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); flex-wrap: wrap; }
   .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 3px; }
-  .nav-links a { color: rgba(245,241,235,0.6); margin-left: 32px; font-size: 14px; }
-  .nav-links a:hover { color: #F5F1EB; }
+  .nav-links { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: rgba(245,241,235,0.6); font-size: 14px; }
+  .nav-links a:hover { color: #F5F1EB; text-decoration: none; }
+  #langSel { cursor: pointer; font: inherit; font-size: 13px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; border-radius: 8px; padding: 6px 6px; }
   .container { max-width: 760px; margin: 0 auto; padding: 60px 40px 100px; }
+  .disclaimer { background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: rgba(245,241,235,0.7); margin-bottom: 28px; }
   h1 { font-size: 38px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
   .updated { color: rgba(245,241,235,0.45); font-size: 14px; margin-bottom: 40px; }
   h2 { font-size: 22px; font-weight: 500; color: #B89A6A; margin: 36px 0 14px; }
+  h3 { font-size: 17px; font-weight: 600; color: #F5F1EB; margin: 22px 0 10px; }
   p { color: rgba(245,241,235,0.78); margin-bottom: 14px; font-size: 16px; }
+  strong { color: #F5F1EB; }
   ul { color: rgba(245,241,235,0.78); margin: 0 0 14px 24px; }
   ul li { padding: 4px 0; font-size: 16px; }
-  .contact-box { background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 12px; padding: 20px 24px; margin-top: 40px; }
-  .contact-box p { color: rgba(245,241,235,0.85); margin-bottom: 6px; }
+  .note, .contact-box { background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 12px; padding: 16px 20px; margin: 18px 0; }
+  .note ul { margin-bottom: 0; }
+  .contact-box { margin-top: 40px; }
+  .contact-box p, .note p { color: rgba(245,241,235,0.85); margin-bottom: 6px; }
+  .cta { display: inline-block; background: #B89A6A; color: #1C1929; padding: 12px 24px; border-radius: 8px; margin: 12px 0 18px; font-weight: 600; }
+  .cta:hover { text-decoration: none; background: #D4B896; }
   footer { border-top: 1px solid rgba(245,241,235,0.08); padding: 24px 60px; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
   footer p, footer a { font-size: 13px; color: rgba(245,241,235,0.4); }
-  @media (max-width: 600px) { nav { padding: 16px 20px; } .container { padding: 40px 20px 60px; } h1 { font-size: 28px; } footer { padding: 20px; flex-direction: column; text-align: center; } }
+  @media (max-width: 600px) { nav { padding: 16px 20px; } .nav-links { gap: 14px; } .container { padding: 40px 20px 60px; } h1 { font-size: 28px; } footer { padding: 20px; flex-direction: column; } }
 </style>
-  <link rel="canonical" href="https://aafclinic.com/terms" />
 </head>
 <body>
 
 <nav>
   <a href="index.html" class="logo">AAFC</a>
   <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="privacy.html">Privacy</a>
+    <a href="index.html" data-ui="0">Home</a>
+    <a href="privacy.html" data-ui="1">Privacy</a>
+    <a href="terms.html" data-ui="2">Terms</a>
+    <select id="langSel" aria-label="Language" onchange="setLang(this.value)"></select>
   </div>
 </nav>
 
-<div class="container">
+<div class="container lang-block" lang="tr" data-lang="tr" hidden>
+<p class="disclaimer">Bu çeviri kolaylık amacıyla sunulmuştur. Çelişki halinde İngilizce metin geçerlidir.</p>
+<h1>Hizmet Koşulları</h1>
+<p class="updated">Son güncelleme: 25 Nisan 2026</p>
 
+<p>AAFC'ye (Aesthetic Archive for Clinics) hoş geldiniz. İşbu Hizmet Koşulları ("Koşullar"), EDECA Yazılım Ticaret ve Sanayi Limited Şirketi ("EDECA", "biz", "bize" veya "bizim") tarafından işletilen AAFC mobil uygulamalarına, web paneline ve ilgili hizmetlere (topluca "Hizmet") erişiminizi ve bunları kullanımınızı düzenler.</p>
+
+<p>Hizmeti indirerek, kurarak veya kullanarak işbu Koşullar ile bağlı olmayı kabul etmiş olursunuz. Kabul etmiyorsanız lütfen Hizmeti kullanmayınız.</p>
+
+<h2>1. Uygunluk ve Kullanım</h2>
+<p>AAFC; estetik hekimler, plastik cerrahlar, dermatologlar, KBB uzmanları ve klinik personeli dâhil olmak üzere lisanslı sağlık meslek mensuplarına yönelik bir dokümantasyon ve arşiv aracıdır. Hizmeti kullanarak aşağıdakileri teyit etmiş olursunuz:</p>
+<ul>
+  <li>En az 18 yaşında olduğunuzu ve işbu sözleşmeyi akdetmek için hukuken ehil olduğunuzu.</li>
+  <li>Bulunduğunuz yargı alanında tıbbi fotoğraf kayıtlarını işlemek için gerekli mesleki lisansa veya yetkiye sahip olduğunuzu.</li>
+  <li>Hizmeti, tıbbi verilerin korunmasına ilişkin düzenlemeler (KVKK, GDPR veya HIPAA gibi) dâhil olmak üzere yürürlükteki tüm mevzuata uygun olarak kullanacağınızı.</li>
+</ul>
+
+<h2>2. Hesap ve Güvenlik</h2>
+<p>Özelliklerin çoğunu kullanabilmek için bir hesap oluşturmanız gerekir. Aşağıdakilerden siz sorumlusunuz:</p>
+<ul>
+  <li>Oturum açma kimlik bilgilerinizin gizliliğini korumak.</li>
+  <li>Çok Kullanıcılı Klinik Erişimi aracılığıyla davet ettiğiniz ekip üyelerinin faaliyetleri dâhil olmak üzere hesabınız altında gerçekleşen tüm faaliyetler.</li>
+  <li>Yetkisiz erişimden şüphelenmeniz hâlinde derhal <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> adresinden bize bildirimde bulunmak.</li>
+</ul>
+
+<h2>3. Abonelik ve Faturalandırma</h2>
+<p>AAFC, 14 günlük ücretsiz deneme süresinin ardından aylık 49,99 ABD Doları (veya yerel para birimindeki karşılığı) bedelle, aylık otomatik yenilenen esasta faturalandırılan AAFC Premium adlı ücretli bir abonelik planı sunmaktadır.</p>
+<ul>
+  <li>Abonelikler Apple App Store veya Google Play tarafından işlenir. İlgili mağazanın tüm ödeme, faturalandırma, iade ve iptal politikaları uygulanır.</li>
+  <li>Aboneliğiniz, yenilemeden en az 24 saat önce iptal edilmediği takdirde her faturalandırma döneminin sonunda otomatik olarak yenilenir.</li>
+  <li>İptal işlemi App Store veya Google Play hesap ayarlarınız üzerinden yapılmalıdır. İptal işlemlerini doğrudan gerçekleştirmiyoruz.</li>
+  <li>Uygulanabildiği durumlarda iadeler, ilgili mağaza tarafından kendi iade politikası çerçevesinde yürütülür.</li>
+</ul>
+
+<h2>4. Hasta Verileri ve Sorumluluklarınız</h2>
+<p>AAFC, lisanslı kullanıcı olarak sizin yüklemeyi tercih ettiğiniz verileri saklamaya ve düzenlemeye yarayan bir araçtır. Girdiğiniz tüm verilerin mülkiyeti size ait olmaya devam eder.</p>
+<ul>
+  <li>Kimliği belirlenebilir tıbbi fotoğrafları veya kişisel verileri saklamadan önce hukuka uygun hasta rızasını almaktan münhasıran siz sorumlusunuz.</li>
+  <li>Ülkenizde veya bölgenizde uygulanan tüm tıbbi veri mevzuatına uyumdan siz sorumlusunuz.</li>
+  <li>EDECA, yüklediğiniz hasta verilerinin veri sorumlusu değildir. Veri sorumlusu sıfatıyla siz hareket edersiniz; EDECA ise <a href="privacy.html">Gizlilik Politikamıza</a> uygun olarak sizin adınıza veri işleyen sıfatıyla hareket eder.</li>
+</ul>
+
+<h2>5. Fikri Mülkiyet</h2>
+<p>Yazılımı, tasarımı, logoları ve ticari markaları dâhil olmak üzere Hizmet, EDECA'nın münhasır mülkiyetindedir. Önceden yazılı iznimiz olmaksızın Hizmetin herhangi bir bölümünü kopyalayamaz, değiştiremez, dağıtamaz, satamaz veya tersine mühendislik işlemine tabi tutamazsınız.</p>
+<p>Yüklediğiniz içerik (hasta verileri, fotoğraflar, notlar) size ait olmaya devam eder. EDECA'ya, yalnızca Hizmetin işletilmesi amacıyla bu içeriği barındırmak, işlemek ve görüntülemek üzere sınırlı bir lisans vermiş olursunuz.</p>
+
+<h2>6. Kabul Edilebilir Kullanım</h2>
+<p>Aşağıdakileri yapmamayı kabul edersiniz:</p>
+<ul>
+  <li>Hizmeti hukuka aykırı herhangi bir amaçla veya tıbbi düzenlemeleri ihlal edecek şekilde kullanmak.</li>
+  <li>Hukuka aykırı, zararlı veya üçüncü kişilerin haklarını ihlal eden içerik yüklemek.</li>
+  <li>Diğer hesaplara veya sistemlere yetkisiz erişim sağlamaya teşebbüs etmek.</li>
+  <li>Hizmeti kötü amaçlı yazılım paylaşmak veya iletmek için kullanmak.</li>
+  <li>Hizmetin kaynak kodunu tersine mühendislik işlemine tabi tutmak, kaynak koda dönüştürmek (decompile) veya çıkarmak.</li>
+</ul>
+
+<h2>7. Tıbbi Tavsiye Niteliği Taşımama</h2>
+<p>AAFC bir dokümantasyon ve arşiv aracıdır. Tıbbi tavsiye, teşhis, tedavi önerisi veya klinik karar desteği sağlamaz. Tüm klinik kararlar, münhasıran Hizmeti kullanan lisanslı hekimin sorumluluğundadır.</p>
+
+<h2>8. Hizmetin Erişilebilirliği</h2>
+<p>Hizmetin her zaman erişilebilir olmasını hedeflemekle birlikte kesintisiz erişimi garanti etmiyoruz. Hizmeti bakım, yükseltme veya operasyonel nedenlerle önceden bildirimde bulunmaksızın askıya alabilir veya değiştirebiliriz.</p>
+
+<h2>9. Sona Erme</h2>
+<p>İşbu Koşulları ihlal etmeniz veya Hizmeti hukuki ya da operasyonel risk doğuracak şekilde kullanmanız hâlinde erişiminizi askıya alabilir veya sona erdirebiliriz. Hizmeti kullanmayı dilediğiniz zaman bırakabilirsiniz.</p>
+<p>Sona ermenin ardından, <a href="account-deletion.html">Hesap Silme</a> sayfamız aracılığıyla verilerinizin dışa aktarılmasını ve silinmesini talep edebilirsiniz. Abonelik iptalleri ilgili uygulama mağazası üzerinden gerçekleştirilmelidir.</p>
+
+<h2>10. Garantilerin Reddi</h2>
+<p>Hizmet, açık veya zımni hiçbir garanti verilmeksizin "olduğu gibi" ve "mevcut olduğu şekliyle" sunulmaktadır. EDECA, ticarete elverişlilik, belirli bir amaca uygunluk ve hak ihlali bulunmaması dâhil olmak üzere tüm zımni garantileri, kanunun izin verdiği azami ölçüde reddeder.</p>
+
+<h2>11. Sorumluluğun Sınırlandırılması</h2>
+<p>Yürürlükteki mevzuatın izin verdiği azami ölçüde, EDECA, yöneticileri, çalışanları ve iştirakleri; Hizmeti kullanımınızdan kaynaklanan veya bununla bağlantılı dolaylı, arızi, sonuç olarak doğan veya cezai nitelikteki zararlardan ya da veri, kâr veya itibar kaybından sorumlu tutulamaz.</p>
+<p>EDECA'nın toplam sorumluluğu, talebe yol açan olaydan önceki on iki (12) ay içinde EDECA'ya ödediğiniz tutarı aşamaz.</p>
+
+<h2>12. İşbu Koşullarda Yapılacak Değişiklikler</h2>
+<p>İşbu Koşulları zaman zaman güncelleyebiliriz. Esaslı değişiklikler Hizmet aracılığıyla veya e-posta yoluyla bildirilecektir. Değişikliklerin yürürlüğe girmesinden sonra Hizmeti kullanmaya devam etmeniz, revize edilmiş Koşulları kabul ettiğiniz anlamına gelir.</p>
+
+<h2>13. Uygulanacak Hukuk</h2>
+<p>İşbu Koşullar Türkiye Cumhuriyeti kanunlarına tabidir. İşbu Koşullardan doğan her türlü uyuşmazlık, ülkenizin emredici tüketiciyi koruma mevzuatının aksini öngördüğü haller saklı kalmak kaydıyla, Manisa (Türkiye) mahkemelerinin münhasır yetkisine tabidir.</p>
+
+<h2>14. İletişim</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Vergi Kimlik No (VKN): 2050264942</p>
+  <p>E-posta: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>İnternet sitesi: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="en" data-lang="en">
 <h1>Terms of Service</h1>
 <p class="updated">Last updated: April 25, 2026</p>
 
@@ -126,15 +224,737 @@
   <p>Email: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
   <p>Website: <a href="https://aafclinic.com">aafclinic.com</a></p>
 </div>
+</div>
+<div class="container lang-block" lang="de" data-lang="de" hidden>
+<p class="disclaimer">Diese Übersetzung dient nur der Information. Im Zweifelsfall ist die englische Fassung maßgeblich.</p>
+<h1>Nutzungsbedingungen</h1>
+<p class="updated">Zuletzt aktualisiert: 25. April 2026</p>
 
+<p>Willkommen bei AAFC (Aesthetic Archive for Clinics). Diese Nutzungsbedingungen („Bedingungen“) regeln Ihren Zugang zu und Ihre Nutzung der mobilen Anwendungen, des Web-Panels und der zugehörigen Dienste von AAFC (zusammen der „Dienst“), die von der EDECA Yazılım Ticaret ve Sanayi Limited Şirketi („EDECA“, „wir“, „uns“ oder „unser“) betrieben werden.</p>
+
+<p>Durch das Herunterladen, Installieren oder Nutzen des Dienstes erklären Sie sich mit diesen Bedingungen einverstanden und an sie gebunden. Wenn Sie nicht einverstanden sind, nutzen Sie den Dienst bitte nicht.</p>
+
+<h2>1. Berechtigung und Nutzung</h2>
+<p>AAFC ist ein Dokumentations- und Archivierungswerkzeug für zugelassene medizinische Fachkräfte, einschließlich ästhetisch tätiger Ärzte, plastischer Chirurgen, Dermatologen, HNO-Fachärzte und Klinikpersonal. Durch die Nutzung des Dienstes bestätigen Sie, dass:</p>
+<ul>
+  <li>Sie mindestens 18 Jahre alt und rechtlich befugt sind, diese Vereinbarung abzuschließen.</li>
+  <li>Sie über die in Ihrem Rechtsgebiet erforderliche berufliche Zulassung oder Befugnis zum Umgang mit medizinischen Fotoaufzeichnungen verfügen.</li>
+  <li>Sie den Dienst unter Einhaltung aller geltenden Gesetze nutzen werden, einschließlich der Vorschriften zum Schutz medizinischer Daten (wie KVKK, DSGVO/GDPR oder HIPAA).</li>
+</ul>
+
+<h2>2. Konto und Sicherheit</h2>
+<p>Für die Nutzung der meisten Funktionen müssen Sie ein Konto erstellen. Sie sind verantwortlich für:</p>
+<ul>
+  <li>die Wahrung der Vertraulichkeit Ihrer Anmeldedaten.</li>
+  <li>sämtliche Aktivitäten, die unter Ihrem Konto erfolgen, einschließlich der Aktivitäten von Teammitgliedern, die Sie über den Mehrbenutzer-Klinikzugang einladen.</li>
+  <li>die unverzügliche Benachrichtigung an <a href="mailto:support@aafclinic.com">support@aafclinic.com</a>, wenn Sie einen unbefugten Zugriff vermuten.</li>
+</ul>
+
+<h2>3. Abonnement und Abrechnung</h2>
+<p>AAFC bietet ein kostenpflichtiges Abonnement, AAFC Premium, an, das nach einem 14-tägigen kostenlosen Testzeitraum monatlich mit automatischer Verlängerung zu 49,99 USD (oder dem entsprechenden Betrag in Landeswährung) pro Monat abgerechnet wird.</p>
+<ul>
+  <li>Abonnements werden über den Apple App Store oder Google Play abgewickelt. Es gelten sämtliche Zahlungs-, Abrechnungs-, Erstattungs- und Kündigungsrichtlinien des jeweiligen Stores.</li>
+  <li>Ihr Abonnement verlängert sich am Ende jedes Abrechnungszeitraums automatisch, sofern es nicht mindestens 24 Stunden vor der Verlängerung gekündigt wird.</li>
+  <li>Die Kündigung muss über die Kontoeinstellungen Ihres App Store- oder Google Play-Kontos erfolgen. Wir bearbeiten Kündigungen nicht direkt.</li>
+  <li>Erstattungen werden, soweit anwendbar, vom jeweiligen Store gemäß dessen Erstattungsrichtlinie abgewickelt.</li>
+</ul>
+
+<h2>4. Patientendaten und Ihre Pflichten</h2>
+<p>AAFC ist ein Werkzeug zur Speicherung und Organisation von Daten, die Sie als zugelassener Nutzer hochladen. Sie bleiben Eigentümer aller von Ihnen eingegebenen Daten.</p>
+<ul>
+  <li>Sie sind allein dafür verantwortlich, vor der Speicherung identifizierbarer medizinischer Fotos oder personenbezogener Daten eine rechtmäßige Einwilligung des Patienten einzuholen.</li>
+  <li>Sie sind für die Einhaltung aller in Ihrem Land oder Ihrer Region geltenden Gesetze zu medizinischen Daten verantwortlich.</li>
+  <li>EDECA ist nicht Verantwortlicher für die von Ihnen hochgeladenen Patientendaten. Sie handeln als Verantwortlicher; EDECA handelt als Auftragsverarbeiter in Ihrem Auftrag gemäß unserer <a href="privacy.html">Datenschutzerklärung</a>.</li>
+</ul>
+
+<h2>5. Geistiges Eigentum</h2>
+<p>Der Dienst, einschließlich seiner Software, seines Designs, seiner Logos und Marken, ist ausschließliches Eigentum von EDECA. Ohne unsere vorherige schriftliche Zustimmung dürfen Sie keinen Teil des Dienstes kopieren, verändern, verbreiten, verkaufen oder zurückentwickeln (Reverse Engineering).</p>
+<p>Von Ihnen hochgeladene Inhalte (Patientendaten, Fotos, Notizen) bleiben Ihr Eigentum. Sie gewähren EDECA eine beschränkte Lizenz, diese Inhalte ausschließlich zum Zweck des Betriebs des Dienstes zu hosten, zu verarbeiten und anzuzeigen.</p>
+
+<h2>6. Zulässige Nutzung</h2>
+<p>Sie verpflichten sich, Folgendes zu unterlassen:</p>
+<ul>
+  <li>die Nutzung des Dienstes zu rechtswidrigen Zwecken oder unter Verstoß gegen medizinische Vorschriften.</li>
+  <li>das Hochladen von Inhalten, die rechtswidrig oder schädlich sind oder Rechte Dritter verletzen.</li>
+  <li>den Versuch, sich unbefugten Zugriff auf andere Konten oder Systeme zu verschaffen.</li>
+  <li>die Nutzung des Dienstes zur Verbreitung oder Übertragung von Schadsoftware.</li>
+  <li>das Zurückentwickeln, Dekompilieren oder Extrahieren des Quellcodes des Dienstes.</li>
+</ul>
+
+<h2>7. Keine medizinische Beratung</h2>
+<p>AAFC ist ein Dokumentations- und Archivierungswerkzeug. Es bietet keine medizinische Beratung, Diagnose, Behandlungsempfehlungen oder klinische Entscheidungsunterstützung. Sämtliche klinischen Entscheidungen liegen in der alleinigen Verantwortung des zugelassenen Behandlers, der den Dienst nutzt.</p>
+
+<h2>8. Verfügbarkeit des Dienstes</h2>
+<p>Wir sind bestrebt, den Dienst jederzeit verfügbar zu halten, garantieren jedoch keinen unterbrechungsfreien Zugang. Wir können den Dienst aus Wartungs-, Aktualisierungs- oder betrieblichen Gründen ohne vorherige Ankündigung aussetzen oder ändern.</p>
+
+<h2>9. Beendigung</h2>
+<p>Wir können Ihren Zugang aussetzen oder beenden, wenn Sie gegen diese Bedingungen verstoßen oder den Dienst in einer Weise nutzen, die rechtliche oder betriebliche Risiken verursacht. Sie können die Nutzung des Dienstes jederzeit einstellen.</p>
+<p>Nach der Beendigung können Sie über unsere Seite <a href="account-deletion.html">Kontolöschung</a> den Export und die Löschung Ihrer Daten beantragen. Abonnementkündigungen müssen über den jeweiligen App-Store erfolgen.</p>
+
+<h2>10. Gewährleistungsausschluss</h2>
+<p>Der Dienst wird „wie besehen“ und „wie verfügbar“ ohne ausdrückliche oder stillschweigende Gewährleistungen jeglicher Art bereitgestellt. EDECA schließt im gesetzlich größtmöglichen Umfang alle stillschweigenden Gewährleistungen aus, einschließlich der Marktgängigkeit, der Eignung für einen bestimmten Zweck und der Nichtverletzung von Rechten Dritter.</p>
+
+<h2>11. Haftungsbeschränkung</h2>
+<p>Im größtmöglichen nach geltendem Recht zulässigen Umfang haften EDECA, seine Geschäftsführer, Mitarbeiter und verbundenen Unternehmen nicht für indirekte, beiläufig entstandene, Folge- oder Strafschäden oder für den Verlust von Daten, Gewinnen oder Geschäftswert, die sich aus Ihrer Nutzung des Dienstes ergeben oder damit im Zusammenhang stehen.</p>
+<p>Die gesamte Haftung von EDECA ist auf den Betrag begrenzt, den Sie in den zwölf (12) Monaten vor dem anspruchsbegründenden Ereignis an EDECA gezahlt haben.</p>
+
+<h2>12. Änderungen dieser Bedingungen</h2>
+<p>Wir können diese Bedingungen von Zeit zu Zeit aktualisieren. Wesentliche Änderungen werden über den Dienst oder per E-Mail mitgeteilt. Ihre fortgesetzte Nutzung des Dienstes nach Inkrafttreten der Änderungen gilt als Annahme der überarbeiteten Bedingungen.</p>
+
+<h2>13. Anwendbares Recht</h2>
+<p>Diese Bedingungen unterliegen dem Recht der Republik Türkiye. Für alle Streitigkeiten aus diesen Bedingungen sind ausschließlich die Gerichte von Manisa, Türkiye, zuständig, sofern zwingende Verbraucherschutzvorschriften Ihres Landes nichts anderes vorsehen.</p>
+
+<h2>14. Kontakt</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Steuernummer (VKN): 2050264942</p>
+  <p>E-Mail: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Website: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="es" data-lang="es" hidden>
+<p class="disclaimer">Esta traducción se ofrece solo por comodidad. En caso de discrepancia, prevalece la versión en inglés.</p>
+<h1>Condiciones del Servicio</h1>
+<p class="updated">Última actualización: 25 de abril de 2026</p>
+
+<p>Le damos la bienvenida a AAFC (Aesthetic Archive for Clinics). Las presentes Condiciones del Servicio («Condiciones») rigen su acceso y uso de las aplicaciones móviles, el panel web y los servicios relacionados de AAFC (conjuntamente, el «Servicio») operados por EDECA Yazılım Ticaret ve Sanayi Limited Şirketi («EDECA», «nosotros», «nos» o «nuestro»).</p>
+
+<p>Al descargar, instalar o utilizar el Servicio, usted acepta quedar vinculado por las presentes Condiciones. Si no está de acuerdo, le rogamos que no utilice el Servicio.</p>
+
+<h2>1. Requisitos y uso</h2>
+<p>AAFC es una herramienta de documentación y archivo destinada a profesionales sanitarios colegiados, incluidos médicos estéticos, cirujanos plásticos, dermatólogos, especialistas en otorrinolaringología y personal de clínicas. Al utilizar el Servicio, usted confirma que:</p>
+<ul>
+  <li>Tiene al menos 18 años y capacidad legal para celebrar el presente acuerdo.</li>
+  <li>Dispone de la licencia profesional o autorización correspondiente para tratar registros fotográficos médicos en su jurisdicción.</li>
+  <li>Utilizará el Servicio de conformidad con toda la legislación aplicable, incluida la normativa de protección de datos médicos (como la KVKK, el RGPD/GDPR o la HIPAA).</li>
+</ul>
+
+<h2>2. Cuenta y seguridad</h2>
+<p>Para utilizar la mayoría de las funciones, debe crear una cuenta. Usted es responsable de:</p>
+<ul>
+  <li>Mantener la confidencialidad de sus credenciales de inicio de sesión.</li>
+  <li>Toda la actividad que se produzca en su cuenta, incluida la actividad de los miembros del equipo que invite mediante el Acceso Multiusuario a la Clínica.</li>
+  <li>Notificarnos de inmediato en <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> si sospecha de un acceso no autorizado.</li>
+</ul>
+
+<h2>3. Suscripción y facturación</h2>
+<p>AAFC ofrece un plan de suscripción de pago, AAFC Premium, facturado mensualmente con renovación automática a 49,99 USD (o su equivalente en moneda local) al mes tras un período de prueba gratuito de 14 días.</p>
+<ul>
+  <li>Las suscripciones se procesan a través de Apple App Store o Google Play. Se aplican todas las políticas de pago, facturación, reembolso y cancelación de la tienda correspondiente.</li>
+  <li>Su suscripción se renovará automáticamente al final de cada período de facturación, salvo que se cancele al menos 24 horas antes de la renovación.</li>
+  <li>La cancelación debe realizarse a través de la configuración de su cuenta de App Store o Google Play. No tramitamos cancelaciones directamente.</li>
+  <li>Los reembolsos, cuando proceda, son gestionados por la tienda correspondiente conforme a su política de reembolsos.</li>
+</ul>
+
+<h2>4. Datos de pacientes y sus responsabilidades</h2>
+<p>AAFC es una herramienta para almacenar y organizar los datos que usted, como usuario colegiado, decida cargar. Usted conserva la titularidad de todos los datos que introduzca.</p>
+<ul>
+  <li>Usted es el único responsable de obtener el consentimiento lícito del paciente antes de almacenar fotografías médicas identificables o datos personales.</li>
+  <li>Usted es responsable del cumplimiento de toda la legislación sobre datos médicos aplicable en su país o región.</li>
+  <li>EDECA no es el responsable del tratamiento de los datos de pacientes que usted carga. Usted actúa como responsable del tratamiento; EDECA actúa como encargado del tratamiento por cuenta de usted, de conformidad con nuestra <a href="privacy.html">Política de Privacidad</a>.</li>
+</ul>
+
+<h2>5. Propiedad intelectual</h2>
+<p>El Servicio, incluidos su software, diseño, logotipos y marcas, es propiedad exclusiva de EDECA. Usted no podrá copiar, modificar, distribuir, vender ni someter a ingeniería inversa ninguna parte del Servicio sin nuestro consentimiento previo por escrito.</p>
+<p>El contenido que usted cargue (datos de pacientes, fotografías, notas) sigue siendo suyo. Usted otorga a EDECA una licencia limitada exclusivamente para alojar, tratar y mostrar dicho contenido con el fin de operar el Servicio.</p>
+
+<h2>6. Uso aceptable</h2>
+<p>Usted se compromete a no:</p>
+<ul>
+  <li>Utilizar el Servicio con fines ilícitos o infringiendo la normativa médica.</li>
+  <li>Cargar contenido ilegal, perjudicial o que vulnere derechos de terceros.</li>
+  <li>Intentar obtener acceso no autorizado a otras cuentas o sistemas.</li>
+  <li>Utilizar el Servicio para compartir o transmitir software malicioso.</li>
+  <li>Someter a ingeniería inversa, descompilar o extraer el código fuente del Servicio.</li>
+</ul>
+
+<h2>7. Ausencia de asesoramiento médico</h2>
+<p>AAFC es una herramienta de documentación y archivo. No proporciona asesoramiento médico, diagnóstico, recomendaciones de tratamiento ni apoyo a la toma de decisiones clínicas. Todas las decisiones clínicas siguen siendo responsabilidad exclusiva del profesional colegiado que utiliza el Servicio.</p>
+
+<h2>8. Disponibilidad del Servicio</h2>
+<p>Procuramos mantener el Servicio disponible en todo momento, pero no garantizamos un acceso ininterrumpido. Podemos suspender o modificar el Servicio por motivos de mantenimiento, actualización u operativos sin previo aviso.</p>
+
+<h2>9. Terminación</h2>
+<p>Podemos suspender o cancelar su acceso si usted incumple las presentes Condiciones o utiliza el Servicio de un modo que genere riesgos legales u operativos. Usted puede dejar de utilizar el Servicio en cualquier momento.</p>
+<p>Tras la terminación, puede solicitar la exportación y supresión de sus datos a través de nuestra página de <a href="account-deletion.html">Eliminación de cuenta</a>. Las cancelaciones de suscripciones deben tramitarse a través de la tienda de aplicaciones correspondiente.</p>
+
+<h2>10. Exclusión de garantías</h2>
+<p>El Servicio se proporciona «tal cual» y «según disponibilidad», sin garantías de ningún tipo, ni expresas ni implícitas. EDECA excluye todas las garantías implícitas, incluidas las de comerciabilidad, idoneidad para un fin determinado y no infracción, en la máxima medida permitida por la ley.</p>
+
+<h2>11. Limitación de responsabilidad</h2>
+<p>En la máxima medida permitida por la legislación aplicable, EDECA, sus administradores, empleados y entidades vinculadas no serán responsables de ningún daño indirecto, incidental, consecuente o punitivo, ni de ninguna pérdida de datos, beneficios o fondo de comercio derivados de su uso del Servicio o relacionados con el mismo.</p>
+<p>La responsabilidad total acumulada de EDECA no excederá el importe que usted haya abonado a EDECA en los doce (12) meses anteriores al hecho que dé lugar a la reclamación.</p>
+
+<h2>12. Modificaciones de las presentes Condiciones</h2>
+<p>Podemos actualizar las presentes Condiciones periódicamente. Las modificaciones sustanciales se comunicarán a través del Servicio o por correo electrónico. El uso continuado del Servicio tras la entrada en vigor de las modificaciones constituye la aceptación de las Condiciones revisadas.</p>
+
+<h2>13. Legislación aplicable</h2>
+<p>Las presentes Condiciones se rigen por las leyes de la República de Türkiye. Cualquier controversia derivada de las presentes Condiciones se someterá a la jurisdicción exclusiva de los tribunales de Manisa, Türkiye, salvo que la legislación imperativa de protección de los consumidores de su país disponga otra cosa.</p>
+
+<h2>14. Contacto</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Número de identificación fiscal (VKN): 2050264942</p>
+  <p>Correo electrónico: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Sitio web: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="fr" data-lang="fr" hidden>
+<p class="disclaimer">Cette traduction est fournie à titre indicatif. En cas de divergence, la version anglaise prévaut.</p>
+<h1>Conditions d'utilisation</h1>
+<p class="updated">Dernière mise à jour : 25 avril 2026</p>
+
+<p>Bienvenue sur AAFC (Aesthetic Archive for Clinics). Les présentes Conditions d'utilisation (les « Conditions ») régissent votre accès aux applications mobiles AAFC, au panneau web et aux services associés (collectivement, le « Service ») exploités par EDECA Yazılım Ticaret ve Sanayi Limited Şirketi (« EDECA », « nous », « notre » ou « nos »), ainsi que votre utilisation de ceux-ci.</p>
+
+<p>En téléchargeant, en installant ou en utilisant le Service, vous acceptez d'être lié par les présentes Conditions. Si vous ne les acceptez pas, veuillez ne pas utiliser le Service.</p>
+
+<h2>1. Conditions d'admissibilité et utilisation</h2>
+<p>AAFC est un outil de documentation et d'archivage destiné aux professionnels de santé autorisés à exercer, notamment les médecins esthétiques, les chirurgiens plasticiens, les dermatologues, les spécialistes ORL et le personnel des cliniques. En utilisant le Service, vous confirmez que :</p>
+<ul>
+  <li>Vous êtes âgé d'au moins 18 ans et avez la capacité juridique de conclure le présent contrat.</li>
+  <li>Vous êtes titulaire de l'autorisation d'exercer ou de l'habilitation professionnelle requise pour traiter des dossiers photographiques médicaux dans votre juridiction.</li>
+  <li>Vous utiliserez le Service conformément à l'ensemble des lois applicables, y compris les réglementations relatives à la protection des données médicales (telles que la KVKK, le RGPD ou la HIPAA).</li>
+</ul>
+
+<h2>2. Compte et sécurité</h2>
+<p>Pour utiliser la plupart des fonctionnalités, vous devez créer un compte. Vous êtes responsable :</p>
+<ul>
+  <li>Du maintien de la confidentialité de vos identifiants de connexion.</li>
+  <li>De toute activité réalisée au moyen de votre compte, y compris l'activité des membres de l'équipe que vous invitez via la fonctionnalité d'accès multi-utilisateurs à la clinique (Multi-User Clinic Access).</li>
+  <li>De nous informer immédiatement à l'adresse <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> si vous soupçonnez un accès non autorisé.</li>
+</ul>
+
+<h2>3. Abonnement et facturation</h2>
+<p>AAFC propose une formule d'abonnement payante, AAFC Premium, facturée mensuellement avec renouvellement automatique au prix de 49,99 USD (ou l'équivalent en monnaie locale) par mois à l'issue d'une période d'essai gratuite de 14 jours.</p>
+<ul>
+  <li>Les abonnements sont traités par l'Apple App Store ou Google Play. L'ensemble des politiques de paiement, de facturation, de remboursement et de résiliation de la boutique concernée s'appliquent.</li>
+  <li>Votre abonnement sera renouvelé automatiquement à la fin de chaque période de facturation, sauf résiliation au moins 24 heures avant le renouvellement.</li>
+  <li>La résiliation doit être effectuée dans les paramètres de votre compte App Store ou Google Play. Nous ne traitons pas directement les résiliations.</li>
+  <li>Les remboursements, le cas échéant, sont gérés par la boutique concernée conformément à sa politique de remboursement.</li>
+</ul>
+
+<h2>4. Données des patients et vos responsabilités</h2>
+<p>AAFC est un outil de stockage et d'organisation des données que vous, en tant qu'utilisateur autorisé à exercer, choisissez de téléverser. Vous conservez la propriété de toutes les données que vous saisissez.</p>
+<ul>
+  <li>Vous êtes seul responsable de l'obtention du consentement licite des patients avant de stocker des photographies médicales ou des données à caractère personnel permettant de les identifier.</li>
+  <li>Vous êtes responsable du respect de l'ensemble des lois relatives aux données médicales applicables dans votre pays ou votre région.</li>
+  <li>EDECA n'est pas le responsable du traitement des données des patients que vous téléversez. Vous agissez en qualité de responsable du traitement ; EDECA agit en qualité de sous-traitant pour votre compte, conformément à notre <a href="privacy.html">Politique de confidentialité</a>.</li>
+</ul>
+
+<h2>5. Propriété intellectuelle</h2>
+<p>Le Service, y compris ses logiciels, sa conception, ses logos et ses marques, est la propriété exclusive d'EDECA. Vous ne pouvez pas copier, modifier, distribuer, vendre ou faire de l'ingénierie inverse de tout ou partie du Service sans notre consentement écrit préalable.</p>
+<p>Le contenu que vous téléversez (données des patients, photos, notes) demeure votre propriété. Vous accordez à EDECA une licence limitée aux seules fins d'héberger, de traiter et d'afficher ce contenu pour les besoins de l'exploitation du Service.</p>
+
+<h2>6. Utilisation acceptable</h2>
+<p>Vous vous engagez à ne pas :</p>
+<ul>
+  <li>Utiliser le Service à des fins illicites ou en violation des réglementations médicales.</li>
+  <li>Téléverser un contenu illégal, préjudiciable ou portant atteinte aux droits de tiers.</li>
+  <li>Tenter d'obtenir un accès non autorisé à d'autres comptes ou systèmes.</li>
+  <li>Utiliser le Service pour partager ou transmettre des logiciels malveillants.</li>
+  <li>Faire de l'ingénierie inverse, décompiler ou extraire le code source du Service.</li>
+</ul>
+
+<h2>7. Absence de conseil médical</h2>
+<p>AAFC est un outil de documentation et d'archivage. Il ne fournit ni conseil médical, ni diagnostic, ni recommandation thérapeutique, ni aide à la décision clinique. Toute décision clinique demeure de la seule responsabilité du praticien autorisé à exercer qui utilise le Service.</p>
+
+<h2>8. Disponibilité du Service</h2>
+<p>Nous nous efforçons de maintenir le Service disponible en permanence, mais ne garantissons pas un accès ininterrompu. Nous pouvons suspendre ou modifier le Service pour des raisons de maintenance, de mises à niveau ou des raisons opérationnelles, sans préavis.</p>
+
+<h2>9. Résiliation</h2>
+<p>Nous pouvons suspendre ou résilier votre accès si vous enfreignez les présentes Conditions ou utilisez le Service d'une manière qui crée un risque juridique ou opérationnel. Vous pouvez cesser d'utiliser le Service à tout moment.</p>
+<p>En cas de résiliation, vous pouvez demander l'exportation et la suppression de vos données via notre page <a href="account-deletion.html">Suppression du compte</a>. Les résiliations d'abonnement doivent être effectuées par l'intermédiaire de la boutique d'applications concernée.</p>
+
+<h2>10. Exclusion de garanties</h2>
+<p>Le Service est fourni « en l'état » et « selon disponibilité », sans garantie d'aucune sorte, expresse ou implicite. EDECA exclut toute garantie implicite, y compris de qualité marchande, d'adéquation à un usage particulier et d'absence de contrefaçon, dans toute la mesure permise par la loi.</p>
+
+<h2>11. Limitation de responsabilité</h2>
+<p>Dans toute la mesure permise par la loi applicable, EDECA, ses dirigeants, ses employés et ses sociétés affiliées ne sauraient être tenus responsables de tout dommage indirect, accessoire, consécutif ou punitif, ni de toute perte de données, de bénéfices ou de clientèle découlant de votre utilisation du Service ou s'y rapportant.</p>
+<p>La responsabilité totale cumulée d'EDECA ne saurait excéder le montant que vous avez versé à EDECA au cours des douze (12) mois précédant l'événement à l'origine de la réclamation.</p>
+
+<h2>12. Modifications des présentes Conditions</h2>
+<p>Nous pouvons mettre à jour les présentes Conditions de temps à autre. Les modifications substantielles seront communiquées via le Service ou par courrier électronique. La poursuite de votre utilisation du Service après l'entrée en vigueur des modifications vaut acceptation des Conditions révisées.</p>
+
+<h2>13. Droit applicable</h2>
+<p>Les présentes Conditions sont régies par le droit de la République de Türkiye. Tout litige découlant des présentes Conditions relève de la compétence exclusive des tribunaux de Manisa, Türkiye, sauf disposition contraire des lois impératives de protection des consommateurs de votre pays.</p>
+
+<h2>14. Contact</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Numéro d'identification fiscale (VKN) : 2050264942</p>
+  <p>Courrier électronique : <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Site web : <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="it" data-lang="it" hidden>
+<p class="disclaimer">Questa traduzione è fornita per comodità. In caso di discrepanza prevale la versione inglese.</p>
+<h1>Termini di servizio</h1>
+<p class="updated">Ultimo aggiornamento: 25 aprile 2026</p>
+
+<p>Benvenuto in AAFC (Aesthetic Archive for Clinics). I presenti Termini di servizio ("Termini") disciplinano l'accesso e l'utilizzo da parte Sua delle applicazioni mobili AAFC, del pannello web e dei servizi correlati (collettivamente, il "Servizio") gestiti da EDECA Yazılım Ticaret ve Sanayi Limited Şirketi ("EDECA", "noi", "ci" o "nostro").</p>
+
+<p>Scaricando, installando o utilizzando il Servizio, Lei accetta di essere vincolato dai presenti Termini. Qualora non li accetti, La preghiamo di non utilizzare il Servizio.</p>
+
+<h2>1. Requisiti e utilizzo</h2>
+<p>AAFC è uno strumento di documentazione e archiviazione destinato a professionisti sanitari abilitati, tra cui medici estetici, chirurghi plastici, dermatologi, specialisti in otorinolaringoiatria e personale delle cliniche. Utilizzando il Servizio, Lei conferma di:</p>
+<ul>
+  <li>Avere almeno 18 anni di età e la capacità giuridica di stipulare il presente contratto.</li>
+  <li>Essere in possesso dell'abilitazione professionale o dell'autorizzazione necessaria per trattare documentazione fotografica medica nella Sua giurisdizione.</li>
+  <li>Utilizzare il Servizio nel rispetto di tutte le leggi applicabili, comprese le normative in materia di protezione dei dati sanitari (quali KVKK, GDPR o HIPAA).</li>
+</ul>
+
+<h2>2. Account e sicurezza</h2>
+<p>Per utilizzare la maggior parte delle funzionalità, è necessario creare un account. Lei è responsabile di:</p>
+<ul>
+  <li>Mantenere la riservatezza delle Sue credenziali di accesso.</li>
+  <li>Tutte le attività svolte tramite il Suo account, comprese le attività dei membri del team da Lei invitati tramite la funzione di accesso multiutente alla clinica (Multi-User Clinic Access).</li>
+  <li>Informarci immediatamente all'indirizzo <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> qualora sospetti un accesso non autorizzato.</li>
+</ul>
+
+<h2>3. Abbonamento e fatturazione</h2>
+<p>AAFC offre un piano di abbonamento a pagamento, AAFC Premium, fatturato su base mensile con rinnovo automatico al prezzo di 49,99 USD (o l'equivalente in valuta locale) al mese, al termine di un periodo di prova gratuito di 14 giorni.</p>
+<ul>
+  <li>Gli abbonamenti sono gestiti dall'Apple App Store o da Google Play. Si applicano tutte le politiche di pagamento, fatturazione, rimborso e disdetta dello store di riferimento.</li>
+  <li>Il Suo abbonamento si rinnoverà automaticamente al termine di ciascun periodo di fatturazione, salvo disdetta almeno 24 ore prima del rinnovo.</li>
+  <li>La disdetta deve essere effettuata tramite le impostazioni del Suo account App Store o Google Play. Non gestiamo direttamente le disdette.</li>
+  <li>Gli eventuali rimborsi sono gestiti dallo store di riferimento in conformità alla relativa politica di rimborso.</li>
+</ul>
+
+<h2>4. Dati dei pazienti e Sue responsabilità</h2>
+<p>AAFC è uno strumento per l'archiviazione e l'organizzazione dei dati che Lei, in qualità di utente abilitato, sceglie di caricare. Lei mantiene la titolarità di tutti i dati da Lei inseriti.</p>
+<ul>
+  <li>Lei è l'unico responsabile dell'ottenimento di un valido consenso dei pazienti prima di archiviare fotografie mediche o dati personali identificabili.</li>
+  <li>Lei è responsabile del rispetto di tutte le leggi in materia di dati sanitari applicabili nel Suo paese o nella Sua regione.</li>
+  <li>EDECA non è il titolare del trattamento dei dati dei pazienti da Lei caricati. Lei agisce in qualità di titolare del trattamento; EDECA agisce in qualità di responsabile del trattamento per Suo conto, in conformità alla nostra <a href="privacy.html">Informativa sulla privacy</a>.</li>
+</ul>
+
+<h2>5. Proprietà intellettuale</h2>
+<p>Il Servizio, compresi il software, il design, i loghi e i marchi, è di proprietà esclusiva di EDECA. Non è consentito copiare, modificare, distribuire, vendere o sottoporre a reverse engineering alcuna parte del Servizio senza il nostro previo consenso scritto.</p>
+<p>I contenuti da Lei caricati (dati dei pazienti, foto, note) restano di Sua proprietà. Lei concede a EDECA una licenza limitata esclusivamente all'hosting, al trattamento e alla visualizzazione di tali contenuti ai fini del funzionamento del Servizio.</p>
+
+<h2>6. Uso consentito</h2>
+<p>Lei si impegna a non:</p>
+<ul>
+  <li>Utilizzare il Servizio per scopi illeciti o in violazione delle normative sanitarie.</li>
+  <li>Caricare contenuti illegali, dannosi o lesivi dei diritti di terzi.</li>
+  <li>Tentare di ottenere l'accesso non autorizzato ad altri account o sistemi.</li>
+  <li>Utilizzare il Servizio per condividere o trasmettere software dannoso.</li>
+  <li>Sottoporre a reverse engineering, decompilare o estrarre il codice sorgente del Servizio.</li>
+</ul>
+
+<h2>7. Esclusione di consulenza medica</h2>
+<p>AAFC è uno strumento di documentazione e archiviazione. Non fornisce consulenza medica, diagnosi, raccomandazioni terapeutiche né supporto alle decisioni cliniche. Qualsiasi decisione clinica resta di esclusiva responsabilità del professionista abilitato che utilizza il Servizio.</p>
+
+<h2>8. Disponibilità del Servizio</h2>
+<p>Ci impegniamo a mantenere il Servizio sempre disponibile, ma non garantiamo un accesso ininterrotto. Potremo sospendere o modificare il Servizio per manutenzione, aggiornamenti o ragioni operative senza preavviso.</p>
+
+<h2>9. Risoluzione</h2>
+<p>Potremo sospendere o interrompere il Suo accesso qualora Lei violi i presenti Termini o utilizzi il Servizio in modo tale da generare un rischio legale od operativo. Lei può cessare di utilizzare il Servizio in qualsiasi momento.</p>
+<p>In caso di risoluzione, Lei può richiedere l'esportazione e la cancellazione dei dati tramite la nostra pagina <a href="account-deletion.html">Cancellazione dell'account</a>. Le disdette degli abbonamenti devono essere effettuate tramite il rispettivo app store.</p>
+
+<h2>10. Esclusione di garanzie</h2>
+<p>Il Servizio è fornito "così com'è" e "come disponibile", senza garanzie di alcun tipo, espresse o implicite. EDECA esclude tutte le garanzie implicite, comprese quelle di commerciabilità, idoneità a uno scopo particolare e non violazione di diritti di terzi, nella misura massima consentita dalla legge.</p>
+
+<h2>11. Limitazione di responsabilità</h2>
+<p>Nella misura massima consentita dalla legge applicabile, EDECA, i suoi amministratori, dipendenti e società affiliate non saranno responsabili per eventuali danni indiretti, incidentali, consequenziali o punitivi, né per qualsiasi perdita di dati, profitti o avviamento derivante dal Suo utilizzo del Servizio o ad esso correlata.</p>
+<p>La responsabilità complessiva totale di EDECA non potrà superare l'importo da Lei corrisposto a EDECA nei dodici (12) mesi precedenti l'evento che ha dato origine alla pretesa.</p>
+
+<h2>12. Modifiche ai presenti Termini</h2>
+<p>Potremo aggiornare periodicamente i presenti Termini. Le modifiche sostanziali saranno comunicate tramite il Servizio o via e-mail. Il proseguimento dell'utilizzo del Servizio da parte Sua dopo l'entrata in vigore delle modifiche costituisce accettazione dei Termini modificati.</p>
+
+<h2>13. Legge applicabile</h2>
+<p>I presenti Termini sono disciplinati dalle leggi della Repubblica di Türkiye. Qualsiasi controversia derivante dai presenti Termini sarà soggetta alla giurisdizione esclusiva dei tribunali di Manisa, Türkiye, salvo il caso in cui le norme imperative a tutela dei consumatori del Suo paese dispongano diversamente.</p>
+
+<h2>14. Contatti</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Codice fiscale (VKN): 2050264942</p>
+  <p>E-mail: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Sito web: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="pt" data-lang="pt" hidden>
+<p class="disclaimer">Esta tradução é fornecida apenas por conveniência. Em caso de divergência, prevalece a versão em inglês.</p>
+<h1>Termos de Serviço</h1>
+<p class="updated">Última atualização: 25 de abril de 2026</p>
+
+<p>Bem-vindo à AAFC (Aesthetic Archive for Clinics). Os presentes Termos de Serviço («Termos») regem o seu acesso e utilização das aplicações móveis AAFC, do painel web e dos serviços conexos (em conjunto, o «Serviço») explorados pela EDECA Yazılım Ticaret ve Sanayi Limited Şirketi («EDECA», «nós», «nos» ou «nosso»).</p>
+
+<p>Ao descarregar, instalar ou utilizar o Serviço, aceita ficar vinculado pelos presentes Termos. Se não concordar, não utilize o Serviço.</p>
+
+<h2>1. Elegibilidade e utilização</h2>
+<p>A AAFC é uma ferramenta de documentação e arquivo destinada a profissionais de saúde habilitados, incluindo médicos de medicina estética, cirurgiões plásticos, dermatologistas, especialistas em otorrinolaringologia e pessoal clínico. Ao utilizar o Serviço, confirma que:</p>
+<ul>
+  <li>Tem, pelo menos, 18 anos de idade e capacidade jurídica para celebrar o presente contrato.</li>
+  <li>É titular da licença profissional ou autorização adequada para tratar registos fotográficos médicos na sua jurisdição.</li>
+  <li>Utilizará o Serviço em conformidade com toda a legislação aplicável, incluindo a regulamentação em matéria de proteção de dados médicos (como a KVKK, o RGPD ou a HIPAA).</li>
+</ul>
+
+<h2>2. Conta e segurança</h2>
+<p>Para utilizar a maioria das funcionalidades, deve criar uma conta. É responsável por:</p>
+<ul>
+  <li>Manter a confidencialidade das suas credenciais de acesso.</li>
+  <li>Toda a atividade realizada através da sua conta, incluindo a atividade dos membros da equipa que convidar através da funcionalidade de acesso multiutilizador à clínica (Multi-User Clinic Access).</li>
+  <li>Notificar-nos imediatamente através de <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> caso suspeite de um acesso não autorizado.</li>
+</ul>
+
+<h2>3. Subscrição e faturação</h2>
+<p>A AAFC disponibiliza um plano de subscrição pago, o AAFC Premium, faturado mensalmente com renovação automática ao preço de 49,99 USD (ou equivalente em moeda local) por mês, após um período experimental gratuito de 14 dias.</p>
+<ul>
+  <li>As subscrições são processadas pela Apple App Store ou pelo Google Play. Aplicam-se todas as políticas de pagamento, faturação, reembolso e cancelamento da respetiva loja.</li>
+  <li>A sua subscrição será renovada automaticamente no final de cada período de faturação, salvo se for cancelada com, pelo menos, 24 horas de antecedência relativamente à renovação.</li>
+  <li>O cancelamento deve ser efetuado nas definições da sua conta da App Store ou do Google Play. Não processamos cancelamentos diretamente.</li>
+  <li>Os reembolsos, quando aplicáveis, são tratados pela respetiva loja ao abrigo da sua política de reembolso.</li>
+</ul>
+
+<h2>4. Dados dos pacientes e as suas responsabilidades</h2>
+<p>A AAFC é uma ferramenta de armazenamento e organização de dados que o utilizador, enquanto profissional habilitado, decide carregar. O utilizador mantém a titularidade de todos os dados que introduz.</p>
+<ul>
+  <li>É o único responsável pela obtenção do consentimento legalmente válido dos pacientes antes de armazenar fotografias médicas ou dados pessoais identificáveis.</li>
+  <li>É responsável pelo cumprimento de toda a legislação relativa a dados médicos aplicável no seu país ou região.</li>
+  <li>A EDECA não é a responsável pelo tratamento dos dados dos pacientes que carrega. O utilizador atua como responsável pelo tratamento; a EDECA atua como subcontratante por sua conta, em conformidade com a nossa <a href="privacy.html">Política de Privacidade</a>.</li>
+</ul>
+
+<h2>5. Propriedade intelectual</h2>
+<p>O Serviço, incluindo o respetivo software, design, logótipos e marcas, é propriedade exclusiva da EDECA. Não pode copiar, modificar, distribuir, vender ou efetuar engenharia inversa de qualquer parte do Serviço sem o nosso consentimento prévio por escrito.</p>
+<p>Os conteúdos que carregar (dados de pacientes, fotografias, notas) continuam a ser seus. Concede à EDECA uma licença limitada exclusivamente para alojar, tratar e apresentar esses conteúdos para efeitos de exploração do Serviço.</p>
+
+<h2>6. Utilização aceitável</h2>
+<p>Compromete-se a não:</p>
+<ul>
+  <li>Utilizar o Serviço para qualquer finalidade ilícita ou em violação da regulamentação médica.</li>
+  <li>Carregar conteúdos ilegais, nocivos ou que violem direitos de terceiros.</li>
+  <li>Tentar obter acesso não autorizado a outras contas ou sistemas.</li>
+  <li>Utilizar o Serviço para partilhar ou transmitir software malicioso.</li>
+  <li>Efetuar engenharia inversa, descompilar ou extrair o código-fonte do Serviço.</li>
+</ul>
+
+<h2>7. Ausência de aconselhamento médico</h2>
+<p>A AAFC é uma ferramenta de documentação e arquivo. Não presta aconselhamento médico, diagnóstico, recomendações de tratamento nem apoio à decisão clínica. Quaisquer decisões clínicas são da exclusiva responsabilidade do profissional habilitado que utiliza o Serviço.</p>
+
+<h2>8. Disponibilidade do Serviço</h2>
+<p>Procuramos manter o Serviço sempre disponível, mas não garantimos um acesso ininterrupto. Podemos suspender ou modificar o Serviço para manutenção, atualizações ou por razões operacionais, sem aviso prévio.</p>
+
+<h2>9. Cessação</h2>
+<p>Podemos suspender ou cessar o seu acesso se violar os presentes Termos ou utilizar o Serviço de forma que gere risco jurídico ou operacional. Pode deixar de utilizar o Serviço a qualquer momento.</p>
+<p>Após a cessação, pode solicitar a exportação e eliminação dos dados através da nossa página <a href="account-deletion.html">Eliminação de Conta</a>. Os cancelamentos de subscrições devem ser processados através da respetiva loja de aplicações.</p>
+
+<h2>10. Exclusão de garantias</h2>
+<p>O Serviço é prestado «tal como está» e «conforme disponível», sem garantias de qualquer tipo, expressas ou implícitas. A EDECA exclui todas as garantias implícitas, incluindo as de comercialização, adequação a uma finalidade específica e não violação de direitos de terceiros, na máxima medida permitida por lei.</p>
+
+<h2>11. Limitação de responsabilidade</h2>
+<p>Na máxima medida permitida pela legislação aplicável, a EDECA, os seus administradores, trabalhadores e entidades afiliadas não serão responsáveis por quaisquer danos indiretos, incidentais, consequenciais ou punitivos, nem por qualquer perda de dados, lucros ou clientela decorrente ou relacionada com a sua utilização do Serviço.</p>
+<p>A responsabilidade total agregada da EDECA não excederá o montante que pagou à EDECA nos doze (12) meses anteriores ao evento que deu origem à reclamação.</p>
+
+<h2>12. Alterações aos presentes Termos</h2>
+<p>Podemos atualizar os presentes Termos periodicamente. As alterações substanciais serão comunicadas através do Serviço ou por correio eletrónico. A continuação da utilização do Serviço após a entrada em vigor das alterações constitui aceitação dos Termos revistos.</p>
+
+<h2>13. Lei aplicável</h2>
+<p>Os presentes Termos regem-se pelas leis da República da Türkiye. Quaisquer litígios decorrentes dos presentes Termos ficam sujeitos à competência exclusiva dos tribunais de Manisa, Türkiye, exceto quando a legislação imperativa de proteção dos consumidores do seu país disponha em contrário.</p>
+
+<h2>14. Contacto</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Número de identificação fiscal (VKN): 2050264942</p>
+  <p>Correio eletrónico: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Sítio web: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="ru" data-lang="ru" hidden>
+<p class="disclaimer">Перевод предоставлен для удобства. В случае расхождений преимущественную силу имеет версия на английском языке.</p>
+<h1>Условия обслуживания</h1>
+<p class="updated">Последнее обновление: 25 апреля 2026 г.</p>
+
+<p>Добро пожаловать в AAFC (Aesthetic Archive for Clinics). Настоящие Условия обслуживания («Условия») регулируют Ваш доступ к мобильным приложениям AAFC, веб-панели и связанным с ними сервисам (совместно — «Сервис»), а также их использование; оператором Сервиса является EDECA Yazılım Ticaret ve Sanayi Limited Şirketi («EDECA», «мы», «нас» или «наш»).</p>
+
+<p>Загружая, устанавливая или используя Сервис, Вы соглашаетесь соблюдать настоящие Условия. Если Вы не согласны с ними, пожалуйста, не используйте Сервис.</p>
+
+<h2>1. Право на использование и порядок использования</h2>
+<p>AAFC представляет собой инструмент для ведения документации и архива, предназначенный для лицензированных медицинских работников, включая врачей эстетической медицины, пластических хирургов, дерматологов, оториноларингологов, а также персонала клиник. Используя Сервис, Вы подтверждаете, что:</p>
+<ul>
+  <li>Вам исполнилось не менее 18 лет и Вы обладаете дееспособностью для заключения настоящего соглашения.</li>
+  <li>Вы имеете надлежащую профессиональную лицензию или разрешение на работу с медицинскими фотографическими записями в Вашей юрисдикции.</li>
+  <li>Вы будете использовать Сервис в соответствии со всем применимым законодательством, включая нормативные акты о защите медицинских данных (такие как KVKK, GDPR или HIPAA).</li>
+</ul>
+
+<h2>2. Учетная запись и безопасность</h2>
+<p>Для использования большинства функций Вы должны создать учетную запись. Вы несете ответственность за:</p>
+<ul>
+  <li>Сохранение конфиденциальности Ваших учетных данных для входа.</li>
+  <li>Все действия, совершаемые с использованием Вашей учетной записи, включая действия членов команды, приглашенных Вами посредством функции многопользовательского доступа клиники (Multi-User Clinic Access).</li>
+  <li>Незамедлительное уведомление нас по адресу <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> в случае подозрения на несанкционированный доступ.</li>
+</ul>
+
+<h2>3. Подписка и оплата</h2>
+<p>AAFC предлагает платный тарифный план AAFC Premium с ежемесячным автоматическим продлением по цене 49,99 долл. США (или эквивалент в местной валюте) в месяц по окончании 14-дневного бесплатного пробного периода.</p>
+<ul>
+  <li>Подписки обрабатываются через Apple App Store или Google Play. Применяются все правила соответствующего магазина в отношении оплаты, выставления счетов, возврата средств и отмены.</li>
+  <li>Ваша подписка будет автоматически продлеваться в конце каждого расчетного периода, если она не будет отменена не менее чем за 24 часа до продления.</li>
+  <li>Отмена должна осуществляться через настройки Вашей учетной записи App Store или Google Play. Мы не обрабатываем отмены напрямую.</li>
+  <li>Возврат средств, если он применим, осуществляется соответствующим магазином в соответствии с его правилами возврата.</li>
+</ul>
+
+<h2>4. Данные пациентов и Ваши обязанности</h2>
+<p>AAFC является инструментом для хранения и упорядочивания данных, которые Вы, как лицензированный пользователь, решаете загрузить. Вы сохраняете право собственности на все вносимые Вами данные.</p>
+<ul>
+  <li>Вы несете единоличную ответственность за получение законного согласия пациента до сохранения идентифицирующих медицинских фотографий или персональных данных.</li>
+  <li>Вы несете ответственность за соблюдение всего законодательства о медицинских данных, применимого в Вашей стране или регионе.</li>
+  <li>EDECA не является оператором (контролером) загружаемых Вами данных пациентов. Вы выступаете в качестве оператора (контролера) данных; EDECA выступает в качестве обработчика данных от Вашего имени в соответствии с нашей <a href="privacy.html">Политикой конфиденциальности</a>.</li>
+</ul>
+
+<h2>5. Интеллектуальная собственность</h2>
+<p>Сервис, включая его программное обеспечение, дизайн, логотипы и товарные знаки, является исключительной собственностью EDECA. Вы не вправе копировать, изменять, распространять, продавать или осуществлять обратную разработку какой-либо части Сервиса без нашего предварительного письменного согласия.</p>
+<p>Загружаемый Вами контент (данные пациентов, фотографии, заметки) остается Вашим. Вы предоставляете EDECA ограниченную лицензию исключительно на размещение, обработку и отображение этого контента в целях функционирования Сервиса.</p>
+
+<h2>6. Допустимое использование</h2>
+<p>Вы обязуетесь не:</p>
+<ul>
+  <li>Использовать Сервис в каких-либо незаконных целях или в нарушение медицинских нормативных требований.</li>
+  <li>Загружать контент, который является незаконным, вредоносным или нарушает права третьих лиц.</li>
+  <li>Предпринимать попытки получения несанкционированного доступа к другим учетным записям или системам.</li>
+  <li>Использовать Сервис для распространения или передачи вредоносного программного обеспечения.</li>
+  <li>Осуществлять обратную разработку, декомпиляцию или извлечение исходного кода Сервиса.</li>
+</ul>
+
+<h2>7. Отсутствие медицинских рекомендаций</h2>
+<p>AAFC является инструментом для ведения документации и архива. Он не предоставляет медицинских рекомендаций, диагностики, рекомендаций по лечению или поддержки принятия клинических решений. Все клинические решения остаются исключительной ответственностью лицензированного специалиста, использующего Сервис.</p>
+
+<h2>8. Доступность Сервиса</h2>
+<p>Мы стремимся обеспечивать постоянную доступность Сервиса, однако не гарантируем бесперебойный доступ. Мы можем приостановить или изменить Сервис для проведения технического обслуживания, обновлений или по операционным причинам без предварительного уведомления.</p>
+
+<h2>9. Прекращение</h2>
+<p>Мы можем приостановить или прекратить Ваш доступ, если Вы нарушаете настоящие Условия или используете Сервис таким образом, который создает правовой или операционный риск. Вы можете прекратить использование Сервиса в любое время.</p>
+<p>После прекращения Вы можете запросить экспорт и удаление данных через нашу страницу <a href="account-deletion.html">Удаление учетной записи</a>. Отмена подписки должна осуществляться через соответствующий магазин приложений.</p>
+
+<h2>10. Отказ от гарантий</h2>
+<p>Сервис предоставляется «как есть» и «по мере доступности» без каких-либо гарантий, явных или подразумеваемых. EDECA отказывается от всех подразумеваемых гарантий, включая гарантии товарной пригодности, пригодности для определенной цели и ненарушения прав, в максимальной степени, допускаемой законом.</p>
+
+<h2>11. Ограничение ответственности</h2>
+<p>В максимальной степени, допускаемой применимым законодательством, EDECA, ее руководители, сотрудники и аффилированные лица не несут ответственности за какие-либо косвенные, случайные, последующие или штрафные убытки, а также за любую утрату данных, прибыли или деловой репутации, возникшие в связи с Вашим использованием Сервиса или связанные с ним.</p>
+<p>Совокупная ответственность EDECA не может превышать сумму, уплаченную Вами EDECA в течение двенадцати (12) месяцев, предшествовавших событию, послужившему основанием для требования.</p>
+
+<h2>12. Изменения настоящих Условий</h2>
+<p>Мы можем время от времени обновлять настоящие Условия. О существенных изменениях будет сообщено через Сервис или по электронной почте. Продолжение использования Вами Сервиса после вступления изменений в силу означает принятие пересмотренных Условий.</p>
+
+<h2>13. Применимое право</h2>
+<p>Настоящие Условия регулируются законодательством Турецкой Республики. Любые споры, возникающие из настоящих Условий, подлежат исключительной юрисдикции судов г. Маниса, Турецкая Республика, за исключением случаев, когда императивные нормы законодательства о защите прав потребителей Вашей страны предусматривают иное.</p>
+
+<h2>14. Контактная информация</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>Идентификационный номер налогоплательщика (VKN): 2050264942</p>
+  <p>Электронная почта: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>Веб-сайт: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="ko" data-lang="ko" hidden>
+<p class="disclaimer">이 번역본은 편의를 위해 제공됩니다. 내용이 상충하는 경우 영어 원문이 우선합니다.</p>
+<h1>서비스 이용약관</h1>
+<p class="updated">최종 업데이트: 2026년 4월 25일</p>
+
+<p>AAFC(Aesthetic Archive for Clinics)에 오신 것을 환영합니다. 본 서비스 이용약관(이하 "약관")은 EDECA Yazılım Ticaret ve Sanayi Limited Şirketi(이하 "EDECA", "당사" 또는 "회사")가 운영하는 AAFC 모바일 애플리케이션, 웹 패널 및 관련 서비스(이하 총칭하여 "서비스")에 대한 귀하의 접근 및 이용을 규율합니다.</p>
+
+<p>서비스를 다운로드, 설치 또는 이용함으로써 귀하는 본 약관에 구속되는 것에 동의합니다. 동의하지 않는 경우 서비스를 이용하지 마십시오.</p>
+
+<h2>1. 이용 자격 및 이용</h2>
+<p>AAFC는 미용 의사, 성형외과 전문의, 피부과 전문의, 이비인후과 전문의 및 클리닉 직원을 포함한 면허를 보유한 의료 전문가를 위한 문서화 및 기록 보관 도구입니다. 서비스를 이용함으로써 귀하는 다음 사항을 확인합니다:</p>
+<ul>
+  <li>귀하는 만 18세 이상이며 본 계약을 체결할 법적 행위능력을 보유하고 있습니다.</li>
+  <li>귀하는 귀하의 관할 지역에서 의료 사진 기록을 취급하는 데 필요한 적절한 전문 면허 또는 권한을 보유하고 있습니다.</li>
+  <li>귀하는 의료 데이터 보호 규정(KVKK, GDPR 또는 HIPAA 등)을 포함하여 적용되는 모든 법령을 준수하여 서비스를 이용할 것입니다.</li>
+</ul>
+
+<h2>2. 계정 및 보안</h2>
+<p>대부분의 기능을 이용하려면 계정을 생성하여야 합니다. 귀하는 다음 사항에 대하여 책임을 집니다:</p>
+<ul>
+  <li>귀하의 로그인 자격 증명의 기밀을 유지하는 것.</li>
+  <li>다중 사용자 클리닉 접근(Multi-User Clinic Access) 기능을 통하여 귀하가 초대한 팀원의 활동을 포함하여 귀하의 계정에서 발생하는 모든 활동.</li>
+  <li>무단 접근이 의심되는 경우 즉시 <a href="mailto:support@aafclinic.com">support@aafclinic.com</a>으로 당사에 통지하는 것.</li>
+</ul>
+
+<h2>3. 구독 및 결제</h2>
+<p>AAFC는 유료 구독 요금제인 AAFC Premium을 제공하며, 이는 14일 무료 체험 기간 종료 후 월 49.99 USD(또는 현지 통화 상당액)로 매월 자동 갱신 방식으로 청구됩니다.</p>
+<ul>
+  <li>구독은 Apple App Store 또는 Google Play를 통하여 처리됩니다. 해당 스토어의 모든 결제, 청구, 환불 및 해지 정책이 적용됩니다.</li>
+  <li>귀하의 구독은 갱신 최소 24시간 전에 해지되지 않는 한 각 청구 기간 종료 시 자동으로 갱신됩니다.</li>
+  <li>해지는 귀하의 App Store 또는 Google Play 계정 설정을 통하여 하여야 합니다. 당사는 해지를 직접 처리하지 않습니다.</li>
+  <li>환불은 해당되는 경우 각 스토어의 환불 정책에 따라 해당 스토어가 처리합니다.</li>
+</ul>
+
+<h2>4. 환자 데이터 및 귀하의 책임</h2>
+<p>AAFC는 면허를 보유한 사용자인 귀하가 업로드하기로 선택한 데이터를 저장하고 정리하기 위한 도구입니다. 귀하는 귀하가 입력하는 모든 데이터에 대한 소유권을 보유합니다.</p>
+<ul>
+  <li>귀하는 식별 가능한 의료 사진 또는 개인정보를 저장하기 전에 환자로부터 적법한 동의를 받을 단독 책임을 집니다.</li>
+  <li>귀하는 귀하의 국가 또는 지역에서 적용되는 모든 의료 데이터 관련 법령을 준수할 책임을 집니다.</li>
+  <li>EDECA는 귀하가 업로드하는 환자 데이터의 처리자(컨트롤러)가 아닙니다. 귀하가 처리자(컨트롤러)로서의 역할을 수행하며, EDECA는 당사의 <a href="privacy.html">개인정보 처리방침</a>에 따라 귀하를 대신하는 수탁자(프로세서)로서의 역할을 수행합니다.</li>
+</ul>
+
+<h2>5. 지식재산권</h2>
+<p>소프트웨어, 디자인, 로고 및 상표를 포함한 서비스는 EDECA의 독점적 재산입니다. 귀하는 당사의 사전 서면 동의 없이 서비스의 어떠한 부분도 복제, 수정, 배포, 판매 또는 역설계할 수 없습니다.</p>
+<p>귀하가 업로드하는 콘텐츠(환자 데이터, 사진, 메모)는 귀하의 소유로 유지됩니다. 귀하는 서비스 운영 목적으로만 해당 콘텐츠를 호스팅, 처리 및 표시할 수 있는 제한적 라이선스를 EDECA에 부여합니다.</p>
+
+<h2>6. 허용되는 이용</h2>
+<p>귀하는 다음 행위를 하지 않을 것에 동의합니다:</p>
+<ul>
+  <li>불법적인 목적으로 또는 의료 관련 규정을 위반하여 서비스를 이용하는 행위.</li>
+  <li>불법적이거나 유해하거나 제3자의 권리를 침해하는 콘텐츠를 업로드하는 행위.</li>
+  <li>다른 계정 또는 시스템에 무단으로 접근하려고 시도하는 행위.</li>
+  <li>악성 소프트웨어를 공유하거나 전송하기 위하여 서비스를 이용하는 행위.</li>
+  <li>서비스를 역설계, 디컴파일하거나 서비스의 소스 코드를 추출하는 행위.</li>
+</ul>
+
+<h2>7. 의학적 조언의 부재</h2>
+<p>AAFC는 문서화 및 기록 보관 도구입니다. AAFC는 의학적 조언, 진단, 치료 권고 또는 임상 의사결정 지원을 제공하지 않습니다. 모든 임상적 결정은 서비스를 이용하는 면허 보유 의료인의 단독 책임으로 남습니다.</p>
+
+<h2>8. 서비스 가용성</h2>
+<p>당사는 서비스를 항상 이용 가능한 상태로 유지하고자 노력하나, 중단 없는 접근을 보장하지 않습니다. 당사는 유지보수, 업그레이드 또는 운영상의 사유로 사전 통지 없이 서비스를 중단하거나 변경할 수 있습니다.</p>
+
+<h2>9. 해지</h2>
+<p>귀하가 본 약관을 위반하거나 법적 또는 운영상의 위험을 초래하는 방식으로 서비스를 이용하는 경우, 당사는 귀하의 접근을 중단하거나 종료할 수 있습니다. 귀하는 언제든지 서비스 이용을 중단할 수 있습니다.</p>
+<p>해지 시 귀하는 당사의 <a href="account-deletion.html">계정 삭제</a> 페이지를 통하여 데이터 내보내기 및 삭제를 요청할 수 있습니다. 구독 해지는 해당 앱 스토어를 통하여 처리하여야 합니다.</p>
+
+<h2>10. 보증의 부인</h2>
+<p>서비스는 명시적이든 묵시적이든 어떠한 종류의 보증도 없이 "있는 그대로" 및 "이용 가능한 상태로" 제공됩니다. EDECA는 법률이 허용하는 최대한의 범위에서 상품성, 특정 목적에의 적합성 및 비침해에 대한 보증을 포함한 모든 묵시적 보증을 부인합니다.</p>
+
+<h2>11. 책임의 제한</h2>
+<p>적용 법령이 허용하는 최대한의 범위에서 EDECA와 그 이사, 직원 및 계열사는 귀하의 서비스 이용으로 인하여 또는 이와 관련하여 발생하는 간접적, 부수적, 결과적 또는 징벌적 손해, 또는 데이터, 이익 또는 영업권의 손실에 대하여 책임을 지지 않습니다.</p>
+<p>EDECA의 총 누적 책임은 청구의 원인이 된 사건 발생 이전 12개월 동안 귀하가 EDECA에 지급한 금액을 초과하지 않습니다.</p>
+
+<h2>12. 본 약관의 변경</h2>
+<p>당사는 수시로 본 약관을 업데이트할 수 있습니다. 중대한 변경 사항은 서비스 또는 이메일을 통하여 고지됩니다. 변경 사항의 효력 발생 후 귀하가 서비스를 계속 이용하는 경우 개정된 약관에 동의한 것으로 간주됩니다.</p>
+
+<h2>13. 준거법</h2>
+<p>본 약관은 튀르키예 공화국 법률의 적용을 받습니다. 본 약관에 따라 발생하는 모든 분쟁은 튀르키예 마니사 법원의 전속 관할에 따릅니다. 다만, 귀하 국가의 강행적인 소비자 보호 법령이 달리 규정하는 경우에는 그러하지 아니합니다.</p>
+
+<h2>14. 연락처</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>납세자 번호(VKN): 2050264942</p>
+  <p>이메일: <a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>웹사이트: <a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
+</div>
+<div class="container lang-block" lang="zh" data-lang="zh" hidden>
+<p class="disclaimer">本译文仅供参考。如有歧义，以英文版本为准。</p>
+<h1>服务条款</h1>
+<p class="updated">最后更新：2026年4月25日</p>
+
+<p>欢迎使用 AAFC（Aesthetic Archive for Clinics）。本服务条款（以下简称“本条款”）规范您对由 EDECA Yazılım Ticaret ve Sanayi Limited Şirketi（以下简称“EDECA”或“我们”）运营的 AAFC 移动应用程序、网页管理面板及相关服务（以下合称“本服务”）的访问和使用。</p>
+
+<p>一经下载、安装或使用本服务，即表示您同意受本条款的约束。如您不同意本条款，请勿使用本服务。</p>
+
+<h2>1. 使用资格与使用</h2>
+<p>AAFC 是一款面向持证医疗专业人员的文档记录及档案管理工具，适用对象包括医美医生、整形外科医生、皮肤科医生、耳鼻喉科专科医生及诊所工作人员。使用本服务即表示您确认：</p>
+<ul>
+  <li>您已年满18周岁，并具有订立本协议的完全民事行为能力。</li>
+  <li>您持有在您所在司法管辖区处理医疗影像记录所需的相应执业许可或授权。</li>
+  <li>您将遵守所有适用法律使用本服务，包括医疗数据保护法规（如 KVKK、GDPR 或 HIPAA）。</li>
+</ul>
+
+<h2>2. 账户与安全</h2>
+<p>如需使用大部分功能，您须创建账户。您应对以下事项负责：</p>
+<ul>
+  <li>对您的登录凭据予以保密。</li>
+  <li>在您账户下发生的所有活动，包括您通过多用户诊所访问（Multi-User Clinic Access）功能邀请的团队成员的活动。</li>
+  <li>如怀疑存在未经授权的访问，立即通过 <a href="mailto:support@aafclinic.com">support@aafclinic.com</a> 通知我们。</li>
+</ul>
+
+<h2>3. 订阅与计费</h2>
+<p>AAFC 提供付费订阅方案 AAFC Premium，在14天免费试用期结束后，按每月49.99美元（或等值当地货币）以按月自动续订方式计费。</p>
+<ul>
+  <li>订阅由 Apple App Store 或 Google Play 处理。相应应用商店的所有付款、计费、退款及取消政策均适用。</li>
+  <li>除非您在续订前至少24小时取消，否则您的订阅将在每个计费周期结束时自动续订。</li>
+  <li>取消须通过您的 App Store 或 Google Play 账户设置进行。我们不直接处理取消事宜。</li>
+  <li>退款（如适用）由相应应用商店根据其退款政策处理。</li>
+</ul>
+
+<h2>4. 患者数据与您的责任</h2>
+<p>AAFC 是一款用于存储和整理由您（即持证用户）选择上传的数据的工具。您保留对您所录入的全部数据的所有权。</p>
+<ul>
+  <li>您全权负责在存储可识别身份的医疗照片或个人数据之前依法取得患者同意。</li>
+  <li>您负责遵守您所在国家或地区适用的所有医疗数据相关法律。</li>
+  <li>EDECA 并非您所上传患者数据的数据控制者。您作为数据控制者；EDECA 根据我们的<a href="privacy.html">隐私政策</a>代表您担任数据处理者。</li>
+</ul>
+
+<h2>5. 知识产权</h2>
+<p>本服务，包括其软件、设计、标志及商标，均为 EDECA 的专有财产。未经我们事先书面同意，您不得复制、修改、分发、出售本服务的任何部分或对其进行逆向工程。</p>
+<p>您上传的内容（患者数据、照片、备注）仍归您所有。您授予 EDECA 一项有限许可，仅为运营本服务之目的托管、处理和显示该等内容。</p>
+
+<h2>6. 可接受的使用</h2>
+<p>您同意不得：</p>
+<ul>
+  <li>将本服务用于任何非法目的或以违反医疗法规的方式使用本服务。</li>
+  <li>上传非法、有害或侵犯第三方权利的内容。</li>
+  <li>试图未经授权访问其他账户或系统。</li>
+  <li>利用本服务共享或传输恶意软件。</li>
+  <li>对本服务进行逆向工程、反编译或提取其源代码。</li>
+</ul>
+
+<h2>7. 不提供医疗建议</h2>
+<p>AAFC 是一款文档记录及档案管理工具。它不提供医疗建议、诊断、治疗建议或临床决策支持。任何临床决策均由使用本服务的持证执业者独自承担责任。</p>
+
+<h2>8. 服务可用性</h2>
+<p>我们力求使本服务始终可用，但不保证访问不中断。我们可能因维护、升级或运营原因在不事先通知的情况下暂停或修改本服务。</p>
+
+<h2>9. 终止</h2>
+<p>如您违反本条款，或以产生法律或运营风险的方式使用本服务，我们可暂停或终止您的访问权限。您可随时停止使用本服务。</p>
+<p>终止后，您可通过我们的<a href="account-deletion.html">账户删除</a>页面请求导出和删除数据。订阅的取消须通过相应的应用商店处理。</p>
+
+<h2>10. 免责声明</h2>
+<p>本服务按“现状”及“现有可用”基础提供，不附带任何明示或默示的保证。在法律允许的最大范围内，EDECA 否认所有默示保证，包括适销性、特定用途适用性及不侵权的保证。</p>
+
+<h2>11. 责任限制</h2>
+<p>在适用法律允许的最大范围内，EDECA 及其董事、员工和关联方对于因您使用本服务而产生或与之相关的任何间接、附带、后果性或惩罚性损害，或任何数据、利润或商誉的损失，概不承担责任。</p>
+<p>EDECA 的累计责任总额不得超过在引起索赔的事件发生前十二（12）个月内您向 EDECA 支付的金额。</p>
+
+<h2>12. 本条款的变更</h2>
+<p>我们可能不时更新本条款。重大变更将通过本服务或电子邮件告知。变更生效后您继续使用本服务的，即视为您接受经修订的条款。</p>
+
+<h2>13. 适用法律</h2>
+<p>本条款受土耳其共和国法律管辖。因本条款产生的任何争议均由土耳其马尼萨法院专属管辖，但您所在国家的强制性消费者保护法律另有规定的除外。</p>
+
+<h2>14. 联系方式</h2>
+<div class="contact-box">
+  <p><strong>EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</strong></p>
+  <p>Hürriyet Mah. 210. Sk. No: 37 İç Kapı No: 1, Akhisar/Manisa 45240, Türkiye</p>
+  <p>税号（VKN）：2050264942</p>
+  <p>电子邮件：<a href="mailto:support@aafclinic.com">support@aafclinic.com</a></p>
+  <p>网站：<a href="https://aafclinic.com">aafclinic.com</a></p>
+</div>
 </div>
 
 <footer>
   <p>© 2026 EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</p>
   <div>
-    <a href="privacy.html">Privacy</a> · <a href="account-deletion.html">Account Deletion</a> · <a href="index.html">Home</a>
+    <a href="privacy.html" data-ui="1">Privacy</a> · <a href="terms.html" data-ui="2">Terms</a> · <a href="account-deletion.html" data-ui="3">Account Deletion</a> · <a href="index.html" data-ui="0">Home</a>
   </div>
 </footer>
 
+<script>
+var LANGS=[["tr", "TR · Türkçe"], ["en", "EN · English"], ["de", "DE · Deutsch"], ["es", "ES · Español"], ["fr", "FR · Français"], ["it", "IT · Italiano"], ["pt", "PT · Português"], ["ru", "RU · Русский"], ["ko", "KO · 한국어"], ["zh", "ZH · 中文"]];
+var UI={"en": ["Home", "Privacy", "Terms", "Account Deletion", ""], "tr": ["Ana sayfa", "Gizlilik", "Kullanım Koşulları", "Hesap Silme", "Bu çeviri kolaylık amacıyla sunulmuştur. Çelişki halinde İngilizce metin geçerlidir."], "de": ["Startseite", "Datenschutz", "Nutzungsbedingungen", "Kontolöschung", "Diese Übersetzung dient nur der Information. Im Zweifelsfall ist die englische Fassung maßgeblich."], "es": ["Inicio", "Privacidad", "Términos", "Eliminación de cuenta", "Esta traducción se ofrece solo por comodidad. En caso de discrepancia, prevalece la versión en inglés."], "fr": ["Accueil", "Confidentialité", "Conditions", "Suppression du compte", "Cette traduction est fournie à titre indicatif. En cas de divergence, la version anglaise prévaut."], "it": ["Home", "Privacy", "Termini", "Eliminazione account", "Questa traduzione è fornita per comodità. In caso di discrepanza prevale la versione inglese."], "pt": ["Início", "Privacidade", "Termos", "Eliminação da conta", "Esta tradução é fornecida apenas por conveniência. Em caso de divergência, prevalece a versão em inglês."], "ru": ["Главная", "Конфиденциальность", "Условия", "Удаление аккаунта", "Перевод предоставлен для удобства. В случае расхождений преимущественную силу имеет версия на английском языке."], "ko": ["홈", "개인정보", "이용약관", "계정 삭제", "이 번역본은 편의를 위해 제공됩니다. 내용이 상충하는 경우 영어 원문이 우선합니다."], "zh": ["首页", "隐私", "条款", "删除账户", "本译文仅供参考。如有歧义，以英文版本为准。"]};
+var TITLES={"tr": "Hizmet Koşulları — AAFC", "en": "Terms of Service — AAFC", "de": "Nutzungsbedingungen — AAFC", "es": "Condiciones del Servicio — AAFC", "fr": "Conditions d'utilisation — AAFC", "it": "Termini di servizio — AAFC", "pt": "Termos de Serviço — AAFC", "ru": "Условия обслуживания — AAFC", "ko": "서비스 이용약관 — AAFC", "zh": "服务条款 — AAFC"};
+function setLang(l){
+  if(!UI[l])l='en';
+  document.querySelectorAll('.lang-block').forEach(function(b){b.hidden=b.getAttribute('data-lang')!==l;});
+  document.querySelectorAll('[data-ui]').forEach(function(a){a.textContent=UI[l][+a.getAttribute('data-ui')];});
+  document.documentElement.lang=l;document.title=TITLES[l];
+  var s=document.getElementById('langSel');s.innerHTML=LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===l?' selected':'')+'>'+x[1]+'</option>';}).join('');
+  try{localStorage.setItem('aafc_lang',l);}catch(e){}
+}
+(function(){
+  var q=(new URLSearchParams(location.search).get('lang')||'').toLowerCase(),saved=null;
+  try{saved=localStorage.getItem('aafc_lang');}catch(e){}
+  var nav=(navigator.languages&&navigator.languages[0]||navigator.language||'en').toLowerCase().slice(0,2);
+  setLang(UI[q]?q:(UI[saved]?saved:(UI[nav]?nav:'en')));
+})();
+</script>
 </body>
 </html>

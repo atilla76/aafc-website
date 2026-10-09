@@ -993,7 +993,7 @@ function renderP(list){
     var p=list[i];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
     h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
-    h+='<div class="pm">'+[p.birth_date,mxPhoneFmt(p.phone)].filter(Boolean).join(' · ')+'</div></div>';
+    h+='<div class="pm">'+mxE([p.birth_date?dmy(p.birth_date):'',mxPhoneFmt(p.phone)].filter(Boolean).join(' · '))+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -1011,10 +1011,10 @@ async function selP(id){
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
   document.getElementById('dName').textContent=(p.name||'')+' '+(p.surname||'');
-  document.getElementById('dMeta').textContent=[p.birth_date,mxPhoneFmt(p.phone),p.city].filter(Boolean).join(' · ');
+  document.getElementById('dMeta').textContent=[p.birth_date?dmy(p.birth_date):'',mxPhoneFmt(p.phone),p.city].filter(Boolean).join(' · ');
   var ih='';
   ih+='<div class="ir"><span class="il">Name</span><span class="iv">'+(p.name||'')+' '+(p.surname||'')+'</span></div>';
-  ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+(p.birth_date||'-')+'</span></div>';
+  ih+='<div class="ir"><span class="il">DOB</span><span class="iv">'+mxE(p.birth_date?dmy(p.birth_date):'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">Phone</span><span class="iv">'+(p.phone?mxE(mxPhoneFmt(p.phone)):'-')+'</span></div>';
   ih+='<div class="ir"><span class="il">City</span><span class="iv">'+(p.city||'-')+'</span></div>';
   if(p.national_id)ih+='<div class="ir"><span class="il">National ID (TC Kimlik No)</span><span class="iv">'+mxE(p.national_id)+'</span></div>';
@@ -1212,9 +1212,9 @@ function renderV(){
   for(var i=0;i<vis.length;i++){
     var v=vis[i];
     h+='<div class="vc '+(v.id===selVid?'on':'')+'" onclick="selV(\''+v.id+'\')">';
-    h+='<div class="vt">'+(v.visit_type||'Visit')+'</div>';
-    h+='<div class="vr">'+(v.region||'')+'</div>';
-    h+='<div class="vd">'+(v.visit_date||'').split('T')[0]+'</div></div>';
+    h+='<div class="vt">'+mxE(vTypeL(v))+'</div>';
+    h+='<div class="vr">'+mxE(v.region?regionL(v.region):'')+'</div>';
+    h+='<div class="vd">'+mxE(dmy(v.visit_date))+'</div></div>';
   }
   el.innerHTML=h;
 }
@@ -1242,14 +1242,22 @@ function vxDictate(btn){
   vxRec.onend=function(){if(vxBtn){vxBtn.textContent='🎤';vxBtn.style.background='';}vxRec=null;vxBtn=null;ta.value=base;};
   vxRec.start();
 }
+async function delVisit(id){
+  if(!confirm(mxTr('Delete this visit? The visit, its photos, documents and linked follow-ups are removed from all lists. The records are kept in the archive.','Vizit silinsin mi? Vizit, fotoğrafları, belgeleri ve bağlı kontrolleriyle birlikte listelerden kaldırılır. Kayıtlar arşivde saklanır.')))return;
+  var r=await db.rpc('soft_delete_visit',{p_visit_id:id});
+  if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
+  selVid=null;document.getElementById('vDetail').style.display='none';
+  if(selPid)await selP(selPid);
+}
 async function selV(id){
   selVid=id;renderV();
   var v=vis.find(function(x){return x.id===id;});
   document.getElementById('vDetail').style.display='block';
   var vi='';
-  vi+='<div class="ir"><span class="il">Type</span><span class="iv">'+(v.visit_type||'-')+'</span></div>';
-  vi+='<div class="ir"><span class="il">Region</span><span class="iv">'+(v.region||'-')+'</span></div>';
-  vi+='<div class="ir"><span class="il">Date</span><span class="iv">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
+  vi+='<div class="ir"><span class="il">'+mxE(mxTr('Type','Tür'))+'</span><span class="iv">'+mxE(vTypeL(v))+'</span></div>';
+  vi+='<div class="ir"><span class="il">'+mxE(mxTr('Region','Bölge'))+'</span><span class="iv">'+mxE(v.region?regionL(v.region):'-')+'</span></div>';
+  vi+='<div class="ir"><span class="il">'+mxE(mxTr('Date','Tarih'))+'</span><span class="iv">'+mxE(dmy(v.visit_date)||'-')+'</span></div>';
+  vi+='<div style="text-align:right;margin-top:8px"><button class="btn bdel" onclick="delVisit(\''+v.id+'\')">'+mxE(mxTr('Delete visit','Viziti sil'))+'</button></div>';
   document.getElementById('vInfo').innerHTML=vi;
   enVisitLoad(id);
   dxLoad(id);
@@ -1266,7 +1274,7 @@ async function selV(id){
     photos.forEach(function(p){
       var u=urls[p.file_path]||'';
       ph+='<div class="pc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
-      ph+='<div class="plb">'+(AL[p.angle_index]||'Photo')+'</div></div>';
+      ph+='<div class="plb">'+mxE(angL(p.angle_index))+'</div></div>';
     });
     document.getElementById('phGrid').innerHTML=ph;
   } else document.getElementById('phWrap').style.display='none';

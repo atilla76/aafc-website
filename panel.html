@@ -107,6 +107,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .pi.on{background:rgba(184,154,106,0.1);border-left:3px solid #B89A6A}
 .pn{font-size:14px;font-weight:500}
 .pm{font-size:11px;color:rgba(245,241,235,0.4);margin-top:2px}
+.pi{display:flex;gap:10px;align-items:center}
+.pth{flex:none;width:36px;height:46px;border-radius:8px;background:rgba(245,241,235,0.06) center top/cover no-repeat;display:flex;align-items:center;justify-content:center;color:#B89A6A;font-weight:600;font-size:15px}
+.pbx{flex:1;min-width:0}.pbx .pn,.pbx .pl2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl2{font-size:11.5px;color:rgba(245,241,235,0.7);margin-top:2px}
+.phd{display:inline-block;width:6px;height:6px;border-radius:50%;background:#D45A5A;margin-left:6px;vertical-align:middle}
+.pbadge{flex:none;font-size:10.5px;font-weight:600;color:#B89A6A;background:rgba(184,154,106,0.16);border-radius:6px;padding:2px 6px}
+.pfl{display:flex;gap:5px;padding:8px 10px 4px;overflow-x:auto;border-bottom:1px solid rgba(245,241,235,0.06)}
+.pfl button{flex:none;background:transparent;border:1px solid rgba(245,241,235,0.14);color:#F5F1EB;border-radius:14px;padding:4px 10px;font-size:11.5px;cursor:pointer;font-family:inherit}
+.pfl button.on{border-color:#B89A6A;background:rgba(184,154,106,0.16);font-weight:600}
+.plh{padding:8px 16px 4px;font-size:10px;letter-spacing:1.2px;color:rgba(245,241,235,0.4);text-transform:uppercase}
+.plf{padding:12px 16px 20px;font-size:11px;color:rgba(245,241,235,0.4);text-align:center}
 .main{flex:1;overflow-y:auto}
 .mh{padding:16px 24px;border-bottom:1px solid rgba(245,241,235,0.08);display:flex;align-items:center;justify-content:space-between}
 .mh h2{font-size:20px;font-weight:400}
@@ -383,6 +394,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <input type="text" id="srch" placeholder="Search patients..." oninput="filterP()"/>
           <button class="badd" onclick="openAdd()">+ Add</button>
         </div>
+        <div class="pfl" id="pFilters"></div>
         <div class="pl" id="pList"><div class="loader">Loading...</div></div>
       </div>
       <div class="main">
@@ -979,34 +991,95 @@ async function loadStats(){
   document.getElementById('stD').textContent=dc.count||0;
 }
 
+// Patient list: the 50 most recently seen (fast with thousands of patients), server-side search (max 50), quick filters.
+var plFilter='recent',plQuery='',plCounts={},plSeq=0,plT=null,plThumbs={};
 async function loadPts(){
-  var r=await db.from('patients').select('*').eq('clinic_id',cid).is('deleted_at',null).order('created_at',{ascending:false});
-  pts=r.data||[];
+  var seq=++plSeq;
+  if(!cid)return;
+  var r=await db.rpc('get_patient_list',{p_clinic_id:cid,p_filter:plFilter,p_query:plQuery||null,p_limit:50});
+  if(seq!==plSeq)return;
+  var rows=Array.isArray(r.data)?r.data:[];
+  pts=rows; // summary rows; selP fetches the full row
   renderP(pts);
+  plLoadThumbs(rows);
+  plLoadCounts();
+}
+async function plLoadCounts(){
+  try{var c=await db.rpc('get_patient_counts',{p_clinic_id:cid});if(c.data)plCounts=c.data;}catch(e){}
+  plRenderFilters();renderP(pts);
+}
+function plRenderFilters(){
+  var el=document.getElementById('pFilters');if(!el)return;
+  var n=function(k){var v=+(plCounts[k]||0);return v>0?' · '+v:'';};
+  var f=[['recent',mxTr('All','Tümü')],['today',mxTr('Today','Bugün')],['control',mxTr('Control due','Kontrol bekleyen')+n('control')],['birthday',mxTr('Birthday','Doğum günü')+n('birthday')],['new',mxTr('New this month','Bu ay yeni')]];
+  el.innerHTML=f.map(function(x){return '<button class="'+(x[0]===plFilter?'on':'')+'" onclick="plSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('');
+}
+function plSetFilter(k){plFilter=k;plRenderFilters();loadPts();}
+async function plLoadThumbs(rows){
+  var paths=rows.map(function(x){return x.thumb_path;}).filter(Boolean);
+  if(!paths.length)return;
+  var m=await getSignedBatch(paths);
+  Object.assign(plThumbs,m);
+  rows.forEach(function(x){if(!x.thumb_path||!m[x.thumb_path])return;var e=document.getElementById('pth_'+x.id);if(e){e.style.backgroundImage='url("'+m[x.thumb_path]+'")';e.textContent='';}});
+}
+function plAgo(d){
+  if(!d)return '';var t=new Date(String(d).slice(0,10)+'T00:00:00');if(isNaN(t))return '';
+  var n=Math.round((new Date(new Date().toDateString())-t)/86400000);
+  if(n<=0)return mxTr('Today','Bugün');
+  if(n<60)return mxTrV('[n] days ago','[n] gün önce',{n:n});
+  return dmy(d);
 }
 
 function renderP(list){
   var el=document.getElementById('pList');
-  if(!list.length){el.innerHTML='<div class="loader">No patients</div>';return;}
-  var h='';
+  var total=plCounts.total;
+  var head=plQuery?mxTrV('[n] results','[n] sonuç',{n:list.length}):(plFilter==='recent'?mxTr('Last 50 patients','Son 50 hasta'):'');
+  if(!list.length){el.innerHTML=(head?'<div class="plh">'+mxE(head)+'</div>':'')+'<div class="loader">'+mxE(mxTr('No patients','Hasta yok'))+'</div>';return;}
+  var h=head?'<div class="plh">'+mxE(head)+(total!=null&&!plQuery?' · '+mxE(mxTrV('[n] total','toplam [n]',{n:total})):'')+'</div>':'';
+  var today=new Date().toISOString().slice(0,10);
   for(var i=0;i<list.length;i++){
-    var p=list[i];
+    var p=list[i],nm=((p.name||'')+' '+(p.surname||'')).trim();
+    var flag=(p.health_flags||[]).length||String(p.allergies||'').trim();
+    var proc=splitProcs(p.last_procedures)[0]||'';
+    var last=p.last_visit_date?[plAgo(p.last_visit_date),proc].filter(Boolean).join(' · '):mxTr('No visits yet','Henüz vizit yok');
+    var age=prAge(p);
+    var badge='';
+    if(p.next_appt_date){var nd=String(p.next_appt_date).slice(0,10);badge=nd===today?mxTr('Today','Bugün')+' '+String(p.next_appt_time||'').slice(0,5):dmy(nd).slice(0,5);}
+    var th=p.thumb_path&&plThumbs[p.thumb_path];
     h+='<div class="pi '+(p.id===selPid?'on':'')+'" onclick="selP(\''+p.id+'\')">';
-    h+='<div class="pn">'+(p.name||'')+' '+(p.surname||'')+'</div>';
-    h+='<div class="pm">'+mxE([p.birth_date?dmy(p.birth_date):'',mxPhoneFmt(p.phone)].filter(Boolean).join(' · '))+'</div></div>';
+    h+='<div class="pth" id="pth_'+p.id+'"'+(th?' style="background-image:url(&quot;'+th+'&quot;)"':'')+'>'+(th?'':mxE((nm.charAt(0)||'?').toUpperCase()))+'</div>';
+    h+='<div class="pbx"><div class="pn">'+mxE(nm)+(flag?'<span class="phd"></span>':'')+'</div>';
+    h+='<div class="pm">'+mxE([age!=null?mxTrV('[n] yrs','[n] yaş',{n:age}):'',mxPhoneFmt(p.phone)].filter(Boolean).join(' · '))+'</div>';
+    h+='<div class="pl2">'+mxE(last)+'</div></div>';
+    if(badge)h+='<span class="pbadge">'+mxE(badge)+'</span>';
+    h+='</div>';
   }
+  var foot=!plQuery&&plFilter==='recent'?mxTr('Search to find older patients','Daha eski hastalar için arayın'):(list.length>=50?mxTr('Showing first 50 — refine your search','İlk 50 gösteriliyor — aramayı daraltın'):'');
+  if(foot)h+='<div class="plf">'+mxE(foot)+'</div>';
   el.innerHTML=h;
 }
 
 function filterP(){
-  var q=document.getElementById('srch').value.toLowerCase();
-  renderP(pts.filter(function(p){return((p.name||'')+' '+(p.surname||'')).toLowerCase().includes(q);}));
+  plQuery=document.getElementById('srch').value.trim();
+  clearTimeout(plT);plT=setTimeout(loadPts,350);
+}
+// Full patient row (list rows carry only summary columns).
+async function ptFull(id){
+  var p=pts.find(function(x){return x.id===id;});
+  if(p&&p._full)return p;
+  var r=await db.from('patients').select('*').eq('id',id).single();
+  if(!r.data)return p||null;
+  var full=Object.assign({},p||{},r.data,{_full:true});
+  var i=pts.findIndex(function(x){return x.id===id;});
+  if(i>=0)pts[i]=full;else pts.push(full);
+  return full;
 }
 
 async function selP(id){
-  selPid=id;selVid=null;filterP();
-  selPt=pts.find(function(x){return x.id===id;});
-  var p=selPt;
+  selPid=id;selVid=null;
+  document.querySelectorAll('#pList .pi').forEach(function(e){e.classList.toggle('on',e.getAttribute('onclick')==="selP('"+id+"')");});
+  selPt=await ptFull(id);
+  var p=selPt;if(!p)return;
   document.getElementById('emptyMsg').style.display='none';
   document.getElementById('pDetail').style.display='block';
   document.getElementById('vDetail').style.display='none';
@@ -1473,11 +1546,12 @@ function pfData(old){
 }
 function pfPhoneCheck(){
   clearTimeout(pfDupT);
-  pfDupT=setTimeout(function(){
+  pfDupT=setTimeout(async function(){
     var el=document.getElementById('pfDup'),d=(phGet('mPhone')||'').replace(/\D/g,'');
     if(d.length<7){el.style.display='none';return;}
     var tail=d.slice(-10);
-    var hits=pts.filter(function(p){if(p.id===editPid)return false;var x=(p.phone||'').replace(/\D/g,'');return x.length>=7&&(x.slice(-tail.length)===tail||tail.slice(-x.length)===x);});
+    var hr=await db.rpc('get_patient_list',{p_clinic_id:cid,p_filter:'recent',p_query:d.slice(-7),p_limit:10});
+    var hits=(Array.isArray(hr.data)?hr.data:[]).filter(function(p){if(p.id===editPid)return false;var x=(p.phone||'').replace(/\D/g,'');return x.length>=7&&(x.slice(-tail.length)===tail||tail.slice(-x.length)===x);});
     if(!hits.length){el.style.display='none';return;}
     el.innerHTML='⚠ '+mxE(mxTrV('A patient with this number exists: [name]','Bu numarayla kayıtlı hasta var: [name]',{name:hits.map(function(p){return (p.name||'')+' '+(p.surname||'');}).join(', ')}))+' <a href="#" style="color:#B89A6A;margin-left:6px" onclick="closeModal();selP(\''+hits[0].id+'\');return false">'+mxE(mxTr('Open','Aç'))+'</a>';
     el.style.display='block';
@@ -1619,36 +1693,79 @@ async function loadAppts(){
   var el=document.getElementById('apptList');
   el.innerHTML='<div class="loader">Loading...</div>';
   try{
-    var r=await db.rpc('get_daily_appointments',{p_clinic_id:cid,p_date:fmtDate(apptDate)});
+    var rr=await Promise.all([db.rpc('get_daily_appointments_v2',{p_clinic_id:cid,p_date:fmtDate(apptDate)}),db.rpc('get_day_availability',{p_clinic_id:cid,p_date:fmtDate(apptDate)})]);
+    var r=rr[0];
     if(r.error)throw r.error;
-    var items=r.data||[];
+    var items=Array.isArray(r.data)?r.data:[];
     window._appts=items;
-    if(!items.length){el.innerHTML='<div class="loader">No appointments on this day.</div>';return;}
-    var h='';
+    var sum=apSummary(items,rr[1].data);
+    if(!items.length){el.innerHTML=sum+'<div class="loader">'+mxE(mxTr('No appointments on this day.','Bu gün randevu yok.'))+'</div>';return;}
+    var h=sum;
     for(var i=0;i<items.length;i++){
       var a=items[i];
       var name=((a.patient_name||a.patient_name_temp||'')+' '+(a.patient_surname||'')).trim();
       var phone=a.patient_phone||a.patient_phone_temp||'';
       var time=a.appointment_time||(a.appointment_date?new Date(a.appointment_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');
       var status=a.status||'planned';
-      var tagCls=status==='completed'?'green':status==='cancelled'?'red':'blue';
-      h+='<div class="list-card"><div class="row1"><div>';
-      h+='<div class="name">'+(name?mxE(name):'<span style="color:rgba(245,241,235,0.3)">No name</span>')+'</div>';
-      h+='<div class="meta">'+(phone?'📞 '+mxE(mxPhoneFmt(phone))+' · ':'')+mxE(time)+(a.notes?' · '+mxE(a.notes):'')+'</div>';
+      var tagCls=status==='completed'?'green':(status==='cancelled'||status==='no_show')?'red':'blue';
+      var st=apStatusL(a);
+      h+='<div class="list-card" style="border-left:3px solid '+st[1]+(status==='cancelled'||status==='no_show'?';opacity:.6':'')+'"><div class="row1"><div>';
+      h+='<div class="name">'+(name?mxE(name):'<span style="color:rgba(245,241,235,0.3)">'+mxE(mxTr('No name','İsimsiz'))+'</span>')+'</div>';
+      var tEnd=a.appointment_time&&a.duration_minutes?apFmtMin(apToMin(a.appointment_time)+(+a.duration_minutes)):'';
+      h+='<div class="meta">'+mxE(String(time).slice(0,5)+(tEnd?'–'+tEnd:''))+(a.service_name?' · '+mxE(a.service_name):'')+(phone?' · 📞 '+mxE(mxPhoneFmt(phone)):'')+(a.source==='online'?' · '+mxE(mxTr('Online','Online')):'')+(a.notes?' · '+mxE(a.notes):'')+'</div>';
       h+='<div class="ap-extra" id="apx_'+i+'" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
         (a.patient_id?'':'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="apCreatePt('+i+')">+ '+mxTr('Create patient record','Hasta kaydı aç')+'</button>')+'</div>';
-      h+='</div><div><span class="tag '+tagCls+'">'+status+'</span></div></div>';
-      if(phone&&status==='planned'){
-        h+='<div class="actions">';
-        h+='<button class="btn bwa" onclick="sendWA('+i+')">📱 WhatsApp</button>';
-        h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉️ SMS</button>';
-        h+='</div>';
+      h+='</div><div><span class="tag '+tagCls+'">'+mxE(st[0])+'</span></div></div>';
+      h+='<div class="actions">';
+      if(status==='planned'){
+        h+='<button class="btn" style="background:rgba(58,176,106,.12);border:1px solid rgba(58,176,106,.4);color:#3AB06A" onclick="apSetStatus('+i+',\'completed\')">✓ '+mxE(mxTr('Arrived','Geldi'))+'</button>';
+        h+='<button class="btn" style="background:transparent;border:1px solid rgba(245,241,235,.2);color:#F5F1EB" onclick="apSetStatus('+i+',\'no_show\')">'+mxE(mxTr('No-show','Gelmedi'))+'</button>';
+        if(phone){
+          h+='<button class="btn bwa" onclick="sendWA('+i+')">📱 WhatsApp</button>';
+          h+='<button class="btn bsms" onclick="sendSMS('+i+')">✉️ SMS</button>';
+        }
+      }else if(status==='completed'||status==='no_show'){
+        h+='<button class="btn" style="background:transparent;border:1px solid rgba(245,241,235,.2);color:#F5F1EB" onclick="apSetStatus('+i+',\'planned\')">↺ '+mxE(mxTr('Undo','Geri al'))+'</button>';
       }
+      h+='</div>';
       h+='</div>';
     }
     el.innerHTML=h;
     apIntake(items);apRes(items);
   }catch(e){el.innerHTML='<div class="loader">Could not load appointments.</div>';}
+}
+
+function apToMin(t){var p=String(t||'0:0').split(':');return (+p[0])*60+(+(p[1]||0));}
+function apFmtMin(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function apStatusL(a){
+  var s=a.status||'planned';
+  if(s==='completed')return [mxTr('Arrived','Geldi'),'#3AB06A'];
+  if(s==='no_show')return [mxTr('No-show','Gelmedi'),'#D45A5A'];
+  if(s==='cancelled')return [mxTr('Cancelled','İptal'),'#D45A5A'];
+  if(a.patient_cancelled_at)return [mxTr('Cancelled by patient','Hasta iptal etti'),'#D45A5A'];
+  if(a.confirmed_at)return [mxTr('Confirmed','Teyitli'),'#3AB06A'];
+  return [mxTr('Awaiting confirmation','Teyit bekliyor'),'#D4963A'];
+}
+// Day summary: count, confirmed, free slots inside opening hours.
+function apSummary(items,av){
+  var act=items.filter(function(a){return a.status!=='cancelled';});
+  var conf=act.filter(function(a){return a.confirmed_at||a.status==='completed';}).length;
+  var gaps=0,closed=av&&av.closed;
+  if(av&&!closed){
+    var step=+(av.slot_minutes||30),hrs=Array.isArray(av.hours)?av.hours:[];
+    var busy=[];(av.appointments||[]).forEach(function(x){var s=apToMin(x.time);busy.push([s,s+(+(x.duration||30))]);});
+    (av.blocks||[]).forEach(function(b){if(!b.practitioner_id)busy.push([apToMin(b.start),apToMin(b.end)]);});
+    hrs.forEach(function(h){for(var t=apToMin(h[0]);t+step<=apToMin(h[1]);t+=step){if(!busy.some(function(b){return b[0]<t+step&&t<b[1];}))gaps++;}});
+  }
+  var parts=[mxTrV('[n] appointments','[n] randevu',{n:act.length}),mxTrV('[n] confirmed','[n] teyitli',{n:conf})];
+  if(closed)parts.push('🔒 '+mxTr('Day closed','Gün kapalı'));else if(av&&(av.hours||[]).length)parts.push(mxTrV('[n] free slots','[n] boş saat',{n:gaps}));
+  return '<div style="display:flex;gap:14px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;border:1px solid rgba(245,241,235,.08);border-radius:10px;font-size:13px;color:rgba(245,241,235,.75)">'+parts.map(mxE).join('<span style="opacity:.3">|</span>')+'</div>';
+}
+async function apSetStatus(i,st){
+  var a=(window._appts||[])[i];if(!a)return;
+  var r=await db.from('appointments').update({status:st}).eq('id',a.appointment_id);
+  if(r.error){alert(mxTr('Could not save','Kaydedilemedi'));return;}
+  loadAppts();
 }
 
 // health-form chip on appointment cards + patient record from an online/quick appointment
@@ -1852,7 +1969,7 @@ async function fetchAll(){
 }
 
 async function fetchPt(pid){
-  var p=pts.find(function(x){return x.id===pid;});
+  var p=await ptFull(pid);
   var vr=await db.from('visits').select('*').eq('patient_id',pid).is('deleted_at',null);
   var vd=[];
   for(var j=0;j<(vr.data||[]).length;j++){

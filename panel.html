@@ -380,6 +380,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div id="vDetail" style="display:none">
               <div class="sec">VISIT INFO</div>
               <div class="ibox" id="vInfo"></div>
+              <div id="vEnabiz" style="margin-top:8px"></div>
               <div class="sec">DIAGNOSIS (ICD-10)</div>
               <div class="ibox" id="vDx"></div>
               <div id="nWrap">
@@ -966,6 +967,7 @@ async function selP(id){
   if(p.email)ih+='<div class="ir"><span class="il">E-mail</span><span class="iv">'+mxE(p.email)+'</span></div>';
   (async function(){if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}document.getElementById('btnAcct').style.display=fnAdmin?'inline-block':'none';})();
   if(p.notes)ih+='<div class="ir"><span class="il">Notes</span><span class="iv">'+mxE(p.notes)+'</span></div>';
+  ih+=enPatientRow(p);
   document.getElementById('pInfo').innerHTML=ih;
   inLoad(id);pkLoad(id);ptLoad(id);pDxLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
@@ -1080,6 +1082,7 @@ async function selV(id){
   vi+='<div class="ir"><span class="il">Region</span><span class="iv">'+(v.region||'-')+'</span></div>';
   vi+='<div class="ir"><span class="il">Date</span><span class="iv">'+(v.visit_date||'-').split('T')[0]+'</span></div>';
   document.getElementById('vInfo').innerHTML=vi;
+  enVisitLoad(id);
   dxLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
@@ -3294,6 +3297,46 @@ async function migRun(){
     log.lastChild.textContent='→ '+mxTr('Check the photo matches below and press Import.','Aşağıdaki fotoğraf eşleşmelerini kontrol edip Aktar’a basın.');
     document.getElementById('ipMatchStep').scrollIntoView({behavior:'smooth'});
   }else add('✓ '+mxTr('Done','Tamamlandı'));
+}
+</script>
+<script>
+// ============ e-NABIZ (MBYS) ============
+function enAuto(p){var n=(p.national_id||'').replace(/\D/g,''),ph=p.phone||'';return n.length===11||!ph||ph.indexOf('+90')===0;}
+function enSwitch(on,fn,dis){return '<label style="display:inline-flex;align-items:center;gap:8px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?0.5:1)+'"><input type="checkbox" '+(on?'checked ':'')+(dis?'disabled ':'')+'onchange="'+fn+'" style="width:18px;height:18px;accent-color:#3AB06A"><span style="font-size:12px;color:'+(on?'#6FCF97':'rgba(245,241,235,0.5)')+'">'+(on?mxTr('On','Açık'):mxTr('Off','Kapalı'))+'</span></label>';}
+function enPatientRow(p){
+  var on=(p.enabiz_enabled===true||p.enabiz_enabled===false)?p.enabiz_enabled:enAuto(p);
+  return '<div class="ir"><span class="il">'+mxTr('Send to e-Nabız','e-Nabız’a gönder')+'</span><span class="iv">'+enSwitch(on,"enSetPatient('"+p.id+"',this.checked)")+'</span></div>';
+}
+async function enSetPatient(id,on){
+  var r=await db.rpc('set_patient_enabiz',{p_patient_id:id,p_enabled:on});
+  if(r.error){alert('Error: '+r.error.message);return;}
+  var p=pts.find(function(x){return x.id===id;});if(p)p.enabiz_enabled=on;
+  if(selVid)enVisitLoad(selVid);
+}
+var EN_REASONS=['foreign','patient_declined','non_medical','other'];
+function enReason(r){return {foreign:mxTr('Patient from abroad','Yurt dışı hasta'),patient_declined:mxTr('Patient declined','Hasta istemedi'),non_medical:mxTr('Non-medical procedure','Tıbbi olmayan işlem'),
+  patient_off:mxTr('Off on the patient card','Hasta kartında kapalı'),clinic_off:mxTr('Automatic sending is off','Otomatik gönderim kapalı'),missing_national_id:mxTr('Patient’s national ID is missing','Hastanın TC kimlik no’su eksik')}[r]||mxTr('Other','Diğer');}
+async function enVisitLoad(id){
+  var el=document.getElementById('vEnabiz');if(!el)return;
+  var r=await db.rpc('get_visit_enabiz',{p_visit_id:id});
+  if(r.error||!r.data){el.innerHTML='';return;}
+  var s=r.data,st=s.state,c={sent:'58,176,106',skipped:'245,241,235',error:'224,85,85',waiting:'58,176,106',pending:'58,176,106'}[st]||'58,176,106';
+  var title={sent:mxTr('Sent','Gönderildi'),skipped:mxTr('Will not be sent','Gönderilmeyecek'),error:mxTr('Not sent','Gönderilemedi')}[st]||'e-Nabız (MBYS)';
+  var sub=st==='sent'?(s.sent_at?new Date(s.sent_at).toLocaleString(LANG_LOC[LANG]||'en-US'):'')+(s.ref?' · '+s.ref:''):
+    st==='waiting'?mxTr('Will be sent once connected','Bağlantı kurulunca gönderilecek')+(s.reason==='missing_national_id'?' · '+enReason(s.reason):''):
+    st==='pending'?mxTr('Will be sent automatically when saved','Kaydedince otomatik gönderilecek'):enReason(s.reason);
+  var h='<div style="padding:12px 14px;border-radius:12px;background:rgba('+c+',0.08);border:1px solid rgba('+c+',0.35);display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:160px"><div style="font-size:13px;font-weight:600;color:#F5F1EB">'+mxE(title)+'</div><div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(sub)+'</div></div>';
+  if(st!=='sent')h+=enSwitch(st!=='skipped',"enSetVisit('"+id+"',this.checked,'other')",!s.patient_enabled);
+  h+='</div>';
+  if(st==='skipped'&&s.patient_enabled&&s.visit_skip)h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+EN_REASONS.map(function(k){
+    var on=s.reason===k;return '<button class="bimp2" style="padding:5px 10px;font-size:12px;'+(on?'background:#B89A6A;color:#1C1929;border-color:#B89A6A':'')+'" onclick="enSetVisit(\''+id+'\',false,\''+k+'\')">'+mxE(enReason(k))+'</button>';}).join('')+'</div>';
+  el.innerHTML=h;
+}
+async function enSetVisit(id,send,reason){
+  var r=await db.rpc('set_visit_enabiz',{p_visit_id:id,p_send:send,p_reason:send?null:reason});
+  if(r.error){alert('Error: '+r.error.message);return;}
+  enVisitLoad(id);
 }
 </script>
 <script>

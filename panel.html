@@ -2610,9 +2610,9 @@ function wlTable(el,rows){
     return '<tr><td><b>'+mxE(w.name)+'</b><div class="hint" style="margin:0">'+mxE([mxPhoneFmt(w.phone),w.service_name,w.practitioner_id?'👤 '+prName(w.practitioner_id):''].filter(Boolean).join(' · '))+(w.note?' · '+mxE(w.note):'')+'</div></td>'+
       '<td>'+(w.wanted_date?mxDate(w.wanted_date):mxTr('Any day','Herhangi bir gün'))+'</td>'+
       '<td>'+(w.status==='notified'?'<span style="color:#3AB06A">✓ '+mxTr('Notified','Haber verildi')+'</span>':'')+'</td>'+
-      '<td style="text-align:right;white-space:nowrap"><button class="btn bwa" onclick="wlNotify(\''+el+'\','+i+')">📱 '+mxTr('Slot opened, notify','Yer açıldı, haber ver')+'</button> '+
+      '<td style="text-align:right;white-space:nowrap">'+(wlAsk[el+i]?'<span style="font-size:12px;margin-right:6px">'+mxE(mxTr('Did you send the message?','Mesajı gönderdiniz mi?'))+'</span><button class="btn" style="background:#25D366;color:#0b2b17;border:0" onclick="wlAnswer(\''+el+'\','+i+',true)">'+mxE(mxTr('Yes','Evet'))+'</button> <button class="btn bedit" onclick="wlAnswer(\''+el+'\','+i+',false)">'+mxE(mxTr('No','Hayır'))+'</button></td></tr>':'<button class="btn bwa" onclick="wlNotify(\''+el+'\','+i+')">📱 '+mxTr('Slot opened, notify','Yer açıldı, haber ver')+'</button> '+
       '<a href="#" onclick="wlSet(\''+el+'\','+i+',\'booked\');return false" style="color:#D4B896;font-size:12px">'+mxTr('Booked','Randevu verildi')+'</a> · '+
-      '<a href="#" onclick="wlSet(\''+el+'\','+i+',\'cancelled\');return false" style="color:rgba(245,241,235,.5);font-size:12px">'+mxTr('Remove','Listeden çıkar')+'</a></td></tr>';}).join('')+'</table>';
+      '<a href="#" onclick="wlSet(\''+el+'\','+i+',\'cancelled\');return false" style="color:rgba(245,241,235,.5);font-size:12px">'+mxTr('Remove','Listeden çıkar')+'</a></td></tr>');}).join('')+'</table>';
 }
 async function wlNotify(el,i){
   var w=wlRows[el][i],lg=(w.lang||'tr').slice(0,2),T=WL_MSG[lg]||WL_MSG.tr;
@@ -2620,10 +2620,16 @@ async function wlNotify(el,i){
   var msg=(w.wanted_date?T[0]:T[1]).replace('[name]',String(w.name||'').trim().split(' ')[0]).replace('[date]',mxDate(w.wanted_date)).replace('[link]',link);
   var ph=mxWaDigits(w.phone);
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
-  await db.from('booking_waitlist').update({status:'notified',notified_at:new Date().toISOString()}).eq('id',w.id);
-  wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
+  // the message may not have been sent: ask before marking notified
+  wlAsk[el+i]=true;wlRender(el);
 }
-async function wlSet(el,i,st){var w=wlRows[el][i];await db.from('booking_waitlist').update({status:st}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);}
+var wlAsk={};
+function wlRender(el){var box=document.getElementById(el),rows=wlRows[el]||[];if(!box)return;
+  box.innerHTML=el==='apptWl'?(rows.length?'<div class="imp-step" style="border-color:rgba(184,154,106,.4);margin-bottom:10px"><b>⏳ '+mxTr('Waiting list','Bekleme listesi')+': '+rows.length+' '+mxTr('waiting','kişi bekliyor')+'</b>'+wlTable(el,rows)+'</div>':''):(rows.length?wlTable(el,rows):'<div class="hint" style="margin:0">'+mxTr('Nobody is waiting','Bekleyen kimse yok')+'</div>');}
+async function wlAnswer(el,i,yes){delete wlAsk[el+i];var w=wlRows[el][i];
+  if(yes){await db.from('booking_waitlist').update({status:'notified',notified_at:new Date().toISOString()}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);}else wlRender(el);}
+async function wlSet(el,i,st){var w=wlRows[el][i],prev=w.status||'waiting';await db.from('booking_waitlist').update({status:st}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
+  mxUndoToast(st==='booked'?mxTrV('[name] booked','[name] randevu verildi',{name:w.name||''}):mxTrV('[name] removed','[name] listeden çıkarıldı',{name:w.name||''}),async function(){await db.from('booking_waitlist').update({status:prev}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);});}
 
 // ============ PATIENT PORTAL (aafclinic.com/hasta?t=) ============
 var ptActive=null;
@@ -3009,7 +3015,7 @@ async function blAdd(){
   var r=await db.from('clinic_time_blocks').insert({clinic_id:cid,block_date:document.getElementById('blDate').value,start_time:s,end_time:e,reason:document.getElementById('blReason').value.trim()||null,practitioner_id:bp});
   if(r.error){apMsg(r.error.message,true);return;}document.getElementById('blReason').value='';blLoad();apptBlocks();
 }
-async function blDel(id){await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();apptBlocks();}
+async function blDel(id){if(!confirm(mxTr('Delete this closed time?','Bu kapalı saat silinsin mi?')))return;await db.from('clinic_time_blocks').delete().eq('id',id);blLoad();apptBlocks();}
 async function cfLoad(){
   var u=await db.auth.getUser();var uid=u.data&&u.data.user&&u.data.user.id;if(!uid)return;
   var r=await db.from('calendar_feeds').select('enabled,show_names,token').eq('auth_id',uid).maybeSingle();cfData=r.data;cfRender();
@@ -3019,7 +3025,7 @@ function cfRender(){
   if(on){document.getElementById('cfNames').checked=!!cfData.show_names;document.getElementById('cfLink').textContent=CF_BASE+cfData.token;}
 }
 async function cfSet(regen){
-  var r=await db.rpc('set_calendar_feed',{p_enabled:document.getElementById('cfEnabled').checked,p_show_names:cfData?document.getElementById('cfNames').checked:true,p_regenerate:!!regen});
+  var r=await db.rpc('set_calendar_feed',{p_enabled:document.getElementById('cfEnabled').checked,p_show_names:cfData?document.getElementById('cfNames').checked:false,p_regenerate:!!regen});
   if(r.error){apMsg(r.error.message,true);return;}cfData=r.data;cfRender();
 }
 function cfOpen(k){if(!cfData)return;var web='webcal://'+(CF_BASE+cfData.token).replace('https://','');

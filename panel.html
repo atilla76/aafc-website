@@ -235,6 +235,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .bimp:disabled{opacity:.4;cursor:default}
 .bimp2{background:rgba(245,241,235,0.06);color:#F5F1EB;border:1px solid rgba(245,241,235,0.15);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
 .imp-wrap{overflow-x:auto;max-height:260px;overflow-y:auto}
+.imp-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.imp-modes button{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.12);color:rgba(245,241,235,0.7);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.imp-modes button.on{background:rgba(184,154,106,0.15);border-color:#B89A6A;color:#B89A6A}
+.imp-guide{background:rgba(184,154,106,0.06);border:1px solid rgba(184,154,106,0.25);border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(245,241,235,0.75);line-height:1.6}
+.imp-guide b{color:#F5F1EB}.imp-guide ol{margin:6px 0 0 18px}
+.ip-bar{height:8px;border-radius:4px;background:rgba(245,241,235,0.08);overflow:hidden}.ip-bar i{display:block;height:100%;width:0;background:#B89A6A;transition:width .3s}
+.ip-in{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:6px;padding:5px 8px;color:#F5F1EB;font-size:12px;width:220px;font-family:inherit}
 /* BOOKING */
 .bk-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .bk-in{background:rgba(245,241,235,0.06);border:1px solid rgba(245,241,235,0.12);border-radius:8px;padding:8px 10px;color:#F5F1EB;font-size:13px;outline:none;font-family:inherit}
@@ -490,12 +497,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="tcontent" id="tab-import" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
-        <div><h2>Import Patients</h2><div class="sub">Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.</div></div>
+        <div><h2 id="impTitle">Import Patients</h2><div class="sub" id="impSub">Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.</div></div>
       </div>
+      <div class="imp-modes" id="impModes"></div>
+      <div class="imp-guide" id="impGuide"></div>
 
+      <div id="impExcel">
       <div class="imp-step">
         <h3>1 · Choose file</h3>
-        <div class="hint">.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.</div>
+        <div class="hint" id="impFileHint">.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.</div>
         <div class="imp-drop" id="impDrop" onclick="document.getElementById('impFile').click()">Click to choose a file or drop it here</div>
         <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="impRead(this.files[0])">
       </div>
@@ -517,10 +527,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="imp-wrap"><table class="fmt" id="impIssues"></table></div>
         <div style="margin-top:14px" class="imp-actions" id="impResActions"></div>
       </div>
+      </div>
+
+      <div id="impPhotos" style="display:none">
+        <div class="imp-step">
+          <h3 id="ipT1"></h3>
+          <div class="hint" id="ipH1"></div>
+          <div class="imp-actions">
+            <button class="bimp" onclick="document.getElementById('ipDir').click()" id="ipBtnDir"></button>
+            <button class="bimp2" onclick="document.getElementById('ipZip').click()" id="ipBtnZip"></button>
+          </div>
+          <div class="imp-drop" id="ipDrop" style="margin-top:12px"></div>
+          <input type="file" id="ipDir" webkitdirectory directory multiple style="display:none" onchange="ipFromInput(this.files)">
+          <input type="file" id="ipZip" accept=".zip" style="display:none" onchange="ipFromZip(this.files[0])">
+        </div>
+        <div class="imp-step" id="ipMatchStep" style="display:none">
+          <h3 id="ipT2"></h3>
+          <div class="imp-nums" id="ipNums"></div>
+          <div class="hint" id="ipH2"></div>
+          <div class="imp-wrap" style="max-height:340px"><table class="fmt" id="ipGroups"></table></div>
+          <datalist id="ipPtList"></datalist>
+          <div style="margin-top:14px" class="imp-actions" id="ipActions"></div>
+        </div>
+        <div class="imp-step" id="ipRunStep" style="display:none">
+          <h3 id="ipT3"></h3>
+          <div class="ip-bar"><i id="ipBar"></i></div>
+          <div class="hint" id="ipProg" style="margin-top:8px"></div>
+          <div class="imp-wrap"><table class="fmt" id="ipFails"></table></div>
+          <div style="margin-top:14px" class="imp-actions" id="ipRunActions"></div>
+        </div>
+      </div>
 
       <div class="imp-step">
         <h3>Previous imports</h3><!--imp-prev-->
-        <div class="hint">An import can be undone: imported patients without any visit are removed.</div>
+        <div class="hint" id="impPrevHint">An import can be undone: imported patients without any visit are removed.</div>
         <div class="imp-wrap"><table class="fmt" id="impBatches"></table></div>
       </div>
     </div>
@@ -818,7 +858,7 @@ function switchTab(name){
   if(name==='agenda')loadAgenda();
   if(name==='appointments')loadAppts();
   if(name==='stats')loadStatsTab();
-  if(name==='import')impLoadBatches();
+  if(name==='import'){impSetMode(impMode);impLoadBatches();}
   if(name==='booking')bkLoad();
   if(name==='stock')stLoad();
   if(name==='finance')fnLoad();
@@ -2529,7 +2569,7 @@ function cfOpen(k){if(!cfData)return;var web='webcal://'+(CF_BASE+cfData.token).
   window.open(k==='google'?'https://calendar.google.com/calendar/r?cid='+encodeURIComponent(web):web,'_blank');}
 
 // ============ IMPORT ============
-var IMP_FIELDS=[
+var IMP_FIELDS_P=[
   {k:'name',l:'First name (or full name) *',m:['ad','adı','adi','isim','first name','firstname','name','ad soyad','adı soyadı','adi soyadi','hasta adı','hasta adi','full name','patient','hasta']},
   {k:'surname',l:'Last name',m:['soyad','soyadı','soyadi','surname','last name','lastname','family name']},
   {k:'phone',l:'Phone',m:['telefon','tel','gsm','cep','cep telefonu','phone','mobile','mobil','telefon no']},
@@ -2540,6 +2580,7 @@ var IMP_FIELDS=[
   {k:'notes',l:'Notes',m:['not','notlar','açıklama','aciklama','notes','note','comment','remarks']},
   {k:'external_id',l:'Patient no (old program)',m:['hasta no','dosya no','protokol','protokol no','kayıt no','kayit no','id','patient no','patient id','file no','record no']}
 ];
+var IMP_FIELDS=IMP_FIELDS_P,impMode='patients';
 var impHead=[],impRows=[],impFileName='';
 
 (function(){
@@ -2550,7 +2591,7 @@ var impHead=[],impRows=[],impFileName='';
 })();
 
 function impEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function impNorm(s){return String(s||'').toLowerCase().replace(/[._:]/g,' ').replace(/\s+/g,' ').trim();}
+function impNorm(s){return String(s||'').toLocaleLowerCase('tr').normalize('NFC').replace(/[._:]/g,' ').replace(/\s+/g,' ').trim();}
 
 function impRead(file){
   if(!file)return;
@@ -2559,7 +2600,14 @@ function impRead(file){
   var r=new FileReader();
   r.onload=function(e){
     try{
-      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      var u8=new Uint8Array(e.target.result),wb;
+      if(/\.(csv|txt)$/i.test(file.name)){
+        // decode text ourselves: UTF-8 (with/without BOM), else Turkish Windows-1254 (old Excel CSV)
+        var txt=new TextDecoder('utf-8').decode(u8);
+        if(txt.indexOf('\uFFFD')>=0){try{txt=new TextDecoder('windows-1254').decode(u8);}catch(_){}}
+        if(txt.charCodeAt(0)===0xFEFF)txt=txt.slice(1);
+        wb=XLSX.read(txt,{type:'string',cellDates:true,raw:true});
+      }else wb=XLSX.read(u8,{type:'array',cellDates:true});
       var ws=wb.Sheets[wb.SheetNames[0]];
       // raw:true keeps real date cells as Date objects; format them ourselves (dd.mm.yyyy)
       // so Excel's locale display format (e.g. US m/d/yy) can never swap day and month.
@@ -2574,7 +2622,7 @@ function impRead(file){
       if(rows.length<2){alert('The file has no data rows.');return;}
       impHead=rows[0].map(function(h){return String(h).trim();});
       impRows=rows.slice(1);
-      if(impRows.length>5000){alert('Max 5,000 patients per import. This file has '+impRows.length+'. Please split it.');return;}
+      var lim=impMode==='visits'?20000:5000;if(impRows.length>lim){alert(mxTrV('Max [max] rows per import. This file has [n]. Please split it.','Aktarım başına en fazla [max] satır. Bu dosyada [n] satır var. Lütfen bölün.',{max:lim.toLocaleString(),n:impRows.length}));return;}
       impShowMap();
     }catch(err){alert('Could not read the file: '+err.message);}
   };
@@ -2586,6 +2634,7 @@ function impShowMap(){
   IMP_FIELDS.forEach(function(f){
     var guess=-1;
     impHead.forEach(function(h,i){if(guess<0&&!used[i]&&f.m.indexOf(impNorm(h))>=0)guess=i;});
+    if(guess<0&&impMode==='visits')impHead.forEach(function(h,i){var n=impNorm(h);if(guess<0&&!used[i]&&f.m.some(function(x){return x.length>=5&&n.indexOf(x)>=0;}))guess=i;});
     if(guess>=0)used[guess]=1;
     var opts='<option value="-1">— skip —</option>'+impHead.map(function(h,i){return '<option value="'+i+'"'+(i===guess?' selected':'')+'>'+impEsc(h||('Column '+(i+1)))+'</option>';}).join('');
     html+='<div><label>'+f.l+'</label><select id="impSel_'+f.k+'">'+opts+'</select></div>';
@@ -2602,7 +2651,11 @@ function impShowMap(){
 function impBuildRows(){
   var idx={};
   IMP_FIELDS.forEach(function(f){idx[f.k]=parseInt(document.getElementById('impSel_'+f.k).value,10);});
-  if(idx.name<0){alert('Please match the first name (or full name) column.');return null;}
+  if(impMode==='patients'&&idx.name<0){alert('Please match the first name (or full name) column.');return null;}
+  if(impMode==='visits'){
+    if(idx.date<0){alert(mxTr('Please match the date column.','Lütfen tarih sütununu eşleştirin.'));return null;}
+    if(idx.name<0&&idx.external_id<0&&idx.national_id<0&&idx.phone<0){alert(mxTr('Match at least one patient column: patient no, ID no, name or phone.','En az bir hasta sütunu eşleştirin: hasta no, TC no, ad veya telefon.'));return null;}
+  }
   return impRows.map(function(r){
     var o={};
     IMP_FIELDS.forEach(function(f){if(idx[f.k]>=0){var v=r[idx[f.k]];o[f.k]=(v==null?'':String(v)).trim();}});
@@ -2617,7 +2670,7 @@ var IMP_REASONS={missing_name:'Missing name',bad_birth_date:'Birth date not reco
 async function impRun(dry){
   var rows=impBuildRows();if(!rows)return;
   sp(dry?'Checking...':'Importing...');
-  var r=await db.rpc('import_patients',{p_clinic_id:cid,p_rows:rows,p_dry_run:dry,p_file_name:impFileName});
+  var r=await db.rpc(impMode==='visits'?'import_visits':'import_patients',{p_clinic_id:cid,p_rows:rows,p_dry_run:dry,p_file_name:impFileName});
   hp();
   if(r.error){alert('Error: '+r.error.message);return;}
   var d=r.data;
@@ -2633,7 +2686,7 @@ async function impRun(dry){
     +(iss.length>=50?'<tr><td colspan="3" style="color:rgba(245,241,235,0.4)">First 50 notes shown</td></tr>':'')):'';
   var act=document.getElementById('impResActions');
   if(dry){
-    act.innerHTML=d.inserted>0?'<button class="bimp" onclick="impRun(false)">Import '+d.inserted+' patients</button>':'<span class="hint">Nothing new to import.</span>';
+    act.innerHTML=d.inserted>0?'<button class="bimp" onclick="impRun(false)">'+(impMode==='visits'?mxTrV('Import [n] visits','[n] vizit aktar',{n:d.inserted}):mxTrV('Import [n] patients','[n] hasta aktar',{n:d.inserted}))+'</button>':'<span class="hint">Nothing new to import.</span>';
   }else{
     act.innerHTML='<button class="bimp2" onclick="impUndo(\''+d.batch_id+'\')">Undo this import</button>';
     document.getElementById('impMapStep').style.display='none';
@@ -2642,13 +2695,18 @@ async function impRun(dry){
   document.getElementById('impResStep').style.display='block';
 }
 
-async function impUndo(id){
-  if(!confirm('Undo this import? Imported patients without visits will be removed.'))return;
+async function impUndo(id,kind){
+  kind=kind||'patients';
+  var q=kind==='photos'?mxTr('Undo this import? The imported photos and their empty visits will be removed.','Bu aktarım geri alınsın mı? Aktarılan fotoğraflar ve boş kalan vizitleri silinecek.'):
+    kind==='visits'?mxTr('Undo this import? Imported visits without photos or documents will be removed.','Bu aktarım geri alınsın mı? Fotoğraf veya belge eklenmemiş aktarılan vizitler silinecek.'):
+    'Undo this import? Imported patients without visits will be removed.';
+  if(!confirm(q))return;
   sp('Undoing...');
-  var r=await db.rpc('undo_patient_import',{p_batch_id:id});
+  var r=await db.rpc('undo_import',{p_batch_id:id});
   hp();
   if(r.error){alert('Error: '+r.error.message);return;}
-  alert(r.data.removed+' patients removed'+(r.data.kept_with_visits?(', '+r.data.kept_with_visits+' kept because they already have visits'):'')+'.');
+  if(kind==='patients')alert(r.data.removed+' patients removed'+(r.data.kept_with_visits?(', '+r.data.kept_with_visits+' kept because they already have visits'):'')+'.');
+  else alert(mxTrV('[p] photos and [v] visits removed.','[p] fotoğraf ve [v] vizit silindi.',{p:r.data.photos_removed||0,v:r.data.visits_removed||0}));
   document.getElementById('impResStep').style.display='none';
   await loadPts();await loadStats();impLoadBatches();
 }
@@ -2658,11 +2716,305 @@ async function impLoadBatches(){
   var r=await db.from('patient_import_batches').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}).limit(20);
   var b=r.data||[];
   if(!b.length){el.innerHTML='<tr><td style="color:rgba(245,241,235,0.4)">No imports yet</td></tr>';return;}
-  el.innerHTML='<tr><th>Date</th><th>File</th><th>Added</th><th>Skipped</th><th></th></tr>'+b.map(function(x){
-    var dt=new Date(x.created_at).toLocaleString();
-    var act=x.undone_at?'<span style="color:rgba(245,241,235,0.4)">undone</span>':'<button class="bimp2" style="padding:5px 10px;font-size:11px" onclick="impUndo(\''+x.id+'\')">Undo</button>';
-    return '<tr><td>'+impEsc(dt)+'</td><td>'+impEsc(x.file_name||'')+'</td><td>'+x.inserted+'</td><td>'+(x.duplicates+x.invalid)+'</td><td>'+act+'</td></tr>';
+  var KN={patients:mxTr('Patients','Hastalar'),visits:mxTr('Visit history','Vizit geçmişi'),photos:mxTr('Photos','Fotoğraflar')};
+  el.innerHTML='<tr><th>Date</th><th>'+mxTr('Type','Tür')+'</th><th>File</th><th>Added</th><th>Skipped</th><th></th></tr>'+b.map(function(x){
+    var dt=new Date(x.created_at).toLocaleString(LANG_LOC[LANG]||'en-US');var k=x.kind||'patients';
+    var act=x.undone_at?'<span style="color:rgba(245,241,235,0.4)">undone</span>':'<button class="bimp2" style="padding:5px 10px;font-size:11px" onclick="impUndo(\''+x.id+'\',\''+k+'\')">Undo</button>';
+    return '<tr><td>'+impEsc(dt)+'</td><td>'+impEsc(KN[k]||k)+'</td><td>'+impEsc(x.file_name||'')+'</td><td>'+x.inserted+'</td><td>'+(x.duplicates+x.invalid)+'</td><td>'+act+'</td></tr>';
   }).join('');
+}
+</script>
+<script>
+// ============ IMPORT: modes (patients / visit history / photos) ============
+var IMP_FIELDS_V=[
+  {k:'external_id',l:'Patient no (old program)',m:['hasta no','dosya no','protokol','protokol no','kayıt no','kayit no','patient no','patient id','file no','record no']},
+  {k:'national_id',l:'National ID (TC Kimlik No)',m:['tc','tc no','tckn','tc kimlik','tc kimlik no','kimlik no','kimlik','national id','id number']},
+  {k:'name',l:'First name (or full name) *',m:['ad','adı','adi','isim','first name','name','ad soyad','adı soyadı','adi soyadi','hasta adı','hasta adi','hasta','full name','patient']},
+  {k:'surname',l:'Last name',m:['soyad','soyadı','soyadi','surname','last name']},
+  {k:'phone',l:'Phone',m:['telefon','tel','gsm','cep','cep telefonu','phone','mobile','mobil']},
+  {k:'date',l:'',m:['tarih','işlem tarihi','islem tarihi','vizit tarihi','muayene tarihi','seans tarihi','randevu tarihi','date','visit date','treatment date']},
+  {k:'procedures',l:'',m:['işlem','islem','yapılan işlem','yapilan islem','işlemler','tedavi','uygulama','hizmet','procedure','procedures','treatment','service']},
+  {k:'notes',l:'Notes',m:['not','notlar','açıklama','aciklama','notes','note','comment','muayene notu']},
+  {k:'region',l:'',m:['bölge','bolge','region','area']},
+  {k:'visit_type',l:'',m:['tür','tur','tip','type','visit type','vizit türü']}
+];
+IMP_REASONS.patient_not_found='Patient not found';IMP_REASONS.ambiguous_patient='More than one patient';IMP_REASONS.bad_date='Date not recognised';IMP_REASONS.duplicate_visit='Already in the archive';
+
+function impSetMode(m){
+  impMode=m;
+  IMP_FIELDS_V[0].l=mxTr('Patient no (old program)','Hasta no (eski program)');IMP_FIELDS_V[1].l=mxTr('National ID (TC Kimlik No)','TC Kimlik No');
+  IMP_FIELDS_V[2].l=mxTr('Patient name (or full name)','Hasta adı (veya ad soyad)');IMP_FIELDS_V[3].l=mxTr('Last name','Soyad');IMP_FIELDS_V[4].l=mxTr('Phone','Telefon');
+  IMP_FIELDS_V[5].l=mxTr('Visit date *','Vizit tarihi *');IMP_FIELDS_V[6].l=mxTr('Procedure','İşlem');IMP_FIELDS_V[7].l=mxTr('Notes','Notlar');
+  IMP_FIELDS_V[8].l=mxTr('Region (face, neck…)','Bölge (yüz, boyun…)');IMP_FIELDS_V[9].l=mxTr('Type (visit / control)','Tür (vizit / kontrol)');
+  IMP_REASONS.patient_not_found=mxTr('Patient not found — import the patient list first','Hasta bulunamadı — önce hasta listesini aktarın');
+  IMP_REASONS.ambiguous_patient=mxTr('More than one patient with this name — add patient no or phone','Bu adla birden fazla hasta var — hasta no veya telefon ekleyin');
+  IMP_REASONS.bad_date=mxTr('Date not recognised','Tarih tanınmadı');IMP_REASONS.duplicate_visit=mxTr('Already in the archive','Arşivde zaten var');
+  IMP_FIELDS=m==='visits'?IMP_FIELDS_V:IMP_FIELDS_P;
+  var modes=[['patients','1 · '+mxTr('Patients','Hastalar')],['visits','2 · '+mxTr('Visit history','Vizit geçmişi')],['photos','3 · '+mxTr('Photos','Fotoğraflar')]];
+  document.getElementById('impModes').innerHTML=modes.map(function(x){return '<button class="'+(x[0]===m?'on':'')+'" onclick="impSetMode(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
+  var T=document.getElementById('impTitle'),S=document.getElementById('impSub'),G=document.getElementById('impGuide');
+  document.getElementById('impExcel').style.display=m==='photos'?'none':'block';
+  document.getElementById('impPhotos').style.display=m==='photos'?'block':'none';
+  document.getElementById('impMapStep').style.display='none';document.getElementById('impResStep').style.display='none';
+  if(m==='patients'){
+    T.textContent=mxTr('Import Patients','Hasta İçe Aktar');
+    S.textContent=mxTr('Bring your patient list from another program (Excel or CSV). Duplicates are skipped automatically.','Hasta listenizi başka bir programdan getirin (Excel veya CSV). Mükerrer kayıtlar otomatik atlanır.');
+    G.innerHTML=mxTr('<b>Moving from another program?</b> Do it in three steps: 1 · patients, 2 · visit history, 3 · photos. Start with the patient list; visits and photos are matched to these patients.','<b>Başka bir programdan mı geçiyorsunuz?</b> Üç adımda taşıyın: 1 · hastalar, 2 · vizit geçmişi, 3 · fotoğraflar. Önce hasta listesini aktarın; vizitler ve fotoğraflar bu hastalarla eşleştirilir.');
+    document.getElementById('impFileHint').textContent=mxTr('.xlsx, .xls or .csv — first row must be the column headers. Max 5,000 patients per file.','.xlsx, .xls veya .csv — ilk satır sütun başlıkları olmalı. Dosya başına en fazla 5.000 hasta.');
+    document.getElementById('impPrevHint').textContent=mxTr('An import can be undone: imported patients without any visit are removed.','Bir aktarım geri alınabilir: vizit girilmemiş aktarılan hastalar silinir.');
+  }else if(m==='visits'){
+    T.textContent=mxTr('Import visit history','Vizit geçmişini içe aktar');
+    S.textContent=mxTr('Past treatments from your old program: date, procedure and notes, one row per visit.','Eski programınızdaki geçmiş işlemler: tarih, işlem ve notlar; her satır bir vizit.');
+    G.innerHTML=mxTr('<b>How:</b><ol><li>In your old program export the treatment / visit list to Excel or CSV (often called “transactions”, “sessions” or “examinations”).</li><li>Each row needs the visit date and something to find the patient: patient no, ID no, name or phone.</li><li>Choose the file, match the columns, check the preview, import.</li></ol>Rows whose patient is not found are listed — import the patient list first (step 1). The same visit is never imported twice.','<b>Nasıl:</b><ol><li>Eski programınızdan işlem / vizit listesini Excel veya CSV olarak dışa aktarın (genelde “hareketler”, “seanslar” veya “muayeneler” adıyla).</li><li>Her satırda vizit tarihi ve hastayı bulacak bir bilgi olmalı: hasta no, TC no, ad veya telefon.</li><li>Dosyayı seçin, sütunları eşleştirin, önizlemeyi kontrol edip aktarın.</li></ol>Hastası bulunamayan satırlar listelenir — önce hasta listesini aktarın (1. adım). Aynı vizit iki kez aktarılmaz.');
+    document.getElementById('impFileHint').textContent=mxTr('.xlsx, .xls or .csv — first row must be the column headers. Max 20,000 visits per file.','.xlsx, .xls veya .csv — ilk satır sütun başlıkları olmalı. Dosya başına en fazla 20.000 vizit.');
+    document.getElementById('impPrevHint').textContent=mxTr('An import can be undone: imported visits without photos or documents are removed.','Bir aktarım geri alınabilir: fotoğraf veya belge eklenmemiş aktarılan vizitler silinir.');
+  }else{
+    T.textContent=mxTr('Import photos','Fotoğrafları içe aktar');
+    S.textContent=mxTr('Before/after photos from your old program or computer folders, added to the right patient and date.','Eski programınızdaki veya bilgisayar klasörlerinizdeki önce/sonra fotoğrafları doğru hastaya ve tarihe eklenir.');
+    G.innerHTML=mxTr('<b>How:</b><ol><li>Copy the photo folder of your old program to the computer (or export it as ZIP). Usually there is one folder per patient.</li><li>Folder names are matched to patients by patient no, ID no or name (e.g. “1043 Jane Smith”). Folders that cannot be matched can be assigned by hand.</li><li>The visit date comes from a date in the folder or file name (2023-05-14, 14.05.2023, IMG_20230514…); otherwise from the photo itself.</li><li>Photos of the same day form one visit (5 photos per visit, like the app). Photos already imported are skipped, so you can safely run it again.</li></ol>Supported: JPG, PNG, WEBP (HEIC only in Safari — convert to JPG otherwise). Keep this page open until it finishes.','<b>Nasıl:</b><ol><li>Eski programınızın fotoğraf klasörünü bilgisayara kopyalayın (veya ZIP olarak dışa aktarın). Genelde her hastanın bir klasörü vardır.</li><li>Klasör adları hastalarla hasta no, TC no veya ad ile eşleştirilir (ör. “1043 Ayşe Yılmaz”). Eşleşmeyen klasörleri elle seçebilirsiniz.</li><li>Vizit tarihi klasör veya dosya adındaki tarihten alınır (2023-05-14, 14.05.2023, IMG_20230514…); yoksa fotoğrafın kendi tarihinden.</li><li>Aynı günün fotoğrafları bir vizit olur (uygulamadaki gibi vizit başına 5 fotoğraf). Daha önce aktarılanlar atlanır; işlemi güvenle tekrar çalıştırabilirsiniz.</li></ol>Desteklenen: JPG, PNG, WEBP (HEIC yalnızca Safari’de — diğer tarayıcılarda JPG’ye çevirin). Bitene kadar bu sayfayı açık tutun.');
+    document.getElementById('impPrevHint').textContent=mxTr('An import can be undone: imported photos and their empty visits are removed.','Bir aktarım geri alınabilir: aktarılan fotoğraflar ve boş kalan vizitleri silinir.');
+    ipInitTexts();
+  }
+}
+
+// ---------- photos ----------
+var ipFiles=[],ipGroups=[],ipPts=[],ipPtByLabel={},ipSource='',ipStop=false,ipRunning=false;
+var IP_EXT=/\.(jpe?g|png|webp|heic|heif|bmp|gif|tiff?)$/i;
+function ipInitTexts(){
+  document.getElementById('ipT1').textContent='1 · '+mxTr('Choose the photo folder','Fotoğraf klasörünü seçin');
+  document.getElementById('ipH1').textContent=mxTr('Select the main folder that contains the patient folders, or a ZIP file. Large archives: prefer the folder (ZIP must fit in browser memory).','Hasta klasörlerini içeren ana klasörü veya bir ZIP dosyasını seçin. Büyük arşivlerde klasör seçin (ZIP tarayıcı belleğine sığmalı).');
+  document.getElementById('ipBtnDir').textContent=mxTr('Choose folder','Klasör seç');
+  document.getElementById('ipBtnZip').textContent=mxTr('Choose ZIP','ZIP seç');
+  document.getElementById('ipDrop').textContent=mxTr('…or drop the folder / ZIP here','…veya klasörü / ZIP’i buraya bırakın');
+}
+function ipNN(s){s=String(s||'').toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ı/g,'i');return s.replace(/[_\-.,()\[\]{}#+]+/g,' ').replace(/\s+/g,' ').trim();}
+function ipDigits(s){return String(s||'').replace(/\D/g,'');}
+async function ipLoadPatients(){
+  var all=[],from=0;
+  while(true){
+    var r=await db.from('patients').select('id,name,surname,phone,external_id,national_id').eq('clinic_id',cid).is('deleted_at',null).order('name').range(from,from+999);
+    if(r.error)throw r.error;all=all.concat(r.data||[]);if(!r.data||r.data.length<1000)break;from+=1000;
+  }
+  ipPts=all;ipPtByLabel={};
+  var dl='';all.forEach(function(p){var lb=(p.name+' '+(p.surname||'')).trim()+(p.external_id?' · #'+p.external_id:'')+(p.phone?' · '+p.phone:'');
+    if(ipPtByLabel[lb])lb+=' · '+p.id.slice(0,4);ipPtByLabel[lb]=p.id;dl+='<option value="'+mxE(lb)+'">';});
+  document.getElementById('ipPtList').innerHTML=dl;
+}
+function ipIndex(){
+  var I={ext:{},nid:{},name:{}};
+  function add(m,k,id){if(!k)return;(m[k]=m[k]||[]).indexOf(id)<0&&(m[k]=m[k]||[]).push(id);}
+  ipPts.forEach(function(p){
+    if(p.external_id)add(I.ext,String(p.external_id).trim().toLowerCase(),p.id);
+    var n=ipDigits(p.national_id);if(n.length>=6)add(I.nid,n,p.id);
+    var a=ipNN(p.name),b=ipNN(p.surname);
+    add(I.name,(a+' '+b).trim(),p.id);if(b)add(I.name,(b+' '+a).trim(),p.id);
+  });
+  return I;
+}
+function ipMatchSeg(seg,I){
+  var raw=String(seg||'').trim();if(!raw||ipDateIn(raw))return null;
+  var nums=(raw.match(/\d+/g)||[]),txt=ipNN(raw.replace(/\d+/g,' '));
+  var one=function(a){return a&&a.length===1?a[0]:null;};
+  if(!txt){
+    for(var i=0;i<nums.length;i++){var n=nums[i];
+      var h=(n.length>=6&&one(I.nid[n]))||one(I.ext[n.toLowerCase()])||one(I.ext[n.replace(/^0+/,'')]);if(h)return h;}
+    return null;
+  }
+  var w=txt.split(' '),cands=[txt,w.slice(0,3).join(' '),w.slice(0,2).join(' '),w.slice(-2).join(' ')];
+  for(var j=0;j<cands.length;j++){if(cands[j].indexOf(' ')<0)continue;var u=one(I.name[cands[j]]);if(u)return u;}
+  for(var k=0;k<nums.length;k++){var id=(nums[k].length>=6&&one(I.nid[nums[k]]))||one(I.ext[nums[k].toLowerCase()])||one(I.ext[nums[k].replace(/^0+/,'')]);
+    if(id){var p=ipPts.find(function(x){return x.id===id;});if(p&&(' '+ipNN(p.name+' '+(p.surname||''))+' ').indexOf(' '+w[0]+' ')>=0)return id;}}
+  var ex=one(I.ext[raw.toLowerCase()]);return ex;
+}
+function ipDateIn(s){
+  s=String(s||'');var m,y,mo,d;
+  if((m=s.match(/(19|20)(\d{2})[-_.](\d{1,2})[-_.](\d{1,2})/))){y=+(m[1]+m[2]);mo=+m[3];d=+m[4];}
+  else if((m=s.match(/(\d{1,2})[-_.](\d{1,2})[-_.]((?:19|20)\d{2})/))){d=+m[1];mo=+m[2];y=+m[3];}
+  else if((m=s.match(/(?:^|\D)((?:19|20)\d{2})(\d{2})(\d{2})(?:\D|$)/))){y=+m[1];mo=+m[2];d=+m[3];}
+  else return null;
+  if(mo<1||mo>12||d<1||d>31||y<1990)return null;
+  var dt=new Date(Date.UTC(y,mo-1,d));if(dt.getUTCMonth()!==mo-1||dt>new Date())return null;
+  return dt.toISOString().slice(0,10);
+}
+function ipAngle(name){
+  var n=ipNN(name);
+  var L=/(^| )(left|sol|links)( |$)/.test(n),R=/(^| )(right|sag|rechts)( |$)/.test(n),P=/(profil|profile|90)/.test(n),D=/(45|oblik|oblique)/.test(n);
+  if(L&&P)return 2;if(L&&D)return 1;if(R&&P)return 4;if(R&&D)return 3;
+  if(/(^| )(front|on|onden|frontal|anterior|face)( |$)/.test(n))return 0;
+  return null;
+}
+async function ipExifDate(blob){
+  try{
+    var b=new DataView(await blob.slice(0,131072).arrayBuffer());
+    if(b.getUint16(0)!==0xFFD8)return null;
+    var o=2;
+    while(o<b.byteLength-4){
+      var mk=b.getUint16(o);if((mk&0xFF00)!==0xFF00)return null;
+      var ln=b.getUint16(o+2);
+      if(mk===0xFFE1&&b.getUint32(o+4)===0x45786966){
+        var t=o+10,le=b.getUint16(t)===0x4949;
+        var g16=function(x){return b.getUint16(x,le);},g32=function(x){return b.getUint32(x,le);};
+        var readDir=function(dir){var n=g16(dir),res={};for(var i=0;i<n;i++){var e=dir+2+i*12;res[g16(e)]={type:g16(e+2),cnt:g32(e+4),val:e+8};}return res;};
+        var ifd0=readDir(t+g32(t+4)),str=function(en){if(!en)return null;var p=t+g32(en.val),s='';for(var i=0;i<en.cnt-1&&p+i<b.byteLength;i++)s+=String.fromCharCode(b.getUint8(p+i));return s;};
+        var dto=null;if(ifd0[0x8769]){var ex=readDir(t+g32(ifd0[0x8769].val));dto=str(ex[0x9003])||str(ex[0x9004]);}
+        dto=dto||str(ifd0[0x0132]);
+        if(dto){var m=dto.match(/^(\d{4}):(\d{2}):(\d{2})/);if(m&&m[1]>'1989')return m[1]+'-'+m[2]+'-'+m[3];}
+        return null;
+      }
+      o+=2+ln;
+    }
+  }catch(e){}
+  return null;
+}
+function ipFromInput(list){
+  var f=[];for(var i=0;i<list.length;i++){var x=list[i],p=x.webkitRelativePath||x.name;if(IP_EXT.test(x.name))f.push({path:p,size:x.size,mod:x.lastModified,blob:function(x){return function(){return Promise.resolve(x);};}(x)});}
+  ipSource=(list[0]&&(list[0].webkitRelativePath||'').split('/')[0])||mxTr('Folder','Klasör');
+  ipPrepare(f);
+}
+async function ipFromZip(file){
+  if(!file)return;sp(mxTr('Reading ZIP…','ZIP okunuyor…'));
+  try{
+    var z=await JSZip.loadAsync(file),f=[];
+    z.forEach(function(path,e){if(!e.dir&&IP_EXT.test(path)&&!/(^|\/)__MACOSX\//.test(path)){var sz=(e._data&&e._data.uncompressedSize)||0;
+      f.push({path:path,size:sz,mod:e.date?e.date.getTime():Date.now(),blob:function(){return e.async('blob');}});}});
+    ipSource=file.name;hp();ipPrepare(f);
+  }catch(err){hp();alert(mxTr('Could not read the ZIP file: ','ZIP dosyası okunamadı: ')+err.message);}
+}
+(function(){
+  var d=document.getElementById('ipDrop');if(!d)return;
+  d.addEventListener('dragover',function(e){e.preventDefault();d.classList.add('over');});
+  d.addEventListener('dragleave',function(){d.classList.remove('over');});
+  d.addEventListener('drop',async function(e){
+    e.preventDefault();d.classList.remove('over');
+    var items=e.dataTransfer.items,files=[],entries=[];
+    if(e.dataTransfer.files.length===1&&/\.zip$/i.test(e.dataTransfer.files[0].name)){ipFromZip(e.dataTransfer.files[0]);return;}
+    for(var i=0;i<items.length;i++){var en=items[i].webkitGetAsEntry&&items[i].webkitGetAsEntry();if(en)entries.push(en);}
+    sp(mxTr('Reading folder…','Klasör okunuyor…'));
+    var walk=function(en,pre){return new Promise(function(res){
+      if(en.isFile){en.file(function(fl){if(IP_EXT.test(fl.name))files.push({path:pre+fl.name,size:fl.size,mod:fl.lastModified,blob:function(){return Promise.resolve(fl);}});res();},function(){res();});}
+      else{var rd=en.createReader(),acc=[];var more=function(){rd.readEntries(async function(es){if(!es.length){for(var k=0;k<acc.length;k++)await walk(acc[k],pre+en.name+'/');res();}else{acc=acc.concat(es);more();}},function(){res();});};more();}
+    });};
+    for(var j=0;j<entries.length;j++)await walk(entries[j],'');
+    hp();ipSource=entries[0]?entries[0].name:'';ipPrepare(files);
+  });
+})();
+async function ipPrepare(files){
+  if(!files.length){alert(mxTr('No photos found in this selection.','Bu seçimde fotoğraf bulunamadı.'));return;}
+  sp(mxTr('Matching patients…','Hastalar eşleştiriliyor…'));
+  try{await ipLoadPatients();}catch(e){hp();alert('Error: '+e.message);return;}
+  var I=ipIndex(),G={};
+  // folders shared by every file (e.g. the chosen root) are not patient folders
+  var dirs=files.map(function(f){var a=f.path.split('/');a.pop();return a;}),cd=0;
+  while(dirs.length&&dirs.every(function(a){return a.length>cd&&a[cd]===dirs[0][cd];}))cd++;
+  files.forEach(function(f,fi){
+    var segs=f.path.split('/');var fname=segs.pop();
+    var root=segs.slice(cd);
+    var pid=null,gkey=null;
+    for(var i=0;i<root.length&&!pid;i++){pid=ipMatchSeg(root[i],I);if(pid)gkey=root.slice(0,i+1).join('/');}
+    for(var c2=cd-1;c2>=0&&!pid;c2--){pid=ipMatchSeg(segs[c2],I);if(pid)gkey=segs.slice(0,c2+1).join('/');}
+    if(!pid){pid=ipMatchSeg(fname.replace(/\.[^.]+$/,''),I);if(pid)gkey='#'+pid;}
+    if(!gkey)gkey=root.length?root[0]:(segs[cd-1]||mxTr('(main folder)','(ana klasör)'));
+    f.pathDate=ipDateIn(segs.join('/'))||ipDateIn(fname);
+    f.angle=ipAngle(fname);
+    var g=G[gkey]=G[gkey]||{key:gkey,pid:pid,files:[],skip:false};g.files.push(f);if(pid)g.pid=pid;
+  });
+  ipGroups=Object.keys(G).map(function(k){return G[k];}).sort(function(a,b){return (a.pid?1:0)-(b.pid?1:0)||a.key.localeCompare(b.key);});
+  ipFiles=files;
+  // already imported?
+  var keys=[];ipGroups.forEach(function(g){if(g.pid)g.files.forEach(function(f){f.key=g.pid+'|'+f.path+'|'+f.size;keys.push(f.key);});});
+  var done={};
+  for(var i=0;i<keys.length;i+=500){var r=await db.rpc('import_photos_existing',{p_clinic_id:cid,p_keys:keys.slice(i,i+500)});(r.data||[]).forEach(function(k){done[k]=1;});}
+  files.forEach(function(f){f.done=!!(f.key&&done[f.key]);});
+  hp();ipRenderGroups();
+}
+function ipPtName(id){var p=ipPts.find(function(x){return x.id===id;});return p?(p.name+' '+(p.surname||'')).trim():'';}
+function ipRenderGroups(){
+  var matched=ipGroups.filter(function(g){return g.pid&&!g.skip;}),un=ipGroups.filter(function(g){return !g.pid&&!g.skip;});
+  var nFiles=0,nDone=0;matched.forEach(function(g){g.files.forEach(function(f){if(f.done)nDone++;else nFiles++;});});
+  var nUn=0;un.forEach(function(g){nUn+=g.files.length;});
+  document.getElementById('ipT2').textContent='2 · '+mxTr('Check the matches','Eşleşmeleri kontrol edin');
+  document.getElementById('ipNums').innerHTML=
+    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+nFiles+'</div><div class="l">'+mxTr('photos to import','aktarılacak fotoğraf')+'</div></div>'+
+    '<div class="imp-num"><div class="n">'+matched.length+'</div><div class="l">'+mxTr('patients matched','eşleşen hasta')+'</div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#D4963A">'+nUn+'</div><div class="l">'+mxTr('photos without patient','hastası bulunamayan fotoğraf')+'</div></div>'+
+    (nDone?'<div class="imp-num"><div class="n" style="color:rgba(245,241,235,0.5)">'+nDone+'</div><div class="l">'+mxTr('already imported','zaten aktarılmış')+'</div></div>':'');
+  document.getElementById('ipH2').textContent=un.length?mxTr('Folders without a patient: type a name to choose the patient, or leave empty to skip them.','Hastası bulunamayan klasörler: hastayı seçmek için ad yazın veya atlamak için boş bırakın.'):mxTr('All folders are matched.','Tüm klasörler eşleşti.');
+  var h='<tr><th>'+mxTr('Folder','Klasör')+'</th><th>'+mxTr('Photos','Fotoğraflar')+'</th><th>'+mxTr('Patient','Hasta')+'</th><th></th></tr>';
+  ipGroups.forEach(function(g,i){
+    var n=g.files.length,dates={};g.files.forEach(function(f){if(f.pathDate)dates[f.pathDate]=1;});
+    var cell=g.pid?'<span style="color:#3AB06A">✓ '+mxE(ipPtName(g.pid))+'</span>':'<input class="ip-in" list="ipPtList" placeholder="'+mxE(mxTr('Type patient name…','Hasta adı yazın…'))+'" onchange="ipAssign('+i+',this.value)">';
+    h+='<tr style="'+(g.skip?'opacity:.4':'')+'"><td>'+mxE(g.key.charAt(0)==='#'?mxTr('(file names)','(dosya adları)'):g.key)+'</td><td>'+n+(Object.keys(dates).length?' · '+Object.keys(dates).length+' '+mxTr('dates','tarih'):'')+'</td><td>'+cell+'</td><td>'+
+      (g.pid?'<a style="color:rgba(245,241,235,0.5);cursor:pointer;font-size:11px" onclick="ipGroups['+i+'].pid=null;ipRenderGroups()">'+mxTr('change','değiştir')+'</a>':'')+'</td></tr>';
+  });
+  document.getElementById('ipGroups').innerHTML=h;
+  document.getElementById('ipActions').innerHTML=nFiles?'<button class="bimp" onclick="ipRun()">'+mxTrV('Import [n] photos','[n] fotoğraf aktar',{n:nFiles})+'</button>':'<span class="hint">'+mxTr('Nothing new to import.','Aktarılacak yeni kayıt yok.')+'</span>';
+  document.getElementById('ipMatchStep').style.display='block';
+  document.getElementById('ipRunStep').style.display='none';
+}
+async function ipAssign(i,label){
+  var id=ipPtByLabel[label];if(!id){if(label)alert(mxTr('Choose a patient from the list.','Listeden bir hasta seçin.'));return;}
+  var g=ipGroups[i];g.pid=id;
+  var keys=g.files.map(function(f){f.key=id+'|'+f.path+'|'+f.size;return f.key;});
+  var r=await db.rpc('import_photos_existing',{p_clinic_id:cid,p_keys:keys});var done={};(r.data||[]).forEach(function(k){done[k]=1;});
+  g.files.forEach(function(f){f.done=!!done[f.key];});
+  ipRenderGroups();
+}
+async function ipResize(blob){
+  var bmp;
+  try{bmp=await createImageBitmap(blob,{imageOrientation:'from-image'});}
+  catch(e){var u=URL.createObjectURL(blob);try{bmp=await new Promise(function(res,rej){var im=new Image();im.onload=function(){res(im);};im.onerror=rej;im.src=u;});}finally{setTimeout(function(){URL.revokeObjectURL(u);},5000);}}
+  var w=bmp.width,h=bmp.height,sc=Math.min(1,2560/Math.max(w,h));
+  var c=document.createElement('canvas');c.width=Math.round(w*sc);c.height=Math.round(h*sc);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);if(bmp.close)bmp.close();
+  return await new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('encode'));},'image/jpeg',0.88);});
+}
+async function ipRun(){
+  if(ipRunning)return;
+  var todo=[];ipGroups.forEach(function(g){if(g.pid&&!g.skip)g.files.forEach(function(f){if(!f.done){f.pid=g.pid;todo.push(f);}});});
+  if(!todo.length)return;
+  todo.sort(function(x,y){return (x.angle==null?1:0)-(y.angle==null?1:0);});
+  var b=await db.rpc('import_photos_begin',{p_clinic_id:cid,p_file_name:ipSource||'photos'});
+  if(b.error){alert('Error: '+b.error.message);return;}
+  var batch=b.data,ok=0,skip=0,fails=[],i=0,t0=Date.now();ipStop=false;ipRunning=true;
+  document.getElementById('ipMatchStep').style.display='none';
+  document.getElementById('ipRunStep').style.display='block';
+  document.getElementById('ipT3').textContent='3 · '+mxTr('Importing photos','Fotoğraflar aktarılıyor');
+  document.getElementById('ipFails').innerHTML='';
+  document.getElementById('ipRunActions').innerHTML='<button class="bimp2" onclick="ipStop=true;this.disabled=true">'+mxTr('Stop','Durdur')+'</button>';
+  window.onbeforeunload=function(){return 'x';};
+  var upd=function(){var n=ok+skip+fails.length,pct=Math.round(n*100/todo.length);document.getElementById('ipBar').style.width=pct+'%';
+    var el=(Date.now()-t0)/1000,rem=n?Math.round(el/n*(todo.length-n)/60):0;
+    document.getElementById('ipProg').textContent=mxTrV('[n] / [t] · [ok] added · [f] failed','[n] / [t] · [ok] eklendi · [f] hatalı',{n:n,t:todo.length,ok:ok,f:fails.length})+(n&&n<todo.length?' · ~'+rem+' '+mxTr('min left','dk kaldı'):'');};
+  var worker=async function(){
+    while(i<todo.length&&!ipStop){
+      var f=todo[i++];
+      try{
+        var blob=await f.blob();
+        var date=f.pathDate||await ipExifDate(blob)||new Date(f.mod||Date.now()).toISOString().slice(0,10);
+        var jpg=await ipResize(blob);
+        var name='photo_imp_'+batch.slice(0,8)+'_'+Math.random().toString(36).slice(2,10)+'_'+Date.now()+'.jpg';
+        var up=await db.storage.from(BUCKET).upload(name,jpg,{contentType:'image/jpeg',upsert:false});
+        if(up.error)throw up.error;
+        var r=await db.rpc('import_photo_add',{p_batch_id:batch,p_patient_id:f.pid,p_date:date,p_file_path:name,p_import_key:f.key,p_angle:f.angle,p_region:null});
+        if(r.error)throw r.error;
+        if(r.data&&r.data.skipped)skip++;else{ok++;f.done=true;}
+      }catch(e){
+        var msg=(e&&e.message)||String(e);
+        if(/\.hei[cf]$/i.test(f.path))msg=mxTr('HEIC is not supported by this browser — convert to JPG or use Safari','HEIC bu tarayıcıda desteklenmiyor — JPG’ye çevirin veya Safari kullanın');
+        fails.push({path:f.path,msg:msg});
+      }
+      upd();
+    }
+  };
+  upd();
+  await Promise.all([worker(),worker(),worker()]);
+  ipRunning=false;window.onbeforeunload=null;
+  await db.rpc('import_photos_finish',{p_batch_id:batch,p_skipped:skip,p_failed:fails.length});
+  document.getElementById('ipT3').textContent=ipStop?mxTr('Stopped — run again to continue where you left off','Durduruldu — kaldığınız yerden devam etmek için tekrar çalıştırın'):mxTr('Done ✓','Tamamlandı ✓');
+  if(fails.length)document.getElementById('ipFails').innerHTML='<tr><th>'+mxTr('File','Dosya')+'</th><th>'+mxTr('Error','Hata')+'</th></tr>'+fails.slice(0,200).map(function(x){return '<tr><td>'+mxE(x.path)+'</td><td>'+mxE(x.msg)+'</td></tr>';}).join('');
+  document.getElementById('ipRunActions').innerHTML='<button class="bimp2" onclick="impUndo(\''+batch+'\',\'photos\')">'+mxTr('Undo this import','Bu aktarımı geri al')+'</button>'+
+    (ipStop||fails.length?' <button class="bimp" onclick="ipRenderGroups()">'+mxTr('Back to the list','Listeye dön')+'</button>':'');
+  impLoadBatches();loadStats();
 }
 </script>
 <script>

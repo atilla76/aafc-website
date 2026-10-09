@@ -420,7 +420,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <button class="btn bpdf" onclick="prOpen()">PDF report</button>
             </div>
             </div>
-            <div class="sec">VISITS</div>
+            <div class="sec" style="display:flex;justify-content:space-between;align-items:center">VISITS <button class="btn bedit" onclick="nvOpen()">+ New visit</button></div>
             <div class="vg" id="vList"></div>
             <div id="vDetail" style="display:none">
               <div class="sec">VISIT INFO</div>
@@ -1242,6 +1242,47 @@ function vxDictate(btn){
   vxRec.onend=function(){if(vxBtn){vxBtn.textContent='🎤';vxBtn.style.background='';}vxRec=null;vxBtn=null;ta.value=base;};
   vxRec.start();
 }
+
+// ============ NEW VISIT (same flow as the app: new procedure or follow-up) ============
+var nvS=null;
+async function nvOpen(){
+  if(!selPt)return;
+  var controlled={};vis.forEach(function(v){if(v.visit_type==='Control'&&v.parent_visit_id)controlled[v.parent_visit_id]=1;});
+  var cands=vis.filter(function(v){return v.visit_type!=='Control'&&!controlled[v.id];});
+  var freq={},nm={};
+  try{var r=await db.from('visits').select('procedures').eq('clinic_id',cid).not('procedures','is',null).is('deleted_at',null).order('created_at',{ascending:false}).limit(300);
+    (r.data||[]).forEach(function(x){splitProcs(x.procedures).forEach(function(p){if(p.length<2||p.length>40)return;var k=p.toLocaleLowerCase(LANG);freq[k]=(freq[k]||0)+1;nm[k]=p;});});}catch(e){}
+  var top=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,8).map(function(k){return nm[k];});
+  nvS={control:false,region:(vis[0]&&vis[0].region)||'Face',date:fmtDate(new Date()),procs:[],top:top,cands:cands,parent:cands.length?cands[0].id:null};
+  nvRender();
+}
+function nvRender(){
+  var o=nvS,h='<div class="prlay" style="grid-template-columns:1fr 1fr;margin-bottom:6px">'+
+    '<button type="button" class="'+(!o.control?'on':'')+'" onclick="nvS.control=false;nvRender()"><b>+ '+mxE(mxTr('New procedure','Yeni işlem'))+'</b></button>'+
+    '<button type="button" class="'+(o.control?'on':'')+'" onclick="nvS.control=true;nvRender()"><b>✓ '+mxE(prT(LANG,'control'))+'</b></button></div>';
+  if(!o.control){
+    var sug=o.cands[0],ago=sug?Math.round((new Date()-vDate(sug))/864e5):999;
+    if(sug&&ago<=60)h+='<div class="pfdup" style="background:rgba(142,134,214,.14);border-color:rgba(183,176,240,.45);display:flex;gap:8px;align-items:center;margin:8px 0"><span style="flex:1">'+mxE(mxTrV('Follow-up of the [v] visit?','[v] vizidinin kontrolü mü?',{v:dmy(sug.visit_date)+(splitProcs(sug.procedures)[0]?' · '+splitProcs(sug.procedures)[0]:'')}))+'</span><button class="btn bedit" onclick="nvS.control=true;nvS.parent=\''+sug.id+'\';nvRender()">'+mxE(mxTr('Follow-up','Kontrol yap'))+'</button></div>';
+    h+='<div class="prsec">'+mxE(mxTr('Region','Bölge'))+'</div><div class="pfchips">'+['Face','Neck','Abdomen','Legs','Other'].map(function(r){return '<button type="button" class="pfc'+(o.region===r?' on':'')+'" onclick="nvS.region=\''+r+'\';nvRender()">'+mxE(regionL(r))+'</button>';}).join('')+'</div>';
+    if(o.top.length)h+='<div class="prsec">'+mxE(mxTr('Procedure (optional) · frequently used','İşlem (isteğe bağlı) · sık kullanılanlar'))+'</div><div class="pfchips">'+o.top.map(function(p,i){return '<button type="button" class="pfc'+(o.procs.indexOf(p)>=0?' on':'')+'" onclick="nvProc('+i+')">'+mxE(p)+'</button>';}).join('')+'</div>';
+    h+='<div class="prsec">'+mxE(mxTr('Date','Tarih'))+'</div><input class="mi" type="date" value="'+o.date+'" max="'+fmtDate(new Date())+'" onchange="nvS.date=this.value"/>';
+  }else{
+    h+='<div class="prsec">'+mxE(mxTr('Follow-up of which visit?','Hangi vizidin kontrolü?'))+'</div>';
+    if(!o.cands.length)h+='<div class="hint">'+mxE(mxTr('No visit is waiting for a follow-up.','Kontrolü yapılmamış vizit yok.'))+'</div>';
+    o.cands.slice(0,12).forEach(function(v){h+='<label class="pfsw" style="padding:8px 10px;border-radius:10px;background:'+(o.parent===v.id?'rgba(142,134,214,.16)':'rgba(245,241,235,.04)')+'"><input type="radio" name="nvp" '+(o.parent===v.id?'checked':'')+' onchange="nvS.parent=\''+v.id+'\';nvRender()"/> <b>'+mxE(dmy(v.visit_date))+'</b> · '+mxE([regionL(v.region||''),splitProcs(v.procedures).join(', ')].filter(Boolean).join(' · '))+'</label>';});
+  }
+  mxOpen(mxTr('New visit','Yeni vizit'),h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Create visit','Vizit oluştur'),cls:'bsave',fn:nvCreate}]);
+}
+function nvProc(i){var p=nvS.top[i],k=nvS.procs.indexOf(p);if(k>=0)nvS.procs.splice(k,1);else nvS.procs.push(p);nvRender();}
+async function nvCreate(){
+  var o=nvS;if(o.control&&!o.parent)return;
+  var par=o.control?vis.find(function(v){return v.id===o.parent;}):null;
+  var row={patient_id:selPt.id,clinic_id:cid,visit_type:o.control?'Control':'Visit',visit_date:o.control?fmtDate(new Date()):o.date,region:par?(par.region||o.region):o.region,parent_visit_id:par?par.id:null,procedures:!o.control&&o.procs.length?o.procs.join(', '):null};
+  var r=await db.from('visits').insert(row).select().single();
+  if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
+  mxClose();await selP(selPt.id);if(r.data&&r.data.id)selV(r.data.id);
+}
+
 async function delVisit(id){
   if(!confirm(mxTr('Delete this visit? The visit, its photos, documents and linked follow-ups are removed from all lists. The records are kept in the archive.','Vizit silinsin mi? Vizit, fotoğrafları, belgeleri ve bağlı kontrolleriyle birlikte listelerden kaldırılır. Kayıtlar arşivde saklanır.')))return;
   var r=await db.rpc('soft_delete_visit',{p_visit_id:id});
@@ -3642,7 +3683,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

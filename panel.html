@@ -138,6 +138,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .dc img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block}
 .dc img:hover{opacity:0.85}
 .nb{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px;font-size:13px;color:rgba(245,241,235,0.7);line-height:1.6}
+.agsum{background:linear-gradient(135deg,rgba(184,154,106,.16),rgba(108,99,168,.10));border:1px solid rgba(184,154,106,.3);border-radius:16px;padding:14px;margin-bottom:16px}
+.agday{font-size:16px;font-weight:700;margin-bottom:10px;text-transform:capitalize}
+.agstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.agstats div{background:rgba(18,16,30,.45);border-radius:12px;padding:10px}
+.agstats b{display:block;font-size:20px}.agstats span{font-size:11px;color:rgba(245,241,235,.65)}
+.agchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.agchips i{font-style:normal;font-size:12px;padding:3px 9px;border-radius:10px;background:rgba(245,241,235,.07)}
+.agrow{display:grid;grid-template-columns:52px 1fr;gap:8px;margin-bottom:10px}
+.agt{font-size:13px;font-weight:700;color:#B89A6A;padding-top:12px;text-align:center}.agt.c{color:#B7B0F0}
+.agcard{display:flex;gap:12px;padding:12px;border-radius:14px;background:rgba(245,241,235,.04);border:1px solid rgba(245,241,235,.08);cursor:pointer}
+.agcard:hover{border-color:rgba(184,154,106,.4)}
+.agcard img,.agph{width:60px;height:76px;border-radius:10px;object-fit:cover;object-position:top;flex:none;background:rgba(245,241,235,.06)}
+.agb{flex:1;min-width:0}.agn{display:flex;align-items:center;gap:8px}.agn b{flex:1;font-size:14.5px}
+.agty{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:7px;background:rgba(184,154,106,.18);color:#B89A6A}.agty.c{background:rgba(142,134,214,.18);color:#B7B0F0}
+.agm{font-size:12px;color:rgba(245,241,235,.6);margin-top:2px}
+.cmpbar{display:grid;grid-template-columns:1fr 34px 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.cmpcard{border-radius:12px;padding:10px 12px;border:1px solid rgba(183,176,240,.5);background:rgba(142,134,214,.10)}
+.cmpcard.a{border-color:rgba(184,154,106,.6);background:rgba(184,154,106,.10)}
+.cmpcard .k{display:block;font-size:10px;font-weight:800;letter-spacing:1px;color:#B7B0F0;margin-bottom:4px}
+.cmpcard.a .k{color:#B89A6A}
+.cmpcard select{width:100%;background:transparent;border:0;color:#F5F1EB;font-size:13px;font-weight:600;outline:none;font-family:inherit}
+.cmpcard select option{background:#1C1929}
+.cmpswap{width:34px;height:34px;border-radius:50%;border:1px solid rgba(245,241,235,.15);background:#252233;color:#F5F1EB;cursor:pointer;font-size:15px}
+.cmpdays{text-align:center;font-size:12px;color:rgba(245,241,235,.6);margin-bottom:10px;min-height:14px}
+#cmpRows{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:6px}
+.cmpproc{grid-column:1/-1}
+.cmprow{margin-bottom:0!important;background:rgba(245,241,235,.04);border:1px solid rgba(245,241,235,.08);border-radius:12px;padding:10px;margin-bottom:10px}
+.cmprh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.cmppair{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.cmpimg{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:rgba(245,241,235,.05)}
+.cmpimg img{width:100%;height:100%;object-fit:cover;object-position:top;cursor:zoom-in;display:block}
+.cmpimg.cmpnone{display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(245,241,235,.35)}
+.cmptag{position:absolute;left:8px;top:8px;padding:3px 8px;border-radius:7px;font-size:10px;font-weight:800;letter-spacing:.8px;color:#12101E;background:#B7B0F0}
+.cmptag.a{background:#B89A6A}
+.cmpproc{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;margin-bottom:6px}
+.cmpproc span{font-size:10px;letter-spacing:1px;color:rgba(245,241,235,.5);text-transform:uppercase;margin-right:4px}
+.cmpproc i{font-style:normal;padding:3px 9px;border-radius:9px;background:rgba(245,241,235,.07)}
+.sldw{position:relative;aspect-ratio:3/4;max-height:70vh;margin:0 auto;border-radius:12px;overflow:hidden;background:#000}
+.sldw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.sldb{position:absolute;inset:0}
+.sldl{position:absolute;top:0;bottom:0;width:2px;background:#F5F1EB;transform:translateX(-1px)}
+.prsec{font-size:11px;letter-spacing:1px;color:rgba(245,241,235,.5);text-transform:uppercase;margin:12px 0 8px}
+.prlay{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prlay button{border:1px solid rgba(245,241,235,.14);background:#252233;color:#F5F1EB;border-radius:12px;padding:10px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:3px;text-align:center}
+.prlay button.on{border:2px solid #B89A6A;background:rgba(184,154,106,.10)}
+.prlay b{font-size:12.5px}.prlay span{font-size:10.5px;color:rgba(245,241,235,.6)}.prlay em{font-style:normal;font-size:10.5px;color:#B89A6A;font-weight:700}
 .cw{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
 .cs{background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08);border-radius:12px;padding:14px}
 .cs h4{font-size:11px;color:rgba(245,241,235,0.4);margin-bottom:10px;letter-spacing:0.5px}
@@ -361,20 +407,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div class="ibox" id="pPkg" style="margin-top:10px"></div>
             <div class="ibox" id="pPortal" style="margin-top:10px"></div>
             <div class="sec">BEFORE / AFTER COMPARISON</div>
-            <div class="cw">
-              <div class="cs">
-                <h4>BEFORE</h4>
-                <select id="cV1" onchange="loadCmp()"><option value="">Select visit</option></select>
-                <div class="cp" id="cPh1"></div>
-              </div>
-              <div class="cs">
-                <h4>AFTER</h4>
-                <select id="cV2" onchange="loadCmp()"><option value="">Select visit</option></select>
-                <div class="cp" id="cPh2"></div>
-              </div>
+            <div id="cmpNeed" class="hint" style="display:none">This patient needs at least two visits to compare.</div>
+            <div id="cmpWrap">
+            <div class="cmpbar">
+              <div class="cmpcard b"><span class="k" id="cmpKB">BEFORE</span><select id="cV1" onchange="loadCmp()"></select></div>
+              <button class="cmpswap" title="Swap" onclick="cmpSwap()">⇄</button>
+              <div class="cmpcard a"><span class="k" id="cmpKA">AFTER</span><select id="cV2" onchange="loadCmp()"></select></div>
             </div>
-            <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-              <button class="btn bpdf" onclick="genPDF()">Generate PDF Report</button>
+            <div class="cmpdays" id="cmpDays"></div>
+            <div id="cmpRows"></div>
+            <div style="display:flex;justify-content:flex-end;margin:8px 0 16px">
+              <button class="btn bpdf" onclick="prOpen()">PDF report</button>
+            </div>
             </div>
             <div class="sec">VISITS</div>
             <div class="vg" id="vList"></div>
@@ -992,63 +1036,173 @@ async function selP(id){
   await fillCmp();
 }
 
+// ============ COMPARE (before / after) ============
+var PR_I18N={"tr":{"prBefore":"Önce","prAfter":"Sonra","prPatient":"Hasta","prReportTitle":"Öncesi / sonrası","prDaysLater":"[n] gün sonra","prProcedures":"İşlem","pfAgeN":"[n] yaş","visit":"Vizit","control":"Kontrol","front":"Ön","left45":"Sol 45","leftProfile":"Sol Profil","right45":"Sağ 45","rightProfile":"Sağ Profil","face":"Yüz","neck":"Boyun","abdomen":"Karın","legs":"Bacaklar","other":"Diğer"},"en":{"prBefore":"Before","prAfter":"After","prPatient":"Patient","prReportTitle":"Before / after","prDaysLater":"[n] days later","prProcedures":"Procedures","pfAgeN":"[n] yrs","visit":"Visit","control":"Control","front":"Front","left45":"Left 45","leftProfile":"Left Profile","right45":"Right 45","rightProfile":"Right Profile","face":"Face","neck":"Neck","abdomen":"Abdomen","legs":"Legs","other":"Other"},"de":{"prBefore":"Vorher","prAfter":"Nachher","prPatient":"Patient","prReportTitle":"Vorher / nachher","prDaysLater":"[n] Tage später","prProcedures":"Behandlung","pfAgeN":"[n] J.","visit":"Besuch","control":"Kontrolle","front":"Vorne","left45":"Links 45","leftProfile":"Linksprofil","right45":"Rechts 45","rightProfile":"Rechtsprofil","face":"Gesicht","neck":"Hals","abdomen":"Bauch","legs":"Beine","other":"Andere"},"es":{"prBefore":"Antes","prAfter":"Después","prPatient":"Paciente","prReportTitle":"Antes / después","prDaysLater":"[n] días después","prProcedures":"Procedimientos","pfAgeN":"[n] años","visit":"Visita","control":"Control","front":"Frente","left45":"Izquierda 45","leftProfile":"Perfil izquierdo","right45":"Derecha 45","rightProfile":"Perfil derecho","face":"Cara","neck":"Cuello","abdomen":"Abdomen","legs":"Piernas","other":"Otro"},"fr":{"prBefore":"Avant","prAfter":"Après","prPatient":"Patient","prReportTitle":"Avant / après","prDaysLater":"[n] jours après","prProcedures":"Actes","pfAgeN":"[n] ans","visit":"Visite","control":"Contrôle","front":"Face","left45":"Gauche 45","leftProfile":"Profil gauche","right45":"Droite 45","rightProfile":"Profil droit","face":"Visage","neck":"Cou","abdomen":"Abdomen","legs":"Jambes","other":"Autre"},"it":{"prBefore":"Prima","prAfter":"Dopo","prPatient":"Paziente","prReportTitle":"Prima / dopo","prDaysLater":"[n] giorni dopo","prProcedures":"Trattamenti","pfAgeN":"[n] anni","visit":"Visita","control":"Controllo","front":"Fronte","left45":"Sinistra 45","leftProfile":"Profilo sinistro","right45":"Destra 45","rightProfile":"Profilo destro","face":"Viso","neck":"Collo","abdomen":"Addome","legs":"Gambe","other":"Altro"},"pt":{"prBefore":"Antes","prAfter":"Depois","prPatient":"Paciente","prReportTitle":"Antes / depois","prDaysLater":"[n] dias depois","prProcedures":"Procedimentos","pfAgeN":"[n] anos","visit":"Visita","control":"Controle","front":"Frente","left45":"Esquerda 45","leftProfile":"Perfil esquerdo","right45":"Direita 45","rightProfile":"Perfil direito","face":"Rosto","neck":"Pescoço","abdomen":"Abdômen","legs":"Pernas","other":"Outro"},"ru":{"prBefore":"До","prAfter":"После","prPatient":"Пациент","prReportTitle":"До / после","prDaysLater":"через [n] дн.","prProcedures":"Процедуры","pfAgeN":"[n] лет","visit":"Визит","control":"Контроль","front":"Перед","left45":"Лево 45","leftProfile":"Левый профиль","right45":"Право 45","rightProfile":"Правый профиль","face":"Лицо","neck":"Шея","abdomen":"Живот","legs":"Ноги","other":"Другое"},"ko":{"prBefore":"전","prAfter":"후","prPatient":"환자","prReportTitle":"전 / 후","prDaysLater":"[n]일 후","prProcedures":"시술","pfAgeN":"[n]세","visit":"방문","control":"컨트롤","front":"정면","left45":"왼쪽 45","leftProfile":"왼쪽 프로필","right45":"오른쪽 45","rightProfile":"오른쪽 프로필","face":"얼굴","neck":"목","abdomen":"복부","legs":"다리","other":"기타"},"zh":{"prBefore":"术前","prAfter":"术后","prPatient":"患者","prReportTitle":"术前 / 术后","prDaysLater":"[n]天后","prProcedures":"项目","pfAgeN":"[n]岁","visit":"访问","control":"控制","front":"正面","left45":"左45","leftProfile":"左侧面","right45":"右45","rightProfile":"右侧面","face":"脸","neck":"脖子","abdomen":"腹部","legs":"腿","other":"其他"}};
+function regionL(k,lang){var m={Face:"face",Neck:"neck",Abdomen:"abdomen",Legs:"legs",Other:"other"}[k];return m?prT(lang||LANG,m):k;}
+function prT(lang,k){var d=PR_I18N[lang]||PR_I18N.en;return d[k]||PR_I18N.en[k]||k;}
+function angL(i,lang){return prT(lang||LANG,['front','left45','leftProfile','right45','rightProfile'][i]||'front');}
+function vTypeL(v,lang){return prT(lang||LANG,(v&&v.visit_type==='Control')?'control':'visit');}
+function splitProcs(s){return String(s||'').split(/[,;\n]/).map(function(x){return x.trim();}).filter(Boolean).map(function(x){return x.charAt(0).toLocaleUpperCase(LANG)+x.slice(1);});}
+function vDate(v){var s=v&&(v.visit_date||v.created_at);if(!s)return null;var d=new Date(String(s).slice(0,10)+'T00:00:00');return isNaN(d)?null:d;}
+function dmy(s){s=String(s||'').slice(0,10);var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);return m?m[3]+'.'+m[2]+'.'+m[1]:s;}
+var cPhP1={},cPhP2={}; // angle -> file path
+
 async function fillCmp(){
-  var opts='<option value="">Select visit</option>';
+  var opts='';
   for(var i=0;i<vis.length;i++){
-    var v=vis[i];
-    opts+='<option value="'+v.id+'">'+(v.visit_date||'').split('T')[0]+' - '+(v.region||'')+'</option>';
+    var v=vis[i],pr=splitProcs(v.procedures);
+    opts+='<option value="'+v.id+'">'+mxE(dmy(v.visit_date)+' · '+vTypeL(v)+(pr.length?' · '+pr[0]:''))+'</option>';
   }
   document.getElementById('cV1').innerHTML=opts;
   document.getElementById('cV2').innerHTML=opts;
-  document.getElementById('cPh1').innerHTML='';
-  document.getElementById('cPh2').innerHTML='';
-  cPh1={};cPh2={};cVis1=null;cVis2=null;
+  cPh1={};cPh2={};cPhP1={};cPhP2={};cVis1=null;cVis2=null;
+  document.getElementById('cmpRows').innerHTML='';
+  document.getElementById('cmpDays').textContent='';
+  document.getElementById('cmpKB').textContent=prT(LANG,'prBefore').toLocaleUpperCase(LANG);
+  document.getElementById('cmpKA').textContent=prT(LANG,'prAfter').toLocaleUpperCase(LANG);
+  document.getElementById('cmpWrap').style.display=vis.length>=2?'block':'none';
+  document.getElementById('cmpNeed').style.display=vis.length>=2?'none':'block';
   if(vis.length>=2){
     document.getElementById('cV1').value=vis[vis.length-1].id;
     document.getElementById('cV2').value=vis[0].id;
     await loadCmp();
   }
 }
-
+function cmpSwap(){var a=document.getElementById('cV1'),b=document.getElementById('cV2'),t=a.value;a.value=b.value;b.value=t;loadCmp();}
+function cmpDaysN(){var a=vDate(cVis1),b=vDate(cVis2);return a&&b?Math.round(Math.abs(b-a)/864e5):null;}
+function cmpProcsBetween(){
+  var a=vDate(cVis1),b=vDate(cVis2);if(!a||!b)return splitProcs(cVis1&&cVis1.procedures);
+  var lo=a<b?a:b,hi=a<b?b:a,out=[],seen={};
+  vis.slice().reverse().forEach(function(v){var d=vDate(v);if(!d||d<lo||d>hi)return;splitProcs(v.procedures).forEach(function(p){var k=p.toLocaleLowerCase(LANG);if(!seen[k]){seen[k]=1;out.push(p);}});});
+  return out;
+}
 async function loadCmp(){
-  var v1=document.getElementById('cV1').value;
-  var v2=document.getElementById('cV2').value;
+  var v1=document.getElementById('cV1').value,v2=document.getElementById('cV2').value;
   cVis1=v1?vis.find(function(x){return x.id===v1;}):null;
   cVis2=v2?vis.find(function(x){return x.id===v2;}):null;
-  cPh1={};cPh2={};
-  var paths=[];
-  var photosV1=[],photosV2=[];
-  if(v1){
-    var r=await db.from('photos').select('*').eq('visit_id',v1).is('deleted_at',null).order('angle_index');
-    photosV1=r.data||[];
-    photosV1.forEach(function(p){if(p.file_path)paths.push(p.file_path);});
-  }
-  if(v2){
-    var r2=await db.from('photos').select('*').eq('visit_id',v2).is('deleted_at',null).order('angle_index');
-    photosV2=r2.data||[];
-    photosV2.forEach(function(p){if(p.file_path)paths.push(p.file_path);});
-  }
+  cPh1={};cPh2={};cPhP1={};cPhP2={};
+  var rows=document.getElementById('cmpRows');rows.innerHTML='<div class="loader">…</div>';
+  var p1=[],p2=[],paths=[];
+  if(v1){var r=await db.from('photos').select('*').eq('visit_id',v1).is('deleted_at',null).order('angle_index');p1=r.data||[];}
+  if(v2){var r2=await db.from('photos').select('*').eq('visit_id',v2).is('deleted_at',null).order('angle_index');p2=r2.data||[];}
+  p1.concat(p2).forEach(function(p){if(p.file_path)paths.push(p.file_path);});
   var urls=await getSignedBatch(paths);
-  if(v1){
-    var h='';
-    photosV1.forEach(function(p){
-      var u=urls[p.file_path]||'';
-      cPh1[p.angle_index]=u;
-      h+='<div><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
-      h+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
-    });
-    document.getElementById('cPh1').innerHTML=h||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+  p1.forEach(function(p){cPh1[p.angle_index]=urls[p.file_path]||'';cPhP1[p.angle_index]=p.file_path;});
+  p2.forEach(function(p){cPh2[p.angle_index]=urls[p.file_path]||'';cPhP2[p.angle_index]=p.file_path;});
+  var dn=cmpDaysN();
+  document.getElementById('cmpDays').textContent=dn===null?'':(dn===0?mxTr('Same day','Aynı gün'):prT(LANG,'prDaysLater').replace('[n]',dn));
+  var h='';
+  for(var a=0;a<5;a++){
+    if(!cPh1[a]&&!cPh2[a])continue;
+    var cell=function(u,side){return u?'<div class="cmpimg"><img src="'+u+'" onclick="openLb(\''+u+'\')"/><span class="cmptag '+(side===1?'b':'a')+'">'+mxE(prT(LANG,side===1?'prBefore':'prAfter').toLocaleUpperCase(LANG))+'</span></div>':'<div class="cmpimg cmpnone">'+mxE(mxTr('No photo','Foto yok'))+'</div>';};
+    h+='<div class="cmprow"><div class="cmprh"><b>'+mxE(angL(a))+'</b>'+(cPh1[a]&&cPh2[a]?'<button class="btn bedit" onclick="cmpSlider('+a+')">⇆ '+mxE(mxTr('Slider','Kaydır'))+'</button>':'')+'</div><div class="cmppair">'+cell(cPh1[a],1)+cell(cPh2[a],2)+'</div></div>';
   }
-  if(v2){
-    var h2='';
-    photosV2.forEach(function(p){
-      var u=urls[p.file_path]||'';
-      cPh2[p.angle_index]=u;
-      h2+='<div><img src="'+u+'" onclick="openLb(\''+u+'\')"/>';
-      h2+='<div class="al">'+(AL[p.angle_index]||'')+'</div></div>';
-    });
-    document.getElementById('cPh2').innerHTML=h2||'<div style="color:rgba(245,241,235,0.3);font-size:12px">No photos</div>';
+  var pr=cmpProcsBetween();
+  if(pr.length)h+='<div class="cmpproc"><span>'+mxE(mxTr('Done in between','Bu arada yapılanlar'))+'</span>'+pr.map(function(x){return '<i>'+mxE(x)+'</i>';}).join('')+'</div>';
+  rows.innerHTML=h||'<div class="hint">'+mxE(mxTr('No photos in these visits.','Bu vizitlerde fotoğraf yok.'))+'</div>';
+}
+function cmpSlider(a){
+  var b=mxE(prT(LANG,'prBefore').toLocaleUpperCase(LANG)),f=mxE(prT(LANG,'prAfter').toLocaleUpperCase(LANG));
+  mxOpen(angL(a),'<div class="sldw" id="sldw"><img src="'+cPh2[a]+'"/><div class="sldb" id="sldb"><img src="'+cPh1[a]+'"/></div><div class="sldl" id="sldl"></div><span class="cmptag b">'+b+'</span><span class="cmptag a" style="left:auto;right:8px">'+f+'</span></div><input type="range" min="2" max="98" value="50" style="width:100%;margin-top:10px" oninput="sldSet(this.value)">',[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
+  sldSet(50);
+}
+function sldSet(v){var b=document.getElementById('sldb'),l=document.getElementById('sldl');if(!b)return;b.style.clipPath='inset(0 '+(100-v)+'% 0 0)';l.style.left=v+'%';}
+
+// ============ PDF REPORT (options + canvas rendering, so every language prints correctly) ============
+var PR_COLORS=['#B89A6A','#6C63A8','#2A9E8A','#1F2A44','#C0392B'];
+var PR_LANGS={tr:'Türkçe',en:'English',de:'Deutsch',es:'Español',fr:'Français',it:'Italiano',pt:'Português',ru:'Русский',ko:'한국어',zh:'中文'};
+function prLoadOpts(){var o={layout:0,procedures:true,ageDays:true,phone:false,shortName:false,lang:PR_LANGS[LANG]?LANG:'en',color:PR_COLORS[0]};try{var s=JSON.parse(localStorage.getItem('aafc_pr_opts')||'null');if(s)Object.keys(o).forEach(function(k){if(s[k]!==undefined)o[k]=s[k];});}catch(e){}if(!PR_LANGS[o.lang])o.lang='en';if(PR_COLORS.indexOf(o.color)<0)o.color=PR_COLORS[0];o.angles=[0,1,2,3,4].filter(function(a){return cPh1[a]||cPh2[a];});return o;}
+function prSaveOpts(o){try{localStorage.setItem('aafc_pr_opts',JSON.stringify({layout:o.layout,procedures:o.procedures,ageDays:o.ageDays,phone:o.phone,shortName:o.shortName,lang:o.lang,color:o.color}));}catch(e){}}
+var prO=null;
+function prPages(layout,n){return n?(layout===0?1:layout===1?n:Math.ceil(n/2)):0;}
+function prOpen(){
+  if(!selPt){alert(mxTr('Please select a patient','Lütfen hasta seçin'));return;}
+  if(!cVis1&&!cVis2){alert(mxTr('Please select at least one visit','En az bir vizit seçin'));return;}
+  prO=prLoadOpts();prRender();
+}
+function prRender(){
+  var o=prO,n=o.angles.length;
+  var L=[[mxTr('One-page summary','Tek sayfa özet'),mxTr('All angles on 1 page','Tüm açılar 1 sayfada')],[mxTr('Page per angle','Açı başına sayfa'),mxTr('Large and detailed','Büyük ve detaylı')],[mxTr('Compact','Kompakt'),mxTr('2 angles per page','Sayfada 2 açı')]];
+  var h='<div class="prsec">'+mxE(mxTr('Layout','Düzen'))+'</div><div class="prlay">';
+  L.forEach(function(x,i){h+='<button type="button" class="'+(o.layout===i?'on':'')+'" onclick="prO.layout='+i+';prRender()"><b>'+mxE(x[0])+'</b><span>'+mxE(x[1])+'</span><em>'+mxE(mxTrV('[n] pages','[n] sayfa',{n:prPages(i,n)}))+'</em></button>';});
+  h+='</div><div class="prsec">'+mxE(mxTr('Angles','Açılar'))+'</div><div class="pfchips">';
+  for(var a=0;a<5;a++){var has=cPh1[a]||cPh2[a],on=o.angles.indexOf(a)>=0;h+='<button type="button" class="pfc'+(on?' on':'')+'"'+(has?' onclick="prAng('+a+')"':' disabled style="opacity:.45"')+'>'+mxE(angL(a)+(has?'':' · '+mxTr('no photo','foto yok')))+'</button>';}
+  h+='</div><div class="prsec">'+mxE(mxTr('Content','İçerik'))+'</div>';
+  var tg=function(k,t){return '<label class="pfsw"><input type="checkbox" '+(o[k]?'checked':'')+' onchange="prO.'+k+'=this.checked"/> '+mxE(t)+'</label>';};
+  h+=tg('procedures',mxTr('Procedures done','Yapılan işlemler'))+tg('ageDays',mxTr('Age and time between','Yaş ve tarih farkı'))+tg('phone',mxTr('Patient phone (hidden by default)','Hasta telefonu (varsayılan gizli)'))+tg('shortName',mxTr('Shorten patient name (for social media)','Hasta adını kısalt (sosyal medya için)'));
+  h+='<div style="display:flex;gap:10px;align-items:center;margin-top:10px"><select class="mi" style="margin:0;flex:1" onchange="prO.lang=this.value">'+Object.keys(PR_LANGS).map(function(k){return '<option value="'+k+'"'+(o.lang===k?' selected':'')+'>'+mxE(mxTr('Language','Dil')+': '+PR_LANGS[k])+'</option>';}).join('')+'</select>'+PR_COLORS.map(function(c){return '<button type="button" onclick="prO.color=\''+c+'\';prRender()" style="width:24px;height:24px;border-radius:50%;background:'+c+';border:2px solid '+(o.color===c?'#F5F1EB':'transparent')+';cursor:pointer;padding:0"></button>';}).join('')+'</div>';
+  h+='<div class="hint" style="margin-top:10px">'+mxE(mxTr('Your choices are remembered.','Seçimler hatırlanır.'))+'</div>';
+  mxOpen(mxTr('PDF report','PDF raporu'),h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Download PDF','PDF indir'),cls:'bsave',fn:function(){if(!prO.angles.length)return;prSaveOpts(prO);mxClose();genPDF(prO);}}]);
+}
+function prAng(a){var i=prO.angles.indexOf(a);if(i>=0)prO.angles.splice(i,1);else{prO.angles.push(a);prO.angles.sort();}prRender();}
+function prAge(p){var s=String(p.birth_date||'').trim(),b=null,m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);if(m)b=new Date(+m[3],+m[2]-1,+m[1]);else if(s){b=new Date(s.slice(0,10)+'T00:00:00');}if(!b||isNaN(b))return null;var n=new Date(),a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a<0||a>130?null:a;}
+function prLoadImg(src){return new Promise(function(res){if(!src){res(null);return;}var i=new Image();i.onload=function(){res(i);};i.onerror=function(){res(null);};i.src=src;});}
+function prRR(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
+function prCover(c,img,x,y,w,h){var ir=img.width/img.height,br=w/h,sw,sh,sx,sy;if(ir>br){sh=img.height;sw=sh*br;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/br;sx=0;sy=0;}c.drawImage(img,sx,sy,sw,sh,x,y,w,h);}
+function prFont(w,s){return w+' '+s+'px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Roboto,Arial,sans-serif';}
+async function genPDF(o){
+  o=o||prLoadOpts();
+  var lang=o.lang,T=function(k){return prT(lang,k);};
+  var angles=[0,1,2,3,4].filter(function(a){return o.angles.indexOf(a)>=0&&(cPh1[a]||cPh2[a]);});
+  if(!angles.length)return;
+  sp(mxTr('Loading images...','Fotoğraflar yükleniyor...'));
+  var imgs={};
+  for(var i=0;i<angles.length;i++){var a=angles[i];
+    if(cPh1[a])imgs['1_'+a]=await prLoadImg(await imgToB64(cPh1[a]));
+    if(cPh2[a])imgs['2_'+a]=await prLoadImg(await imgToB64(cPh2[a]));}
+  var logo=null;
+  if(clinic.logo_url){var lu=clinic.logo_url;if(lu.indexOf('http')!==0){var s=await getSigned(lu);if(s)lu=s;}logo=await prLoadImg(await imgToB64(lu));}
+  var accent=o.color,purple='#8E86D6',ink='#1E1B2A',grey='#7A7486',light='#9A94A6';
+  var PW=595.28,PH=841.89,M=28,UW=PW-M*2,UH=PH-M*2,SC=1240/PW;
+  var nm=(selPt.name||'').trim(),sn=(selPt.surname||'').trim();
+  var pName=o.shortName&&sn?nm+' '+sn.charAt(0).toLocaleUpperCase(lang)+'.':(nm+' '+sn).trim();
+  var age=o.ageDays?prAge(selPt):null,days=o.ageDays?cmpDaysN():null,procs=o.procedures?cmpProcsBetween():[];
+  var vLine=function(v){return v?dmy(v.visit_date)+' · '+vTypeL(v,lang):'—';};
+  var pages=[];
+  if(o.layout===0)pages.push(angles);else{var per=o.layout===1?1:2;for(var k=0;k<angles.length;k+=per)pages.push(angles.slice(k,k+per));}
+  var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
+  for(var pi=0;pi<pages.length;pi++){
+    sp(mxTrV('Generating page [n]...','Sayfa [n] hazırlanıyor...',{n:pi+1}));
+    var cv=document.createElement('canvas');cv.width=1240;cv.height=Math.round(PH*SC);
+    var c=cv.getContext('2d');c.scale(SC,SC);c.fillStyle='#FFFFFF';c.fillRect(0,0,PW,PH);c.textBaseline='alphabetic';
+    // header
+    var x0=M;
+    if(logo){c.save();prRR(c,M,M,38,38,8);c.clip();prCover(c,logo,M,M,38,38);c.restore();x0=M+48;}
+    c.fillStyle=ink;c.font=prFont(700,14);if(clinic.name)c.fillText(clinic.name,x0,M+17);
+    c.fillStyle=grey;c.font=prFont(400,8.5);c.fillText([clinic.doctor,clinic.speciality].filter(Boolean).join(' · '),x0,M+31);
+    c.textAlign='right';c.fillStyle=accent;c.font=prFont(700,9);c.fillText(T('prReportTitle').toLocaleUpperCase(lang),PW-M,M+15);
+    c.fillStyle=grey;c.font=prFont(400,8);c.fillText(dmy(new Date().toISOString()),PW-M,M+27);c.textAlign='left';
+    c.fillStyle=accent;c.fillRect(M,M+47,UW,1.6);
+    c.fillStyle='#F7F4EF';prRR(c,M,M+57,UW,34,6);c.fill();
+    var col=function(xx,w,lab,lc,val){c.fillStyle=lc;c.font=prFont(700,6.5);c.fillText(lab,xx,M+69);c.fillStyle=ink;c.font=prFont(700,9.5);var t=val;while(c.measureText(t).width>w-8&&t.length>3)t=t.slice(0,-2)+'…';c.fillText(t,xx,M+83);};
+    var cw=UW-20;
+    col(M+10,cw*0.38,T('prPatient').toLocaleUpperCase(lang),light,[pName,age!==null?T('pfAgeN').replace('[n]',age):'',o.phone&&selPt.phone?mxPhoneFmt(selPt.phone):''].filter(Boolean).join(' · '));
+    col(M+10+cw*0.38,cw*0.31,T('prBefore').toLocaleUpperCase(lang),purple,vLine(cVis1));
+    col(M+10+cw*0.69,cw*0.31,(T('prAfter')+(days!==null?' · '+T('prDaysLater').replace('[n]',days):'')).toLocaleUpperCase(lang),accent,vLine(cVis2));
+    var top=M+92+12,isLast=pi===pages.length-1,procH=(isLast&&procs.length)?36:0,footY=PH-M-14;
+    var box=function(side,a,x,y,w,h,big){c.fillStyle='#EDEAF1';prRR(c,x,y,w,h,3);c.fill();var im=imgs[side+'_'+a];if(im){c.save();prRR(c,x,y,w,h,3);c.clip();prCover(c,im,x,y,w,h);c.restore();}else{c.fillStyle=light;c.font=prFont(400,14);c.textAlign='center';c.fillText('—',x+w/2,y+h/2+5);c.textAlign='left';}
+      var tag=T(side===1?'prBefore':'prAfter').toLocaleUpperCase(lang),fs=big?7:5.5;c.font=prFont(700,fs);var tw=c.measureText(tag).width+(big?10:7);c.fillStyle=side===1?purple:accent;prRR(c,x+4,y+4,tw,fs+(big?5:4),3);c.fill();c.fillStyle='#FFFFFF';c.fillText(tag,x+4+(big?5:3.5),y+4+fs+(big?1.8:1.4));};
+    var pair=function(a,cx,y,w,h,big){var gap=big?4:3;var x=cx-(w*2+gap)/2;box(1,a,x,y,w,h,big);box(2,a,x+w+gap,y,w,h,big);c.fillStyle='#4A4558';c.font=prFont(700,big?9:7.5);c.textAlign='center';c.fillText(angL(a,lang),cx,y+h+11);c.textAlign='left';return y+h+16;};
+    var list=pages[pi],y=top;
+    if(o.layout===0){
+      var rest=list.slice(1),rows=Math.ceil(rest.length/2),avail=footY-top-procH-10;
+      var bigH=rows===0?Math.min(avail-16,(UW-4)/2*4/3):avail*0.46,bigW=bigH*3/4;
+      y=pair(list[0],PW/2,y,bigW,bigH,true)+4;
+      if(rows){var sH=Math.min((avail-bigH-16)/rows-18,220),sW=Math.min(sH*3/4,(UW/2-12)/2);sH=sW*4/3;
+        for(var r=0;r<rows;r++){var a1=rest[r*2],a2=rest[r*2+1];pair(a1,M+UW/4,y,sW,sH,false);if(a2!==undefined)pair(a2,M+UW*3/4,y,sW,sH,false);y+=sH+20;}}
+    }else{
+      var n=list.length,avail2=footY-top-procH-10,h=Math.min((avail2-(n-1)*18)/n-14,600),w=Math.min(h*3/4,(UW-4)/2);h=w*4/3;
+      for(var q=0;q<n;q++){y=pair(list[q],PW/2,y,w,h,true)+(q<n-1?14:0);}
+    }
+    if(procH){var py=y+6;c.strokeStyle='#ECE7E0';c.lineWidth=0.8;prRR(c,M,py,UW,28,6);c.stroke();c.fillStyle=light;c.font=prFont(700,6.5);c.fillText(T('prProcedures').toLocaleUpperCase(lang),M+10,py+17);c.fillStyle=ink;c.font=prFont(400,8.5);var pt=procs.join(' · ');while(c.measureText(pt).width>UW-90&&pt.length>3)pt=pt.slice(0,-2)+'…';c.fillText(pt,M+70,py+17);}
+    c.fillStyle='#ECE7E0';c.fillRect(M,footY-6,UW,0.8);c.fillStyle=light;c.font=prFont(400,7);
+    var ft=[clinic.phone,clinic.address,clinic.instagram].filter(function(s){return s&&String(s).trim();}).join('   ·   ');while(c.measureText(ft).width>UW-40&&ft.length>3)ft=ft.slice(0,-2)+'…';c.fillText(ft,M,footY+6);
+    c.textAlign='right';c.fillText((pi+1)+' / '+pages.length,PW-M,footY+6);c.textAlign='left';
+    if(pi>0)doc.addPage();
+    doc.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,PW,PH,'','FAST');
   }
+  doc.save(pName.replace(/\s+/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf');
+  hp();
 }
 
 function renderV(){
@@ -1349,31 +1503,56 @@ function agendaToday(){agendaDate=new Date();document.getElementById('agendaDate
 async function loadAgenda(){
   agendaDate=parseDate(document.getElementById('agendaDate').value);
   var el=document.getElementById('agendaList');
-  el.innerHTML='<div class="loader">Loading...</div>';
+  el.innerHTML='<div class="loader">…</div>';
   try{
-    var r=await db.rpc('get_daily_agenda',{p_clinic_id:cid,p_date:fmtDate(agendaDate)});
+    var r=await db.rpc('get_daily_agenda_v2',{p_clinic_id:cid,p_date:fmtDate(agendaDate)});
     if(r.error)throw r.error;
     var items=r.data||[];
-    if(!items.length){el.innerHTML='<div class="loader">No visits on this day.</div>';return;}
-    var h='';
-    for(var i=0;i<items.length;i++){
-      var it=items[i];
-      var name=((it.patient_name||'')+' '+(it.patient_surname||'')).trim();
-      var phone=it.patient_phone||'';
-      var time=it.visit_date?new Date(it.visit_date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
-      h+='<div class="list-card"><div class="row1"><div>';
-      h+='<div class="name">'+name+'</div>';
-      h+='<div class="meta">'+(phone?phone+' · ':'')+time+'</div>';
-      h+='</div><div>';
-      h+='<span class="tag">'+(it.visit_type||'Visit')+'</span>';
-      if(it.region)h+=' <span class="tag" style="margin-left:6px">'+it.region+'</span>';
-      h+='</div></div>';
-      if(it.notes)h+='<div class="body">'+it.notes+'</div>';
-      h+='<div class="actions"><button class="btn bedit" onclick="goPatient(\''+it.patient_id+'\')">View Patient</button></div>';
-      h+='</div>';
-    }
-    el.innerHTML=h;
-  }catch(e){el.innerHTML='<div class="loader">Could not load agenda.</div>';}
+    window._agItems=items;
+    if(!items.length){el.innerHTML='<div class="loader">'+mxE(mxTr('No visits on this day.','Bu gün vizit yok.'))+'</div>';return;}
+    var pts2={},ctrl=0,photos=0,cnt={},nm={};
+    items.forEach(function(it){pts2[it.patient_id]=1;if(it.visit_type==='Control')ctrl++;photos+=(it.photo_count||0);splitProcs(it.procedures).forEach(function(p){var k=p.toLocaleLowerCase(LANG);cnt[k]=(cnt[k]||0)+1;nm[k]=p;});});
+    var tm=function(iso){var d=iso?new Date(iso):null;return d&&!isNaN(d)?d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';};
+    var h='<div class="agsum"><div class="agday">'+mxE(agendaDate.toLocaleDateString(LANG,{weekday:'long',day:'numeric',month:'long',year:'numeric'}))+'</div><div class="agstats">'+
+      '<div><b>'+Object.keys(pts2).length+'</b><span>'+mxE(mxTr('patients','hasta'))+'</span></div>'+
+      '<div><b>'+items.length+'</b><span>'+mxE(ctrl?mxTrV('visits · [n] follow-up','vizit · [n] kontrol',{n:ctrl}):mxTr('visits','vizit'))+'</span></div>'+
+      '<div><b>'+photos+'</b><span>'+mxE(mxTr('photos','fotoğraf'))+'</span></div></div>';
+    var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];}).slice(0,10);
+    if(ks.length)h+='<div class="agchips">'+ks.map(function(k){return '<i>'+mxE(nm[k])+' ×'+cnt[k]+'</i>';}).join('')+'</div>';
+    h+='<div style="margin-top:10px;text-align:right"><button class="btn bpdf" onclick="agDayPdf()">'+mxE(mxTr('Day report','Gün raporu'))+'</button></div></div>';
+    h+='<div class="agtl">';
+    var paths=items.map(function(it){return it.thumb_path;}).filter(Boolean);
+    var urls=paths.length?await getSignedBatch(paths):{};
+    items.forEach(function(it,i){
+      var isC=it.visit_type==='Control',name=((it.patient_name||'')+' '+(it.patient_surname||'')).trim();
+      var age=prAge({birth_date:it.birth_date});
+      var meta=[it.region?(typeof regionL==='function'?regionL(it.region):it.region):'',it.photo_count?mxTrV('[n] photos','[n] fotoğraf',{n:it.photo_count}):'',age!==null?prT(LANG,'pfAgeN').replace('[n]',age):''].filter(Boolean).join(' · ');
+      var parent='';
+      if(isC&&it.parent_visit_id){var pd=String(it.parent_visit_date||'');parent=pd===fmtDate(agendaDate)?mxTrV('Follow-up of the [t] visit','[t] vizitinin kontrolü',{t:tm(it.parent_created_at)}):mxTrV('Follow-up of the [d] visit','[d] vizitinin kontrolü',{d:dmy(pd)});}
+      h+='<div class="agrow"><div class="agt'+(isC?' c':'')+'">'+mxE(tm(it.created_at))+'</div><div class="agcard" onclick="goPatient(\''+it.patient_id+'\')">'+
+        (it.thumb_path&&urls[it.thumb_path]?'<img src="'+urls[it.thumb_path]+'"/>':'<div class="agph"></div>')+
+        '<div class="agb"><div class="agn"><b>'+mxE(name)+'</b><span class="agty'+(isC?' c':'')+'">'+mxE(vTypeL(it))+'</span></div>'+
+        (meta?'<div class="agm">'+mxE(meta)+'</div>':'')+
+        (splitProcs(it.procedures).length?'<div class="agchips">'+splitProcs(it.procedures).map(function(p){return '<i>'+mxE(p)+'</i>';}).join('')+'</div>':'')+
+        (it.notes?'<div class="agm" style="margin-top:4px">'+mxE(it.notes)+'</div>':'')+
+        (parent?'<div class="agm" style="margin-top:6px">↳ '+mxE(parent)+' · <a href="#" onclick="event.stopPropagation();agCompare(\''+it.patient_id+'\',\''+it.parent_visit_id+'\',\''+it.visit_id+'\');return false" style="color:#B7B0F0;font-weight:700">'+mxE(mxTr('Compare','Karşılaştır'))+'</a></div>':'')+
+        '</div></div></div>';
+    });
+    el.innerHTML=h+'</div>';
+  }catch(e){el.innerHTML='<div class="loader">'+mxE(mxTr('Could not load agenda.','Ajanda yüklenemedi.'))+'</div>';}
+}
+async function agCompare(pid,v1,v2){
+  switchTab('patients');await selP(pid);
+  var a=document.getElementById('cV1'),b=document.getElementById('cV2');
+  if(a&&b){a.value=v1;b.value=v2;await loadCmp();var w=document.getElementById('cmpWrap');if(w)w.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function agDayPdf(){
+  var items=window._agItems||[];if(!items.length)return;
+  var tm=function(iso){var d=iso?new Date(iso):null;return d&&!isNaN(d)?d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';};
+  var rows=items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+mxE(tm(it.created_at))+'</td><td>'+mxE(((it.patient_name||'')+' '+(it.patient_surname||'')).trim()+(it.visit_type==='Control'?' ('+vTypeL(it)+')':''))+'</td><td>'+mxE(splitProcs(it.procedures).concat(it.notes?[it.notes]:[]).join(' · '))+'</td></tr>';}).join('');
+  var w=window.open('','_blank');if(!w)return;
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+mxE(mxTr('Day report','Gün raporu'))+' '+fmtDate(agendaDate)+'</title><style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1E1B2A;margin:28px}h1{font-size:18px;margin:0}.s{color:#7A7486;font-size:12px}.l{height:2px;background:#B89A6A;margin:10px 0 14px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#F7F4EF;text-align:left}td,th{padding:6px 8px;border-bottom:1px solid #ECE7E0;vertical-align:top}</style></head><body><h1>'+mxE(clinic.name||'')+'</h1><div class="s">'+mxE(mxTr('Day report','Gün raporu'))+' · '+mxE(dmy(fmtDate(agendaDate)))+'</div><div class="l"></div><table><tr><th>#</th><th>'+mxE(mxTr('Time','Saat'))+'</th><th>'+mxE(mxTr('Patient','Hasta'))+'</th><th>'+mxE(mxTr('Procedures','İşlemler'))+'</th></tr>'+rows+'</table><p class="s">'+mxE(mxTr('Total visits','Toplam vizit'))+': '+items.length+'</p><script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.close();
 }
 
 function goPatient(pid){switchTab('patients');selP(pid);}
@@ -1590,99 +1769,6 @@ function imgToB64(url){
     img.onerror=function(){resolve(null);};
     img.src=url+(url.indexOf('?')>-1?'&':'?')+'nocache='+Date.now();
   });
-}
-
-async function genPDF(){
-  if(!selPt){alert('Please select a patient');return;}
-  var v1=document.getElementById('cV1').value;
-  var v2=document.getElementById('cV2').value;
-  if(!v1&&!v2){alert('Please select at least one visit');return;}
-  sp('Loading images...');
-  var pName=(selPt.name||'')+' '+(selPt.surname||'');
-  var imgC={};
-  var allU=Object.assign({},cPh1,cPh2);
-  var n=0;
-  for(var k in allU){
-    if(allU[k]){
-      sp('Loading image '+(++n)+'...');
-      imgC[allU[k]]=await imgToB64(allU[k]);
-    }
-  }
-  var logoB=null;
-  if(clinic.logo_url){
-    sp('Loading logo...');
-    var logoUrl=clinic.logo_url;
-    if(logoUrl.indexOf('http')!==0){
-      var s=await getSigned(logoUrl);
-      if(s)logoUrl=s;
-    }
-    logoB=await imgToB64(logoUrl);
-  }
-  var doc=new jspdf.jsPDF({orientation:'p',unit:'pt',format:'a4'});
-  var PW=595,PH=842;
-  var M=28,UW=PW-M*2;
-  var HDR=106,FTR=36,CG=8,RG=8,LH=20;
-  function dHdr(d){
-    var y=M;
-    if(clinic.name){d.setFontSize(16);d.setFont('helvetica','bold');d.setTextColor(200,0,0);d.text(clinic.name,M,y+16);}
-    if(clinic.doctor){d.setFontSize(10);d.setFont('helvetica','normal');d.setTextColor(200,0,0);d.text(clinic.doctor,M,y+30);}
-    if(clinic.speciality){d.setFontSize(9);d.setTextColor(180,0,0);d.text(clinic.speciality,M,y+44);}
-    if(logoB){try{d.addImage(logoB,'JPEG',PW-M-46,y,46,46,'','FAST');}catch(e){}}
-    d.setDrawColor(200,200,200);d.line(M,y+54,PW-M,y+54);
-    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
-    d.text('PATIENT',M,y+66);
-    d.setFontSize(11);d.setFont('helvetica','bold');d.setTextColor(30,30,30);
-    d.text(pName,M,y+78);
-    var p=selPt;
-    if(p.birth_date){d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);d.text('DOB: '+p.birth_date.split('T')[0],M,y+90);}
-    d.setFontSize(7);d.setFont('helvetica','bold');d.setTextColor(150,150,150);
-    d.text('VISIT',PW/2,y+66);
-    d.setFontSize(8);d.setFont('helvetica','normal');d.setTextColor(100,100,100);
-    if(cVis1)d.text('Before: '+(cVis1.visit_date||'').split('T')[0]+' - '+(cVis1.region||''),PW/2,y+78);
-    if(cVis2)d.text('After: '+(cVis2.visit_date||'').split('T')[0]+' - '+(cVis2.region||''),PW/2,y+90);
-    d.setDrawColor(200,200,200);d.line(M,y+100,PW-M,y+100);
-  }
-  function dFtr(d){
-    var y=PH-M-FTR;
-    d.setDrawColor(200,200,200);d.line(M,y,PW-M,y);
-    d.setFontSize(7);d.setFont('helvetica','normal');d.setTextColor(200,0,0);
-    if(clinic.phone)d.text(clinic.phone,M,y+16);
-    if(clinic.address)d.text(clinic.address,PW/2,y+16,{align:'center'});
-    if(clinic.instagram)d.text(clinic.instagram,PW-M,y+16,{align:'right'});
-  }
-  function dPage(d,idxs,lbls){
-    var n2=idxs.length;
-    var totalLabelSpace=n2*LH;
-    var totalGaps=n2>1?(n2-1)*RG:0;
-    var availH=PH-M*2-HDR-FTR-totalLabelSpace-totalGaps-16;
-    var pH=availH/n2;
-    var pW=Math.min(pH*3/4,(UW-CG)/2);
-    pH=pW*4/3;
-    var sx=M+(UW-pW*2-CG)/2;
-    var sy=M+HDR+4;
-    dHdr(d);dFtr(d);
-    for(var i=0;i<n2;i++){
-      var ai=idxs[i];
-      var u1=cPh1[ai];
-      var u2=cPh2[ai];
-      var iy=sy+i*(pH+RG+LH);
-      if(u1&&imgC[u1]){try{d.addImage(imgC[u1],'JPEG',sx,iy,pW,pH,'','FAST');}catch(e){d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}}
-      else{d.setFillColor(220,220,220);d.rect(sx,iy,pW,pH,'F');}
-      if(u2&&imgC[u2]){try{d.addImage(imgC[u2],'JPEG',sx+pW+CG,iy,pW,pH,'','FAST');}catch(e){d.setFillColor(220,220,220);d.rect(sx+pW+CG,iy,pW,pH,'F');}}
-      else{d.setFillColor(220,220,220);d.rect(sx+pW+CG,iy,pW,pH,'F');}
-      var ly=iy+pH+12;
-      d.setFontSize(8);d.setFont('helvetica','bold');
-      d.setTextColor(120,120,120);d.text('Before',sx,ly);
-      d.setTextColor(40,40,40);d.text(lbls[i],sx+pW+CG/2,ly,{align:'center'});
-      d.setTextColor(120,120,120);d.text('After',sx+pW*2+CG,ly,{align:'right'});
-    }
-  }
-  sp('Generating page 1...');dPage(doc,[0],['Front']);
-  sp('Generating page 2...');doc.addPage();dPage(doc,[1,3],['Left 45','Right 45']);
-  sp('Generating page 3...');doc.addPage();dPage(doc,[2,4],['Left Profile','Right Profile']);
-  var fn=pName.replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
-  doc.save(fn);
-  hp();
 }
 
 // ============ EXPORT ============
@@ -3548,7 +3634,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'Add':'Ekle','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

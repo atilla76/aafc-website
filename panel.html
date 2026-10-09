@@ -3303,7 +3303,9 @@ async function migRun(){
 // ============ e-NABIZ (MBYS) ============
 function enAuto(p){var n=(p.national_id||'').replace(/\D/g,''),ph=p.phone||'';return n.length===11||!ph||ph.indexOf('+90')===0;}
 function enSwitch(on,fn,dis){return '<label style="display:inline-flex;align-items:center;gap:8px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?0.5:1)+'"><input type="checkbox" '+(on?'checked ':'')+(dis?'disabled ':'')+'onchange="'+fn+'" style="width:18px;height:18px;accent-color:#3AB06A"><span style="font-size:12px;color:'+(on?'#6FCF97':'rgba(245,241,235,0.5)')+'">'+(on?mxTr('On','Açık'):mxTr('Off','Kapalı'))+'</span></label>';}
+function enInTurkey(){var d=String((clinic&&clinic.phone_country)||'').replace('+','');return d?d==='90':LANG==='tr';}
 function enPatientRow(p){
+  if(!enInTurkey())return '';
   var on=(p.enabiz_enabled===true||p.enabiz_enabled===false)?p.enabiz_enabled:enAuto(p);
   return '<div class="ir"><span class="il">'+mxTr('Send to e-Nabız','e-Nabız’a gönder')+'</span><span class="iv">'+enSwitch(on,"enSetPatient('"+p.id+"',this.checked)")+'</span></div>';
 }
@@ -3318,6 +3320,7 @@ function enReason(r){return {foreign:mxTr('Patient from abroad','Yurt dışı ha
   patient_off:mxTr('Off on the patient card','Hasta kartında kapalı'),clinic_off:mxTr('Automatic sending is off','Otomatik gönderim kapalı'),missing_national_id:mxTr('Patient’s national ID is missing','Hastanın TC kimlik no’su eksik')}[r]||mxTr('Other','Diğer');}
 async function enVisitLoad(id){
   var el=document.getElementById('vEnabiz');if(!el)return;
+  if(!enInTurkey()){el.innerHTML='';return;}
   var r=await db.rpc('get_visit_enabiz',{p_visit_id:id});
   if(r.error||!r.data){el.innerHTML='';return;}
   var s=r.data,st=s.state,c={sent:'58,176,106',skipped:'245,241,235',error:'224,85,85',waiting:'58,176,106',pending:'58,176,106'}[st]||'58,176,106';

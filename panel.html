@@ -3846,8 +3846,33 @@ async function enVisitLoad(id){
   h+='</div>';
   if(st==='skipped'&&s.patient_enabled&&s.visit_skip)h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+EN_REASONS.map(function(k){
     var on=s.reason===k;return '<button class="bimp2" style="padding:5px 10px;font-size:12px;'+(on?'background:#B89A6A;color:#1C1929;border-color:#B89A6A':'')+'" onclick="enSetVisit(\''+id+'\',false,\''+k+'\')">'+mxE(enReason(k))+'</button>';}).join('')+'</div>';
+  if(st!=='skipped'&&(st!=='sent'||s.ref==='MBYS (manuel)'))h+='<div style="margin-top:8px"><button class="bimp2" style="padding:6px 12px;font-size:12.5px" onclick="mbOpen(\''+id+'\')">⧉ '+mxE(mxTr('MBYS summary','MBYS özeti'))+'</button></div>';
   el.innerHTML=h;
 }
+async function mbOpen(id){
+  var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});
+  if(r.error||!r.data){alert(mxTr('Error','Hata'));return;}
+  var d=r.data,g=d.gender,dx=(d.diagnoses||[]).map(function(x){return x.code+' '+(x.name||'');}).join('\n');
+  var f=[[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
+    [mxTr('Date of birth','Doğum tarihi'),d.birth_date?mxDate(d.birth_date):''],[mxTr('Sex','Cinsiyet'),g==='f'?mxTr('Female','Kadın'):g==='m'?mxTr('Male','Erkek'):(g?mxTr('Other','Diğer'):'')],
+    [mxTr('Visit date','Vizit tarihi'),d.visit_date?mxDate(d.visit_date):''],[mxTr('Visit type','Vizit türü'),d.visit_type==='Control'?mxTr('Control','Kontrol'):mxTr('Visit','Vizit')],
+    [mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),dx],[mxTr('Procedures','Yapılan işlemler'),[d.procedures,d.region].filter(Boolean).join(' · ')]];
+  if(d.allergies)f.push([mxTr('Allergies','Alerji'),d.allergies]);
+  window._mbF=f;
+  var noNid=String(d.national_id||'').replace(/\D/g,'').length!==11;
+  var body=(noNid?'<div style="padding:9px 12px;border-radius:10px;background:rgba(224,85,85,.12);color:#F0A28F;font-size:12.5px;margin-bottom:10px">'+mxE(mxTr('National ID missing — add it to the patient file','T.C. kimlik no eksik — hasta dosyasına ekleyin'))+'</div>':'')+
+    '<div class="hint" style="margin-bottom:8px">'+mxE(mxTr('Click a field to copy it while entering the visit in the Ministry’s MBYS.','Bakanlık MBYS’sine girerken alana tıklayarak kopyalayın.'))+'</div>'+
+    f.map(function(x,i){return '<div onclick="mbCopy('+i+')" style="cursor:'+(x[1]?'pointer':'default')+';padding:9px 0;border-top:1px solid rgba(245,241,235,.07);display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(x[0])+'</div><div style="font-size:14px;white-space:pre-line;color:'+(x[1]?'#F5F1EB':'rgba(245,241,235,.35)')+'">'+mxE(x[1]||'—')+'</div></div>'+(x[1]?'<span style="color:#D4B896">⧉</span>':'')+'</div>';}).join('');
+  var manual=d.ref==='MBYS (manuel)';
+  mxOpen(mxTr('MBYS summary','MBYS özeti'),body,[
+    {label:mxTr('Copy all','Tümünü kopyala'),cls:'bimp2',fn:function(){mbCopy(-1);}},
+    {label:mxTr('Open MBYS','MBYS’yi aç'),cls:'bimp2',fn:function(){window.open('https://mbys.saglik.gov.tr','_blank','noopener');}},
+    manual?{label:mxTr('Remove mark','İşareti kaldır'),cls:'bimp2',fn:function(){mbMark(id,false);}}:{label:mxTr('Entered in MBYS','MBYS’ye girdim'),fn:function(){mbMark(id,true);}}
+  ]);
+}
+function mbCopy(i){var f=window._mbF||[];var t=i<0?f.filter(function(x){return x[1];}).map(function(x){return x[0]+': '+x[1];}).join('\n'):(f[i]&&f[i][1]);if(!t)return;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){mxUndoToast(mxTr('Copied','Kopyalandı'),null);},function(){prompt('',t);});}
+async function mbMark(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}mxClose();enVisitLoad(id);}
 async function enSetVisit(id,send,reason){
   var r=await db.rpc('set_visit_enabiz',{p_visit_id:id,p_send:send,p_reason:send?null:reason});
   if(r.error){alert('Error: '+r.error.message);return;}

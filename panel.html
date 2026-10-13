@@ -425,6 +425,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <div class="mb">
             <div class="sec">PATIENT INFO</div>
             <div class="ibox" id="pInfo"></div>
+            <div class="ibox" id="pConsent" style="margin-top:10px"></div>
             <div class="ibox" id="pIntake" style="margin-top:10px"></div>
             <div class="ibox" id="pDx" style="margin-top:10px;display:none"></div>
             <div class="ibox" id="pPkg" style="margin-top:10px"></div>
@@ -1125,7 +1126,7 @@ async function selP(id){
   ih+='<div class="ir"><span class="il">'+mxE(mxTr('Permissions','İzinler'))+'</span><span class="iv">'+(cs.length?mxE(cs.join(' · ')):'-')+'</span></div>';
   ih+=enPatientRow(p);
   document.getElementById('pInfo').innerHTML=ih;
-  inLoad(id);pkLoad(id);ptLoad(id);pDxLoad(id);
+  csLoad(id);inLoad(id);pkLoad(id);ptLoad(id);pDxLoad(id);
   document.getElementById('vList').innerHTML='<div class="loader">Loading...</div>';
   var vr=await db.from('visits').select('*').eq('patient_id',id).is('deleted_at',null).order('created_at',{ascending:false});
   vis=vr.data||[];
@@ -2919,6 +2920,18 @@ var inForms=[];
 function inLabel(k){for(var i=0;i<IN_Q.length;i++)if(IN_Q[i][0]===k)return mxTr(IN_Q[i][1],IN_Q[i][2]);return k;}
 function inFlagText(f,k){var d=((f.answers||{})[k+'_detail']||'').trim();return inLabel(k)+(d?': '+d:'');}
 function inUrl(tok){return 'https://aafclinic.com/form?t='+encodeURIComponent(tok);}
+// ---- Patient consent status (sending stays in the app: template + OTP via WhatsApp) ----
+async function csLoad(pid){
+  var box=document.getElementById('pConsent');if(!box)return;box.innerHTML='<div class="hint" style="margin:0">…</div>';
+  var r=await db.from('consent_records').select('id,template_name,status,sent_at,signed_at').eq('patient_id',pid).is('deleted_at',null).order('sent_at',{ascending:false}).limit(20);
+  if(selPid!==pid)return;
+  var rows=(r.data||[]).filter(function(c){return c.status!=='revoked'&&c.status!=='expired';});
+  var w=rows.find(function(c){return c.status==='pending'||c.status==='otp_verified';}),sg=rows.find(function(c){return c.status==='signed';});
+  var t=w?'<span style="color:#D4963A">'+mxE(mxTr('[name] · awaiting signature ([date])','[name] · imza bekleniyor ([date])').replace('[name]',w.template_name||'').replace('[date]',mxDate(w.sent_at)))+'</span>'
+    :sg?'<span style="color:#3AB06A">'+mxE(mxTr('[name] · signed [date]','[name] · imzalandı [date]').replace('[name]',sg.template_name||'').replace('[date]',mxDate(sg.signed_at)))+'</span>'
+    :'<span style="color:rgba(245,241,235,.45)">'+mxE(mxTr('No consent sent yet','Henüz onam gönderilmedi'))+'</span>';
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:13px;color:#F5F1EB">'+mxE(mxTr('Consent','Onam'))+'</b><span style="font-size:12.5px">'+t+'</span></div>';
+}
 async function inLoad(pid){
   var box=document.getElementById('pIntake');box.innerHTML='<div class="hint" style="margin:0">…</div>';
   var r=await db.from('patient_intake_forms').select('id,token,status,answers,flags,created_at,expires_at,completed_at,reviewed_at').eq('patient_id',pid).is('deleted_at',null).order('created_at',{ascending:false}).limit(10);

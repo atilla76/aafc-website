@@ -2243,7 +2243,15 @@ async function stOpen(id){
     var soon=l.expiry_date&&new Date(l.expiry_date)<new Date(Date.now()+30*864e5);
     return '<tr style="opacity:'+(Number(l.remaining)>0?1:.45)+'"><td><b>'+mxE(l.lot_no)+'</b></td><td style="color:'+(soon?'#C0614A':'inherit')+'">'+mxDate(l.expiry_date)+'</td><td>'+mxDate(l.opened_at)+'</td><td>'+mxQty(l.remaining)+' '+u+'</td><td style="white-space:nowrap">'+
       (l.opened_at?'':'<button class="btn bedit" onclick="stOpenLot(\''+l.lot_id+'\')">Vial opened</button> ')+
-      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button></td></tr>';}).join('');
+      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button> <button class="btn bedit" style="'+(l.unit_cost==null?'color:#D4963A;border-color:rgba(212,150,58,.5)':'')+'" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(l.unit_cost==null?mxTr('Enter box price','Kutu fiyatı gir'):mxTr('Box price','Kutu fiyatı')+' '+mxMoney(Number(l.unit_cost)*(Number(stSel.pack_size)||1)))+'</button></td></tr>';}).join('');
+}
+async function stCost(lotId,unitCost){
+  var pack=Number(stSel&&stSel.pack_size)||1,cur=unitCost==null?'':Math.round(unitCost*pack*100)/100;
+  var v=prompt(mxTr('Box price','Kutu fiyatı')+(pack>1?' (1 = '+pack+' '+(stSel.unit==='ml'?'ml':'u')+')':''),cur);
+  if(v===null)return;var n=mxNum(v);if(!(n>0)){alert(mxTr('Enter an amount.','Miktar girin.'));return;}
+  var r=await db.from('stock_lots').update({unit_cost:n/pack}).eq('id',lotId);
+  if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
+  stOpen(stSel.id);
 }
 function stProductModal(p){
   p=p||{};

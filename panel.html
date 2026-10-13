@@ -458,6 +458,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
                 <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vNotesEd" rows="4" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
               </div>
+              <div id="vFee"></div>
               <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
               <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
               <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
@@ -1396,6 +1397,7 @@ async function selV(id){
   document.getElementById('vInfo').innerHTML=vi;
   enVisitLoad(id);
   dxLoad(id);
+  vfLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vSaveMsg').textContent='';
@@ -3830,6 +3832,51 @@ async function enSetPatient(id,on){
 var EN_REASONS=['foreign','patient_declined','non_medical','other'];
 function enReason(r){return {foreign:mxTr('Patient from abroad','Yurt dışı hasta'),patient_declined:mxTr('Patient declined','Hasta istemedi'),non_medical:mxTr('Non-medical procedure','Tıbbi olmayan işlem'),
   patient_off:mxTr('Off on the patient card','Hasta kartında kapalı'),clinic_off:mxTr('Automatic sending is off','Otomatik gönderim kapalı'),missing_national_id:mxTr('Patient’s national ID is missing','Hastanın TC kimlik no’su eksik')}[r]||mxTr('Other','Diğer');}
+// ---- Visit fee (admins + users with the "collect payments" permission) ----
+var vfCollector=null,vfData=null;
+function vfMoney(n){return curSym()+Number(n||0).toLocaleString(LANG_LOC[LANG]||'en-US',{maximumFractionDigits:2});}
+async function vfLoad(id){
+  var el=document.getElementById('vFee');if(!el)return;el.innerHTML='';
+  if(vfCollector===null){var a=await db.rpc('is_clinic_collector');vfCollector=a.data===true;}
+  if(!vfCollector)return;
+  var r=await db.rpc('get_visit_fee',{p_visit_id:id});
+  if(r.error||!r.data||selVid!==id)return;
+  vfData=r.data;var d=r.data,c=d.charge,pk=d.package,h;
+  var box='padding:12px 14px;border-radius:12px;background:#1C1929;border:1px solid rgba(58,176,106,0.3);cursor:pointer';
+  if(!c&&!pk){
+    h='<div style="'+box+';display:flex;align-items:center;gap:12px" onclick="vfOpen()"><span style="font-size:20px;color:#3AB06A">＋</span><div style="flex:1"><div style="font-size:14px;font-weight:600;color:#F5F1EB">'+mxE(mxTr('Add fee','Ücret ekle'))+'</div><div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount and payment go to the accounts','Tutar ve ödeme muhasebeye işlenir'))+'</div></div><span style="color:rgba(245,241,235,0.5)">›</span></div>';
+  }else if(!c){
+    h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;justify-content:space-between"><b style="color:#F5F1EB">'+mxE(pk.name||'')+'</b><span style="font-size:12px;color:rgba(245,241,235,0.6)">'+pk.used+' / '+pk.total+'</span></div><div style="font-size:12px;color:rgba(245,241,235,0.6);margin-top:4px">'+mxE(mxTr('This session was taken from the package, no separate fee.','Bu seans paketten düşüldü, ayrı ücret alınmadı.'))+'</div></div>';
+  }else{
+    var rem=Number(d.remaining||0),paid=Number(d.paid||0);
+    var tag=rem<=0.009?['58,176,106',mxTr('Paid','Ödendi')]:paid>0?['212,150,58',mxTr('Partial','Kısmi')]:['192,97,74',mxTr('Unpaid','Ödenmedi')];
+    h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:20px;color:#F5F1EB">'+vfMoney(c.amount)+'</b><span style="flex:1;font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(c.description||'')+'</span><span style="padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;color:rgb('+tag[0]+');background:rgba('+tag[0]+',0.14)">'+mxE(tag[1])+'</span></div>'+
+      '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b></span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div></div>';
+  }
+  el.innerHTML='<div class="sec">'+mxE(mxTr('FEE','ÜCRET'))+'</div>'+h;
+}
+function vfOpen(){
+  var d=vfData||{},c=d.charge,paid=Number(d.paid||0),v=vis.find(function(x){return x.id===selVid;})||{};
+  var rem=c?Number(d.remaining||0):0;
+  var b='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" style="font-size:20px;font-weight:700">'+
+    '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Description','Açıklama'))+'</label><input class="mi" id="vfDesc" value="'+mxE((c&&c.description)||v.procedures||'')+'">'+
+    (paid>0?'<div style="font-size:12.5px;color:#3AB06A;margin:4px 0 8px">'+mxE(mxTr('Paid','Ödenen'))+': '+vfMoney(paid)+'</div>':'')+
+    '<div id="vfPayBox"'+(c&&rem<=0.009?' style="display:none"':'')+'><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Payment','Ödeme'))+'</label><select class="mi" id="vfMode" onchange="document.getElementById(\'vfRecW\').style.display=this.value===\'part\'?\'block\':\'none\'">'+
+      '<option value="all">'+mxE(mxTr('In full','Tamamı'))+'</option><option value="part">'+mxE(mxTr('Partial','Kısmi'))+'</option><option value="later">'+mxE(mxTr('Later','Sonra'))+'</option></select>'+
+      '<div id="vfRecW" style="display:none"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Received','Alınan'))+'</label><input class="mi" id="vfRec" type="number" min="0" step="0.01"></div>'+
+      '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Method','Yöntem'))+'</label><select class="mi" id="vfMeth"><option value="cash">'+mxE(fnMeth('cash'))+'</option><option value="card">'+mxE(fnMeth('card'))+'</option><option value="transfer">'+mxE(fnMeth('transfer'))+'</option></select></div>'+
+    '<div id="vfErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
+  mxOpen(mxTr('Fee','Ücret'),b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]);
+}
+async function vfSave(){
+  var amt=parseFloat(document.getElementById('vfAmt').value),err=document.getElementById('vfErr');
+  if(!(amt>0)){err.textContent=mxTr('Enter the amount','Tutarı girin');return;}
+  var paid=Number((vfData&&vfData.paid)||0),left=Math.max(amt-paid,0),mode=document.getElementById('vfMode').value;
+  var pay=document.getElementById('vfPayBox').style.display==='none'?0:mode==='all'?left:mode==='part'?(parseFloat(document.getElementById('vfRec').value)||0):0;
+  var r=await db.rpc('save_visit_fee',{p_visit_id:selVid,p_amount:amt,p_description:document.getElementById('vfDesc').value,p_pay:pay,p_method:document.getElementById('vfMeth').value});
+  if(r.error){var m=r.error.message||'';err.textContent=m.indexOf('below_paid')>=0?mxTr("The amount can't be less than what was already paid.",'Tutar, alınan ödemeden az olamaz.'):m.indexOf('has_installments')>=0?mxTr("This fee has installments; edit it from the patient account.",'Bu ücret taksitli; hasta hesabından düzenleyin.'):m.indexOf('over_pay')>=0?mxTr("The payment can't be more than the remaining amount.",'Alınan tutar kalandan fazla olamaz.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+  mxClose();vfLoad(selVid);
+}
 async function enVisitLoad(id){
   var el=document.getElementById('vEnabiz');if(!el)return;
   if(!enInTurkey()){el.innerHTML='';return;}

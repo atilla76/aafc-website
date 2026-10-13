@@ -3954,7 +3954,13 @@ function vfOpen(){
       '<div id="vfRecW" style="display:none"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Received','Alınan'))+'</label><input class="mi" id="vfRec" type="number" min="0" step="0.01"></div>'+
       '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Method','Yöntem'))+'</label><select class="mi" id="vfMeth"><option value="cash">'+mxE(fnMeth('cash'))+'</option><option value="card">'+mxE(fnMeth('card'))+'</option><option value="transfer">'+mxE(fnMeth('transfer'))+'</option></select></div>'+
     '<div id="vfErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
-  mxOpen(mxTr('Fee','Ücret'),b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]);
+  mxOpen(mxTr('Fee','Ücret'),b,(c?[{label:mxTr('Delete fee','Ücreti sil'),cls:'bdel',fn:vfDelete}]:[]).concat([{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]));
+}
+async function vfDelete(){
+  if(!confirm(mxTr("Delete this visit's fee and its payments? They are removed from the accounts too.",'Bu vizitin ücreti ve alınan ödemeleri silinsin mi? Muhasebeden de kaldırılır.')))return;
+  var r=await db.rpc('delete_visit_fee',{p_visit_id:selVid});
+  if(r.error){var m=r.error.message||'';document.getElementById('vfErr').textContent=m.indexOf('einvoice_issued')>=0?mxTr("An e-receipt was issued for this payment, so it can't be deleted. Enter a refund in Accounts.",'Bu ödeme için e-SMM kesilmiş; silinemez. Muhasebeden iade kaydı girin.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+  mxClose();vfLoad(selVid);
 }
 async function vfSave(){
   var amt=parseFloat(document.getElementById('vfAmt').value),err=document.getElementById('vfErr');

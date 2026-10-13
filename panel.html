@@ -458,6 +458,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
                 <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vNotesEd" rows="4" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
               </div>
+              <div id="vUses"></div>
               <div id="vFee"></div>
               <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
               <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
@@ -1397,7 +1398,7 @@ async function selV(id){
   document.getElementById('vInfo').innerHTML=vi;
   enVisitLoad(id);
   dxLoad(id);
-  vfLoad(id);
+  vfLoad(id);puLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vSaveMsg').textContent='';
@@ -2372,7 +2373,7 @@ function fnView(v){
     if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
-      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
   }else if(v==='recv'){
     if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
@@ -3868,7 +3869,7 @@ async function vfLoad(id){
     var rem=Number(d.remaining||0),paid=Number(d.paid||0);
     var tag=rem<=0.009?['58,176,106',mxTr('Paid','Ödendi')]:paid>0?['212,150,58',mxTr('Partial','Kısmi')]:['192,97,74',mxTr('Unpaid','Ödenmedi')];
     h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:20px;color:#F5F1EB">'+vfMoney(c.amount)+'</b><span style="flex:1;font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(c.description||'')+'</span><span style="padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;color:rgb('+tag[0]+');background:rgba('+tag[0]+',0.14)">'+mxE(tag[1])+'</span></div>'+
-      '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b></span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div></div>';
+      '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b></span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div>'+vfProfitHtml(d,Number(c.amount||0))+vfEinvHtml(d)+'</div>';
   }
   el.innerHTML='<div class="sec">'+mxE(mxTr('FEE','ÜCRET'))+'</div>'+h;
 }
@@ -3893,6 +3894,179 @@ async function vfSave(){
   var r=await db.rpc('save_visit_fee',{p_visit_id:selVid,p_amount:amt,p_description:document.getElementById('vfDesc').value,p_pay:pay,p_method:document.getElementById('vfMeth').value});
   if(r.error){var m=r.error.message||'';err.textContent=m.indexOf('below_paid')>=0?mxTr("The amount can't be less than what was already paid.",'Tutar, alınan ödemeden az olamaz.'):m.indexOf('has_installments')>=0?mxTr("This fee has installments; edit it from the patient account.",'Bu ücret taksitli; hasta hesabından düzenleyin.'):m.indexOf('over_pay')>=0?mxTr("The payment can't be more than the remaining amount.",'Alınan tutar kalandan fazla olamaz.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
   mxClose();vfLoad(selVid);
+}
+// ---- e-SMM on the visit fee card ----
+function vfEinvHtml(d){
+  var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length)return '';
+  var auto=ei.provider!=='manual'&&ei.enabled===true,h='';
+  ps.forEach(function(p){
+    var st=p.einvoice_status||null,no=String(p.invoice_no||'').trim(),t,c;
+    if(st==='issued'){t=mxTr('e-Document issued','e-Belge kesildi')+(no?' · '+no:'');c='#3AB06A';}
+    else if(st==='pending'){t=mxTr('e-Document is being processed','e-Belge işleniyor');c='#B89A6A';}
+    else if(st==='error'){t=mxTr('e-Document failed','e-Belge kesilemedi')+(p.einvoice_error?' · '+p.einvoice_error:'');c='#E05555';}
+    else if(st==='deferred'){t=mxTr('To be issued later','Sonra kesilecek');c='#D4963A';}
+    else if(st==='external'||no){t=mxTr('Issued elsewhere','Başka yerden kesildi')+' · '+no;c='#3AB06A';}
+    else{t=mxTr('Not issued yet','Henüz kesilmedi');c='#D4963A';}
+    var open=!st||st==='error'||st==='deferred';if(!st&&no)open=false;
+    var b='',btn='class="bimp2" style="padding:5px 10px;font-size:12px"';
+    if(st==='issued'&&auto)b+='<button '+btn+' onclick="event.stopPropagation();vfEinv(\'pdf\',\''+p.id+'\')">PDF</button>';
+    if((open||st==='pending')&&auto)b+='<button '+btn.replace('style="','style="background:#B89A6A;color:#1C1929;border-color:#B89A6A;')+' onclick="event.stopPropagation();vfEinv(\'issue\',\''+p.id+'\')">'+mxE(mxTr('Send','Gönder'))+'</button>';
+    if(open&&st!=='deferred')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'deferred\')">'+mxE(mxTr("I'll issue it later",'Sonra keseceğim'))+'</button>';
+    if(open)b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'external\')">'+mxE(mxTr('Issued elsewhere','Başka yerden kesildi'))+'</button>';
+    if(st==='deferred'||st==='external')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',null)">'+mxE(mxTr('Remove mark','İşareti kaldır'))+'</button>';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">e-SMM'+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
+  });
+  return h;
+}
+function vfProfitHtml(d,amount){
+  var c=d.cost;if(!c||!Number(c.lines))return '';
+  var cost=Number(c.amount||0),pr=amount-cost,pct=amount>0?Math.round(pr/amount*100):0,col=pr>=0?'58,176,106':'224,85,85';
+  return '<div style="margin-top:10px;padding:9px 12px;border-radius:10px;background:rgba('+col+',0.08);display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Product cost','Ürün maliyeti'))+' '+vfMoney(cost)+'</div><div style="font-size:14px;font-weight:800;color:rgb('+col+')">'+mxE(mxTr('Profit','Kâr'))+' '+vfMoney(pr)+' <span style="font-size:12px">· %'+pct+'</span></div>'+
+    (c.missing?'<div style="font-size:11.5px;color:#D4963A">'+mxE(mxTr('Some lots have no cost entered','Bazı lotların maliyeti girilmemiş'))+'</div>':'')+'</div><span style="font-size:10.5px;color:rgba(245,241,235,0.5)">'+mxE(mxTr('admins only','yalnız yöneticiler'))+'</span></div>';
+}
+function vfEinvErr(e){return {not_configured:mxTr('Set up e-SMM first (Accounts › e-SMM).','Önce e-SMM ayarlarını yapın (Muhasebe › e-SMM).'),vat_rate_missing:mxTr('VAT rate is not selected.','KDV oranı seçilmedi.'),auth_failed:mxTr('Provider login failed: check the credentials.','Sağlayıcı girişi başarısız: bilgileri kontrol edin.'),forbidden:mxTr('Only admins can do this.','Bunu yalnızca yöneticiler yapabilir.')}[e]||e;}
+async function vfEinv(action,entryId){
+  var r=await db.functions.invoke('einvoice',{body:{action:action,entry_id:entryId}});
+  var d=r.data,err=d&&d.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  if(err){alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));}
+  else if(action==='pdf'){if(d.url)window.open(d.url,'_blank');}
+  else alert(d.status==='issued'?mxTr('e-Document issued','e-Belge kesildi'):mxTr('e-Document is being processed, check again shortly','e-Belge işleniyor, birazdan tekrar deneyin'));
+  if(selVid)vfLoad(selVid);
+}
+async function vfMark(entryId,status){
+  var no=null;
+  if(status==='external'){no=prompt(mxTr('Receipt / invoice no.','Makbuz / fatura no'));if(!no||!no.trim())return;}
+  var r=await db.rpc('set_entry_einvoice_mark',{p_entry_id:entryId,p_status:status,p_invoice_no:no});
+  if(r.error)alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));
+  if(selVid)vfLoad(selVid);
+}
+// ---- Products used on the visit (map lines + scanned boxes + manual) ----
+var puItems=[],puProducts=null;
+function puQty(q,unit,pack){q=Number(q||0);var f=function(n){return Number(n).toLocaleString(LANG_LOC[LANG]||'en-US',{maximumFractionDigits:2});};
+  if(unit==='ml'){if(pack>0){var b=q/pack;if(Math.abs(b-Math.round(b))<0.001&&b>=1)return f(Math.round(b))+' '+mxTr('box','kutu')+' · '+f(q)+' ml';}return f(q)+' ml';}
+  return f(q)+' '+mxTr('units','ünite');}
+function puMY(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');return p[1]+'.'+p[0];}
+async function puLoad(id){
+  var el=document.getElementById('vUses');if(!el)return;
+  var r=await db.rpc('visit_product_uses_list',{p_visit_id:id});
+  if(selVid!==id)return;
+  puItems=(r.data||[]);
+  var tag=function(t,c){return '<span style="padding:2px 7px;border-radius:7px;font-size:10.5px;font-weight:700;color:'+c+';background:'+c+'22">'+mxE(t)+'</span>';};
+  var rows=puItems.map(function(e){
+    var t=e.source==='map'?tag(mxTr('from map','haritadan'),'#B7B0F0'):e.source==='scan'?tag(mxTr('scanned','okutuldu'),'#6FCF97'):tag(mxTr('manual','elle'),'#9A96A6');
+    var sub=[puQty(e.quantity,e.unit,e.pack_size)];if(e.serial_no)sub.push('SN '+e.serial_no);if(e.lot_no)sub.push('LOT '+e.lot_no);if(e.expiry)sub.push(mxTr('EXP','SKT')+' '+puMY(e.expiry));
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><div style="flex:1"><b style="color:#F5F1EB;font-size:13.5px">'+mxE(e.product||'')+'</b> '+t+(e.is_extra?' '+tag(mxTr('extra','ek'),'#D4963A'):'')+'<div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(sub.join(' · '))+'</div></div>'+
+      (e.id?'<button class="bimp2" style="padding:4px 9px;font-size:12px" onclick="puDelete(\''+e.id+'\')">✕</button>':'')+'</div>';}).join('');
+  el.innerHTML='<div class="sec">'+mxE(mxTr('PRODUCTS USED','KULLANILAN ÜRÜNLER'))+'</div><div class="ibox">'+
+    (rows||'<div style="font-size:12.5px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Products entered on the injection map appear here automatically. Scan the box to record lot and serial number for the patient.','Enjeksiyon haritasına girilen ürünler burada otomatik görünür. Kutuyu okutursanız lot ve seri no hastaya kaydedilir.'))+'</div>')+
+    '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn bpdf" onclick="puScan()">⌗ '+mxE(mxTr('Scan code','Karekod okut'))+'</button><button class="btn bedit" onclick="puManual()">'+mxE(mxTr('Manual','Elle'))+'</button></div></div>';
+}
+function puMapQty(pid){return puItems.filter(function(e){return e.source==='map'&&e.product_id===pid;}).reduce(function(a,e){return a+Number(e.quantity||0);},0);}
+function puErr(m){m=m||'';return m.indexOf('insufficient_stock')>=0||m.indexOf('lot_empty')>=0?mxTr('Not enough in stock.','Stokta yeterli miktar yok.'):m.indexOf('serial_used')>=0?mxTr('This box was already scanned (same serial number).','Bu kutu zaten okutulmuş (aynı seri no).'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');}
+async function puDelete(id){
+  if(!confirm(mxTr('Delete this use? The amount goes back to stock.','Bu kullanım silinsin mi? Miktar stoğa geri döner.')))return;
+  var r=await db.rpc('delete_visit_product_use',{p_use_id:id});if(r.error)alert(puErr(r.error.message));
+  puLoad(selVid);vfLoad(selVid);
+}
+async function puLoadProducts(){var r=await db.from('clinic_products').select('*').eq('clinic_id',cid).eq('is_active',true).order('name');puProducts=r.data||[];return puProducts;}
+// GS1 (karekod) parse: printed "(01)..(17)..(10)..(21).." or raw with FNC1 (\x1d); keyboard-wedge readers may drop FNC1
+function puGs1(s){
+  s=String(s||'').trim();var o={raw:s};if(!s)return o;
+  if(s[0]==='('){var re=/\((\d{2,4})\)([^(]*)/g,m;while((m=re.exec(s))){var ai=m[1],v=m[2].trim();if(ai==='01')o.gtin=v;else if(ai==='10')o.lot=v;else if(ai==='21')o.serial=v;else if(ai==='17')o.exp=v;}}
+  else{s=s.replace(/^\](d2|C1|Q3|e0)/,'').replace(/^\x1d/,'');
+    if(/^\d{8}$|^\d{12,14}$/.test(s)){o.gtin=('00000000000000'+s).slice(-14);return o;}
+    var i=0,G='\x1d';while(i<s.length){var ai2=s.substr(i,2);i+=2;
+      if(ai2==='01'){o.gtin=s.substr(i,14);i+=14;}else if(ai2==='17'){o.exp=s.substr(i,6);i+=6;}
+      else if(ai2==='10'||ai2==='21'){var j=s.indexOf(G,i);var end=j<0?s.length:j;
+        // no FNC1: a following "17yymmdd" or "21" is the usual next field
+        if(j<0){var k=s.slice(i).search(/17\d{6}(10|21|$)/);if(k>0)end=i+k;}
+        var v2=s.slice(i,end);if(ai2==='10')o.lot=v2;else o.serial=v2;i=end+(s[end]===G?1:0);}
+      else break;}}
+  if(o.exp&&/^\d{6}$/.test(o.exp)){var y=2000+parseInt(o.exp.slice(0,2)),mo=parseInt(o.exp.slice(2,4)),dd=parseInt(o.exp.slice(4,6));if(!dd)dd=new Date(y,mo,0).getDate();o.expiry=y+'-'+String(mo).padStart(2,'0')+'-'+String(dd).padStart(2,'0');}
+  return o;
+}
+function puScan(){
+  mxOpen(mxTr('Scan code','Karekod okut'),'<div style="font-size:12.5px;color:rgba(245,241,235,0.6);margin-bottom:8px">'+mxE(mxTr('Scan the box code with a barcode reader, or type it.','Kutudaki karekodu okuyucuyla okutun veya yazın.'))+'</div><input class="mi" id="puCode" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();puScanGo();}"><div id="puErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Continue','Devam'),cls:'bsave',fn:puScanGo}]);
+  setTimeout(function(){var x=document.getElementById('puCode');if(x)x.focus();},50);
+}
+var puCur=null;
+async function puScanGo(){
+  var d=puGs1(document.getElementById('puCode').value),err=document.getElementById('puErr');
+  if(!d.raw){return;}
+  var prods=puProducts||await puLoadProducts();
+  var p=d.gtin?prods.find(function(x){return x.gtin===d.gtin;}):null;
+  puCur={d:d,p:p,used:null,lot:null};
+  if(d.serial){var u=await db.rpc('serial_used',{p_serial:d.serial});puCur.used=u.data||null;}
+  puScanSheet();
+}
+async function puScanSheet(){
+  var c=puCur,d=c.d,p=c.p,prods=puProducts||[];
+  var rows='<div class="ibox" style="margin-bottom:8px">'+(d.lot?'<div class="ir"><span class="il">Lot</span><span class="iv">'+mxE(d.lot)+'</span></div>':'')+(d.serial?'<div class="ir"><span class="il">'+mxE(mxTr('Serial no','Seri no'))+'</span><span class="iv">'+mxE(d.serial)+'</span></div>':'')+(d.expiry?'<div class="ir"><span class="il">'+mxE(mxTr('Expiry','SKT'))+'</span><span class="iv">'+mxDate(d.expiry)+'</span></div>':'')+'</div>';
+  var sel='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Product','Ürün'))+'</label><select class="mi" id="puProd" onchange="puPick(this.value)"><option value="">—</option>'+prods.map(function(x){return '<option value="'+x.id+'"'+(p&&p.id===x.id?' selected':'')+'>'+mxE(x.name)+'</option>';}).join('')+'</select>';
+  var b=rows+sel;
+  if(p){
+    var split=p.unit!=='ml',mq=puMapQty(p.id),def=split?(mq>0?mq:''):(p.pack_size||'');
+    if(!c.lots){var lr=await db.from('stock_lot_balance').select('*').eq('product_id',p.id);c.lots=lr.data||[];}
+    var key=String(d.lot||'').trim().toUpperCase();c.lot=c.lots.find(function(x){return String(x.lot_no||'').trim().toUpperCase()===key;})||null;
+    b+='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(split?mxTr('How many units were used?','Kaç ünite kullanıldı?'):(p.pack_size?mxTr('To deduct (ml)','Düşülecek (ml)'):mxTr('Box content (ml)','Kutu içeriği (ml)')))+'</label><input class="mi" id="puQty" type="number" min="0" step="0.01" value="'+def+'">';
+    if(c.lot)b+='<div style="font-size:12px;color:rgba(245,241,235,0.6);margin:2px 0 8px">'+mxE(mxTr('In stock','Stokta'))+': '+mxE(puQty(c.lot.remaining,p.unit,p.pack_size))+'</div>';
+    else if(d.lot)b+='<div style="font-size:12px;color:#D4963A;margin:2px 0 8px">'+mxE(mxTr('This lot is not in stock; it will be added to stock and deducted.','Bu lot stokta yok; stoğa eklenip düşülecek.'))+'</div>';
+    if(c.used)b+='<div style="font-size:12.5px;color:#D4963A;margin:6px 0">'+mxE((split?mxTr('This vial was opened for [p] on [d]. Continue if you are using the rest of it.','Bu flakon [d] tarihinde [p] hastasında açılmış. Kalanını kullanıyorsanız devam edin.'):mxTr("This box was already deducted for [p] on [d]. The same box can't be deducted twice.",'Bu kutu [d] tarihinde [p] hastasına düşülmüş. Aynı kutu ikinci kez düşülemez.')).replace('[p]',String(c.used.patient||'').trim()).replace('[d]',mxDate(c.used.visit_date)))+'</div>';
+    if(mq>0)b+='<div style="font-size:12.5px;color:#D4963A;margin:6px 0">'+mxE(mxTr('[x] of [p] was already deducted from the map.','Haritadan [x] [p] zaten düşüldü.').replace('[x]',puQty(mq,p.unit,p.pack_size)).replace('[p]',p.name))+'</div><select class="mi" id="puMapMode"><option value="replace">'+mxE(mxTr('Instead of map','Haritadakinin yerine'))+'</option><option value="extra">'+mxE(mxTr('Extra use','Ek kullanım'))+'</option></select>';
+  }
+  b+='<div id="puErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
+  mxOpen(p?p.name:mxTr('Which product is this code?','Bu barkod hangi ürün?'),b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Deduct for patient','Hastaya düş'),cls:'bsave',fn:function(){puScanSave(false);}},{label:mxTr('Next','Sıradaki'),cls:'bcancel',fn:function(){puScanSave(true);}}]);
+}
+function puPick(id){puCur.p=(puProducts||[]).find(function(x){return x.id===id;})||null;puCur.lots=null;puScanSheet();}
+async function puScanSave(next){
+  var c=puCur,d=c.d,p=c.p,err=document.getElementById('puErr');
+  if(!p){err.textContent=mxTr('Choose the product.','Ürünü seçin.');return;}
+  var q=mxNum(document.getElementById('puQty').value);if(!(q>0)){err.textContent=mxTr('Enter an amount.','Miktar girin.');return;}
+  var split=p.unit!=='ml',reuse=!!c.used;
+  if(reuse&&!split){err.textContent=mxTr('This box was already scanned (same serial number).','Bu kutu zaten okutulmuş (aynı seri no).');return;}
+  if(d.gtin&&p.gtin!==d.gtin){await db.from('clinic_products').update({gtin:d.gtin}).eq('id',p.id);p.gtin=d.gtin;}
+  if(!split&&!p.pack_size){await db.from('clinic_products').update({pack_size:q}).eq('id',p.id);p.pack_size=q;}
+  var lotId=c.lot?c.lot.lot_id:null,rem=c.lot?Number(c.lot.remaining||0):0;
+  if(d.lot&&(!lotId||rem<q-0.0001)){
+    var last=await db.from('stock_lots').select('supplier,unit_cost').eq('product_id',p.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    var boxQ=split?(p.pack_size||q):q,l=last.data||{};
+    if(lotId){var m=await db.from('stock_movements').insert({clinic_id:cid,lot_id:lotId,kind:'in',quantity:boxQ,note:(!reuse&&d.serial)?'SN '+d.serial:'scan'});if(m.error){err.textContent=puErr(m.error.message);return;}}
+    else{var ins=await db.from('stock_lots').insert({clinic_id:cid,product_id:p.id,lot_no:d.lot,quantity_in:boxQ,expiry_date:d.expiry||null,unit_cost:l.unit_cost==null?null:l.unit_cost,supplier:l.supplier||null,barcode:d.gtin||null,serial_no:reuse?null:(d.serial||null)}).select('id').single();
+      if(ins.error){err.textContent=puErr(ins.error.message);return;}lotId=ins.data.id;}
+  }
+  var mq=puMapQty(p.id),mode=(document.getElementById('puMapMode')||{}).value||'replace';
+  var r=await db.rpc('add_visit_product_use',{p_visit_id:selVid,p_product_id:p.id,p_quantity:q,p_lot_id:lotId,p_serial:reuse?null:(d.serial||null),p_source:'scan',p_extra:mq>0&&mode==='extra',p_replace_map:mq>0&&mode==='replace'});
+  if(r.error){err.textContent=puErr(r.error.message);return;}
+  mxClose();await puLoad(selVid);vfLoad(selVid);
+  if(next)puScan();
+}
+async function puManual(){
+  var prods=puProducts||await puLoadProducts();
+  if(!prods.length){alert(mxTr('No products in stock. Add products on the Stock screen first.','Stokta ürün yok. Önce Stok ekranından ürün ekleyin.'));return;}
+  mxOpen(mxTr('Add product','Ürün ekle'),'<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Product','Ürün'))+'</label><select class="mi" id="puMProd" onchange="puManualInfo()">'+prods.map(function(x){return '<option value="'+x.id+'">'+mxE(x.name)+'</option>';}).join('')+'</select>'+
+    '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Miktar'))+'</label><div style="display:flex;gap:8px"><input class="mi" id="puMQty" type="number" min="0" step="0.01" value="1" style="flex:1"><select class="mi" id="puMUnit" style="width:130px"></select></div><div id="puMInfo" style="font-size:12.5px;margin:4px 0"></div><div id="puErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Deduct for patient','Hastaya düş'),cls:'bsave',fn:puManualSave}]);
+  puManualInfo();
+}
+async function puManualInfo(){
+  var p=(puProducts||[]).find(function(x){return x.id===document.getElementById('puMProd').value;});if(!p)return;
+  var split=p.unit!=='ml',u=document.getElementById('puMUnit');
+  u.innerHTML='<option value="1">'+(split?mxE(mxTr('units','ünite')):'ml')+'</option>'+(p.pack_size>0?'<option value="'+p.pack_size+'">'+mxE(split?mxTr('vial','flakon'):mxTr('box','kutu'))+' ('+p.pack_size+')</option>':'');
+  if(!split&&p.pack_size>0)u.value=String(p.pack_size);
+  document.getElementById('puMQty').value=split&&!(p.pack_size>0)?20:1;
+  var mq=puMapQty(p.id),lr=await db.from('stock_lot_balance').select('*').eq('product_id',p.id).gt('remaining',0).order('expiry_date',{ascending:true,nullsFirst:false});
+  var lots=lr.data||[],op=lots.filter(function(x){return x.opened_at;}),f=op[0]||lots[0];
+  document.getElementById('puMInfo').innerHTML=(mq>0?'<div style="color:#D4963A">'+mxE(mxTr('[x] of [p] was already deducted from the map. Is this an extra use?','Haritadan [x] [p] zaten düşüldü. Bu ek kullanım mı?').replace('[x]',puQty(mq,p.unit,p.pack_size)).replace('[p]',p.name))+'</div>':'')+
+    '<div style="color:rgba(245,241,235,0.6)">'+(f?mxE(mxTr('Lot to use','Düşülecek lot'))+': <b style="color:#F5F1EB">'+mxE(f.lot_no||'')+(f.expiry_date?' · '+mxTr('EXP','SKT')+' '+puMY(f.expiry_date):'')+'</b> — '+mxE(mxTr('deducted from the lot expiring first (opened ones first).','son kullanma tarihi en yakın (önce açık) lottan düşer.')):'<span style="color:#D4963A">'+mxE(mxTr('Not enough in stock.','Stokta yeterli miktar yok.'))+'</span>')+'</div>';
+}
+async function puManualSave(){
+  var pid=document.getElementById('puMProd').value,q=(mxNum(document.getElementById('puMQty').value)||0)*Number(document.getElementById('puMUnit').value||1),err=document.getElementById('puErr');
+  if(!(q>0)){err.textContent=mxTr('Enter an amount.','Miktar girin.');return;}
+  var r=await db.rpc('add_visit_product_use',{p_visit_id:selVid,p_product_id:pid,p_quantity:q,p_source:'manual',p_extra:puMapQty(pid)>0});
+  if(r.error){err.textContent=puErr(r.error.message);return;}
+  mxClose();await puLoad(selVid);vfLoad(selVid);
 }
 async function enVisitLoad(id){
   var el=document.getElementById('vEnabiz');if(!el)return;

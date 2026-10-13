@@ -2257,26 +2257,43 @@ function stProductModal(p){
       var r=p.id?await db.from('clinic_products').update(row).eq('id',p.id):await db.from('clinic_products').insert(Object.assign({kind:'both',color:'#C9A96E'},row));
       if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]));
 }
-function stLotModal(){
+async function stLotModal(){
   if(!stSel)return;
-  mxOpen('Receive lot',
-    '<input class="mi" id="slNo" placeholder="Lot / serial no">'+
-    '<input class="mi" id="slQty" placeholder="Quantity" value="'+(stSel.pack_size!=null?mxQty(stSel.pack_size):'')+'">'+
-    '<span class="hint" style="display:block;margin:-4px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">Expiry date</span><input class="mi" id="slExp" type="date">'+
-    '<input class="mi" id="slCost" placeholder="Unit cost">'+
-    '<input class="mi" id="slSup" placeholder="Supplier">'+
-    '<input class="mi" id="slSerial" placeholder="Serial no">'+
-    '<input class="mi" id="slBar" placeholder="Barcode (UDI)">',
-    [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
-      var lot=mxV('slNo'),qty=mxNum(mxV('slQty'));if(!lot||!qty||qty<=0){alert('Please fill all fields');return;}
-      var row={clinic_id:cid,product_id:stSel.id,lot_no:lot,quantity_in:qty,expiry_date:mxV('slExp')||null,unit_cost:mxNum(mxV('slCost')),supplier:mxV('slSup')||null,serial_no:mxV('slSerial')||null,barcode:mxV('slBar')||null};
+  // prefill supplier and box price from the last box of this product; pack size is remembered on the product
+  var lr=await db.from('stock_lots').select('supplier,unit_cost').eq('product_id',stSel.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(1);
+  var last=(lr.data&&lr.data[0])||{},pk=stSel.pack_size;
+  var boxCost=(last.unit_cost!=null&&pk)?Math.round(last.unit_cost*pk*100)/100:'';
+  var lbl=function(t){return '<span class="hint" style="display:block;margin:-4px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">'+mxE(t)+'</span>';};
+  mxOpen(mxTr('Receive lot','Lot girişi'),
+    '<input class="mi" id="slNo" placeholder="'+mxE(mxTr('Lot / serial no','Lot / seri no'))+'">'+
+    lbl(mxTr('Expiry date','Son kullanma tarihi'))+'<input class="mi" id="slExp" type="date">'+
+    lbl(mxTr('Boxes','Kutu adedi'))+'<input class="mi" id="slBoxes" type="number" min="1" step="1" value="1" oninput="stLotTotal()">'+
+    (pk?'':lbl(mxTr('Pack content (default quantity)','Kutu içeriği (varsayılan miktar)'))+'<input class="mi" id="slPack" oninput="stLotTotal()">')+
+    '<div id="slTotal" style="font-size:13px;font-weight:700;color:#D4B896;margin:-2px 0 8px"></div>'+
+    lbl(mxTr('Price per box','Kutu fiyatı'))+'<input class="mi" id="slCost" value="'+boxCost+'">'+
+    lbl(mxTr('Supplier','Tedarikçi'))+'<input class="mi" id="slSup" value="'+mxE(last.supplier||'')+'">'+
+    ((last.supplier||boxCost!=='')?'<div style="font-size:11px;color:rgba(245,241,235,.45);margin:-4px 0 8px">'+mxE(mxTr('Supplier and price taken from the last entry.','Tedarikçi ve fiyat son girişten getirildi.'))+'</div>':'')+
+    '<input class="mi" id="slSerial" placeholder="'+mxE(mxTr('Serial no','Seri no'))+'">'+
+    '<input class="mi" id="slBar" placeholder="'+mxE(mxTr('Barcode (UDI)','Barkod (ÜTS/İTS)'))+'">',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),fn:async function(){
+      var lot=mxV('slNo'),boxes=parseInt(mxV('slBoxes'))||0,pack=pk||mxNum(mxV('slPack'));
+      if(!lot||boxes<1||!pack||pack<=0){alert(mxTr('Please fill all fields','Lütfen tüm alanları doldurun'));return;}
+      if(!pk){await db.from('clinic_products').update({pack_size:pack}).eq('id',stSel.id);stSel.pack_size=pack;}
+      var qty=pack*boxes,bc=mxNum(mxV('slCost'));
+      var row={clinic_id:cid,product_id:stSel.id,lot_no:lot,quantity_in:qty,expiry_date:mxV('slExp')||null,unit_cost:bc==null?null:bc/pack,supplier:mxV('slSup')||null,serial_no:mxV('slSerial')||null,barcode:mxV('slBar')||null};
       var r=await db.from('stock_lots').insert(row);
       if(r.error&&r.error.code==='23505'){
         var ex=await db.from('stock_lots').select('id').eq('clinic_id',cid).eq('product_id',stSel.id).eq('lot_no',lot).single();
         r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:ex.data.id,kind:'in',quantity:qty,note:'panel'});
-        if(!r.error)alert('Lot already exists, quantity added to it');
+        if(!r.error)alert(mxTr('Lot already exists, quantity added to it','Lot zaten var, miktar eklendi'));
       }
       if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]);
+  stLotTotal();
+}
+function stLotTotal(){
+  var el=document.getElementById('slTotal');if(!el||!stSel)return;
+  var pack=stSel.pack_size||mxNum(mxV('slPack')),boxes=parseInt(mxV('slBoxes'))||0;
+  el.textContent=pack&&boxes?'= '+mxQty(pack*boxes)+' '+(stSel.unit==='ml'?'ml':mxTr('u','adet')):'';
 }
 async function stOpenLot(id){await db.rpc('open_stock_lot',{p_lot_id:id});stLoad();}
 function stMove(id,kind){

@@ -799,6 +799,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <div class="imp-nums" id="fnTotals"></div>
       <div class="tabs" style="border:none;padding:0;margin-bottom:10px">
         <button class="tab on" data-fn="entries" onclick="fnView('entries')">ENTRIES</button>
+        <button class="tab" data-fn="profit" onclick="fnView('profit')">PROFIT</button>
         <button class="tab" data-fn="recv" onclick="fnView('recv')">RECEIVABLES</button>
         <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
         <button class="tab" data-fn="cash" onclick="fnView('cash')">DAY CLOSE</button>
@@ -2346,7 +2347,7 @@ async function fnLoad(){
     db.rpc('get_einvoice_settings')]);
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
   var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
-  fnEinv=!!(res[6].data&&res[6].data.enabled);
+  fnEinv=!!(res[6].data&&res[6].data.enabled);fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
   var closed=!!cd.closing;
   document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
     '<div style="font-size:22px">'+(closed?'🔒':'🔓')+'</div><div style="flex:1"><b style="font-size:15px">'+mxE(mxTr('Today','Bugün'))+' '+mxMoney(td)+'</b><div style="font-size:12px;color:rgba(245,241,235,.6)">'+
@@ -2362,14 +2363,70 @@ async function fnLoad(){
     (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
   fnView(fnTab);
 }
+// ---- Profit tab: fees − products used − fixed expenses (cash stays on Entries) ----
+async function fnProfitRender(){
+  var b=document.getElementById('fnBody'),r=fnRange();
+  b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">…</div>';
+  var res=await db.rpc('profit_report',{p_from:mxIso(r[0]),p_to:mxIso(r[1])});
+  if(fnTab!=='profit')return;
+  if(res.error||!res.data){b.innerHTML='<div class="imp-step">'+mxE(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'))+'</div>';return;}
+  var d=res.data,fees=Number(d.fees||0),cost=Number(d.product_cost||0)+Number(d.waste_cost||0),gross=fees-cost,fixed=Number(d.expenses||0),net=gross-fixed;
+  var pct=function(a){return fees>0?Math.round(a/fees*100):0;};
+  var tile=function(l,v,c,sub,w){return '<div class="imp-num" style="flex:1;min-width:150px;text-align:left"><div class="l">'+mxE(l)+'</div><div class="n" style="color:'+c+'">'+v+'</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden"><div style="width:'+Math.max(0,Math.min(100,w))+'%;height:100%;background:'+c+'"></div></div><div class="l" style="margin-top:6px">'+mxE(sub)+'</div></div>';};
+  var h='<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:10px">'+mxE(mxTr('Profit = fees − products used − fixed expenses. For cash collected, see the Entries tab.','Kâr = ücretler − kullanılan ürün − sabit giderler. Tahsilat (kasa) için Kayıtlar sekmesine bakın.'))+'</div>';
+  h+='<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+    tile(mxTr('Fees','Ücretler'),mxMoney(fees),'#F5F1EB',mxTr('[n] visits','[n] vizit').replace('[n]',d.fee_visits||0),100)+
+    tile(mxTr('Product cost','Ürün maliyeti'),'− '+mxMoney(cost),'#C0614A',mxTr('[p]% · as used','%[p] · kullanıldıkça').replace('[p]',pct(cost)),pct(cost))+
+    tile(mxTr('Gross profit','Brüt kâr'),mxMoney(gross),gross>=0?'#3AB06A':'#C0614A',mxTr('[p]% margin','%[p] marj').replace('[p]',pct(gross)),pct(gross))+
+    tile(mxTr('Fixed expenses','Sabit giderler'),'− '+mxMoney(fixed),'#C0614A',mxTr('rent, salaries, ads (excl. stock purchases)','kira, maaş, reklam (stok alımı hariç)'),pct(fixed))+
+    tile(mxTr('Net profit','Net kâr'),mxMoney(net),net>=0?'#3AB06A':'#C0614A',mxTr('[p]% margin','%[p] marj').replace('[p]',pct(net)),pct(net))+'</div>';
+  var warn=function(t,list){if(!list||!list.length)return '';return '<div style="margin-top:10px;padding:10px 14px;border-radius:12px;background:rgba(212,150,58,.08);color:#D4963A;font-size:12.5px"><b>'+mxE(t.replace('[n]',list.length))+'</b> '+list.map(function(v){return '<a href="#" style="color:#D4963A" onclick="event.preventDefault();fnOpenVisit(\''+v.patient_id+'\',\''+v.visit_id+'\')">'+mxE((v.patient||'')+' · '+mxDate(v.date))+'</a>';}).join(', ')+'</div>';};
+  h+=warn(mxTr('[n] visits used products with no box price; cost is incomplete.','[n] vizitte kullanılan ürünün kutu fiyatı girilmemiş; maliyet eksik.'),d.missing_cost);
+  h+=warn(mxTr('[n] visits have no fee entered.','[n] vizitin ücreti girilmemiş.'),d.missing_fee);
+  var procs=d.by_procedure||[],prods=d.by_product||[];
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;align-items:flex-start">';
+  if(procs.length)h+='<div class="imp-step" style="flex:1.6;min-width:320px"><div class="l" style="font-size:11px;letter-spacing:1.2px;color:rgba(245,241,235,.6);font-weight:600;margin-bottom:6px">'+mxE(mxTr('BY PROCEDURE','İŞLEME GÖRE'))+'</div><table class="fmt"><tr><th></th><th style="text-align:right">'+mxE(mxTr('Count','Adet'))+'</th><th style="text-align:right">'+mxE(mxTr('Avg fee','Ort. ücret'))+'</th><th style="text-align:right">'+mxE(mxTr('Avg cost','Ort. maliyet'))+'</th><th style="text-align:right">'+mxE(mxTr('Profit','Kâr'))+'</th><th style="text-align:right">'+mxE(mxTr('Margin','Marj'))+'</th></tr>'+
+    procs.map(function(p){return '<tr><td><b>'+mxE(p.name)+'</b></td><td style="text-align:right">'+p.count+'</td><td style="text-align:right">'+mxMoney(p.avg_fee)+'</td><td style="text-align:right;color:#C0614A">'+mxMoney(p.avg_cost)+'</td><td style="text-align:right;color:'+(Number(p.profit)>=0?'#3AB06A':'#C0614A')+';font-weight:700">'+mxMoney(p.profit)+'</td><td style="text-align:right">%'+p.margin+'</td></tr>';}).join('')+'</table></div>';
+  h+='<div class="imp-step" style="flex:1;min-width:260px"><div class="l" style="font-size:11px;letter-spacing:1.2px;color:rgba(245,241,235,.6);font-weight:600;margin-bottom:6px">'+mxE(mxTr('BY PRODUCT','ÜRÜNE GÖRE'))+'</div>'+
+    prods.map(function(p){return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>'+mxE(p.name)+' <span style="color:rgba(245,241,235,.6)">· '+mxE(puQty(p.quantity,p.unit,p.pack_size))+'</span></span><b>'+mxMoney(p.cost)+'</b></div>';}).join('')+
+    (Number(d.waste_cost)>0?'<div style="font-size:12px;color:#D4963A;margin-top:6px">'+mxE(mxTr('Waste: [x]','Fire / imha: [x]').replace('[x]',mxMoney(d.waste_cost)))+'</div>':'')+
+    '<div style="margin-top:10px;font-size:12.5px;color:rgba(245,241,235,.6);line-height:1.5">'+mxE(mxTr('Stock on the shelf is worth [x]. That is most of the gap between cash and profit.','Rafta duran stok değeri [x]. Kasa ile kâr arasındaki fark büyük ölçüde bu.').replace('[x]',mxMoney(d.stock_value)))+'</div></div></div>';
+  b.innerHTML=h;
+}
+async function fnOpenVisit(pid,vid){switchTab('patients');await selP(pid);selV(vid);}
+// ---- e-SMM: issue mode + bulk send (entries › not invoiced) ----
+var fnEinvMode='ask';
+function fnEinvBar(){
+  var n=fnEntries.filter(fnUninv).length;
+  return '<div class="imp-step" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><div style="flex:1;min-width:200px"><b>'+mxE(mxTr('Send all','Topluca gönder'))+' · '+n+'</b></div>'+
+    '<label style="font-size:12px;color:rgba(245,241,235,.6)">'+mxE(mxTr('e-SMM when a payment is taken','Ödeme alınınca e-SMM'))+'</label><select class="mi" style="width:auto;margin:0" onchange="fnSetEinvMode(this.value)">'+
+    [['ask',mxTr('Ask every time','Her seferinde sor')],['auto',mxTr('Send automatically','Otomatik gönder')],['manual',mxTr("I'll send manually",'Elle gönderirim')]].map(function(o){return '<option value="'+o[0]+'"'+(o[0]===fnEinvMode?' selected':'')+'>'+mxE(o[1])+'</option>';}).join('')+'</select>'+
+    (n?'<button class="bimp" id="fnBulkBtn" onclick="fnBulkIssue()">'+mxE(mxTr('Send all','Topluca gönder'))+'</button>':'')+'</div>';
+}
+async function fnSetEinvMode(m){var r=await db.rpc('set_einvoice_issue_mode',{p_mode:m});if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}fnEinvMode=m;}
+async function fnBulkIssue(){
+  var todo=fnEntries.filter(fnUninv);if(!todo.length)return;
+  if(!confirm(mxTr('Issue e-SMM for [n] payments?','[n] ödeme için e-SMM kesilsin mi?').replace('[n]',todo.length)))return;
+  var btn=document.getElementById('fnBulkBtn');if(btn){btn.disabled=true;btn.textContent='…';}
+  var ok=0,bad=0;
+  for(var i=0;i<todo.length;i++){
+    var r=await db.functions.invoke('einvoice',{body:{action:'issue',entry_id:todo[i].id}});var err=r.data&&r.data.error;
+    if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err='error';}}
+    if(err){bad++;if(err==='not_configured'||err==='auth_failed'||err==='vat_rate_missing')break;}else ok++;
+  }
+  alert(mxTr('[ok] issued, [err] failed','[ok] kesildi, [err] hata').replace('[ok]',ok).replace('[err]',bad));
+  fnLoad();
+}
 function fnView(v){
   fnTab=v;document.querySelectorAll('[data-fn]').forEach(function(t){t.classList.toggle('on',t.dataset.fn===v);});
   var b=document.getElementById('fnBody');
   if(v==='cash'){fnCashRender();return;}
+  if(v==='profit'){fnProfitRender();return;}
   if(v==='entries'){
     var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
     var chips='<div class="pfl" style="border:none;padding:0 0 10px">'+fl.map(function(x){return '<button class="'+(x[0]===fnFilter?'on':'')+'" onclick="fnSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>';
     var list=fnEntries.filter(function(e){return fnFilter==='all'?true:fnFilter==='income'||fnFilter==='expense'?e.kind===fnFilter:fnFilter==='uninvoiced'?fnUninv(e):e.method===fnFilter;});
+    if(fnFilter==='uninvoiced'&&fnEinv)chips+=fnEinvBar();
     if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
@@ -4233,7 +4290,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

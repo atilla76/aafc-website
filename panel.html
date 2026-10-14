@@ -2272,15 +2272,17 @@ function stProductModal(p){
 async function stLotModal(){
   if(!stSel)return;
   // prefill supplier and box price from the last box of this product; pack size is remembered on the product
-  var lr=await db.from('stock_lots').select('supplier,unit_cost').eq('product_id',stSel.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(1);
+  var lr=await db.from('stock_lots').select('supplier,unit_cost,quantity_in').eq('product_id',stSel.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(1);
   var last=(lr.data&&lr.data[0])||{},pk=stSel.pack_size;
-  var boxCost=(last.unit_cost!=null&&pk)?Math.round(last.unit_cost*pk*100)/100:'';
+  // products entered before pack size existed: assume one box = what the last lot received
+  var gp=pk||(Number(last.quantity_in)>0?Number(last.quantity_in):null);
+  var boxCost=(last.unit_cost!=null&&gp)?Math.round(last.unit_cost*gp*100)/100:'';
   var lbl=function(t){return '<span class="hint" style="display:block;margin:-4px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">'+mxE(t)+'</span>';};
   mxOpen(mxTr('Receive lot','Lot girişi'),
     '<input class="mi" id="slNo" placeholder="'+mxE(mxTr('Lot / serial no','Lot / seri no'))+'">'+
     lbl(mxTr('Expiry date','Son kullanma tarihi'))+'<input class="mi" id="slExp" type="date">'+
     lbl(mxTr('Boxes','Kutu adedi'))+'<input class="mi" id="slBoxes" type="number" min="1" step="1" value="1" oninput="stLotTotal()">'+
-    (pk?'':lbl(mxTr('Pack content (default quantity)','Kutu içeriği (varsayılan miktar)'))+'<input class="mi" id="slPack" oninput="stLotTotal()">')+
+    (pk?'':lbl(mxTr('Pack content (default quantity)','Kutu içeriği (varsayılan miktar)'))+'<input class="mi" id="slPack" oninput="stLotTotal()" value="'+(gp||'')+'">')+
     '<div id="slTotal" style="font-size:13px;font-weight:700;color:#D4B896;margin:-2px 0 8px"></div>'+
     lbl(mxTr('Price per box','Kutu fiyatı'))+'<input class="mi" id="slCost" value="'+boxCost+'">'+
     lbl(mxTr('Supplier','Tedarikçi'))+'<input class="mi" id="slSup" value="'+mxE(last.supplier||'')+'">'+

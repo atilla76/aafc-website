@@ -451,10 +451,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <div class="ibox" id="vInfo"></div>
               <div id="vEnabiz" style="margin-top:8px"></div>
               <div id="nWrap">
+                <div class="sec" style="display:flex;align-items:center;gap:8px">HISTORY / COMPLAINT<button class="bimp2" id="vAnamAdd" style="display:none;padding:2px 9px;font-size:11px;margin-left:auto" onclick="vAnamFill()">Add health info</button></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vAnam" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vAnam" onclick="vxDictate(this)">🎤</button></div>
                 <div class="sec">PROCEDURES</div>
                 <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vProc" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
                 <div class="sec">NOTES</div>
                 <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vNotesEd" rows="4" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
+                <div class="sec">PRESCRIPTION</div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vRx" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vRx" onclick="vxDictate(this)">🎤</button></div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
               </div>
               <div class="sec">DIAGNOSIS (ICD-10)</div>
@@ -1318,12 +1322,16 @@ function renderV(){
   el.innerHTML=h;
 }
 
+// patient's health flags + allergies as one line (for the history field)
+function vHealthText(){var p=selPt||{};var a=(p.health_flags||[]).map(pfFlagL);if(String(p.allergies||'').trim())a.push(mxTr('Allergies','Alerji')+': '+String(p.allergies).trim());return a.join(' · ');}
+function vAnamFill(){var t=document.getElementById('vAnam');if(!t.value.trim())t.value=vHealthText();document.getElementById('vAnamAdd').style.display='none';}
 async function saveVisitText(){
   if(!selVid)return;
-  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null}).eq('id',selVid);
+  var an=document.getElementById('vAnam').value.trim(),rx=document.getElementById('vRx').value.trim();
+  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null,anamnesis:an||null,prescription:rx||null}).eq('id',selVid);
   var m=document.getElementById('vSaveMsg');
   if(r.error){m.style.color='#C0614A';m.textContent=r.error.message;return;}
-  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();}
+  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();v.anamnesis=an;v.prescription=rx;}
   m.style.color='#3AB06A';m.textContent=trText('Saved');setTimeout(function(){m.textContent='';},3000);
 }
 // Dictation via the browser's speech recognition (Chrome / Edge / Safari)
@@ -1404,6 +1412,10 @@ async function selV(id){
   vfLoad(id);puLoad(id);acLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
+  document.getElementById('vAnam').value=v.anamnesis||'';document.getElementById('vRx').value=v.prescription||'';
+  document.getElementById('vAnam').placeholder=mxTr("Patient's complaint, history, current medication",'Hastanın şikâyeti, öyküsü, kullandığı ilaçlar');
+  document.getElementById('vRx').placeholder=mxTr('Medicine, dose, how and how long to use','İlaç, doz, kullanım şekli ve süresi');
+  document.getElementById('vAnamAdd').style.display=!v.anamnesis&&vHealthText()?'inline-block':'none';
   document.getElementById('vSaveMsg').textContent='';
   var pr=await db.from('photos').select('*').eq('visit_id',id).is('deleted_at',null).order('angle_index');
   var photos=pr.data||[];
@@ -4303,8 +4315,10 @@ async function mbOpen(id){
   var f=[[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
     [mxTr('Date of birth','Doğum tarihi'),d.birth_date?mxDate(d.birth_date):''],[mxTr('Sex','Cinsiyet'),g==='f'?mxTr('Female','Kadın'):g==='m'?mxTr('Male','Erkek'):(g?mxTr('Other','Diğer'):'')],
     [mxTr('Visit date','Vizit tarihi'),d.visit_date?mxDate(d.visit_date):''],[mxTr('Visit type','Vizit türü'),d.visit_type==='Control'?mxTr('Control','Kontrol'):mxTr('Visit','Vizit')],
-    [mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),dx],[mxTr('Procedures','Yapılan işlemler'),[d.procedures,d.region].filter(Boolean).join(' · ')]];
+    [mxTr('History','Anamnez'),d.anamnesis||'']];
+  if((d.health_flags||[]).length)f.push([mxTr('Medical history','Özgeçmiş'),d.health_flags.map(pfFlagL).join(', ')]);
   if(d.allergies)f.push([mxTr('Allergies','Alerji'),d.allergies]);
+  f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),dx],[mxTr('Procedures','Yapılan işlemler'),[d.procedures,d.region].filter(Boolean).join(' · ')],[mxTr('Prescription','Reçete'),d.prescription||'']);
   window._mbF=f;
   var noNid=String(d.national_id||'').replace(/\D/g,'').length!==11;
   var body=(noNid?'<div style="padding:9px 12px;border-radius:10px;background:rgba(224,85,85,.12);color:#F0A28F;font-size:12.5px;margin-bottom:10px">'+mxE(mxTr('National ID missing — add it to the patient file','T.C. kimlik no eksik — hasta dosyasına ekleyin'))+'</div>':'')+
@@ -4442,7 +4456,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'HISTORY / COMPLAINT':'ANAMNEZ / ŞİKÂYET','PRESCRIPTION':'REÇETE','Add health info':'Sağlık bilgilerini ekle','PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

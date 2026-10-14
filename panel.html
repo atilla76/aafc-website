@@ -467,6 +467,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <div id="tpWrap" style="display:none"><div class="sec">TREATMENT PLAN</div><div id="tpBody"></div></div>
               <div id="imWrap" style="display:none"><div class="sec">INJECTION MAP</div><div id="imBody"></div></div>
               <div id="vFee"></div>
+              <div id="vAftercare"></div>
             </div>
           </div>
         </div>
@@ -1400,7 +1401,7 @@ async function selV(id){
   document.getElementById('vInfo').innerHTML=vi;
   enVisitLoad(id);
   dxLoad(id);
-  vfLoad(id);puLoad(id);
+  vfLoad(id);puLoad(id);acLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vSaveMsg').textContent='';
@@ -1806,13 +1807,28 @@ async function apIntake(items){
   items.forEach(function(a,i){
     var f=A.find(function(x){return x.appointment_id===a.appointment_id;});
     if(!f&&a.patient_id){var mine=P.filter(function(x){return x.patient_id===a.patient_id;});f=mine.find(function(x){return x.status==='completed';})||mine[0];}
-    var box=document.getElementById('apx_'+i);if(!f||!box)return;
+    var box=document.getElementById('apx_'+i);if(!box)return;
+    if((!f||f.status!=='completed')&&a.status==='planned')box.insertAdjacentHTML('beforeend','<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="apIntakeSend('+i+',this)">📋 '+mxE(mxTr('Send health form','Ön bilgi formu gönder'))+'</button>');
+    if(!f)return;
     apForms[f.id]=f;
     var done=f.status==='completed',fl=f.flags||[];
     var c=!done?'rgba(245,241,235,.45)':fl.length?'#E08A73':'#3AB06A';
     var t=!done?mxTr('Form pending','Form bekleniyor'):fl.length?'⚠ '+fl.map(inLabel).join(', '):mxTr('Health form ✓','Ön bilgi formu ✓');
     box.insertAdjacentHTML('afterbegin','<span '+(done?'onclick="apViewForm(\''+f.id+'\')" ':'')+'style="cursor:'+(done?'pointer':'default')+';border:1px solid '+c+';color:'+c+';border-radius:8px;padding:3px 9px;font-size:12px">📋 '+mxE(t)+'</span>');
   });
+}
+// Health form for an appointment, also when the person is not a registered patient yet
+async function apIntakeSend(i,btn){
+  var a=(window._appts||[])[i];if(!a||!a.appointment_id)return;
+  var r=await db.rpc('create_appointment_intake',{p_appointment_id:a.appointment_id});
+  if(r.error||!r.data){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
+  var name=String(r.data.name||a.patient_name||a.patient_name_temp||'').trim().split(/\s+/)[0]||'';
+  var msg=mxTrV('Hello [name], before your treatment [clinic] kindly asks you to fill in a short health form (2 min): [link]',
+    'Merhaba [name], [clinic] olarak işleminizden önce kısa bir sağlık formu doldurmanızı rica ediyoruz (2 dk): [link]',{name:name,clinic:clinic.name||'',link:inUrl(r.data.token)});
+  var ph=String(a.patient_phone||a.patient_phone_temp||r.data.phone||'').replace(/\D/g,'');
+  if(ph){mxWaOpen('https://wa.me/'+mxWaDigits(ph)+'?text='+encodeURIComponent(msg),null);}
+  else{try{await navigator.clipboard.writeText(msg);}catch(e){}alert(mxTr('No phone number. The message with the form link was copied; paste it where you talk to the patient (e.g. Instagram).','Telefon yok. Form linkli mesaj kopyalandı; hastayla yazıştığınız yere (örn. Instagram) yapıştırın.'));}
+  if(btn){btn.textContent='✓ '+mxTr('Sent','Gönderildi');btn.disabled=true;}
 }
 function apViewForm(id){inForms=[apForms[id]];inView(id);}
 var apAfterSave=false;
@@ -3955,6 +3971,77 @@ function enReason(r){return {foreign:mxTr('Patient from abroad','Yurt dışı ha
 // ---- Visit fee (admins + users with the "collect payments" permission) ----
 var vfCollector=null,vfData=null;
 function vfMoney(n){return curSym()+Number(n||0).toLocaleString(LANG_LOC[LANG]||'en-US',{maximumFractionDigits:2});}
+// ============ AFTERCARE (post-procedure care instructions, sent as WhatsApp text) ============
+var acTpl=[],acSel={},acEdited=false;
+async function acTemplates(){var r=await db.rpc('get_aftercare_templates',{p_lang:LANG||'tr'});acTpl=r.data||[];return acTpl;}
+function acFold(x){return String(x||'').toLowerCase().replace(/ı|İ/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c');}
+function acMatch(proc){var t=' '+acFold(proc);return acTpl.filter(function(x){return acFold((x.keywords||'')+','+(x.name||'')).split(',').map(function(k){return k.trim();}).filter(function(k){return k.length>=2;})
+  .some(function(k){return new RegExp('(^|[^a-z0-9])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(t);});});}
+function acLoad(id){
+  var el=document.getElementById('vAftercare');if(!el)return;var v=vis.find(function(x){return x.id===id;});if(!v){el.innerHTML='';return;}
+  var sent=v.aftercare_sent_at;
+  el.innerHTML='<div class="sec">'+mxE(mxTr('SHARE WITH PATIENT','HASTAYLA PAYLAŞ'))+'</div><div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#1C1929;border:1px solid rgba(255,255,255,.08)">'+
+    '<div style="flex:1"><b>'+mxE(mxTr('Aftercare instructions','İşlem sonrası bakım'))+'</b><div style="font-size:12.5px;color:'+(sent?'#3AB06A':'rgba(245,241,235,.4)')+'">'+mxE(sent?mxTr('Sent · [date]','Gönderildi · [date]').replace('[date]',mxDate(sent)):mxTr('Not sent','Gönderilmedi'))+'</div></div>'+
+    '<button class="btn bwa" onclick="acOpen()">'+mxE(sent?mxTr('Again','Tekrar'):mxTr('Send','Gönder'))+'</button>'+
+    '<button class="btn bedit" onclick="acEditList()">'+mxE(mxTr('Edit texts','Metinleri düzenle'))+'</button></div>';
+}
+async function acOpen(){
+  await acTemplates();var v=vis.find(function(x){return x.id===selVid;})||{};
+  acSel={};acEdited=false;acMatch(v.procedures||'').forEach(function(t){acSel[t.id]=1;});
+  var ph=String((selPt&&selPt.phone)||'').replace(/\D/g,'');
+  var btns=[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Copy','Kopyala'),cls:'bcancel',fn:function(){acSend(false);}}];
+  if(ph)btns.push({label:'WhatsApp',cls:'bsave',fn:function(){acSend(true);}});
+  mxOpen(mxTr('Aftercare instructions','İşlem sonrası bakım'),'<div id="acHint" style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:8px"></div><div id="acChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div><textarea class="mi" id="acMsg" rows="12" style="min-height:240px" oninput="acEdited=true"></textarea>',btns);
+  acChips();acBuild();
+}
+function acChips(){
+  var n=Object.keys(acSel).length;document.getElementById('acHint').textContent=n?mxTr('Picked from the procedures done; you can edit the message before sending.','Yapılan işlemlere göre seçildi; mesajı göndermeden önce düzenleyebilirsiniz.'):mxTr('Choose the text for this procedure.','İşleme uygun metni seçin.');
+  document.getElementById('acChips').innerHTML=acTpl.map(function(t){var on=!!acSel[t.id];return '<button type="button" onclick="acToggle(\''+t.id+'\')" style="padding:6px 12px;border-radius:16px;font-size:13px;cursor:pointer;border:1px solid '+(on?'#B89A6A':'rgba(255,255,255,.14)')+';background:'+(on?'rgba(184,154,106,.18)':'transparent')+';color:#F5F1EB;font-weight:'+(on?700:500)+'">'+mxE(t.name)+'</button>';}).join('');
+}
+function acToggle(id){if(acSel[id])delete acSel[id];else acSel[id]=1;acEdited=false;acChips();acBuild();}
+function acBuild(){
+  if(acEdited)return;var picked=acTpl.filter(function(t){return acSel[t.id];}),ta=document.getElementById('acMsg');if(!ta)return;
+  if(!picked.length){ta.value='';return;}
+  var first=String((selPt&&selPt.name)||'').trim().split(/\s+/)[0]||'';
+  var head=mxTrV('Hello [name], here is what to keep in mind after your [title]:','Merhaba [name], [title] sonrası dikkat etmeniz gerekenler:',{name:first,title:picked.map(function(t){return t.name;}).join(' + ')});
+  var parts=picked.map(function(t){return picked.length>1?'*'+t.name+'*\n'+t.body:t.body;});
+  ta.value=(head+'\n\n'+parts.join('\n\n')+'\n\n'+mxTrV('If you have any questions, just message us. — [clinic]','Sorunuz olursa bize yazabilirsiniz. — [clinic]',{clinic:(clinic&&clinic.name)||''})).trim();
+}
+async function acSend(wa){
+  var text=(document.getElementById('acMsg').value||'').trim();if(!text)return;
+  if(wa){var ph=mxWaDigits(String((selPt&&selPt.phone)||'').replace(/\D/g,''));try{window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(text),'_blank');}catch(e){}}
+  else{try{await navigator.clipboard.writeText(text);}catch(e){}}
+  var now=new Date().toISOString(),id=selVid;await db.from('visits').update({aftercare_sent_at:now}).eq('id',id);
+  var v=vis.find(function(x){return x.id===id;});if(v)v.aftercare_sent_at=now;
+  mxClose();acLoad(id);
+}
+async function acEditList(){
+  await acTemplates();
+  mxOpen(mxTr('Aftercare texts','İşlem sonrası bakım metinleri'),'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:10px;line-height:1.45">'+mxE(mxTr("Keywords pick the right text from the procedure names in the visit. Texts go out under your clinic's name; adjust them to your own practice.",'Anahtar kelimeler, vizitteki işlem adına göre doğru metni otomatik seçer. Metinler sizin klinik onayınızla gönderilir; kendi uygulamanıza göre düzenleyin.'))+'</div>'+
+    acTpl.map(function(t){return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="flex:1;min-width:0"><b>'+mxE(t.name)+'</b><div style="font-size:12px;color:rgba(245,241,235,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+mxE(String(t.body||'').split('\n')[0])+'</div></div><button class="btn bedit" onclick="acEditOne(\''+t.id+'\')">'+mxE(mxTr('Edit','Düzenle'))+'</button><button class="btn bdel" onclick="acDel(\''+t.id+'\')">'+mxE(mxTr('Delete','Sil'))+'</button></div>';}).join(''),
+    [{label:mxTr('Close','Kapat'),cls:'bcancel',fn:function(){mxClose();acLoad(selVid);}},{label:mxTr('New text','Yeni metin'),cls:'bsave',fn:function(){acEditOne(null);}}]);
+}
+function acEditOne(id){
+  var t=id?acTpl.find(function(x){return x.id===id;}):{};t=t||{};
+  mxOpen(id?mxTr('Edit','Düzenle'):mxTr('New text','Yeni metin'),
+    '<label style="font-size:12px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Title (e.g. Botox)','Başlık (örn. Botoks)'))+'</label><input class="mi" id="acN" value="'+mxE(t.name||'')+'">'+
+    '<label style="font-size:12px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Keywords','Anahtar kelimeler'))+'</label><input class="mi" id="acK" value="'+mxE(t.keywords||'')+'"><div style="font-size:11.5px;color:rgba(245,241,235,.45);margin:-4px 0 8px">'+mxE(mxTr("Separate with commas. If one appears in the visit's procedures, this text is picked.",'Virgülle ayırın. Vizitteki işlem adında geçerse bu metin seçilir.'))+'</div>'+
+    '<label style="font-size:12px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Text','Metin'))+'</label><textarea class="mi" id="acB" rows="10">'+mxE(t.body||'')+'</textarea><div id="acErr" style="color:#E05555;font-size:12.5px"></div>',
+    [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:acEditList},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:function(){acSaveOne(id);}}]);
+}
+async function acSaveOne(id){
+  var n=mxV('acN'),k=mxV('acK'),b=(document.getElementById('acB').value||'').trim();
+  if(!n||!b){document.getElementById('acErr').textContent=mxTr('Enter a title and the text.','Başlık ve metni girin.');return;}
+  var row={name:n,keywords:k,body:b,updated_at:new Date().toISOString()},r;
+  r=id?await db.from('clinic_aftercare_templates').update(row).eq('id',id):await db.from('clinic_aftercare_templates').insert(Object.assign(row,{clinic_id:cid,sort:acTpl.length+1}));
+  if(r.error){document.getElementById('acErr').textContent=mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+  acEditList();
+}
+async function acDel(id){
+  var t=acTpl.find(function(x){return x.id===id;})||{};
+  if(!confirm(mxTr('Delete “[name]”?','“[name]” silinsin mi?').replace('[name]',t.name||'')))return;
+  await db.from('clinic_aftercare_templates').update({deleted_at:new Date().toISOString()}).eq('id',id);acEditList();
+}
 async function vfLoad(id){
   var el=document.getElementById('vFee');if(!el)return;el.innerHTML='';
   if(vfCollector===null){var a=await db.rpc('is_clinic_collector');vfCollector=a.data===true;}

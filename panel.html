@@ -142,6 +142,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .vr{font-size:14px;font-weight:500;margin-bottom:3px}
 .vd{font-size:11px;color:rgba(245,241,235,0.4)}
 .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.vxauto{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:7px;background:rgba(42,158,138,.16);color:#4CC2AC}
+.vxgrow{overflow:hidden;min-height:38px}
 .pc{border-radius:10px;overflow:hidden;background:rgba(245,241,235,0.04);border:1px solid rgba(245,241,235,0.08)}
 .pc img{width:100%;aspect-ratio:3/4;object-fit:cover;cursor:pointer;display:block}
 .pc img:hover{opacity:0.85}
@@ -452,13 +454,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <div id="vEnabiz" style="margin-top:8px"></div>
               <div id="nWrap">
                 <div class="sec">COMPLAINT</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vAnam" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vAnam" onclick="vxDictate(this)">🎤</button></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vAnam" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vAnam" onclick="vxDictate(this)">🎤</button></div>
+                <div class="sec" style="display:flex;gap:8px;align-items:center">HISTORY<span id="vHistAuto" class="vxauto">AUTO</span></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vHist" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vHist" onclick="vxDictate(this)">🎤</button></div>
                 <div class="sec">PROCEDURES</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vProc" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec">NOTES</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vNotesEd" rows="4" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vProc" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxProcInput()"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
+                <div class="sec">VISIT NOTES</div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vNotesEd" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
+                <div class="sec" style="display:flex;gap:8px;align-items:center">FINDINGS<span id="vFindAuto" class="vxauto">AUTO</span></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vFind" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vFind" onclick="vxDictate(this)">🎤</button></div>
                 <div class="sec">PRESCRIPTION</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi" id="vRx" rows="2" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vRx" onclick="vxDictate(this)">🎤</button></div>
+                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vRx" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vRx" onclick="vxDictate(this)">🎤</button></div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
               </div>
               <div class="sec">DIAGNOSIS (ICD-10)</div>
@@ -1322,16 +1328,30 @@ function renderV(){
   el.innerHTML=h;
 }
 
+// History / Findings: automatic text until edited; the stored value is what the doctor typed
+var vxSrc=null;
+function vxGrow(el){if(!el)return;el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px';}
+function vxSetText(id,val){var t=document.getElementById(id);t.value=val||'';t.dataset.auto=val?'0':'1';vxAutoTag(id);vxGrow(t);}
+function vxAutoTag(id){var tag=document.getElementById(id==='vHist'?'vHistAuto':'vFindAuto');if(tag)tag.style.display=document.getElementById(id).dataset.auto==='1'?'inline-block':'none';}
+function vxEdited(t){t.dataset.auto='0';vxAutoTag(t.id);vxGrow(t);}
+async function vxLoadSrc(id){var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});if(selVid!==id||r.error||!r.data)return;vxSrc=r.data;vxRefresh();}
+function vxRefresh(){if(!vxSrc)return;var proc=document.getElementById('vProc').value;
+  var h=document.getElementById('vHist'),f=document.getElementById('vFind');
+  if(h.dataset.auto==='1'){h.value=vxHist(vxSrc,proc);vxGrow(h);}if(f.dataset.auto==='1'){f.value=vxFind(vxSrc,proc);vxGrow(f);}}
+function vxProcInput(){vxGrow(document.getElementById('vProc'));vxRefresh();}
+document.addEventListener('input',function(e){if(e.target&&e.target.classList&&e.target.classList.contains('vxgrow'))vxGrow(e.target);});
 // patient's health flags + allergies as one line (for the history field)
 function vHealthText(){var p=selPt||{};var a=(p.health_flags||[]).map(pfFlagL);if(String(p.allergies||'').trim())a.push(mxTr('Allergies','Alerji')+': '+String(p.allergies).trim());return a.join(' · ');}
 function vAnamFill(){var t=document.getElementById('vAnam');if(!t.value.trim())t.value=vHealthText();document.getElementById('vAnamAdd').style.display='none';}
 async function saveVisitText(){
   if(!selVid)return;
   var an=document.getElementById('vAnam').value.trim(),rx=document.getElementById('vRx').value.trim();
-  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null,anamnesis:an||null,prescription:rx||null}).eq('id',selVid);
+  var hEl=document.getElementById('vHist'),fEl=document.getElementById('vFind');
+  var hi=hEl.dataset.auto==='1'?'':hEl.value.trim(),fi=fEl.dataset.auto==='1'?'':fEl.value.trim();
+  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null,anamnesis:an||null,prescription:rx||null,history:hi||null,findings:fi||null}).eq('id',selVid);
   var m=document.getElementById('vSaveMsg');
   if(r.error){m.style.color='#C0614A';m.textContent=r.error.message;return;}
-  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();v.anamnesis=an;v.prescription=rx;}
+  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();v.anamnesis=an;v.prescription=rx;v.history=hi;v.findings=fi;}
   m.style.color='#3AB06A';m.textContent=trText('Saved');setTimeout(function(){m.textContent='';},3000);
 }
 // Dictation via the browser's speech recognition (Chrome / Edge / Safari)
@@ -1413,6 +1433,7 @@ async function selV(id){
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vAnam').value=v.anamnesis||'';document.getElementById('vRx').value=v.prescription||'';
+  vxSetText('vHist',v.history);vxSetText('vFind',v.findings);vxLoadSrc(id);
   document.getElementById('vAnam').placeholder=mxTr('Why the patient came / complaint','Hastanın geliş nedeni / şikâyeti');
   document.getElementById('vRx').placeholder=mxTr('Medicine, dose, how and how long to use','İlaç, doz, kullanım şekli ve süresi');
   document.getElementById('vSaveMsg').textContent='';
@@ -4307,18 +4328,20 @@ async function enVisitLoad(id){
   if(st!=='skipped'&&(st!=='sent'||s.ref==='MBYS (manuel)'))h+='<div style="margin-top:8px"><button class="bimp2" style="padding:6px 12px;font-size:12.5px" onclick="mbOpen(\''+id+'\')">⧉ '+mxE(mxTr('MBYS summary','MBYS özeti'))+'</button></div>';
   el.innerHTML=h;
 }
+// Texts the visit fills in by itself (History, Findings, complaint fallback); d = get_visit_mbys_summary row
+function vxHist(d,proc){var pt=String(proc!=null?proc:(d.procedures||'')).trim(),pp=String(d.parent_procedures||'').trim(),ctl=d.visit_type==='Control',h=[],h1=[];
+  if(pt||(ctl&&pp))h.push(ctl?mxTr('Came for a follow-up after [p].','[p] sonrası kontrol için başvurdu.').replace('[p]',pp||pt):mxTr('Came for [p].','[p] için başvurdu.').replace('[p]',pt));
+  if((d.health_flags||[]).length)h1.push(mxTr('Medical history','Özgeçmiş')+': '+d.health_flags.map(pfFlagL).join(', '));if(d.allergies)h1.push(mxTr('Allergies','Alerji')+': '+d.allergies);h.push(h1.join(' · '));
+  var it=d.intake;if(it){var fl=it.flags||[];h.push((fl.length?mxTr('Health form ([d]): [r].','Ön bilgi formu ([d]): [r].').replace('[r]',fl.map(inLabel).join(', ')):mxTr('Health form ([d]): no risks declared.','Ön bilgi formu ([d]): risk beyanı yok.')).replace('[d]',mxDate(it.completed_at)));}
+  return h.filter(function(x){return String(x).trim();}).join('\n');}
+function vxFind(d,proc){var pt=String(proc!=null?proc:(d.procedures||'')).trim();
+  return [[pt,pt?d.region:''].filter(Boolean).join(' · ')].concat((d.products||[]).map(function(x){return x.name+' '+puQty(x.quantity,x.unit,x.pack_size);})).filter(Boolean).join('\n');}
+function vxCompl(d){var a=String(d.anamnesis||'').trim(),pt=String(d.procedures||'').trim();return a||(d.visit_type==='Control'?mxTr('Follow-up','Kontrol'):(pt?mxTr('Wishes [p]','[p] isteği').replace('[p]',pt):''));}
 async function mbOpen(id){
   var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});
   if(r.error||!r.data){alert(mxTr('Error','Hata'));return;}
   var d=r.data,g=d.gender,H=function(t){return [t,'',1];};
-  var pt=String(d.procedures||'').trim(),pp=String(d.parent_procedures||'').trim(),ctl=d.visit_type==='Control';
-  var h1=[];if((d.health_flags||[]).length)h1.push(mxTr('Medical history','Özgeçmiş')+': '+d.health_flags.map(pfFlagL).join(', '));if(d.allergies)h1.push(mxTr('Allergies','Alerji')+': '+d.allergies);
-  var hist=[],it=d.intake;
-  if(pt||(ctl&&pp))hist.push(ctl?mxTr('Came for a follow-up after [p].','[p] sonrası kontrol için başvurdu.').replace('[p]',pp||pt):mxTr('Came for [p].','[p] için başvurdu.').replace('[p]',pt));
-  hist.push(h1.join(' · '));
-  if(it){var fl=it.flags||[];hist.push((fl.length?mxTr('Health form ([d]): [r].','Ön bilgi formu ([d]): [r].').replace('[r]',fl.map(inLabel).join(', ')):mxTr('Health form ([d]): no risks declared.','Ön bilgi formu ([d]): risk beyanı yok.')).replace('[d]',mxDate(it.completed_at)));}
-  hist=hist.filter(function(x){return String(x).trim();});
-  var compl=String(d.anamnesis||'').trim()||(ctl?mxTr('Follow-up','Kontrol'):(pt?mxTr('Wishes [p]','[p] isteği').replace('[p]',pt):''));
+  var hist=String(d.history||'').trim()||vxHist(d),find=String(d.findings||'').trim()||vxFind(d),compl=vxCompl(d);
   var exam=d.visit_type==='Control'?mxTr('Follow-up visit','Kontrol Muayenesi'):(d.package_session?mxTr('Session treatment','Seanslık İşlem'):mxTr('Regular visit','Normal Muayene'));
   var f=[H(mxTr('1 · Select patient','1 · Hasta seçimi')),[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
     [mxTr('Date of birth','Doğum tarihi'),d.birth_date?mxDate(d.birth_date):''],[mxTr('Sex','Cinsiyet'),g==='f'?mxTr('Female','Kadın'):g==='m'?mxTr('Male','Erkek'):(g?mxTr('Other','Diğer'):'')],
@@ -4326,8 +4349,8 @@ async function mbOpen(id){
   (d.diagnoses||[]).forEach(function(x){f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),(x.code+' '+(x.name||'')).trim()]);});
   if(!(d.diagnoses||[]).length)f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),'']);
   if(d.prescription)f.push([mxTr('Prescription (to write in e-prescription)',"Reçete (E-Reçete'ye yazılacak)"),d.prescription]);
-  f.push(H(mxTr('3 · Examination','3 · Muayene Bilgisi')),[mxTr('History','Hikayesi'),hist.join('\n')],[mxTr('Complaint','Şikayeti'),compl],
-    [mxTr('Description','Açıklama'),d.notes||''],[mxTr('Findings','Bulgu ve Gözlem'),[[d.procedures,d.region].filter(Boolean).join(' · ')].concat((d.products||[]).map(function(x){return x.name+' '+puQty(x.quantity,x.unit,x.pack_size);})).filter(Boolean).join('\n')],
+  f.push(H(mxTr('3 · Examination','3 · Muayene Bilgisi')),[mxTr('History','Hikayesi'),hist],[mxTr('Complaint','Şikayeti'),compl],
+    [mxTr('Description','Açıklama'),d.notes||''],[mxTr('Findings','Bulgu ve Gözlem'),find],
     [mxTr('Visit type','Muayene Türü'),exam],[mxTr('Case type','Vaka Türü'),mxTr('Normal','Normal')]);
   window._mbF=f;
   var noNid=String(d.national_id||'').replace(/\D/g,'').length!==11;
@@ -4466,7 +4489,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'COMPLAINT':'ŞİKÂYET','HISTORY / COMPLAINT':'ANAMNEZ / ŞİKÂYET','PRESCRIPTION':'REÇETE','Add health info':'Sağlık bilgilerini ekle','PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU VE GÖZLEM','AUTO':'OTOMATİK','COMPLAINT':'ŞİKAYETİ','HISTORY / COMPLAINT':'ANAMNEZ / ŞİKÂYET','PRESCRIPTION':'REÇETE','Add health info':'Sağlık bilgilerini ekle','PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

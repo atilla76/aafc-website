@@ -4311,7 +4311,13 @@ async function mbOpen(id){
   var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});
   if(r.error||!r.data){alert(mxTr('Error','Hata'));return;}
   var d=r.data,g=d.gender,H=function(t){return [t,'',1];};
-  var hist=(d.health_flags||[]).map(pfFlagL);if(d.allergies)hist.push(mxTr('Allergies','Alerji')+': '+d.allergies);
+  var h1=(d.health_flags||[]).map(pfFlagL);if(d.allergies)h1.push(mxTr('Allergies','Alerji')+': '+d.allergies);
+  var hist=[h1.join(' · ')],it=d.intake,pv=d.previous||[],pc=+d.previous_count||0;
+  if(it){var fl=it.flags||[];hist.push((fl.length?mxTr('Health form ([d]): [r].','Ön bilgi formu ([d]): [r].').replace('[r]',fl.map(inLabel).join(', ')):mxTr('Health form ([d]): no risks declared.','Ön bilgi formu ([d]): risk beyanı yok.')).replace('[d]',mxDate(it.completed_at)));}
+  hist.push(pc===0?mxTr('First visit to the clinic.','Kliniğe ilk başvuru.'):mxTr('Earlier treatments: [list]','Önceki işlemler: [list]').replace('[list]',pv.map(function(x){var p=String(x.procedures||'').trim();return mxDate(x.date)+' '+(p||(x.type==='Control'?mxTr('Control','Kontrol'):mxTr('Visit','Vizit')));}).join('; '))+(pc>pv.length?' '+mxTr('([n] visits in total)','(toplam [n] vizit)').replace('[n]',pc):''));
+  hist=hist.filter(function(x){return String(x).trim();});
+  var pt=String(d.procedures||'').trim(),pp=String(d.parent_procedures||'').trim();
+  var compl=String(d.anamnesis||'').trim()||(d.visit_type==='Control'?mxTr('Follow-up after [p]','[p] sonrası kontrol').replace('[p]',pp||pt).trim():(pt?mxTr('Aesthetic consultation: [p]','Estetik amaçlı başvuru: [p]').replace('[p]',pt):''));
   var exam=d.visit_type==='Control'?mxTr('Follow-up visit','Kontrol Muayenesi'):(d.package_session?mxTr('Session treatment','Seanslık İşlem'):mxTr('Regular visit','Normal Muayene'));
   var f=[H(mxTr('1 · Select patient','1 · Hasta seçimi')),[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
     [mxTr('Date of birth','Doğum tarihi'),d.birth_date?mxDate(d.birth_date):''],[mxTr('Sex','Cinsiyet'),g==='f'?mxTr('Female','Kadın'):g==='m'?mxTr('Male','Erkek'):(g?mxTr('Other','Diğer'):'')],
@@ -4319,7 +4325,7 @@ async function mbOpen(id){
   (d.diagnoses||[]).forEach(function(x){f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),(x.code+' '+(x.name||'')).trim()]);});
   if(!(d.diagnoses||[]).length)f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),'']);
   if(d.prescription)f.push([mxTr('Prescription (to write in e-prescription)',"Reçete (E-Reçete'ye yazılacak)"),d.prescription]);
-  f.push(H(mxTr('3 · Examination','3 · Muayene Bilgisi')),[mxTr('History','Hikayesi'),hist.join(' · ')],[mxTr('Complaint','Şikayeti'),d.anamnesis||''],
+  f.push(H(mxTr('3 · Examination','3 · Muayene Bilgisi')),[mxTr('History','Hikayesi'),hist.join('\n')],[mxTr('Complaint','Şikayeti'),compl],
     [mxTr('Description','Açıklama'),d.notes||''],[mxTr('Findings','Bulgu ve Gözlem'),[[d.procedures,d.region].filter(Boolean).join(' · ')].concat((d.products||[]).map(function(x){return x.name+' '+puQty(x.quantity,x.unit,x.pack_size);})).filter(Boolean).join('\n')],
     [mxTr('Visit type','Muayene Türü'),exam],[mxTr('Case type','Vaka Türü'),mxTr('Normal','Normal')]);
   window._mbF=f;

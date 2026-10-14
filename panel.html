@@ -4311,27 +4311,35 @@ async function enVisitLoad(id){
 async function mbOpen(id){
   var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});
   if(r.error||!r.data){alert(mxTr('Error','Hata'));return;}
-  var d=r.data,g=d.gender,dx=(d.diagnoses||[]).map(function(x){return x.code+' '+(x.name||'');}).join('\n');
-  var f=[[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
+  var d=r.data,g=d.gender,H=function(t){return [t,'',1];};
+  var hist=(d.health_flags||[]).map(pfFlagL);if(d.allergies)hist.push(mxTr('Allergies','Alerji')+': '+d.allergies);
+  var procs=String(d.procedures||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  var exam=d.visit_type==='Control'?mxTr('Follow-up visit','Kontrol Muayenesi'):(d.package_session?mxTr('Session treatment','Seanslık İşlem'):mxTr('Regular visit','Normal Muayene'));
+  var f=[H(mxTr('1 · Select patient','1 · Hasta seçimi')),[mxTr('National ID','T.C. kimlik no'),d.national_id||''],[mxTr('Full name','Ad soyad'),((d.name||'')+' '+(d.surname||'')).trim()],
     [mxTr('Date of birth','Doğum tarihi'),d.birth_date?mxDate(d.birth_date):''],[mxTr('Sex','Cinsiyet'),g==='f'?mxTr('Female','Kadın'):g==='m'?mxTr('Male','Erkek'):(g?mxTr('Other','Diğer'):'')],
-    [mxTr('Visit date','Vizit tarihi'),d.visit_date?mxDate(d.visit_date):''],[mxTr('Visit type','Vizit türü'),d.visit_type==='Control'?mxTr('Control','Kontrol'):mxTr('Visit','Vizit')],
-    [mxTr('History','Anamnez'),d.anamnesis||'']];
-  if((d.health_flags||[]).length)f.push([mxTr('Medical history','Özgeçmiş'),d.health_flags.map(pfFlagL).join(', ')]);
-  if(d.allergies)f.push([mxTr('Allergies','Alerji'),d.allergies]);
-  f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),dx],[mxTr('Procedures','Yapılan işlemler'),[d.procedures,d.region].filter(Boolean).join(' · ')],[mxTr('Prescription','Reçete'),d.prescription||'']);
+    H(mxTr('2 · Prescription & diagnosis','2 · Reçete & Tanı Bilgisi'))];
+  (d.diagnoses||[]).forEach(function(x){f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),(x.code+' '+(x.name||'')).trim()]);});
+  if(!(d.diagnoses||[]).length)f.push([mxTr('Diagnoses (ICD-10)','Tanılar (ICD-10)'),'']);
+  if(d.prescription)f.push([mxTr('Prescription (to write in e-prescription)',"Reçete (E-Reçete'ye yazılacak)"),d.prescription]);
+  f.push(H(mxTr('3 · Examination','3 · Muayene Bilgisi')),[mxTr('History','Hikayesi'),hist.join(' · ')],[mxTr('Complaint','Şikayeti'),d.anamnesis||''],
+    [mxTr('Description','Açıklama'),[d.procedures,d.region].filter(Boolean).join(' · ')],[mxTr('Findings','Bulgu ve Gözlem'),d.notes||''],
+    [mxTr('Visit type','Muayene Türü'),exam],[mxTr('Case type','Vaka Türü'),mxTr('Normal','Normal')],H(mxTr('4 · Medical procedures','4 · Tıbbi Müdahale')));
+  if(!procs.length)f.push([mxTr('Procedure','Tıbbi Müdahale Adı'),'']);
+  procs.forEach(function(x){f.push([mxTr('Procedure','Tıbbi Müdahale Adı'),x]);});
+  (d.products||[]).forEach(function(x){f.push([mxTr('Product / drug','İlaç Adı'),x.name+' · '+puQty(x.quantity,x.unit,x.pack_size)]);});
   window._mbF=f;
   var noNid=String(d.national_id||'').replace(/\D/g,'').length!==11;
   var body=(noNid?'<div style="padding:9px 12px;border-radius:10px;background:rgba(224,85,85,.12);color:#F0A28F;font-size:12.5px;margin-bottom:10px">'+mxE(mxTr('National ID missing — add it to the patient file','T.C. kimlik no eksik — hasta dosyasına ekleyin'))+'</div>':'')+
     '<div class="hint" style="margin-bottom:8px">'+mxE(mxTr('Click a field to copy it while entering the visit in the Ministry’s MBYS.','Bakanlık MBYS’sine girerken alana tıklayarak kopyalayın.'))+'</div>'+
-    f.map(function(x,i){return '<div onclick="mbCopy('+i+')" style="cursor:'+(x[1]?'pointer':'default')+';padding:9px 0;border-top:1px solid rgba(245,241,235,.07);display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(x[0])+'</div><div style="font-size:14px;white-space:pre-line;color:'+(x[1]?'#F5F1EB':'rgba(245,241,235,.35)')+'">'+mxE(x[1]||'—')+'</div></div>'+(x[1]?'<span style="color:#D4B896">⧉</span>':'')+'</div>';}).join('');
+    f.map(function(x,i){if(x[2])return '<div style="margin:'+(i?'16px':'4px')+' 0 4px;font-size:11px;letter-spacing:1.1px;font-weight:700;color:#D4B896">'+mxE(String(x[0]).toUpperCase())+'</div>';return '<div onclick="mbCopy('+i+')" style="cursor:'+(x[1]?'pointer':'default')+';padding:9px 0;border-top:1px solid rgba(245,241,235,.07);display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(x[0])+'</div><div style="font-size:14px;white-space:pre-line;color:'+(x[1]?'#F5F1EB':'rgba(245,241,235,.35)')+'">'+mxE(x[1]||'—')+'</div></div>'+(x[1]?'<span style="color:#D4B896">⧉</span>':'')+'</div>';}).join('');
   var manual=d.ref==='MBYS (manuel)';
   mxOpen(mxTr('MBYS summary','MBYS özeti'),body,[
     {label:mxTr('Copy all','Tümünü kopyala'),cls:'bimp2',fn:function(){mbCopy(-1);}},
-    {label:mxTr('Open MBYS','MBYS’yi aç'),cls:'bimp2',fn:function(){window.open('https://mbys.saglik.gov.tr','_blank','noopener');}},
+    {label:mxTr('Open MBYS','MBYS’yi aç'),cls:'bimp2',fn:function(){window.open('https://mbys2.saglik.gov.tr','_blank','noopener');}},
     manual?{label:mxTr('Remove mark','İşareti kaldır'),cls:'bimp2',fn:function(){mbMark(id,false);}}:{label:mxTr('Entered in MBYS','MBYS’ye girdim'),fn:function(){mbMark(id,true);}}
   ]);
 }
-function mbCopy(i){var f=window._mbF||[];var t=i<0?f.filter(function(x){return x[1];}).map(function(x){return x[0]+': '+x[1];}).join('\n'):(f[i]&&f[i][1]);if(!t)return;
+function mbCopy(i){var f=window._mbF||[];var t=i<0?f.filter(function(x){return x[1]||x[2];}).map(function(x){return x[2]?'\n'+String(x[0]).toUpperCase():x[0]+': '+x[1];}).join('\n').trim():(f[i]&&!f[i][2]&&f[i][1]);if(!t)return;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){mxUndoToast(mxTr('Copied','Kopyalandı'),null);},function(){prompt('',t);});}
 async function mbMark(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}mxClose();enVisitLoad(id);}
 async function enSetVisit(id,send,reason){

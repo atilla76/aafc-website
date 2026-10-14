@@ -4313,11 +4313,10 @@ async function mbOpen(id){
   var d=r.data,g=d.gender,H=function(t){return [t,'',1];};
   var pt=String(d.procedures||'').trim(),pp=String(d.parent_procedures||'').trim(),ctl=d.visit_type==='Control';
   var h1=[];if((d.health_flags||[]).length)h1.push(mxTr('Medical history','Özgeçmiş')+': '+d.health_flags.map(pfFlagL).join(', '));if(d.allergies)h1.push(mxTr('Allergies','Alerji')+': '+d.allergies);
-  var hist=[],it=d.intake,pv=d.previous||[],pc=+d.previous_count||0;
+  var hist=[],it=d.intake;
   if(pt||(ctl&&pp))hist.push(ctl?mxTr('Came for a follow-up after [p].','[p] sonrası kontrol için başvurdu.').replace('[p]',pp||pt):mxTr('Came for [p].','[p] için başvurdu.').replace('[p]',pt));
   hist.push(h1.join(' · '));
   if(it){var fl=it.flags||[];hist.push((fl.length?mxTr('Health form ([d]): [r].','Ön bilgi formu ([d]): [r].').replace('[r]',fl.map(inLabel).join(', ')):mxTr('Health form ([d]): no risks declared.','Ön bilgi formu ([d]): risk beyanı yok.')).replace('[d]',mxDate(it.completed_at)));}
-  hist.push(pc===0?mxTr('First visit to the clinic.','Kliniğe ilk başvuru.'):mxTr('Earlier treatments: [list]','Önceki işlemler: [list]').replace('[list]',pv.map(function(x){var p=String(x.procedures||'').trim();return mxDate(x.date)+' '+(p||(x.type==='Control'?mxTr('Control','Kontrol'):mxTr('Visit','Vizit')));}).join('; '))+(pc>pv.length?' '+mxTr('([n] visits in total)','(toplam [n] vizit)').replace('[n]',pc):''));
   hist=hist.filter(function(x){return String(x).trim();});
   var compl=String(d.anamnesis||'').trim()||(ctl?mxTr('Follow-up','Kontrol'):(pt?mxTr('Wishes [p]','[p] isteği').replace('[p]',pt):''));
   var exam=d.visit_type==='Control'?mxTr('Follow-up visit','Kontrol Muayenesi'):(d.package_session?mxTr('Session treatment','Seanslık İşlem'):mxTr('Regular visit','Normal Muayene'));

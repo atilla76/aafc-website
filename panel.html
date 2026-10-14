@@ -3988,10 +3988,12 @@ async function migRun(){
 function enAuto(p){var n=(p.national_id||'').replace(/\D/g,''),ph=p.phone||'';return n.length===11||!ph||ph.indexOf('+90')===0;}
 function enSwitch(on,fn,dis){return '<label style="display:inline-flex;align-items:center;gap:8px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?0.5:1)+'"><input type="checkbox" '+(on?'checked ':'')+(dis?'disabled ':'')+'onchange="'+fn+'" style="width:18px;height:18px;accent-color:#3AB06A"><span style="font-size:12px;color:'+(on?'#6FCF97':'rgba(245,241,235,0.5)')+'">'+(on?mxTr('On','Açık'):mxTr('Off','Kapalı'))+'</span></label>';}
 function enInTurkey(){var d=String((clinic&&clinic.phone_country)||'').replace('+','');return d?d==='90':LANG==='tr';}
+// e-Nabız is reported per visit; the patient file only warns when the TC number is missing
 function enPatientRow(p){
   if(!enInTurkey())return '';
-  var on=(p.enabiz_enabled===true||p.enabiz_enabled===false)?p.enabiz_enabled:enAuto(p);
-  return '<div class="ir"><span class="il">'+mxTr('Send to e-Nabız','e-Nabız’a gönder')+'</span><span class="iv">'+enSwitch(on,"enSetPatient('"+p.id+"',this.checked)")+'</span></div>';
+  var n=String(p.national_id||'').replace(/\D/g,''),ph=p.phone||'';
+  if(n.length===11||(ph&&ph.indexOf('+90')!==0))return '';
+  return '<div class="ir" style="background:rgba(212,150,58,.10);border-radius:8px;padding:6px 8px"><span class="il" style="color:#D4963A">⚠ '+mxE(mxTr('National ID missing for e-Nabız','e-Nabız için TC kimlik no eksik'))+'</span><span class="iv"><a href="#" style="color:#D4963A;font-weight:700" onclick="event.preventDefault();openEdit()">'+mxE(mxTr('Add','Ekle'))+'</a></span></div>';
 }
 async function enSetPatient(id,on){
   var r=await db.rpc('set_patient_enabiz',{p_patient_id:id,p_enabled:on});

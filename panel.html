@@ -476,8 +476,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
               <div id="bWrap" style="display:none"><div class="sec">PRODUCT BARCODE</div><div class="dg" id="bGrid"></div></div>
               <div id="tpWrap" style="display:none"><div class="sec">TREATMENT PLAN</div><div id="tpBody"></div></div>
               <div id="imWrap" style="display:none"><div class="sec">INJECTION MAP</div><div id="imBody"></div></div>
-              <div id="vFee"></div>
               <div id="vAftercare"></div>
+              <div id="vFee"></div>
             </div>
           </div>
         </div>
@@ -4016,8 +4016,8 @@ function acMatch(proc){var t=' '+acFold(proc);return acTpl.filter(function(x){re
 function acLoad(id){
   var el=document.getElementById('vAftercare');if(!el)return;var v=vis.find(function(x){return x.id===id;});if(!v){el.innerHTML='';return;}
   var sent=v.aftercare_sent_at;
-  el.innerHTML='<div class="sec">'+mxE(mxTr('SHARE WITH PATIENT','HASTAYLA PAYLAŞ'))+'</div><div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#1C1929;border:1px solid rgba(255,255,255,.08)">'+
-    '<div style="flex:1"><b>'+mxE(mxTr('Aftercare instructions','İşlem sonrası bakım'))+'</b><div style="font-size:12.5px;color:'+(sent?'#3AB06A':'rgba(245,241,235,.4)')+'">'+mxE(sent?mxTr('Sent · [date]','Gönderildi · [date]').replace('[date]',mxDate(sent)):mxTr('Not sent','Gönderilmedi'))+'</div></div>'+
+  el.innerHTML='<div style="margin-top:14px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#1C1929;border:1px solid rgba(255,255,255,.08)">'+
+    '<div style="flex:1"><b>'+mxE(mxTr('Aftercare advice','İşlem sonrası öneriler'))+'</b><div style="font-size:12.5px;color:'+(sent?'#3AB06A':'rgba(245,241,235,.4)')+'">'+mxE(sent?mxTr('Sent · [date]','Gönderildi · [date]').replace('[date]',mxDate(sent)):mxTr('Not sent','Gönderilmedi'))+'</div></div>'+
     '<button class="btn bwa" onclick="acOpen()">'+mxE(sent?mxTr('Again','Tekrar'):mxTr('Send','Gönder'))+'</button>'+
     '<button class="btn bedit" onclick="acEditList()">'+mxE(mxTr('Edit texts','Metinleri düzenle'))+'</button></div>';
 }
@@ -4027,7 +4027,7 @@ async function acOpen(){
   var ph=String((selPt&&selPt.phone)||'').replace(/\D/g,'');
   var btns=[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Copy','Kopyala'),cls:'bcancel',fn:function(){acSend(false);}}];
   if(ph)btns.push({label:'WhatsApp',cls:'bsave',fn:function(){acSend(true);}});
-  mxOpen(mxTr('Aftercare instructions','İşlem sonrası bakım'),'<div id="acHint" style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:8px"></div><div id="acChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div><textarea class="mi" id="acMsg" rows="12" style="min-height:240px" oninput="acEdited=true"></textarea>',btns);
+  mxOpen(mxTr('Aftercare advice','İşlem sonrası öneriler'),'<div id="acHint" style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:8px"></div><div id="acChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div><textarea class="mi" id="acMsg" rows="12" style="min-height:240px" oninput="acEdited=true"></textarea>',btns);
   acChips();acBuild();
 }
 function acChips(){
@@ -4053,7 +4053,7 @@ async function acSend(wa){
 }
 async function acEditList(){
   await acTemplates();
-  mxOpen(mxTr('Aftercare texts','İşlem sonrası bakım metinleri'),'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:10px;line-height:1.45">'+mxE(mxTr("Keywords pick the right text from the procedure names in the visit. Texts go out under your clinic's name; adjust them to your own practice.",'Anahtar kelimeler, vizitteki işlem adına göre doğru metni otomatik seçer. Metinler sizin klinik onayınızla gönderilir; kendi uygulamanıza göre düzenleyin.'))+'</div>'+
+  mxOpen(mxTr('Aftercare texts','İşlem sonrası öneri metinleri'),'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:10px;line-height:1.45">'+mxE(mxTr("Keywords pick the right text from the procedure names in the visit. Texts go out under your clinic's name; adjust them to your own practice.",'Anahtar kelimeler, vizitteki işlem adına göre doğru metni otomatik seçer. Metinler sizin klinik onayınızla gönderilir; kendi uygulamanıza göre düzenleyin.'))+'</div>'+
     acTpl.map(function(t){return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="flex:1;min-width:0"><b>'+mxE(t.name)+'</b><div style="font-size:12px;color:rgba(245,241,235,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+mxE(String(t.body||'').split('\n')[0])+'</div></div><button class="btn bedit" onclick="acEditOne(\''+t.id+'\')">'+mxE(mxTr('Edit','Düzenle'))+'</button><button class="btn bdel" onclick="acDel(\''+t.id+'\')">'+mxE(mxTr('Delete','Sil'))+'</button></div>';}).join(''),
     [{label:mxTr('Close','Kapat'),cls:'bcancel',fn:function(){mxClose();acLoad(selVid);}},{label:mxTr('New text','Yeni metin'),cls:'bsave',fn:function(){acEditOne(null);}}]);
 }

@@ -4337,7 +4337,7 @@ function vxHist(d,proc){var pt=String(proc!=null?proc:(d.procedures||'')).trim()
   var it=d.intake;if(it){var fl=it.flags||[];h.push((fl.length?mxTr('Health form ([d]): [r].','Ön bilgi formu ([d]): [r].').replace('[r]',fl.map(inLabel).join(', ')):mxTr('Health form ([d]): no risks declared.','Ön bilgi formu ([d]): risk beyanı yok.')).replace('[d]',mxDate(it.completed_at)));}
   return h.filter(function(x){return String(x).trim();}).join('\n');}
 function vxFind(d,proc){var pt=String(proc!=null?proc:(d.procedures||'')).trim();
-  return [[pt,pt?d.region:''].filter(Boolean).join(' · ')].concat((d.products||[]).map(function(x){return x.name+' '+puQty(x.quantity,x.unit,x.pack_size);})).filter(Boolean).join('\n');}
+  return [[pt,pt&&d.region?regionL(d.region):''].filter(Boolean).join(' · ')].concat((d.products||[]).map(function(x){return x.name+' '+puQty(x.quantity,x.unit,x.pack_size);})).filter(Boolean).join('\n');}
 function vxCompl(d){var a=String(d.anamnesis||'').trim(),pt=String(d.procedures||'').trim();return a||(d.visit_type==='Control'?mxTr('Follow-up','Kontrol'):(pt?mxTr('Wishes [p]','[p] isteği').replace('[p]',pt):''));}
 async function mbOpen(id){
   var r=await db.rpc('get_visit_mbys_summary',{p_visit_id:id});

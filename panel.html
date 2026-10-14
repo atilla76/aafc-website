@@ -2253,15 +2253,16 @@ async function stCost(lotId,unitCost){
   if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
   stOpen(stSel.id);
 }
+function spF(id,label,val,help){return '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(label)+'</label><input class="mi" id="'+id+'" value="'+mxE(val==null?'':val)+'" style="margin-bottom:2px"><div style="font-size:11.5px;color:rgba(245,241,235,0.45);margin:0 0 10px">'+mxE(help)+'</div>';}
 function stProductModal(p){
   p=p||{};
   mxOpen(p.id?'Edit product':'Add product',
     '<input class="mi" id="spName" placeholder="Product name" value="'+mxE(p.name||'')+'">'+
     '<select class="mi" id="spUnit"><option value="unit"'+(p.unit!=='ml'?' selected':'')+'>Units (u)</option><option value="ml"'+(p.unit==='ml'?' selected':'')+'>ml</option></select>'+
-    '<input class="mi" id="spMin" placeholder="Minimum stock (alert)" value="'+(p.min_stock!=null?p.min_stock:'')+'">'+
-    '<input class="mi" id="spShelf" placeholder="Use within after opening (days)" value="'+(p.open_shelf_life_days!=null?p.open_shelf_life_days:'')+'">'+
-    '<input class="mi" id="spPack" placeholder="Pack content (default quantity)" value="'+(p.pack_size!=null?p.pack_size:'')+'">'+
-    '<input class="mi" id="spGtin" placeholder="Product barcode (GTIN)" value="'+mxE(p.gtin||'')+'">',
+    spF('spMin',mxTr('Minimum stock','Minimum stok'),p.min_stock,mxTr('You get an alert when stock falls below this. Optional.','Stok bu miktarın altına düşünce uyarı verilir. Boş bırakılabilir.'))+
+    spF('spShelf',mxTr('Use within (after opening)','Açık şişe süresi')+' ('+mxTr('days','gün')+')',p.open_shelf_life_days,mxTr('How many days an opened vial can be used (e.g. toxin). You get an alert when it expires. Optional.','Açıldıktan kaç gün sonra kullanılmamalı (ör. toksin flakonu). Süresi dolan açık şişe için uyarı verilir. Boş bırakılabilir.'))+
+    spF('spPack',mxTr('Box content','Kutu içeriği'),p.pack_size,mxTr('How many units / ml are in one box (e.g. 100 u toxin, 1.5 ml filler). Used to count boxes and compute cost per unit.','Bir kutuda kaç ünite / ml var (ör. 100 ü toksin, 1,5 ml dolgu). Lot girişinde kutu adediyle çarpılır ve maliyet buna göre hesaplanır.'))+
+    spF('spGtin',mxTr('Product barcode (GTIN)','Ürün barkodu (GTIN)'),p.gtin,mxTr('Filled in automatically when you scan the box code; no need to type it.','Kutudaki karekod okutulunca kendiliğinden dolar; elle yazmana gerek yok.')),
     [{label:'Cancel',cls:'bcancel',fn:mxClose}].concat(p.id?[{label:'Deactivate product',cls:'bcancel',fn:async function(){if(!confirm('Deactivate product?'))return;await db.from('clinic_products').update({is_active:false}).eq('id',p.id);stSel=null;document.getElementById('stLotsBox').style.display='none';mxClose();stLoad();}}]:[]).concat([{label:'Save',fn:async function(){
       var name=mxV('spName');if(!name){alert('Name is required');return;}
       var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),gtin:mxV('spGtin')||null};

@@ -2335,7 +2335,8 @@ var FN_CAT_L={treatment:['Treatment','İşlem / tedavi'],consultation:['Consulta
 var FN_M_L={cash:['Cash','Nakit'],card:['Card','Kart'],transfer:['Bank transfer','Havale / EFT'],other:['Other','Diğer']};
 function fnCat(c){var x=FN_CAT_L[c]||[c,c];return mxTr(x[0],x[1]);}
 function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return mxTr(x[0],x[1]);}
-var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null,fnFilter='all',fnEinv=false;
+var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null,fnFilter='all',fnEinv=false,fnProfit=null;
+function fnNet(d){return d?Number(d.fees||0)-Number(d.product_cost||0)-Number(d.waste_cost||0)-Number(d.expenses||0):0;}
 function fnUninv(e){return e.kind==='income'&&e.einvoice_status!=='issued'&&!String(e.invoice_no||'').trim();}
 function fnDelta(c,p,lowGood){c=Number(c||0);p=Number(p||0);if(p<=0)return '';var x=Math.round((c-p)/p*100);if(!x)return '';var good=lowGood?x<0:x>0;
   return '<div class="l" style="color:'+(good?'#6FCF97':'#F0A28F')+';font-weight:700">'+(x>0?'▲':'▼')+' %'+Math.abs(x)+' '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';}
@@ -2357,7 +2358,10 @@ async function fnLoad(){
     db.rpc('finance_summary',{p_clinic_id:cid,p_from:mxIso(pr[0]),p_to:mxIso(pr[1])}),
     db.from('finance_entries').select('amount,kind').eq('clinic_id',cid).is('deleted_at',null).eq('entry_date',today),
     db.rpc('day_cash_summary',{p_clinic_id:cid,p_date:today}),
-    db.rpc('get_einvoice_settings')]);
+    db.rpc('get_einvoice_settings'),
+    db.rpc('profit_report',{p_from:mxIso(r[0]),p_to:mxIso(r[1])}),
+    db.rpc('profit_report',{p_from:mxIso(pr[0]),p_to:mxIso(pr[1])})]);
+  fnProfit=res[7].data||null;var pp=res[8].data||null;
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
   var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
   fnEinv=!!(res[6].data&&res[6].data.enabled);fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
@@ -2368,11 +2372,16 @@ async function fnLoad(){
     '<button class="'+(closed?'bimp2':'bimp')+'" onclick="fnView(\'cash\')">'+mxE(closed?mxTr('View','Gör'):mxTr('Close till','Kasayı kapat'))+'</button></div>';
   var inc=Number(fnSum.income||0),exp=Number(fnSum.expense||0),recv=fnRecv.reduce(function(s,x){return s+Number(x.balance||0);},0),od=fnRecv.reduce(function(s,x){return s+Number(x.overdue_amount||0);},0);
   var un=fnEntries.filter(fnUninv).length;
+  var pf=fnProfit||{},net=fnNet(fnProfit),used=Number(pf.product_cost||0)+Number(pf.waste_cost||0),sub='font-size:12px;color:rgba(245,241,235,.6);display:flex;justify-content:space-between;gap:12px';
+  var am=(pf.by_month||[]).filter(function(m){return Number(m.fees)>0||Number(m.expenses)>0;}).length;
   document.getElementById('fnTotals').innerHTML=
-    '<div class="imp-num"><div class="n" style="color:#3AB06A">'+mxMoney(inc)+'</div><div class="l">Income</div>'+fnDelta(inc,ps.income)+'</div>'+
-    '<div class="imp-num"><div class="n" style="color:#C0614A">'+mxMoney(exp)+'</div><div class="l">Expense</div>'+fnDelta(exp,ps.expense,true)+'</div>'+
-    '<div class="imp-num"><div class="n" style="color:'+(inc-exp>=0?'#B89A6A':'#C0614A')+'">'+mxMoney(inc-exp)+'</div><div class="l">Net</div>'+fnDelta(inc-exp,Number(ps.income||0)-Number(ps.expense||0))+'</div>'+
+    '<div class="imp-num" style="cursor:pointer;min-width:240px;text-align:left" onclick="fnView(\'profit\')"><div class="l">'+mxE(mxTr('Profit · [p]','[p] kârı').replace('[p]',document.getElementById('fnPeriod').textContent))+'</div><div class="n" style="color:'+(net>=0?'#3AB06A':'#C0614A')+';font-size:30px">'+mxMoney(net)+'</div>'+
+      (y&&am>1?'<div class="l">'+mxE(mxTr('monthly average [x]','aylık ortalama [x]').replace('[x]',mxMoney(net/am)))+'</div>':'')+fnDelta(net,fnNet(pp))+
+      '<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:6px"><div style="'+sub+'"><span>'+mxE(mxTr('Fees','Ücretler'))+'</span><b style="color:#F5F1EB">'+mxMoney(pf.fees||0)+'</b></div><div style="'+sub+'"><span>'+mxE(mxTr('Products used','Kullanılan ürün'))+'</span><b style="color:#C0614A">− '+mxMoney(used)+'</b></div><div style="'+sub+'"><span>'+mxE(mxTr('Operating expenses','İşletme giderleri'))+'</span><b style="color:#C0614A">− '+mxMoney(pf.expenses||0)+'</b></div></div></div>'+
+    '<div class="imp-num"><div class="n" style="color:#F5F1EB">'+mxMoney(inc)+'</div><div class="l">'+mxE(mxTr('Collected','Tahsilat'))+'</div>'+(fnDelta(inc,ps.income)||'<div class="l">'+mxE(mxTr('money received','kasaya giren'))+'</div>')+'</div>'+
     '<div class="imp-num" style="cursor:pointer" onclick="fnView(\'recv\')"><div class="n" style="color:#D4963A">'+mxMoney(recv)+'</div><div class="l">Total receivable</div>'+(od>0?'<div class="l" style="color:#F0A28F;font-weight:700">'+mxE(mxTrV('[amount] overdue','[amount] gecikmiş',{amount:mxMoney(od)}))+'</div>':'')+'</div>'+
+    (fnProfit?'<div class="imp-num" style="cursor:pointer;text-align:left;min-width:260px" onclick="switchTab(\'stock\')"><div class="l" style="display:flex;justify-content:space-between;gap:10px"><b style="color:#F5F1EB">'+mxE(mxTr('Stock','Stok'))+'</b><span>'+mxE(mxTr('not in profit','kâra karışmaz'))+' ›</span></div><div style="display:flex;gap:14px;margin-top:8px">'+
+      [[mxTr('On the shelf','Rafta'),pf.stock_value],[mxTr('Bought','Alınan'),pf.stock_bought],[mxTr('Used','Kullanılan'),used]].map(function(x){return '<div><div class="l">'+mxE(x[0])+'</div><b style="font-size:15px">'+mxMoney(x[1]||0)+'</b></div>';}).join('')+'</div></div>':'')+
     (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
   fnView(fnTab);
 }
@@ -2436,14 +2445,14 @@ function fnView(v){
   if(v==='cash'){fnCashRender();return;}
   if(v==='profit'){fnProfitRender();return;}
   if(v==='entries'){
-    var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
+    var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')],['stock',mxTr('Stock purchases','Stok alımı')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
     var chips='<div class="pfl" style="border:none;padding:0 0 10px">'+fl.map(function(x){return '<button class="'+(x[0]===fnFilter?'on':'')+'" onclick="fnSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>';
-    var list=fnEntries.filter(function(e){return fnFilter==='all'?true:fnFilter==='income'||fnFilter==='expense'?e.kind===fnFilter:fnFilter==='uninvoiced'?fnUninv(e):e.method===fnFilter;});
+    var list=fnEntries.filter(function(e){return fnFilter==='all'?true:fnFilter==='income'?e.kind==='income':fnFilter==='expense'?e.kind==='expense'&&e.category!=='stock':fnFilter==='stock'?e.kind==='expense'&&e.category==='stock':fnFilter==='uninvoiced'?fnUninv(e):e.method===fnFilter;});
     if(fnFilter==='uninvoiced'&&fnEinv)chips+=fnEinvBar();
     if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
-      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':e.category==='stock'?'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(212,184,150,.14);color:#D4B896">'+mxE(mxTr('STOCK','STOK'))+'</span>':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
   }else if(v==='recv'){
     if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
@@ -2454,11 +2463,22 @@ function fnView(v){
     var cats=(fnSum.by_category||[]),meths=(fnSum.by_method||[]),months=(fnSum.by_month||[]);
     function bars(title,rows,color,lab){if(!rows.length)return '';var max=Math.max.apply(null,rows.map(function(r){return Number(r.total);}));
       return '<div class="imp-step"><h3 style="color:'+color+'">'+title+'</h3>'+rows.map(function(r){return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(lab(r))+'</span><span>'+mxMoney(r.total)+'</span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:'+color+';width:'+(max>0?Number(r.total)/max*100:0)+'%"></div></div></div>';}).join('')+'</div>';}
-    b.innerHTML=bars(mxTr('Income · By category','Gelir · Kategoriye göre'),cats.filter(function(c){return c.kind==='income';}),'#3AB06A',function(r){return fnCat(r.category);})+
+    b.innerHTML=(document.getElementById('fnMode').value==='y'?fnMonthly():'')+bars(mxTr('Income · By category','Gelir · Kategoriye göre'),cats.filter(function(c){return c.kind==='income';}),'#3AB06A',function(r){return fnCat(r.category);})+
       bars(mxTr('Expense · By category','Gider · Kategoriye göre'),cats.filter(function(c){return c.kind==='expense';}),'#C0614A',function(r){return fnCat(r.category);})+
-      bars(mxTr('Payment methods','Tahsilat şekli'),meths,'#2A9E8A',function(r){return fnMeth(r.method);})+
-      (document.getElementById('fnMode').value==='y'&&months.length?'<div class="imp-step"><table class="fmt"><tr><th>Month</th><th>Income</th><th>Expense</th><th>Net</th></tr>'+months.map(function(m){var i=Number(m.income||0),x=Number(m.expense||0);return '<tr><td>'+m.month.split('-').reverse().join('.')+'</td><td style="color:#3AB06A">'+mxMoney(i)+'</td><td style="color:#C0614A">'+mxMoney(x)+'</td><td>'+mxMoney(i-x)+'</td></tr>';}).join('')+'</table></div>':'')||'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';
+      bars(mxTr('Payment methods','Tahsilat şekli'),meths,'#2A9E8A',function(r){return fnMeth(r.method);})||'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';
   }
+}
+// Year view: profit per month (fees − products used − operating expenses), stock purchases excluded
+function fnMonthly(){
+  var rows=(fnProfit&&fnProfit.by_month)||[];if(rows.length<2)return '';
+  var max=Math.max.apply(null,rows.map(function(m){return Math.abs(Number(m.profit||0));}).concat([0])),now=new Date(),cur=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var mon=function(ym,long){var d=new Date(ym+'-01T12:00:00');return d.toLocaleDateString(LANG_LOC[LANG]||'en-US',{month:long?'long':'short'});};
+  var act=rows.filter(function(m){return Number(m.fees)>0||Number(m.expenses)>0||Number(m.income)>0;}).reverse();
+  return '<div class="imp-step"><h3>'+mxE(mxTr('Monthly profit','Aylık kâr'))+'</h3><div style="display:flex;align-items:flex-end;gap:6px;height:170px;margin-top:10px">'+
+    rows.map(function(m){var v=Number(m.profit||0),h=max>0?Math.max(2,Math.round(Math.abs(v)/max*140)):2;
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px" title="'+mxE(mon(m.month,true)+': '+mxMoney(v))+'"><div style="width:100%;height:'+h+'px;border-radius:5px 5px 2px 2px;background:'+(v<0?'#C0614A':m.month===cur?'#B89A6A':'rgba(184,154,106,.45)')+'"></div><span style="font-size:11px;color:'+(m.month===cur?'#F5F1EB':'rgba(245,241,235,.6)')+'">'+mxE(mon(m.month))+'</span></div>';}).join('')+'</div>'+
+    (act.length?'<table class="fmt" style="margin-top:14px"><tr><th>'+mxE(mxTr('Month','Ay'))+'</th><th style="text-align:right">'+mxE(mxTr('Collected','Tahsilat'))+'</th><th style="text-align:right">'+mxE(mxTr('Fees','Ücretler'))+'</th><th style="text-align:right">'+mxE(mxTr('Products used','Kullanılan ürün'))+'</th><th style="text-align:right">'+mxE(mxTr('Operating expenses','İşletme giderleri'))+'</th><th style="text-align:right">'+mxE(mxTr('Profit','Kâr'))+'</th></tr>'+
+      act.map(function(m){var v=Number(m.profit||0);return '<tr><td><b>'+mxE(mon(m.month,true))+'</b></td><td style="text-align:right">'+mxMoney(m.income||0)+'</td><td style="text-align:right">'+mxMoney(m.fees||0)+'</td><td style="text-align:right;color:#C0614A">'+mxMoney(m.cost||0)+'</td><td style="text-align:right;color:#C0614A">'+mxMoney(m.expenses||0)+'</td><td style="text-align:right;font-weight:800;color:'+(v>=0?'#3AB06A':'#C0614A')+'">'+mxMoney(v)+'</td></tr>';}).join('')+'</table>':'')+'</div>';
 }
 var fnSelPatient=null;
 function fnKindChanged(){var k=document.getElementById('feKind').value;

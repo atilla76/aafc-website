@@ -1523,8 +1523,9 @@ function dlFaceCard(btn){
     a.click();
   }).catch(function(err){alert('Indirme hatasi: '+err);});
 }
+var pfLinkForm=null;
 function openAdd(){
-  editPid=null;
+  editPid=null;pfLinkForm=null;
   document.getElementById('mTitle').textContent='Add Patient';
   document.getElementById('mName').value='';
   document.getElementById('mSur').value='';
@@ -1652,12 +1653,16 @@ async function savePt(){
     clinic_id:cid
   };
   Object.assign(data,pfData(editPid?selPt:null));
-  var res=editPid?await db.from('patients').update(data).eq('id',editPid):await db.from('patients').insert(data);
+  var res=editPid?await db.from('patients').update(data).eq('id',editPid):await db.from('patients').insert(data).select('id').single();
   if(res.error){errEl.textContent=res.error.code==='23505'?trText('A patient with this TC Kimlik No is already registered'):(res.error.message||'Error');errEl.style.display='block';return;}
   closeModal();
+  var linkTo=!editPid&&pfLinkForm&&res.data?res.data.id:null;
+  if(linkTo){await db.from('patient_intake_forms').update({patient_id:linkTo}).eq('id',pfLinkForm);}
+  pfLinkForm=null;
   await loadPts();
   await loadStats();
   if(editPid&&selPid===editPid) await selP(selPid);
+  if(linkTo){goPatient(linkTo);}
   if(apAfterSave){apAfterSave=false;loadAppts();}
 }
 
@@ -3062,6 +3067,27 @@ async function hmOpenForm(id){
   if(!r.data){hmGoAppts();return;}
   inForms=inForms.filter(function(x){return x.id!==id;});inForms.push(r.data);inView(id);
 }
+var IN_TO_FLAG={pregnant:'pregnancy',anticoag:'anticoag',autoimmune:'autoimmune',herpes:'herpes',keloid:'keloid',isotretinoin:'isotretinoin'};
+function inSaveAsPatient(id){
+  var f=inForms.find(function(x){return x.id===id;});if(!f)return;
+  var a=f.answers||{},parts=String(f.patient_name||'').trim().split(/\s+/),sur=parts.length>1?parts.pop():'';
+  mxClose();openAdd();pfLinkForm=id;
+  document.getElementById('mName').value=parts.join(' ');document.getElementById('mSur').value=sur;
+  var flags=[];Object.keys(IN_TO_FLAG).forEach(function(k){if(a[k]==='yes')flags.push(IN_TO_FLAG[k]);});
+  pfLoad({health_flags:flags,allergies:a.allergy==='yes'?(a.allergy_detail||'').trim():''});
+}
+async function inLinkPatient(id){
+  var q=prompt(mxTr('Patient name or phone','Hasta adı veya telefonu'));if(!q)return;
+  var r=await db.rpc('search_patients',{p_clinic_id:cid,p_query:q.trim()});var rows=(r.data||[]).slice(0,8);
+  if(!rows.length){alert(mxTr('No patient found','Hasta bulunamadı'));return;}
+  var h=rows.map(function(p){return '<button class="btn bedit" style="display:block;width:100%;text-align:left;margin:4px 0" onclick="inLinkTo(\''+id+'\',\''+p.id+'\')">'+mxE((p.name||'')+' '+(p.surname||''))+(p.phone?' · '+mxE(p.phone):'')+'</button>';}).join('');
+  mxOpen(mxTr('Link to patient','Hastaya bağla'),h,[{label:mxTr('Cancel','Vazgeç'),cls:'bcancel',fn:mxClose}]);
+}
+async function inLinkTo(id,pid){
+  var r=await db.from('patient_intake_forms').update({patient_id:pid}).eq('id',id);
+  if(r.error){alert(r.error.message);return;}
+  mxClose();goPatient(pid);
+}
 function inView(id){
   var f=inForms.find(function(x){return x.id===id;});if(!f)return;
   var a=f.answers||{};
@@ -3072,7 +3098,13 @@ function inView(id){
       (d?'<div style="color:rgba(245,241,235,.6);font-size:12px;margin-top:3px">'+mxE(d)+'</div>':'')+'</td><td style="padding:9px 4px;text-align:right;font-weight:600;font-size:13px;color:'+c+'">'+
       (a[k]==null?'-':y?mxTr('Yes','Evet'):mxTr('No','Hayır'))+'</td></tr>';}).join('')+'</table>';
   if((a.note||'').trim())h+='<div class="hint" style="margin:14px 0 4px">'+mxTr("Patient's note",'Hastanın notu')+'</div><div style="font-size:13px;white-space:pre-wrap">'+mxE(a.note)+'</div>';
-  mxOpen(mxTr('Health form','Ön bilgi formu'),h,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
+  if((f.patient_name||'').trim())h='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+mxE(f.patient_name)+'</div>'+h;
+  var btns=[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}];
+  if(!f.patient_id&&f.id){
+    btns.push({label:mxTr('Link to patient','Mevcut hastaya bağla'),cls:'bedit',fn:function(){inLinkPatient(f.id);}});
+    btns.push({label:mxTr('Save as patient','Hasta olarak kaydet'),cls:'bsave',fn:function(){inSaveAsPatient(f.id);}});
+  } else if(f.patient_id){btns.push({label:mxTr('Open patient','Hasta dosyasını aç'),cls:'bsave',fn:function(){mxClose();goPatient(f.patient_id);}});}
+  mxOpen(mxTr('Health form','Ön bilgi formu'),h,btns);
   if(!f.reviewed_at){db.from('patient_intake_forms').update({reviewed_at:new Date().toISOString()}).eq('id',f.id).then(function(){f.reviewed_at=new Date().toISOString();});}
 }
 

@@ -2320,7 +2320,32 @@ function stProductModal(p){
       var name=mxV('spName');if(!name){alert('Name is required');return;}
       var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),gtin:mxV('spGtin')||null};
       var r=p.id?await db.from('clinic_products').update(row).eq('id',p.id):await db.from('clinic_products').insert(Object.assign({kind:'both',color:'#C9A96E'},row));
-      if(r.error){alert('Error: '+r.error.message);return;}mxClose();stLoad();}}]));
+      if(r.error){alert('Error: '+r.error.message);return;}
+      var op=Number(p.pack_size)||0,np=Number(row.pack_size)||0;
+      if(p.id&&op>0&&np>0&&Math.abs(op-np)>0.0001)await stRescale(p.id,op,np,row.unit);
+      if(stSel&&stSel.id===p.id)stSel.pack_size=row.pack_size;
+      mxClose();stLoad();}}]));
+}
+// box size corrected after stock came in: re-count received boxes (adjust movement, box price kept)
+async function stRescale(pid,op,np,unit){
+  var lr=await db.from('stock_lots').select('id,quantity_in,unit_cost').eq('product_id',pid).is('deleted_at',null);
+  var lots=lr.data||[];if(!lots.length)return;
+  var mr=await db.from('stock_movements').select('lot_id,quantity').eq('kind','in').in('lot_id',lots.map(function(x){return x.id;}));
+  var sum={};(mr.data||[]).forEach(function(m){sum[m.lot_id]=(sum[m.lot_id]||0)+Number(m.quantity||0);});
+  var hit=[],boxes=0;
+  lots.forEach(function(x){var t=sum[x.id]!=null?sum[x.id]:Number(x.quantity_in||0),b=t/op;if(b>=1&&Math.abs(b-Math.round(b))<0.001){hit.push({l:x,b:Math.round(b)});boxes+=Math.round(b);}});
+  if(!hit.length)return;
+  var u=unit==='ml'?'ml':'u',d=boxes*(np-op),fmt=function(v){return String(Math.round(v*100)/100).replace('.',',');};
+  var msg=mxTr('[b] box(es) in stock were counted at [old]. New box size is [new]; adjust stock by [d]? The box price stays the same.','Stoka giren [b] kutu [old] olarak sayılmış. Yeni kutu içeriği [new]; stok [d] düzeltilsin mi? Kutu fiyatı aynı kalır.')
+    .replace('[b]',boxes).replace('[old]',fmt(op)+' '+u).replace('[new]',fmt(np)+' '+u).replace('[d]',(d>0?'+':'')+fmt(d)+' '+u);
+  if(!confirm(msg))return;
+  var f=np/op;
+  for(var i=0;i<hit.length;i++){
+    var x=hit[i].l;
+    await db.from('stock_movements').insert({clinic_id:cid,lot_id:x.id,kind:'adjust',quantity:hit[i].b*(np-op),note:'box '+op+' → '+np});
+    var up={};if(x.quantity_in!=null)up.quantity_in=Number(x.quantity_in)*f;if(x.unit_cost!=null)up.unit_cost=Math.round(Number(x.unit_cost)/f*10000)/10000;
+    await db.from('stock_lots').update(up).eq('id',x.id);
+  }
 }
 async function stLotModal(){
   if(!stSel)return;

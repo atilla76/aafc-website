@@ -3057,6 +3057,11 @@ async function inCopy(){
   await navigator.clipboard.writeText(url);
   var m=document.getElementById('inMsg');if(m){m.textContent=mxTr('Copied','Kopyalandı');m.style.color='#3AB06A';}
 }
+async function hmOpenForm(id){
+  var r=await db.from('patient_intake_forms').select('id,patient_id,patient_name,status,answers,flags,completed_at,reviewed_at,created_at').eq('id',id).maybeSingle();
+  if(!r.data){hmGoAppts();return;}
+  inForms=inForms.filter(function(x){return x.id!==id;});inForms.push(r.data);inView(id);
+}
 function inView(id){
   var f=inForms.find(function(x){return x.id===id;});if(!f)return;
   var a=f.answers||{};
@@ -4470,7 +4475,7 @@ function hmRender(){
   var al='',c=s.cancellations||{},rf=s.risky_forms||{};
   if(c.count>0){var f=c.first||{};al+=hmAlert('red','📅',c.count===1?mxTrV('[name] cancelled the [time] appointment','[name] [time] randevusunu iptal etti',{name:f.name||'',time:f.time||''}):c.count+' '+mxTr('patients cancelled their appointment','hasta randevusunu iptal etti'),s.waitlist>0?mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}):'','hmGoAppts()');}
   else if(s.waitlist>0)al+=hmAlert('gold','⏳',mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}),'','hmGoAppts()');
-  if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
+  if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.form_id?"hmOpenForm('"+mxE(g.form_id)+"')":g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
   if((s.recalls||0)+(s.birthdays||0)>0){var parts=[];if(s.recalls>0)parts.push(s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'));if(s.birthdays>0)parts.push(s.birthdays+' '+mxTr('birthdays today','bugün doğum günü'));al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),parts.join(' · '),"switchTab('recall')");}
   if(s.installments_due>0)al+=hmAlert('red','💳',mxTrV('[n] instalments due','[n] taksit vadesi geldi',{n:s.installments_due}),'',"switchTab('finance')");
   if(al)h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Attention','Dikkat')+'</span></div>'+al+'</div>';

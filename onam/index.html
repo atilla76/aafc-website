@@ -59,6 +59,10 @@
     display: block;
   }
   .otp-input:focus { outline: none; border-color: var(--gold); }
+  .nid-input { width: 100%; font-size: 18px; letter-spacing: 2px; padding: 12px 14px; background: var(--ink); border: 1px solid var(--border); border-radius: 10px; color: var(--cream); margin: 6px 0 4px; }
+  .nid-input:focus { outline: none; border-color: var(--gold); }
+  .nid-input.bad { border-color: #E06C5A; }
+  .nid-hint { color: var(--dim); font-size: 12px; margin-bottom: 14px; }
   
   .btn {
     background: var(--gold);
@@ -220,6 +224,11 @@
 
     <div class="card">
       <h2>✍ <span id="i18n-signature">İmza</span></h2>
+      <div id="nid-row" class="hidden">
+        <label for="nid-input" style="font-size:13px;font-weight:600" id="i18n-nid-label">T.C. Kimlik No</label>
+        <input type="text" id="nid-input" class="nid-input" maxlength="20" autocomplete="off" inputmode="text">
+        <div class="nid-hint" id="i18n-nid-hint"></div>
+      </div>
       <p class="info" id="i18n-signature-prompt">Lütfen aşağıdaki alana imzanızı çizin.</p>
       
       <div class="signature-box">
@@ -297,6 +306,9 @@ const I18N = {
     clear: 'Temizle',
     consentCheckbox: 'Yukarıdaki onam metnini okudum, anladım, sorularıma yanıt aldım ve <strong>bilgilendirilmiş onamımı veriyorum.</strong>',
     confirm: 'Onaylıyorum',
+    nidLabel: 'T.C. Kimlik No',
+    nidHint: 'Formda kimlik numaranız isteniyor. Yabancı uyruklu iseniz pasaport numaranızı yazın.',
+    nidInvalid: 'Geçerli bir T.C. kimlik no veya pasaport no girin.',
     saving: 'Kaydediliyor...',
     success: 'Onamınız Kaydedildi',
     successDesc: 'İmzanız başarıyla kaydedildi.',
@@ -343,6 +355,9 @@ const I18N = {
     clear: 'Clear',
     consentCheckbox: 'I have read and understood the consent text above, my questions have been answered, and I hereby give my <strong>informed consent.</strong>',
     confirm: 'I Confirm',
+    nidLabel: 'ID / passport number',
+    nidHint: 'This form asks for your identity number. Enter your Turkish ID number or your passport number.',
+    nidInvalid: 'Enter a valid ID or passport number.',
     saving: 'Saving...',
     success: 'Your Consent Has Been Saved',
     successDesc: 'Your signature has been successfully saved.',
@@ -389,6 +404,9 @@ const I18N = {
     clear: 'Löschen',
     consentCheckbox: 'Ich habe den obigen Einwilligungstext gelesen und verstanden, meine Fragen wurden beantwortet, und ich gebe hiermit meine <strong>informierte Einwilligung.</strong>',
     confirm: 'Ich bestätige',
+    nidLabel: 'Ausweis- / Passnummer',
+    nidHint: 'Dieses Formular erfordert Ihre Ausweisnummer. Geben Sie Ihre türkische ID-Nummer oder Ihre Passnummer ein.',
+    nidInvalid: 'Bitte eine gültige Ausweis- oder Passnummer eingeben.',
     saving: 'Speichern...',
     success: 'Ihre Einwilligung wurde gespeichert',
     successDesc: 'Ihre Unterschrift wurde erfolgreich gespeichert.',
@@ -435,6 +453,9 @@ const I18N = {
     clear: 'Limpiar',
     consentCheckbox: 'He leído y entendido el texto del consentimiento, mis preguntas han sido respondidas, y otorgo mi <strong>consentimiento informado.</strong>',
     confirm: 'Confirmo',
+    nidLabel: 'N.º de identidad / pasaporte',
+    nidHint: 'Este formulario pide su número de identidad. Introduzca su número de identidad turco o su número de pasaporte.',
+    nidInvalid: 'Introduzca un número de identidad o pasaporte válido.',
     saving: 'Guardando...',
     success: 'Su Consentimiento Ha Sido Guardado',
     successDesc: 'Su firma ha sido guardada correctamente.',
@@ -481,6 +502,9 @@ const I18N = {
     clear: 'Effacer',
     consentCheckbox: 'J\'ai lu et compris le texte du consentement ci-dessus, mes questions ont été répondues, et je donne mon <strong>consentement éclairé.</strong>',
     confirm: 'Je confirme',
+    nidLabel: "N° d'identité / passeport",
+    nidHint: "Ce formulaire demande votre numéro d'identité. Saisissez votre numéro d'identité turc ou votre numéro de passeport.",
+    nidInvalid: "Saisissez un numéro d'identité ou de passeport valide.",
     saving: 'Enregistrement...',
     success: 'Votre Consentement a Été Enregistré',
     successDesc: 'Votre signature a été enregistrée avec succès.',
@@ -527,6 +551,9 @@ const I18N = {
     clear: 'Cancella',
     consentCheckbox: 'Ho letto e compreso il testo del consenso, le mie domande hanno avuto risposta, e do il mio <strong>consenso informato.</strong>',
     confirm: 'Confermo',
+    nidLabel: 'N. identità / passaporto',
+    nidHint: 'Il modulo richiede il suo numero di identità. Inserisca il numero di identità turco o il numero di passaporto.',
+    nidInvalid: 'Inserisca un numero di identità o passaporto valido.',
     saving: 'Salvataggio...',
     success: 'Il Tuo Consenso è Stato Salvato',
     successDesc: 'La tua firma è stata salvata con successo.',
@@ -573,6 +600,9 @@ const I18N = {
     clear: 'Limpar',
     consentCheckbox: 'Li e compreendi o texto do consentimento acima, minhas perguntas foram respondidas, e dou meu <strong>consentimento informado.</strong>',
     confirm: 'Eu Confirmo',
+    nidLabel: 'N.º de identidade / passaporte',
+    nidHint: 'Este formulário pede o seu número de identidade. Introduza o número de identidade turco ou o número do passaporte.',
+    nidInvalid: 'Introduza um número de identidade ou passaporte válido.',
     saving: 'Salvando...',
     success: 'Seu Consentimento Foi Salvo',
     successDesc: 'Sua assinatura foi salva com sucesso.',
@@ -619,6 +649,9 @@ const I18N = {
     clear: 'Очистить',
     consentCheckbox: 'Я прочитал(а) и понял(а) текст согласия выше, мои вопросы получили ответы, и я даю своё <strong>информированное согласие.</strong>',
     confirm: 'Подтверждаю',
+    nidLabel: 'Номер удостоверения / паспорта',
+    nidHint: 'В форме требуется номер удостоверения личности. Введите турецкий ID или номер паспорта.',
+    nidInvalid: 'Введите действительный номер удостоверения или паспорта.',
     saving: 'Сохранение...',
     success: 'Ваше согласие сохранено',
     successDesc: 'Ваша подпись успешно сохранена.',
@@ -665,6 +698,9 @@ const I18N = {
     clear: '지우기',
     consentCheckbox: '위의 동의 텍스트를 읽고 이해했으며, 질문에 답변을 받았고, 이로써 <strong>설명된 동의를 합니다.</strong>',
     confirm: '확인',
+    nidLabel: '신분증 / 여권 번호',
+    nidHint: '이 양식에는 신분증 번호가 필요합니다. 터키 신분증 번호 또는 여권 번호를 입력하세요.',
+    nidInvalid: '유효한 신분증 또는 여권 번호를 입력하세요.',
     saving: '저장 중...',
     success: '동의서가 저장되었습니다',
     successDesc: '서명이 성공적으로 저장되었습니다.',
@@ -711,6 +747,9 @@ const I18N = {
     clear: '清除',
     consentCheckbox: '我已阅读并理解上述同意书内容，我的问题已得到回答，我特此给予<strong>知情同意。</strong>',
     confirm: '我确认',
+    nidLabel: '身份证 / 护照号码',
+    nidHint: '本表格需要您的身份号码。请输入土耳其身份证号或护照号码。',
+    nidInvalid: '请输入有效的身份证或护照号码。',
     saving: '保存中...',
     success: '您的同意书已保存',
     successDesc: '您的签名已成功保存。',
@@ -765,6 +804,8 @@ function applyI18n() {
   setText('i18n-read-carefully', t.readCarefully);
   setText('i18n-signature', t.signature);
   setText('i18n-signature-prompt', t.signaturePrompt);
+  setText('i18n-nid-label', t.nidLabel);
+  setText('i18n-nid-hint', t.nidHint);
   setText('signature-hint', t.drawHere);
   setText('clear-signature', t.clear);
   setHTML('i18n-checkbox-label', t.consentCheckbox);
@@ -946,11 +987,38 @@ function showConsentContent() {
   document.getElementById('clinic-name-display').textContent = consentData.clinic_name || '-';
   document.getElementById('clinic-doctor-display').textContent = consentData.clinic_doctor || '-';
   document.getElementById('patient-name-display').textContent = consentData.patient_name || '-';
-  document.getElementById('content-display').textContent = consentData.filled_content || '';
+  // Ek-1 photo consent: identity number not on file -> the patient types it here
+  const content = consentData.filled_content || '';
+  needsId = /\[(tc_no|national_id)\]/.test(content);
+  document.getElementById('content-display').textContent = content.replace(/\[(tc_no|national_id)\]/g, '____________');
+  document.getElementById('nid-row').classList.toggle('hidden', !needsId);
   
   showState('consent');
   initSignatureCanvas();
 }
+
+// KİMLİK NO (Ek-1)
+let needsId = false;
+function validTc(v) {
+  if (!/^[1-9][0-9]{10}$/.test(v)) return false;
+  const d = v.split('').map(Number);
+  const odd = d[0] + d[2] + d[4] + d[6] + d[8], even = d[1] + d[3] + d[5] + d[7];
+  if ((((odd * 7 - even) % 10) + 10) % 10 !== d[9]) return false;
+  return d.slice(0, 10).reduce((a, b) => a + b, 0) % 10 === d[10];
+}
+function nidValue() { return document.getElementById('nid-input').value.trim().toUpperCase().replace(/\s+/g, ''); }
+function nidOk() {
+  const v = nidValue();
+  if (/^[0-9]{11}$/.test(v)) return validTc(v);
+  return /^[A-Z0-9]{5,20}$/.test(v) && /[A-Z]/.test(v);
+}
+document.getElementById('nid-input').addEventListener('input', () => {
+  const el = document.getElementById('nid-input'), v = nidValue();
+  const bad = v.length > 0 && !nidOk() && (v.length >= 11 || /[A-Z]/.test(v));
+  el.classList.toggle('bad', bad);
+  document.getElementById('i18n-nid-hint').textContent = bad ? t.nidInvalid : t.nidHint;
+  updateSignButton();
+});
 
 // İMZA CANVAS
 let canvas, ctx, isDrawing = false, hasSignature = false;
@@ -1032,7 +1100,7 @@ function clearSignature() {
 
 function updateSignButton() {
   const checked = document.getElementById('consent-checkbox').checked;
-  document.getElementById('sign-btn').disabled = !(hasSignature && checked);
+  document.getElementById('sign-btn').disabled = !(hasSignature && checked && (!needsId || nidOk()));
 }
 
 // İMZA GÖNDER
@@ -1040,7 +1108,7 @@ document.getElementById('sign-btn').addEventListener('click', submitSignature);
 
 async function submitSignature() {
   const checked = document.getElementById('consent-checkbox').checked;
-  if (!hasSignature || !checked) return;
+  if (!hasSignature || !checked || (needsId && !nidOk())) return;
   
   const btn = document.getElementById('sign-btn');
   btn.disabled = true;
@@ -1049,6 +1117,22 @@ async function submitSignature() {
   
   try {
     const signatureData = canvas.toDataURL('image/png');
+
+    // Ek-1: write the identity number into the document before signing
+    if (needsId) {
+      const r0 = await fetch(`${SUPABASE_URL}/functions/v1/consent-set-identity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+        body: JSON.stringify({ consent_id: consentId, national_id: nidValue() }),
+      });
+      const d0 = await r0.json().catch(() => ({}));
+      if (!d0.success) {
+        showAlert('sign-alert', d0.error === 'national_id_required' ? t.nidInvalid : t.saveFailed);
+        btn.disabled = false;
+        btn.textContent = t.confirm;
+        return;
+      }
+    }
     
     const res = await fetch(`${SUPABASE_URL}/functions/v1/sign-consent`, {
       method: 'POST',
@@ -1072,6 +1156,7 @@ async function submitSignature() {
       let msg = t.saveFailed;
       if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
       else if (data.error === 'otp_required') msg = t.otpReq;
+      else if (data.error === 'national_id_required') msg = t.nidInvalid;
       
       showAlert('sign-alert', msg);
       btn.disabled = false;

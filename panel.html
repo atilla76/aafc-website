@@ -4153,7 +4153,7 @@ async function vfLoad(id){
   }else{
     var rem=Number(d.remaining||0),paid=Number(d.paid||0);
     var tag=rem<=0.009?['58,176,106',mxTr('Paid','Ödendi')]:paid>0?['212,150,58',mxTr('Partial','Kısmi')]:['192,97,74',mxTr('Unpaid','Ödenmedi')];
-    h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:20px;color:#F5F1EB">'+vfMoney(c.amount)+'</b><span style="flex:1;font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(c.description||'')+'</span><span style="padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;color:rgb('+tag[0]+');background:rgba('+tag[0]+',0.14)">'+mxE(tag[1])+'</span></div>'+
+    h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:20px;color:#F5F1EB">'+vfMoney(c.amount)+'</b><span style="flex:1;font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(c.description||'')+'</span><span style="padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;color:rgb('+tag[0]+');background:rgba('+tag[0]+',0.14)">'+mxE(tag[1])+'</span></div>'+((c.items||[]).length>=2?'<div style="font-size:12.5px;color:#F5F1EB;margin-top:4px">'+c.items.map(function(x){return mxE(x.label)+' '+vfMoney(x.amount);}).join(' &nbsp;·&nbsp; ')+'</div>':'')+
       '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b></span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div>'+vfProfitHtml(d,Number(c.amount||0))+vfEinvHtml(d)+'</div>';
   }
   el.innerHTML='<div class="sec">'+mxE(mxTr('FEE','ÜCRET'))+'</div>'+h;
@@ -4161,7 +4161,9 @@ async function vfLoad(id){
 function vfOpen(){
   var d=vfData||{},c=d.charge,paid=Number(d.paid||0),v=vis.find(function(x){return x.id===selVid;})||{};
   var rem=c?Number(d.remaining||0):0;
-  var b='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" style="font-size:20px;font-weight:700">'+
+  var it=(c&&c.items)||[];vfLines=it.length>=2?it.map(function(x){return {l:x.label,a:x.amount};}):(!c&&(d.suggest||[]).length>=2?d.suggest.map(function(x){return {l:x,a:''};}):[]);
+  var b='<div id="vfAmtW"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" style="font-size:20px;font-weight:700">'+
+    '<a href="#" onclick="vfSplit();return false" style="display:inline-block;font-size:12.5px;font-weight:600;color:#B89A6A;margin:0 0 8px">⑂ '+mxE(mxTr('Split by procedure','İşlemlere böl'))+'</a></div><div id="vfLinesW"></div>'+
     '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Description','Açıklama'))+'</label><input class="mi" id="vfDesc" value="'+mxE((c&&c.description)||v.procedures||'')+'">'+
     (paid>0?'<div style="font-size:12.5px;color:#3AB06A;margin:4px 0 8px">'+mxE(mxTr('Paid','Ödenen'))+': '+vfMoney(paid)+'</div>':'')+
     '<div id="vfPayBox"'+(c&&rem<=0.009?' style="display:none"':'')+'><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Payment','Ödeme'))+'</label><select class="mi" id="vfMode" onchange="document.getElementById(\'vfRecW\').style.display=this.value===\'part\'?\'block\':\'none\'">'+
@@ -4170,6 +4172,34 @@ function vfOpen(){
       '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Method','Yöntem'))+'</label><select class="mi" id="vfMeth"><option value="cash">'+mxE(fnMeth('cash'))+'</option><option value="card">'+mxE(fnMeth('card'))+'</option><option value="transfer">'+mxE(fnMeth('transfer'))+'</option></select></div>'+
     '<div id="vfErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
   mxOpen(mxTr('Fee','Ücret'),b,(c?[{label:mxTr('Delete fee','Ücreti sil'),cls:'bdel',fn:vfDelete}]:[]).concat([{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]));
+  vfLinesDraw();
+}
+// ---- fee split by procedure (patient_charges.items) ----
+var vfLines=[];
+function vfLinesRead(){document.querySelectorAll('#vfLinesW [data-i]').forEach(function(r){var i=+r.getAttribute('data-i');vfLines[i]={l:r.querySelector('.vfl').value,a:r.querySelector('.vfa').value};});}
+function vfLinesTotal(){return vfLines.reduce(function(s,x){return s+(parseFloat(x.a)||0);},0);}
+function vfLinesDraw(){
+  var w=document.getElementById('vfLinesW'),aw=document.getElementById('vfAmtW');if(!w)return;
+  aw.style.display=vfLines.length?'none':'block';
+  if(!vfLines.length){w.innerHTML='';return;}
+  w.innerHTML='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label>'+vfLines.map(function(x,i){
+    return '<div data-i="'+i+'" style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><input class="mi vfl" style="flex:1;margin:0" placeholder="'+mxE(mxTr('Procedure','İşlem'))+'" value="'+mxE(x.l||'')+'">'+
+      '<input class="mi vfa" type="number" min="0" step="0.01" style="width:110px;margin:0;text-align:right;font-weight:700" placeholder="0" value="'+(x.a===''||x.a==null?'':x.a)+'" oninput="vfLinesRead();document.getElementById(\'vfTot\').textContent=vfMoney(vfLinesTotal())">'+
+      '<button type="button" class="bimp2" style="padding:6px 10px" onclick="vfLinesRead();vfLineDel('+i+')">✕</button></div>';
+  }).join('')+'<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px"><a href="#" onclick="vfLinesRead();vfLines.push({l:\'\',a:\'\'});vfLinesDraw();return false" style="font-size:12.5px;font-weight:600;color:#B89A6A">＋ '+mxE(mxTr('Add procedure','İşlem ekle'))+'</a>'+
+    '<span style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Total','Toplam'))+' <b id="vfTot" style="font-size:18px;color:#F5F1EB">'+vfMoney(vfLinesTotal())+'</b></span></div>';
+}
+function vfLineDel(i){
+  vfLines.splice(i,1);
+  if(vfLines.length===1){document.getElementById('vfAmt').value=vfLines[0].a||'';vfLines=[];}
+  vfLinesDraw();
+}
+function vfSplit(){
+  var amt=parseFloat(document.getElementById('vfAmt').value)||'',sg=(vfData&&vfData.suggest)||[];
+  var names=sg.length?sg:[document.getElementById('vfDesc').value.trim()];
+  vfLines=names.map(function(n,i){return {l:n,a:i===0?amt:''};});
+  if(vfLines.length<2)vfLines.push({l:'',a:''});
+  vfLinesDraw();
 }
 async function vfDelete(){
   if(!confirm(mxTr("Delete this visit's fee and its payments? They are removed from the accounts too.",'Bu vizitin ücreti ve alınan ödemeleri silinsin mi? Muhasebeden de kaldırılır.')))return;
@@ -4178,11 +4208,18 @@ async function vfDelete(){
   mxClose();vfLoad(selVid);
 }
 async function vfSave(){
-  var amt=parseFloat(document.getElementById('vfAmt').value),err=document.getElementById('vfErr');
+  var amt=parseFloat(document.getElementById('vfAmt').value),err=document.getElementById('vfErr'),items=null;
+  if(vfLines.length){
+    vfLinesRead();amt=vfLinesTotal();items=[];
+    for(var k=0;k<vfLines.length;k++){var a=parseFloat(vfLines[k].a)||0,l=String(vfLines[k].l||'').trim();if(a<=0)continue;
+      if(!l){err.textContent=mxTr('Enter a procedure name on every line with an amount','Tutarı olan her satıra işlem adı yazın');return;}
+      items.push({label:l,amount:a});}
+    if(items.length<2)items=null;
+  }
   if(!(amt>0)){err.textContent=mxTr('Enter the amount','Tutarı girin');return;}
   var paid=Number((vfData&&vfData.paid)||0),left=Math.max(amt-paid,0),mode=document.getElementById('vfMode').value;
   var pay=document.getElementById('vfPayBox').style.display==='none'?0:mode==='all'?left:mode==='part'?(parseFloat(document.getElementById('vfRec').value)||0):0;
-  var r=await db.rpc('save_visit_fee',{p_visit_id:selVid,p_amount:amt,p_description:document.getElementById('vfDesc').value,p_pay:pay,p_method:document.getElementById('vfMeth').value});
+  var r=await db.rpc('save_visit_fee_items',{p_visit_id:selVid,p_amount:amt,p_description:document.getElementById('vfDesc').value,p_pay:pay,p_method:document.getElementById('vfMeth').value,p_items:items});
   if(r.error){var m=r.error.message||'';err.textContent=m.indexOf('below_paid')>=0?mxTr("The amount can't be less than what was already paid.",'Tutar, alınan ödemeden az olamaz.'):m.indexOf('has_installments')>=0?mxTr("This fee has installments; edit it from the patient account.",'Bu ücret taksitli; hasta hesabından düzenleyin.'):m.indexOf('over_pay')>=0?mxTr("The payment can't be more than the remaining amount.",'Alınan tutar kalandan fazla olamaz.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
   mxClose();vfLoad(selVid);
 }

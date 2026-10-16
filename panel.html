@@ -3022,12 +3022,8 @@ async function pkUndo(sid){
 }
 
 // ============ HEALTH FORM (patient_intake_forms) ============
-var IN_Q=[['pregnant','Pregnancy / breastfeeding','Gebelik / emzirme'],['allergy','Allergy','Alerji'],['meds','Regular medication / supplements','Düzenli ilaç / takviye'],
- ['anticoag','Blood thinners','Kan sulandırıcı'],['chronic','Chronic illness','Kronik hastalık'],['autoimmune','Autoimmune / rheumatic disease','Otoimmün / romatizmal hastalık'],
- ['neuro','Muscle / nerve disease','Kas / sinir hastalığı'],['isotretinoin','Isotretinoin in last 6 months','Son 6 ayda isotretinoin'],['herpes','Frequent cold sores (herpes)','Sık uçuk (herpes)'],
- ['keloid','Keloid tendency','Keloid eğilimi'],['skin_infection','Active infection / acne in area','Bölgede aktif enfeksiyon / akne'],['prev_aesthetic','Previous aesthetic treatment','Önceki estetik işlem'],
- ['perm_filler','Permanent / semi-permanent filler','Kalıcı / yarı kalıcı dolgu'],['smoking','Smoking','Sigara']];
-var IN_RISK=['pregnant','allergy','anticoag','chronic','autoimmune','neuro','isotretinoin','herpes','keloid','skin_infection','perm_filler'];
+var IN_Q=[['pregnant',"Pregnancy / breastfeeding","Gebelik / emzirme"],['allergy',"Allergy","Alerji"],['meds',"Regular medication / supplements","Düzenli ilaç / takviye"],['anticoag',"Blood thinners","Kan sulandırıcı"],['muscle_relaxant',"Aminoglycoside / muscle relaxant","Aminoglikozid / kas gevşetici"],['steroid',"Cortisone / immunosuppressant / transplant","Kortizon / bağışıklık baskılayıcı / nakil"],['chronic',"Chronic illness","Kronik hastalık"],['diabetes',"Diabetes","Diyabet"],['bleeding',"Bleeding / clotting disorder, thrombophlebitis","Kanama / pıhtılaşma bozukluğu, tromboflebit"],['autoimmune',"Autoimmune / rheumatic disease","Otoimmün / romatizmal hastalık"],['neuro',"Muscle / nerve disease","Kas / sinir hastalığı"],['bloodborne',"Hepatitis B / C, HIV","Hepatit B / C, HIV"],['systemic_infection',"Fever / systemic infection","Ateş / sistemik enfeksiyon"],['implant',"Pacemaker / brain stimulator / metal implant","Kalp pili / beyin pili / metal implant"],['isotretinoin',"Isotretinoin in last 6 months","Son 6 ayda isotretinoin"],['herpes',"Frequent cold sores (herpes)","Sık uçuk (herpes)"],['keloid',"Keloid tendency","Keloid eğilimi"],['skin_infection',"Active infection / acne in area","Bölgede aktif enfeksiyon / akne"],['prev_aesthetic',"Previous aesthetic treatment","Önceki estetik işlem"],['perm_filler',"Permanent / semi-permanent filler","Kalıcı / yarı kalıcı dolgu"],['smoking',"Smoking","Sigara"]];
+var IN_RISK=['pregnant','allergy','anticoag','chronic','autoimmune','neuro','isotretinoin','herpes','keloid','skin_infection','perm_filler','muscle_relaxant','steroid','diabetes','bleeding','bloodborne','systemic_infection','implant'];
 var inForms=[];
 function inLabel(k){for(var i=0;i<IN_Q.length;i++)if(IN_Q[i][0]===k)return mxTr(IN_Q[i][1],IN_Q[i][2]);return k;}
 function inFlagText(f,k){var d=((f.answers||{})[k+'_detail']||'').trim();return inLabel(k)+(d?': '+d:'');}
@@ -3092,7 +3088,7 @@ async function hmOpenForm(id){
   if(!r.data){hmGoAppts();return;}
   inForms=inForms.filter(function(x){return x.id!==id;});inForms.push(r.data);inView(id);
 }
-var IN_TO_FLAG={pregnant:'pregnancy',anticoag:'anticoag',autoimmune:'autoimmune',herpes:'herpes',keloid:'keloid',isotretinoin:'isotretinoin'};
+var IN_TO_FLAG={pregnant:'pregnancy',anticoag:'anticoag',autoimmune:'autoimmune',herpes:'herpes',keloid:'keloid',isotretinoin:'isotretinoin',diabetes:'diabetes'};
 function inSaveAsPatient(id){
   var f=inForms.find(function(x){return x.id===id;});if(!f)return;
   var a=f.answers||{},parts=String(f.patient_name||'').trim().split(/\s+/),sur=parts.length>1?parts.pop():'';
@@ -3116,7 +3112,7 @@ async function inLinkTo(id,pid){
 function inView(id){
   var f=inForms.find(function(x){return x.id===id;});if(!f)return;
   var a=f.answers||{};
-  var h='<div class="hint" style="margin:0 0 10px">'+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+'</div><table style="width:100%;border-collapse:collapse">'+IN_Q.map(function(q){
+  var h='<div class="hint" style="margin:0 0 10px">'+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+'</div><table style="width:100%;border-collapse:collapse">'+IN_Q.filter(function(q){return a[q[0]]!=null;}).map(function(q){
     var k=q[0],y=a[k]==='yes',warn=y&&IN_RISK.indexOf(k)>=0,d=(a[k+'_detail']||'').trim();
     var c=a[k]==null?'rgba(245,241,235,.4)':warn?'#E08A73':y?'#D4B896':'#3AB06A';
     return '<tr style="border-bottom:1px solid rgba(255,255,255,.08)"><td style="padding:9px 4px;font-size:13px;color:'+(warn?'#E08A73':'#F5F1EB')+'">'+(warn?'⚠ ':'')+mxE(inLabel(k))+

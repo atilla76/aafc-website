@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AAFC — ÜTS relay setup (Ubuntu 24.04). Forwards AAFC's ÜTS notifications from a fixed Turkish IP.
+# AAFC — ÜTS + İTS relay setup (safe to re-run; keeps its key) (Ubuntu 24.04). Forwards AAFC's ÜTS notifications from a fixed Turkish IP.
 # Holds no patient data and no secrets in this file: the relay key is fetched once from AAFC,
 # which hands it out only to the registered relay IP.
 set -euo pipefail
@@ -19,9 +19,15 @@ if ! command -v caddy >/dev/null; then
   apt-get install -y caddy
 fi
 
-# relay key, one time
-RESP="$(curl -sS -X POST "$ENROLL")"
-KEY="$(printf '%s' "$RESP" | sed -n 's/.*"key":"\([0-9a-f]\{64\}\)".*/\1/p')"
+# relay key: keep the existing one on re-runs, otherwise fetch it once
+KEY=""
+if [ -f /etc/caddy/Caddyfile ]; then
+  KEY="$(sed -n 's/.*X-Relay-Key "\([0-9a-f]\{64\}\)".*/\1/p' /etc/caddy/Caddyfile | head -1)"
+fi
+if [ -z "$KEY" ]; then
+  RESP="$(curl -sS -X POST "$ENROLL")"
+  KEY="$(printf '%s' "$RESP" | sed -n 's/.*"key":"\([0-9a-f]\{64\}\)".*/\1/p')"
+fi
 if [ -z "$KEY" ]; then
   echo "!! Relay key could not be fetched: $RESP"
   exit 1
@@ -41,6 +47,20 @@ $HOST {
 		handle_path /test/* {
 			reverse_proxy https://utstest.saglik.gov.tr {
 				header_up Host utstest.saglik.gov.tr
+				header_up -X-Relay-Key
+				header_up -X-Forwarded-For
+			}
+		}
+		handle_path /its-test/* {
+			reverse_proxy https://itstest2.saglik.gov.tr {
+				header_up Host itstest2.saglik.gov.tr
+				header_up -X-Relay-Key
+				header_up -X-Forwarded-For
+			}
+		}
+		handle_path /its/* {
+			reverse_proxy https://its2.saglik.gov.tr {
+				header_up Host its2.saglik.gov.tr
 				header_up -X-Relay-Key
 				header_up -X-Forwarded-For
 			}

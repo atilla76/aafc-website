@@ -48,6 +48,8 @@
   .screenshot-text li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #B89A6A; }
   .screenshot-image { display: flex; justify-content: center; }
   .screenshot-image img { max-width: 320px; width: 100%; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .screenshot-image img.shot, img.shot { border-radius: 0; box-shadow: none; filter: drop-shadow(0 24px 50px rgba(0,0,0,0.55)); }
+  img.hero-shot { width: 300px; max-width: 80vw; height: auto; display: block; }
   .pricing { padding: 100px 60px; max-width: 700px; margin: 0 auto; text-align: center; }
   .pricing > h2 { font-size: 40px; font-weight: 300; margin-bottom: 12px; }
   .pricing > p { color: rgba(245,241,235,0.5); margin-bottom: 48px; font-size: 16px; }
@@ -154,7 +156,7 @@ if (window.location.search.includes('code=')) {
     </div>
   </div>
   <div class="hero-visual">
-    <div class="phone-frame"><img src="images/aafc_iphone_07.png" alt="AAFC clinic dashboard"></div>
+    <img class="shot hero-shot" src="images/shots/phone_en_07.webp" data-src-tr="images/shots/phone_tr_07.webp" alt="AAFC clinic dashboard">
   </div>
 </section>
 
@@ -301,7 +303,7 @@ if (window.location.search.includes('code=')) {
       <h2 data-en-html="Before &amp; After Collage<br>Built for Social Media" data-tr-html="Öncesi ve Sonrası Kolaj<br>Sosyal Medya için">Before &amp; After Collage<br>Built for Social Media</h2>
       <p data-en="Branded collages with logo and dates. 1:1, 4:5, 9:16, 3:4 — every aspect ratio your feed needs." data-tr="Logo ve tarihli markalı kolajlar. 1:1, 4:5, 9:16, 3:4 — akışınıza uygun her en-boy oranı.">Branded collages with logo and dates. 1:1, 4:5, 9:16, 3:4 — every aspect ratio your feed needs.</p>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_collage.png" alt="AAFC Collage Editor"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_03.webp" data-src-tr="images/shots/phone_tr_03.webp" alt="Branded collage and PDF"></div>
   </div>
 </section>
 
@@ -330,7 +332,7 @@ if (window.location.search.includes('code=')) {
         <li data-en="Standardized angles for accurate comparison" data-tr="Doğru karşılaştırma için standart açılar">Standardized angles for accurate comparison</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_01.png" alt="Visual comparison slider"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_02.webp" data-src-tr="images/shots/phone_tr_02.webp" alt="Before and after slider"></div>
   </div>
   <div class="screenshot-row reverse">
     <div class="screenshot-text">
@@ -343,33 +345,33 @@ if (window.location.search.includes('code=')) {
         <li data-en="Ideal for follow-up consultations" data-tr="Kontrol konsültasyonları için ideal">Ideal for follow-up consultations</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_02.png" alt="Before and after side by side comparison"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_01.webp" data-src-tr="images/shots/phone_tr_01.webp" alt="Photo capture with angle overlay"></div>
   </div>
   <div class="screenshot-row">
     <div class="screenshot-text">
-      <span class="label" data-en="Branded PDF Reports" data-tr="Markalı PDF Raporları">Branded PDF Reports</span>
-      <h2 data-en-html="Print-ready reports<br>one tap away" data-tr-html="Baskıya hazır raporlar<br>tek dokunuş uzakta">Print-ready reports<br>one tap away</h2>
-      <p data-en="Every export carries your clinic logo, address, doctor name, and contact details. Auto-formatted multi-page reports ready for print, WhatsApp, or email." data-tr="Her çıktı klinik logonuzu, adresinizi, doktor adınızı ve iletişim bilgilerinizi taşır. Baskı, WhatsApp veya e-posta için otomatik biçimlendirilmiş çok sayfalı raporlar.">Every export carries your clinic logo, address, doctor name, and contact details. Auto-formatted multi-page reports ready for print, WhatsApp, or email.</p>
+      <span class="label" data-en="Digital Consent" data-tr="Dijital Onam">Digital Consent</span>
+      <h2 data-en-html="Consent forms signed&lt;br&gt;on the patient&#x27;s phone" data-tr-html="Onam formları&lt;br&gt;hastanın telefonunda imzalanır">Consent forms signed<br>on the patient's phone</h2>
+      <p data-en="Send consent forms by WhatsApp or SMS. The patient confirms with a one-time code and signs with a finger; the signed record is stored encrypted and protected against changes. Ready-made forms for 20+ procedures in 10 languages." data-tr="Onam formlarını WhatsApp veya SMS ile gönderin. Hasta tek kullanımlık kodla doğrular ve parmağıyla imzalar; imzalı kayıt şifreli ve değiştirilemez şekilde saklanır. 10 dilde 20&#x27;den fazla işlem için hazır form.">Send consent forms by WhatsApp or SMS. The patient confirms with a one-time code and signs with a finger; the signed record is stored encrypted and protected against changes. Ready-made forms for 20+ procedures in 10 languages.</p>
       <ul>
-        <li data-en="Clinic branding on every page" data-tr="Her sayfada klinik markası">Clinic branding on every page</li>
-        <li data-en="Doctor name, specialty, and contact" data-tr="Doktor adı, uzmanlık ve iletişim">Doctor name, specialty, and contact</li>
-        <li data-en="Share via system print or messaging" data-tr="Sistem baskısı veya mesajla paylaşın">Share via system print or messaging</li>
+        <li data-en="One-time code (OTP) verification" data-tr="Tek kullanımlık kod (OTP) doğrulaması">One-time code (OTP) verification</li>
+        <li data-en="Several forms in one message" data-tr="Birden çok form tek mesajda">Several forms in one message</li>
+        <li data-en="Photo and messaging permissions included" data-tr="Fotoğraf ve mesaj izinleri dahil">Photo and messaging permissions included</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_03.png" alt="Branded PDF report"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_04.webp" data-src-tr="images/shots/phone_tr_04.webp" alt="Digital consent with OTP"></div>
   </div>
   <div class="screenshot-row reverse">
     <div class="screenshot-text">
-      <span class="label" data-en="Daily Patient Log" data-tr="Günlük Hasta Kaydı">Daily Patient Log</span>
-      <h2 data-en-html="Daily agenda<br>and visit log" data-tr-html="Günlük ajanda<br>ve vizit kaydı">Daily agenda<br>and visit log</h2>
-      <p data-en="Every procedure, every patient, every day — automatically logged. Navigate the calendar to see exactly who was treated and what was performed on any given day." data-tr="Her işlem, her hasta, her gün — otomatik kaydedilir. Takvimde gezinerek herhangi bir günde kimin tedavi edildiğini ve ne yapıldığını tam olarak görün.">Every procedure, every patient, every day — automatically logged. Navigate the calendar to see exactly who was treated and what was performed on any given day.</p>
+      <span class="label" data-en="Injection Map" data-tr="Enjeksiyon Haritası">Injection Map</span>
+      <h2 data-en-html="Every point, product&lt;br&gt;and dose on record" data-tr-html="Her nokta, ürün&lt;br&gt;ve doz kayıtlı">Every point, product<br>and dose on record</h2>
+      <p data-en="Mark injection points on the face map with product, units and dose. At the next session you see exactly what was done and where." data-tr="Enjeksiyon noktalarını yüz haritasında ürün, ünite ve dozla işaretleyin. Bir sonraki seansta neyin nereye yapıldığını tam olarak görürsünüz.">Mark injection points on the face map with product, units and dose. At the next session you see exactly what was done and where.</p>
       <ul>
-        <li data-en="Calendar with marked treatment days" data-tr="İşlem günleri işaretli takvim">Calendar with marked treatment days</li>
-        <li data-en="Procedure list per day" data-tr="Güne göre işlem listesi">Procedure list per day</li>
-        <li data-en="PDF export of any daily log" data-tr="Herhangi bir günlük kaydın PDF çıktısı">PDF export of any daily log</li>
+        <li data-en="Units and ml per point" data-tr="Nokta başına ünite ve ml">Units and ml per point</li>
+        <li data-en="Product and lot saved with the visit" data-tr="Ürün ve lot vizitle birlikte kaydedilir">Product and lot saved with the visit</li>
+        <li data-en="Shown again at the next session" data-tr="Sonraki seansta yeniden gösterilir">Shown again at the next session</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_04.png" alt="Daily agenda visit log"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_05.webp" data-src-tr="images/shots/phone_tr_05.webp" alt="Injection map"></div>
   </div>
   <div class="screenshot-row">
     <div class="screenshot-text">
@@ -383,20 +385,20 @@ if (window.location.search.includes('code=')) {
         <li data-en="Per-clinic message customization" data-tr="Kliniğe özel mesaj özelleştirme">Per-clinic message customization</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_05.png" alt="Appointment book with reminders"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_06.webp" data-src-tr="images/shots/phone_tr_06.webp" alt="Appointment book with WhatsApp reminders"></div>
   </div>
   <div class="screenshot-row reverse">
     <div class="screenshot-text">
-      <span class="label" data-en="Patient Database" data-tr="Hasta Veritabanı">Patient Database</span>
-      <h2 data-en-html="All your patients,<br>one tap away" data-tr-html="Tüm hastalarınız,<br>tek dokunuş uzakta">All your patients,<br>one tap away</h2>
-      <p data-en="Stop searching your camera roll. Every patient, every visit, organized in a single clean list with instant search." data-tr="Galeride hasta aramayı bırakın. Her hasta, her vizit, anında aramalı tek ve düzenli bir listede.">Stop searching your camera roll. Every patient, every visit, organized in a single clean list with instant search.</p>
+      <span class="label" data-en="Stock &amp; Lot Tracking" data-tr="Stok ve Lot Takibi">Stock &amp; Lot Tracking</span>
+      <h2 data-en-html="Scan the barcode,&lt;br&gt;know every lot" data-tr-html="Barkodu okutun,&lt;br&gt;her lotu bilin">Scan the barcode,<br>know every lot</h2>
+      <p data-en="Add products with the barcode, track expiry dates and see which lot went to which patient — ready if a product is ever recalled." data-tr="Ürünleri barkodla ekleyin, son kullanma tarihlerini izleyin ve hangi lotun hangi hastaya gittiğini görün — bir ürün geri çağrılırsa hazırsınız.">Add products with the barcode, track expiry dates and see which lot went to which patient — ready if a product is ever recalled.</p>
       <ul>
-        <li data-en="Fast search by name, surname, or phone" data-tr="Ad, soyad veya telefonla hızlı arama">Fast search by name, surname, or phone</li>
-        <li data-en="Birthday, contact, city in one place" data-tr="Doğum günü, iletişim, şehir tek yerde">Birthday, contact, city in one place</li>
-        <li data-en="Visit count and follow-up tracking" data-tr="Vizit sayısı ve kontrol takibi">Visit count and follow-up tracking</li>
+        <li data-en="Barcode scanning" data-tr="Barkod okuma">Barcode scanning</li>
+        <li data-en="Expiry and low-stock alerts" data-tr="Son kullanma ve azalan stok uyarıları">Expiry and low-stock alerts</li>
+        <li data-en="Product cost per visit" data-tr="Vizit başına ürün maliyeti">Product cost per visit</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_06.png" alt="Patient list"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_08.webp" data-src-tr="images/shots/phone_tr_08.webp" alt="Stock and lot tracking"></div>
   </div>
   <div class="screenshot-row">
     <div class="screenshot-text">
@@ -409,7 +411,7 @@ if (window.location.search.includes('code=')) {
         <li data-en="10 languages, GDPR &amp; KVKK compliant" data-tr="10 dil, GDPR ve KVKK uyumlu">10 languages, GDPR &amp; KVKK compliant</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_07.png" alt="Clinic dashboard at a glance"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_07.webp" data-src-tr="images/shots/phone_tr_07.webp" alt="Clinic dashboard at a glance"></div>
   </div>
 
   <div class="screenshot-row reverse">
@@ -418,30 +420,29 @@ if (window.location.search.includes('code=')) {
       <h2 data-en-html="Access your data<br>from any browser" data-tr-html="Verilerinize<br>her tarayıcıdan erişin">Access your data<br>from any browser</h2>
       <p data-en="Need to download a year of records? Open your data on any computer browser. Add patients, run backups, and export everything in multiple formats — without touching your phone." data-tr="Bir yıllık kaydı indirmeniz mi gerekiyor? Verilerinizi herhangi bir bilgisayar tarayıcısında açın. Telefonunuza dokunmadan hasta ekleyin, yedek alın ve her şeyi birden çok formatta dışa aktarın.">Need to download a year of records? Open your data on any computer browser. Add patients, run backups, and export everything in multiple formats — without touching your phone.</p>
       <ul>
+        <li data-en="Import patients, visits and photos from your old program" data-tr="Hasta, vizit ve fotoğrafları eski programınızdan aktarın">Import patients, visits and photos from your old program</li>
         <li data-en="Encrypted browser-side download" data-tr="Şifreli tarayıcı tarafı indirme">Encrypted browser-side download</li>
         <li data-en="JSON, CSV, HTML &amp; ZIP exports" data-tr="JSON, CSV, HTML ve ZIP dışa aktarım">JSON, CSV, HTML &amp; ZIP exports</li>
         <li data-en="Patients, appointments, accounting and online booking settings" data-tr="Hastalar, randevular, muhasebe ve online randevu ayarları">Patients, appointments, accounting and online booking settings</li>
         <li data-en="Patient-organized folder structure" data-tr="Hasta bazlı düzenlenmiş klasör yapısı">Patient-organized folder structure</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_iphone_08.png" alt="Web access from any browser"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_10.webp" data-src-tr="images/shots/phone_tr_10.webp" alt="Import from your old program and export"></div>
   </div>
 
   <div class="screenshot-row">
     <div class="screenshot-text">
-      <span class="label" data-en="Your Brand Everywhere" data-tr="Markanız Her Yerde">Your Brand Everywhere</span>
-      <h2 data-en-html="Logo, address, contact<br>on every report" data-tr-html="Her raporda<br>logo, adres, iletişim">Logo, address, contact<br>on every report</h2>
-      <p data-en="Your clinic identity flows automatically into every PDF and shared photo: clinic name, doctor profile, specialty, contact, and social channels. Cloud storage with automatic backup, nightly to Cloudflare R2." data-tr="Klinik kimliğiniz her PDF'e ve paylaşılan fotoğrafa otomatik işlenir: klinik adı, doktor profili, uzmanlık, iletişim ve sosyal kanallar. Her gece Cloudflare R2'ye otomatik yedeklemeli bulut depolama.">Your clinic identity flows automatically into every PDF and shared photo: clinic name, doctor profile, specialty, contact, and social channels. Cloud storage with automatic backup, nightly to Cloudflare R2.</p>
+      <span class="label" data-en="Accounting" data-tr="Muhasebe">Accounting</span>
+      <h2 data-en-html="Fees, costs&lt;br&gt;and net profit" data-tr-html="Ücretler, maliyetler&lt;br&gt;ve net kâr">Fees, costs<br>and net profit</h2>
+      <p data-en="Enter the fee and payment at the visit. AAFC subtracts product cost and expenses and shows your net profit month by month, together with receivables and instalments." data-tr="Ücreti ve ödemeyi vizitte girin. AAFC ürün maliyetini ve giderleri düşer; net kârınızı alacak ve taksitlerle birlikte ay ay gösterir.">Enter the fee and payment at the visit. AAFC subtracts product cost and expenses and shows your net profit month by month, together with receivables and instalments.</p>
       <ul>
-        <li data-en="Upload custom clinic logo" data-tr="Özel klinik logosu yükleyin">Upload custom clinic logo</li>
-        <li data-en="Doctor name and specialty" data-tr="Doktor adı ve uzmanlık">Doctor name and specialty</li>
-        <li data-en="Phone, Instagram, web link" data-tr="Telefon, Instagram, web bağlantısı">Phone, Instagram, web link</li>
-        <li data-en="Automatic nightly cloud backup" data-tr="Otomatik gece bulut yedeklemesi">Automatic nightly cloud backup</li>
+        <li data-en="Instalments and receivables" data-tr="Taksit ve alacak takibi">Instalments and receivables</li>
+        <li data-en="Split a fee by procedure" data-tr="Ücreti işlemlere bölme">Split a fee by procedure</li>
+        <li data-en="End-of-day cash closing" data-tr="Gün sonu kasa kapanışı">End-of-day cash closing</li>
       </ul>
     </div>
-    <div class="screenshot-image"><img src="images/aafc_gplay_08.png" alt="Clinic brand info"></div>
+    <div class="screenshot-image"><img class="shot" loading="lazy" src="images/shots/phone_en_09.webp" data-src-tr="images/shots/phone_tr_09.webp" alt="Monthly net profit"></div>
   </div>
-
 </section>
 
 <section class="pricing" id="pricing">
@@ -603,6 +604,7 @@ function setLang(next){
   var pick = function(en, own){ return next==='en' ? en : (own!=null ? own : (D.hasOwnProperty(en) ? D[en] : en)); };
   document.querySelectorAll('[data-en]').forEach(function(el){ el.textContent = pick(el.getAttribute('data-en'), next==='tr'?el.getAttribute('data-tr'):null); });
   document.querySelectorAll('[data-en-html]').forEach(function(el){ el.innerHTML = pick(el.getAttribute('data-en-html'), next==='tr'?el.getAttribute('data-tr-html'):null); });
+  document.querySelectorAll('img[data-src-tr]').forEach(function(el){ if(!el.dataset.srcEn) el.dataset.srcEn=el.getAttribute('src'); el.setAttribute('src', next==='tr'?el.dataset.srcTr:el.dataset.srcEn); });
   var t=document.getElementById('langToggle');
   if(t){ t.innerHTML = SITE_LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===next?' selected':'')+'>'+x[1]+'</option>';}).join(''); }
   try { localStorage.setItem('aafc_lang', next); } catch(e) {}

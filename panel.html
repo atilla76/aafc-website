@@ -782,9 +782,10 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <div class="tab-content">
       <div class="tab-head">
         <div><h2>Stock</h2><div class="sub">Products, lots and expiry. Injection maps in the app deduct stock automatically.</div></div>
-        <div class="imp-actions"><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
+        <div class="imp-actions"><button class="bimp2" id="trkBtn" style="display:none" onclick="trkOpen()">ÜTS / İTS</button><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
       </div>
       <div id="stAlerts"></div>
+      <div id="trkBox"></div>
       <div class="imp-step"><h3>Products <span id="stValue" style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)"></span></h3><div class="pfl" id="stFilters" style="border:none;padding:0 0 10px"></div><div class="imp-wrap" style="max-height:none"><table class="fmt" id="stProducts"></table></div></div>
       <div class="imp-step" id="stLotsBox" style="display:none">
         <h3 id="stLotsTitle"></h3>
@@ -2262,6 +2263,7 @@ async function stLoad(){
     return '<div style="font-size:13px;padding:3px 0"><b>'+mxE(a.name)+'</b> — <span>'+t+'</span> · '+mxE(d)+'</div>';}).join('')+'</div>':'';
   stRender();
   if(stSel)stOpen(stSel.id);
+  trkLoad();
 }
 function stRender(){
   var t=document.getElementById('stProducts');
@@ -2316,10 +2318,14 @@ function stProductModal(p){
     spF('spMin',mxTr('Minimum stock','Minimum stok'),p.min_stock,mxTr('You get an alert when stock falls below this. Optional.','Stok bu miktarın altına düşünce uyarı verilir. Boş bırakılabilir.'))+
     spF('spShelf',mxTr('Use within (after opening)','Açık şişe süresi')+' ('+mxTr('days','gün')+')',p.open_shelf_life_days,mxTr('How many days an opened vial can be used (e.g. toxin). You get an alert when it expires. Optional.','Açıldıktan kaç gün sonra kullanılmamalı (ör. toksin flakonu). Süresi dolan açık şişe için uyarı verilir. Boş bırakılabilir.'))+
     spF('spPack',mxTr('Box content','Kutu içeriği'),p.pack_size,mxTr('How many units / ml are in one box (e.g. 100 u toxin, 1.5 ml filler). Used to count boxes and compute cost per unit.','Bir kutuda kaç ünite / ml var (ör. 100 ü toksin, 1,5 ml dolgu). Lot girişinde kutu adediyle çarpılır ve maliyet buna göre hesaplanır.'))+
-    spF('spGtin',mxTr('Product barcode (GTIN)','Ürün barkodu (GTIN)'),p.gtin,mxTr('Filled in automatically when you scan the box code; no need to type it.','Kutudaki karekod okutulunca kendiliğinden dolar; elle yazmana gerek yok.')),
+    spF('spGtin',mxTr('Product barcode (GTIN)','Ürün barkodu (GTIN)'),p.gtin,mxTr('Filled in automatically when you scan the box code; no need to type it.','Kutudaki karekod okutulunca kendiliğinden dolar; elle yazmana gerek yok.'))+
+    '<label class="hint" style="display:block;margin:2px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">'+mxE(mxTr('Reported to','Bildirim'))+'</label><select class="mi" id="spTrack">'+
+      [['',mxTr('Automatic (units → İTS, ml → ÜTS)','Otomatik (ünite → İTS, ml → ÜTS)')],['its',mxTr('İTS — drug (e.g. toxin)','İTS — ilaç (ör. toksin)')],['uts',mxTr('ÜTS — medical device (e.g. filler)','ÜTS — tıbbi cihaz (ör. dolgu)')],['none',mxTr('Not reported','Bildirilmez')]]
+        .map(function(o){return '<option value="'+o[0]+'"'+((p.track_system||'')===o[0]?' selected':'')+'>'+mxE(o[1])+'</option>';}).join('')+'</select>',
+
     [{label:'Cancel',cls:'bcancel',fn:mxClose}].concat(p.id?[{label:'Deactivate product',cls:'bcancel',fn:async function(){if(!confirm('Deactivate product?'))return;await db.from('clinic_products').update({is_active:false}).eq('id',p.id);stSel=null;document.getElementById('stLotsBox').style.display='none';mxClose();stLoad();}}]:[]).concat([{label:'Save',fn:async function(){
       var name=mxV('spName');if(!name){alert('Name is required');return;}
-      var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),gtin:mxV('spGtin')||null};
+      var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),gtin:mxV('spGtin')||null,track_system:document.getElementById('spTrack').value||null};
       var r=p.id?await db.from('clinic_products').update(row).eq('id',p.id):await db.from('clinic_products').insert(Object.assign({kind:'both',color:'#C9A96E'},row));
       if(r.error){alert('Error: '+r.error.message);return;}
       var op=Number(p.pack_size)||0,np=Number(row.pack_size)||0;
@@ -4155,6 +4161,47 @@ async function stKnownBox(serial){
       :'<div style="font-size:13px;color:rgba(245,241,235,.6);padding:8px 0">'+mxE(mxTr('Not used on a patient yet.','Henüz bir hastada kullanılmadı.'))+'</div>');
   mxOpen(mxTr('This box is already registered','Bu kutu zaten kayıtlı'),b,[{label:mxTr('OK','Tamam'),cls:'bsave',fn:mxClose}]);
   return true;
+}
+
+// ---- ÜTS / İTS notifications (admin) ----
+var trkCfg=null;
+function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım')})[q.kind]||q.kind;}
+async function trkLoad(){
+  if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
+  var b=document.getElementById('trkBtn'),box=document.getElementById('trkBox');if(!b||!box)return;
+  b.style.display=fnAdmin?'inline-block':'none';if(!fnAdmin){box.innerHTML='';return;}
+  var r=await Promise.all([db.rpc('get_tracking'),db.from('track_queue').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}).limit(30)]);
+  trkCfg=r[0].data||{};var q=r[1].data||[];
+  if(!trkCfg.uts_enabled&&!trkCfg.its_enabled&&!q.length){box.innerHTML='';return;}
+  var st={sent:['#3AB06A',mxTr('Sent','Gönderildi')],pending:['#B89A6A',mxTr('Waiting','Bekliyor')],error:['#E05555',mxTr('Error','Hata')],skipped:['rgba(245,241,235,.45)',mxTr('Skipped','Atlandı')]};
+  box.innerHTML='<div class="imp-step"><h3>ÜTS / İTS <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)">· '+mxE(trkCfg.env==='live'?mxTr('Live','Gerçek ortam'):mxTr('Test environment','Test ortamı'))+'</span></h3>'+
+    (q.length?'<div class="imp-wrap" style="max-height:340px"><table class="fmt"><tr><th>'+mxE(mxTr('Date','Tarih'))+'</th><th></th><th>'+mxE(mxTr('Notification','Bildirim'))+'</th><th>SN</th><th>'+mxE(mxTr('Status','Durum'))+'</th><th></th></tr>'+q.map(function(x){var c=st[x.status]||st.pending;
+      return '<tr><td>'+mxDate(String(x.created_at).slice(0,10))+'</td><td><b>'+(x.system==='its'?'İTS':'ÜTS')+'</b>'+(x.env!=='live'?' <span style="font-size:10px;color:rgba(245,241,235,.45)">test</span>':'')+'</td><td>'+mxE(trkKind(x))+'</td><td style="font-size:12px">'+mxE(x.serial_no||x.lot_no||'')+'</td><td><span style="color:'+c[0]+';font-weight:600">'+mxE(c[1])+'</span>'+(x.message&&x.status!=='sent'?'<div style="font-size:11.5px;color:rgba(245,241,235,.6);max-width:320px">'+mxE(x.message)+'</div>':'')+(x.ref_no?'<div style="font-size:11px;color:rgba(245,241,235,.45)">#'+mxE(x.ref_no)+'</div>':'')+'</td><td>'+(x.status==='error'?'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="trkRetry(\''+x.id+'\')">'+mxE(mxTr('Retry','Tekrar dene'))+'</button>':'')+'</td></tr>';}).join('')+'</table></div>'
+      :'<div style="font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Notifications are sent automatically when a box is scanned into stock and when it is used on a patient.','Kutu karekodla stoka girince ve hastada kullanılınca bildirimler otomatik gönderilir.'))+'</div>')+'</div>';
+}
+async function trkRetry(id){await db.rpc('track_retry',{p_id:id});trkLoad();}
+function trkOpen(){
+  var c=trkCfg||{},lbl=function(t){return '<label style="display:block;font-size:12px;color:rgba(245,241,235,.6);margin:6px 0 4px">'+mxE(t)+'</label>';},
+    sec=function(t){return '<div style="font-size:11px;letter-spacing:1.2px;font-weight:700;color:#B89A6A;margin:14px 0 4px">'+t+'</div>';},
+    chk=function(id,on,t){return '<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'> '+mxE(t)+'</label>';},
+    saved=mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak');
+  var b=lbl(mxTr('Environment','Ortam'))+'<select class="mi" id="trkEnv"><option value="test"'+(c.env!=='live'?' selected':'')+'>'+mxE(mxTr('Test (nothing is recorded for real)','Test (gerçek kayda bir şey gitmez)'))+'</option><option value="live"'+(c.env==='live'?' selected':'')+'>'+mxE(mxTr('Live','Gerçek ortam'))+'</option></select>'+
+    sec('ÜTS — '+mxE(mxTr('medical devices','tıbbi cihaz')))+chk('trkUtsOn',c.uts_enabled,mxTr('Send ÜTS notifications','ÜTS bildirimlerini gönder'))+
+    lbl(mxTr('System token (ÜTS → User → System user definitions)','Sistem token (ÜTS → Kullanıcı → Sistem Kullanıcısı Tanımlama)'))+'<input class="mi" id="trkUtsTok" type="password" autocomplete="off" placeholder="'+mxE(c.has_uts_token?saved:'')+'">'+
+    '<div style="font-size:11.5px;color:rgba(245,241,235,.5);margin:-6px 0 6px">'+mxE(mxTr('Allowed IP for the token: 185.92.0.252','Token için izinli IP: 185.92.0.252'))+'</div>'+
+    sec('İTS — '+mxE(mxTr('drugs','ilaç')))+chk('trkItsOn',c.its_enabled,mxTr('Send İTS notifications','İTS bildirimlerini gönder'))+
+    lbl('GLN')+'<input class="mi" id="trkGln" inputmode="numeric" value="'+mxE(c.its_gln||'')+'">'+
+    lbl(mxTr('İTS user name','İTS kullanıcı adı'))+'<input class="mi" id="trkUser" autocomplete="off" value="'+mxE(c.its_username||'')+'">'+
+    lbl(mxTr('İTS password','İTS şifresi'))+'<input class="mi" id="trkPw" type="password" autocomplete="new-password" placeholder="'+mxE(c.has_its_password?saved:'')+'">'+
+    '<div style="font-size:11.5px;color:rgba(245,241,235,.5);margin-top:8px">'+mxE(mxTr('Token and password are stored encrypted and are never shown again.','Token ve şifre şifreli saklanır, bir daha gösterilmez.'))+'</div><div id="trkErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
+  mxOpen('ÜTS / İTS',b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:async function(){
+    var p={env:document.getElementById('trkEnv').value,uts_enabled:document.getElementById('trkUtsOn').checked,its_enabled:document.getElementById('trkItsOn').checked,its_gln:mxV('trkGln'),its_username:mxV('trkUser')};
+    var t=document.getElementById('trkUtsTok').value.trim(),pw=document.getElementById('trkPw').value;if(t)p.uts_token=t;if(pw)p.its_password=pw;
+    if(p.uts_enabled&&!t&&!c.has_uts_token){document.getElementById('trkErr').textContent=mxTr('Enter the ÜTS token.','ÜTS token girin.');return;}
+    if(p.its_enabled&&(!p.its_gln||!p.its_username||(!pw&&!c.has_its_password))){document.getElementById('trkErr').textContent=mxTr('Enter GLN, user name and password for İTS.','İTS için GLN, kullanıcı adı ve şifre girin.');return;}
+    var r=await db.rpc('set_tracking',{p:p});
+    if(r.error){document.getElementById('trkErr').textContent=mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+    mxClose();trkLoad();}}]);
 }
 async function vfLoad(id){
   var el=document.getElementById('vFee');if(!el)return;el.innerHTML='';

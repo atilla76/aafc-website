@@ -377,6 +377,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
+    <button class="tab" id="tabOut" style="margin-left:auto;color:#E07A6A" onclick="doLogout()" title="">SIGN OUT</button>
   </div>
 
   <!-- BACKUP TAB -->
@@ -976,11 +977,11 @@ async function doLogin(){
 async function doLogout(){
   await db.auth.signOut();
   cid=null;pts=[];signedCache={};
-  document.getElementById('loginWrap').style.display='flex';
-  document.getElementById('app').classList.remove('on');
+  location.reload(); // start clean: no data of the previous account stays in memory
 }
 
 async function showApp(user){
+  var to=document.getElementById('tabOut');if(to)to.title=(user&&user.email)||'';
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('app').classList.add('on');
   var ur=await db.from('users').select('clinic_id').eq('auth_id',user.id).single();
@@ -4688,7 +4689,7 @@ var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU 
 'Due recalls (next 7 days and overdue)':'Zamanı gelenler (7 gün içinde ve gecikenler)','Ask for a Google review':'Google yorumu iste','Due date':'Vade','Procedure':'İşlem',
 'Panel Login':'Panel Girişi','Sign in with your clinic account':'Klinik hesabınızla giriş yapın','EMAIL':'E-POSTA','PASSWORD':'ŞİFRE',
 'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
-'Sign Out':'Çıkış','Help':'Yardım','HELP':'YARDIM','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
+'Sign Out':'Çıkış','SIGN OUT':'ÇIKIŞ','Help':'Yardım','HELP':'YARDIM','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
 'ZIP with photos':'Fotoğraflı ZIP','HTML Report':'HTML Rapor',
 'HOME':'ANA SAYFA','BACKUP':'YEDEKLEME','PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
 'Search patients...':'Hasta ara...','Name, phone, ID or procedure':'Ad, telefon veya işlem ara','+ Add':'+ Ekle','Add Patient':'Hasta Ekle','Edit Patient':'Hastayı Düzenle','View Patient':'Hastayı Gör',

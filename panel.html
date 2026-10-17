@@ -2372,6 +2372,7 @@ async function stLotModal(){
     [{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),fn:async function(){
       var lot=mxV('slNo'),boxes=parseInt(mxV('slBoxes'))||0,pack=pk||mxNum(mxV('slPack'));
       if(!lot||boxes<1||!pack||pack<=0){alert(mxTr('Please fill all fields','Lütfen tüm alanları doldurun'));return;}
+      if(mxV('slSerial')&&await stKnownBox(mxV('slSerial')))return;
       if(!pk){await db.from('clinic_products').update({pack_size:pack}).eq('id',stSel.id);stSel.pack_size=pack;}
       var qty=pack*boxes,bc=mxNum(mxV('slCost'));
       var row={clinic_id:cid,product_id:stSel.id,lot_no:lot,quantity_in:qty,expiry_date:mxV('slExp')||null,unit_cost:bc==null?null:bc/pack,supplier:mxV('slSup')||null,serial_no:mxV('slSerial')||null,barcode:mxV('slBar')||null};
@@ -4138,6 +4139,22 @@ async function acDel(id){
   var t=acTpl.find(function(x){return x.id===id;})||{};
   if(!confirm(mxTr('Delete “[name]”?','“[name]” silinsin mi?').replace('[name]',t.name||'')))return;
   await db.from('clinic_aftercare_templates').update({deleted_at:new Date().toISOString()}).eq('id',id);acEditList();
+}
+// karekod box already entered: show where it went instead of a second entry (true = known)
+async function stKnownBox(serial){
+  var r=await db.rpc('box_history',{p_serial:String(serial).trim()});var h=r.data;if(r.error||!h)return false;
+  var u=h.unit==='ml'?'ml':'u',num=function(v){v=Number(v||0);return (Math.round(v*100)/100).toLocaleString('tr-TR')+' '+u;};
+  var dt=function(x){if(!x)return '';var p=String(x).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0];};
+  var pack=h.pack_size==null?null:Number(h.pack_size),used=Number(h.used||0),uses=h.uses||[];
+  var b='<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:12px">'+mxE([h.product||'',h.lot_no?'LOT '+h.lot_no:'','SN '+String(serial).trim(),mxTr('Entered [d]','Giriş [d]').replace('[d]',dt(h.entered_at))].filter(Boolean).join(' · '))+'</div>'+
+    '<div style="display:flex;justify-content:space-between;font-weight:700;color:#F5F1EB">'+mxE(mxTr('Used [u] / [t]','Kullanılan [u] / [t]').replace('[u]',num(used)).replace('[t]',pack==null?'—':num(pack)))+
+    (pack==null?'':'<span style="color:'+(pack-used>0?'#3AB06A':'rgba(245,241,235,.6)')+';font-size:13px">'+mxE(mxTr('Left [x]','Kalan [x]').replace('[x]',num(Math.max(pack-used,0))))+'</span>')+'</div>'+
+    (pack?'<div style="height:6px;border-radius:3px;background:rgba(245,241,235,.08);margin:8px 0 14px"><div style="height:6px;border-radius:3px;background:#B89A6A;width:'+Math.min(100,Math.round(used/pack*100))+'%"></div></div>':'')+
+    '<div style="font-size:11px;letter-spacing:1.2px;color:rgba(245,241,235,.6);font-weight:600;margin-bottom:4px">'+mxE(mxTr('Used on','Kullanıldığı hastalar').toLocaleUpperCase('tr'))+'</div>'+
+    (uses.length?uses.map(function(x){return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13.5px"><span style="width:84px;color:rgba(245,241,235,.6)">'+dt(x.visit_date)+'</span><b style="flex:1;color:#F5F1EB">'+mxE(x.patient||'')+'</b><span style="color:#D4B896;font-weight:700">'+num(x.quantity)+'</span></div>';}).join('')
+      :'<div style="font-size:13px;color:rgba(245,241,235,.6);padding:8px 0">'+mxE(mxTr('Not used on a patient yet.','Henüz bir hastada kullanılmadı.'))+'</div>');
+  mxOpen(mxTr('This box is already registered','Bu kutu zaten kayıtlı'),b,[{label:mxTr('OK','Tamam'),cls:'bsave',fn:mxClose}]);
+  return true;
 }
 async function vfLoad(id){
   var el=document.getElementById('vFee');if(!el)return;el.innerHTML='';

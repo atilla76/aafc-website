@@ -4162,7 +4162,7 @@ function vfOpen(){
   var d=vfData||{},c=d.charge,paid=Number(d.paid||0),v=vis.find(function(x){return x.id===selVid;})||{};
   var rem=c?Number(d.remaining||0):0;
   var it=(c&&c.items)||[];vfLines=it.length>=2?it.map(function(x){return {l:x.label,a:x.amount};}):(!c&&(d.suggest||[]).length>=2?d.suggest.map(function(x){return {l:x,a:''};}):[]);
-  var b='<div id="vfAmtW"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" style="font-size:20px;font-weight:700">'+
+  var b='<div id="vfAmtW"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" oninput="vfPayVis()" style="font-size:20px;font-weight:700">'+
     '<a href="#" onclick="vfSplit();return false" style="display:inline-block;font-size:12.5px;font-weight:600;color:#B89A6A;margin:0 0 8px">⑂ '+mxE(mxTr('Split by procedure','İşlemlere böl'))+'</a></div><div id="vfLinesW"></div>'+
     '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Description','Açıklama'))+'</label><input class="mi" id="vfDesc" value="'+mxE((c&&c.description)||v.procedures||'')+'">'+
     (paid>0?'<div style="font-size:12.5px;color:#3AB06A;margin:4px 0 8px">'+mxE(mxTr('Paid','Ödenen'))+': '+vfMoney(paid)+'</div>':'')+
@@ -4178,13 +4178,20 @@ function vfOpen(){
 var vfLines=[];
 function vfLinesRead(){document.querySelectorAll('#vfLinesW [data-i]').forEach(function(r){var i=+r.getAttribute('data-i');vfLines[i]={l:r.querySelector('.vfl').value,a:r.querySelector('.vfa').value};});}
 function vfLinesTotal(){return vfLines.reduce(function(s,x){return s+(parseFloat(x.a)||0);},0);}
+// payment part shows only while something is left to collect (also after the amount is raised)
+function vfPayVis(){
+  var pb=document.getElementById('vfPayBox');if(!pb)return;
+  var amt=vfLines.length?vfLinesTotal():(parseFloat(document.getElementById('vfAmt').value)||0);
+  var paid=Number((vfData&&vfData.paid)||0),c=vfData&&vfData.charge;
+  pb.style.display=(!c||amt-paid>0.009)?'block':'none';
+}
 function vfLinesDraw(){
-  var w=document.getElementById('vfLinesW'),aw=document.getElementById('vfAmtW');if(!w)return;
+  var w=document.getElementById('vfLinesW'),aw=document.getElementById('vfAmtW');if(!w)return;setTimeout(vfPayVis,0);
   aw.style.display=vfLines.length?'none':'block';
   if(!vfLines.length){w.innerHTML='';return;}
   w.innerHTML='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label>'+vfLines.map(function(x,i){
     return '<div data-i="'+i+'" style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><input class="mi vfl" style="flex:1;margin:0" placeholder="'+mxE(mxTr('Procedure','İşlem'))+'" value="'+mxE(x.l||'')+'">'+
-      '<input class="mi vfa" type="number" min="0" step="0.01" style="width:110px;margin:0;text-align:right;font-weight:700" placeholder="0" value="'+(x.a===''||x.a==null?'':x.a)+'" oninput="vfLinesRead();document.getElementById(\'vfTot\').textContent=vfMoney(vfLinesTotal())">'+
+      '<input class="mi vfa" type="number" min="0" step="0.01" style="width:110px;margin:0;text-align:right;font-weight:700" placeholder="0" value="'+(x.a===''||x.a==null?'':x.a)+'" oninput="vfLinesRead();document.getElementById(\'vfTot\').textContent=vfMoney(vfLinesTotal());vfPayVis()">'+
       '<button type="button" class="bimp2" style="padding:6px 10px" onclick="vfLinesRead();vfLineDel('+i+')">✕</button></div>';
   }).join('')+'<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px"><a href="#" onclick="vfLinesRead();vfLines.push({l:\'\',a:\'\'});vfLinesDraw();return false" style="font-size:12.5px;font-weight:600;color:#B89A6A">＋ '+mxE(mxTr('Add procedure','İşlem ekle'))+'</a>'+
     '<span style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Total','Toplam'))+' <b id="vfTot" style="font-size:18px;color:#F5F1EB">'+vfMoney(vfLinesTotal())+'</b></span></div>';

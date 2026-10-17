@@ -375,6 +375,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="booking" onclick="switchTab('booking')">ONLINE BOOKING</button>
     <button class="tab" data-tab="recall" onclick="switchTab('recall')">RECALLS</button>
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
+    <button class="tab" data-tab="trk" id="tabTrk" style="display:none" onclick="switchTab('trk')">ÜTS / İTS</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
     <button class="tab" id="tabOut" style="margin-left:auto;color:#E07A6A" onclick="doLogout()" title="">SIGN OUT</button>
@@ -778,15 +779,24 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
       </div>
     </div>
   </div>
+  <!-- ÜTS / İTS TAB (Turkish clinics, admin) -->
+  <div class="tcontent" id="tab-trk" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>ÜTS / İTS</h2><div class="sub">Kutu karekodla stoka girince ve hastada kullanılınca bildirimler otomatik gönderilir.</div></div>
+        <div class="imp-actions"><button class="bimp" onclick="trkOpen()">Ayarlar</button></div>
+      </div>
+      <div id="trkBox"></div>
+    </div>
+  </div>
   <!-- STOCK TAB -->
   <div class="tcontent" id="tab-stock" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
         <div><h2>Stock</h2><div class="sub">Products, lots and expiry. Injection maps in the app deduct stock automatically.</div></div>
-        <div class="imp-actions"><button class="bimp2" id="trkBtn" style="display:none" onclick="trkOpen()">ÜTS / İTS</button><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
+        <div class="imp-actions"><button class="bimp" onclick="stProductModal()">+ Add product</button></div>
       </div>
       <div id="stAlerts"></div>
-      <div id="trkBox"></div>
       <div class="imp-step"><h3>Products <span id="stValue" style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)"></span></h3><div class="pfl" id="stFilters" style="border:none;padding:0 0 10px"></div><div class="imp-wrap" style="max-height:none"><table class="fmt" id="stProducts"></table></div></div>
       <div class="imp-step" id="stLotsBox" style="display:none">
         <h3 id="stLotsTitle"></h3>
@@ -988,6 +998,7 @@ async function showApp(user){
   if(!ur.data){alert('User not found');return;}
   cid=ur.data.clinic_id;
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
+  trkLoad();
   clinic=cr.data||{};
   try{db.rpc('set_my_language',{p_lang:LANG});}catch(e){}
   await loadPts();
@@ -1010,6 +1021,7 @@ function switchTab(name){
   if(name==='import'){migInit();impLoadBatches();}
   if(name==='booking')bkLoad();
   if(name==='stock')stLoad();
+  if(name==='trk')trkLoad();
   if(name==='finance')fnLoad();
   if(name==='recall')rcLoad();
 }
@@ -2264,7 +2276,6 @@ async function stLoad(){
     return '<div style="font-size:13px;padding:3px 0"><b>'+mxE(a.name)+'</b> — <span>'+t+'</span> · '+mxE(d)+'</div>';}).join('')+'</div>':'';
   stRender();
   if(stSel)stOpen(stSel.id);
-  trkLoad();
 }
 function stRender(){
   var t=document.getElementById('stProducts');
@@ -4169,13 +4180,18 @@ var trkCfg=null;
 function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım')})[q.kind]||q.kind;}
 async function trkLoad(){
   if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
-  var b=document.getElementById('trkBtn'),box=document.getElementById('trkBox');if(!b||!box)return;
-  b.style.display=fnAdmin?'inline-block':'none';if(!fnAdmin){box.innerHTML='';return;}
+  var b=document.getElementById('tabTrk'),box=document.getElementById('trkBox');if(!b||!box)return;
+  var show=fnAdmin&&LANG==='tr';b.style.display=show?'':'none';if(!show){box.innerHTML='';return;}
   var r=await Promise.all([db.rpc('get_tracking'),db.from('track_queue').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}).limit(30)]);
   trkCfg=r[0].data||{};var q=r[1].data||[];
-  if(!trkCfg.uts_enabled&&!trkCfg.its_enabled&&!q.length){box.innerHTML='';return;}
+  var pill=function(on,ok,t){return '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600;background:rgba('+(on?'58,176,106':'224,85,85')+',.12);color:'+(on?'#3AB06A':'#E07A6A')+'">'+(on?'● ':'○ ')+t+' — '+(on?'Açık':(ok?'Kapalı':'Kurulmadı'))+'</span>';};
+  var head='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+pill(trkCfg.uts_enabled,trkCfg.has_uts_token,'ÜTS')+pill(trkCfg.its_enabled,trkCfg.has_its_password,'İTS')+'</div>';
+  var todo=[];
+  if(!trkCfg.uts_enabled)todo.push(trkCfg.has_uts_token?'ÜTS token kayıtlı ama gönderim kapalı: Ayarlar → “ÜTS bildirimlerini gönder”i işaretleyin.':'ÜTS sistem token girilmedi (ÜTS → Kullanıcı → Sistem Kullanıcısı Tanımlama, izinli IP 185.92.0.252).');
+  if(!trkCfg.its_enabled)todo.push(trkCfg.has_its_password?'İTS bilgileri kayıtlı ama gönderim kapalı: Ayarlar → “İTS bildirimlerini gönder”i işaretleyin.':'İTS kullanıcı adı ve şifresi girilmedi. Botoks gibi ilaçların mal alım ve sarf bildirimleri bekliyor.');
+  if(todo.length)head+='<div class="imp-step" style="border-color:rgba(184,154,106,.45)"><h3 style="color:#B89A6A">Hatırlatma</h3>'+todo.map(function(t){return '<div style="font-size:13px;margin:4px 0">• '+mxE(t)+'</div>';}).join('')+'</div>';
   var st={sent:['#3AB06A',mxTr('Sent','Gönderildi')],pending:['#B89A6A',mxTr('Waiting','Bekliyor')],error:['#E05555',mxTr('Error','Hata')],skipped:['rgba(245,241,235,.45)',mxTr('Skipped','Atlandı')]};
-  box.innerHTML='<div class="imp-step"><h3>ÜTS / İTS <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)">· '+mxE(trkCfg.env==='live'?mxTr('Live','Gerçek ortam'):mxTr('Test environment','Test ortamı'))+'</span></h3>'+
+  box.innerHTML=head+'<div class="imp-step"><h3>'+mxE(mxTr('Notifications','Bildirimler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)">· '+mxE(trkCfg.env==='live'?mxTr('Live','Gerçek ortam'):mxTr('Test environment','Test ortamı'))+'</span></h3>'+
     (q.length?'<div class="imp-wrap" style="max-height:340px"><table class="fmt"><tr><th>'+mxE(mxTr('Date','Tarih'))+'</th><th></th><th>'+mxE(mxTr('Notification','Bildirim'))+'</th><th>SN</th><th>'+mxE(mxTr('Status','Durum'))+'</th><th></th></tr>'+q.map(function(x){var c=st[x.status]||st.pending;
       return '<tr><td>'+mxDate(String(x.created_at).slice(0,10))+'</td><td><b>'+(x.system==='its'?'İTS':'ÜTS')+'</b>'+(x.env!=='live'?' <span style="font-size:10px;color:rgba(245,241,235,.45)">test</span>':'')+'</td><td>'+mxE(trkKind(x))+'</td><td style="font-size:12px">'+mxE(x.serial_no||x.lot_no||'')+'</td><td><span style="color:'+c[0]+';font-weight:600">'+mxE(c[1])+'</span>'+(x.message&&x.status!=='sent'?'<div style="font-size:11.5px;color:rgba(245,241,235,.6);max-width:320px">'+mxE(x.message)+'</div>':'')+(x.ref_no?'<div style="font-size:11px;color:rgba(245,241,235,.45)">#'+mxE(x.ref_no)+'</div>':'')+'</td><td>'+(x.status==='error'?'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="trkRetry(\''+x.id+'\')">'+mxE(mxTr('Retry','Tekrar dene'))+'</button>':'')+'</td></tr>';}).join('')+'</table></div>'
       :'<div style="font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Notifications are sent automatically when a box is scanned into stock and when it is used on a patient.','Kutu karekodla stoka girince ve hastada kullanılınca bildirimler otomatik gönderilir.'))+'</div>')+'</div>';

@@ -828,6 +828,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
         <button class="tab" data-fn="recv" onclick="fnView('recv')">RECEIVABLES</button>
         <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
         <button class="tab" data-fn="cash" onclick="fnView('cash')">DAY CLOSE</button>
+        <button class="tab" data-fn="esmm" id="fnEsmmTab" style="display:none" onclick="fnView('esmm')">e-SMM</button>
       </div>
       <div id="fnBody"></div>
     </div>
@@ -2437,6 +2438,32 @@ function fnCat(c){var x=FN_CAT_L[c]||[c,c];return mxTr(x[0],x[1]);}
 function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return mxTr(x[0],x[1]);}
 var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null,fnFilter='all',fnEinv=false,fnProfit=null;
 function fnNet(d){return d?Number(d.fees||0)-Number(d.product_cost||0)-Number(d.waste_cost||0)-Number(d.expenses||0):0;}
+var fnEsF='all';
+function fnSent(e){return e.kind==='income'&&(e.einvoice_status==='issued'||e.einvoice_status==='external'||!!String(e.invoice_no||'').trim());}
+function fnEsmmRender(){
+  var b=document.getElementById('fnBody'),inc=fnEntries.filter(function(e){return e.kind==='income';});
+  var sent=inc.filter(fnSent),open=inc.filter(function(e){return !fnSent(e);});
+  var sum=function(x){return x.reduce(function(a,e){return a+Number(e.amount||0);},0);};
+  var list=fnEsF==='open'?open:fnEsF==='sent'?sent:inc,un=fnEntries.filter(fnUninv).length;
+  var box=function(n,t,amt,c,k){return '<div class="imp-num" style="cursor:pointer;text-align:left;min-width:200px;'+(fnEsF===k?'border-color:'+c:'')+'" onclick="fnEsF=fnEsF===\''+k+'\'?\'all\':\''+k+'\';fnEsmmRender()"><div class="n" style="color:'+c+'">'+n+'</div><div class="l">'+mxE(t)+'</div><b style="font-size:15px">'+mxMoney(amt)+'</b></div>';};
+  var h='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">'+box(sent.length,mxTr('Sent','Gönderilen'),sum(sent),'#3AB06A','sent')+box(open.length,mxTr('Not sent','Gönderilmeyen'),sum(open),'#C0614A','open')+'</div>'+
+    '<div class="pfl" style="border:none;padding:0 0 10px">'+[['all',mxTr('All','Tümü')],['open',mxTr('Not sent','Gönderilmeyen')],['sent',mxTr('Sent','Gönderilen')]].map(function(x){return '<button class="'+(x[0]===fnEsF?'on':'')+'" onclick="fnEsF=\''+x[0]+'\';fnEsmmRender()">'+mxE(x[1])+'</button>';}).join('')+'</div>';
+  if(!list.length){b.innerHTML=h+'<div class="imp-step" style="color:rgba(245,241,235,.4)">'+mxE(mxTr('No entries in this period','Bu dönemde kayıt yok'))+'</div>';return;}
+  h+='<table class="fmt"><tr><th></th><th>'+mxE(mxTr('Date','Tarih'))+'</th><th>'+mxE(mxTr('Patient','Hasta'))+'</th><th>'+mxE(mxTr('Description','Açıklama'))+'</th><th>'+mxE(mxTr('Method','Yöntem'))+'</th><th>'+mxE(mxTr('Receipt no','Makbuz no'))+'</th><th style="text-align:right">'+mxE(mxTr('Amount','Tutar'))+'</th><th></th></tr>'+list.map(function(e){
+    var ok=fnSent(e),p=e.patients;
+    return '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+(ok?'#3AB06A':'#C0614A')+'"></span></td><td>'+mxDate(e.entry_date)+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='error'?'<div style="font-size:11px;color:#E05555">'+mxE(mxTr('Failed','Hata'))+'</div>':'')+'</td><td style="text-align:right;font-weight:700">'+mxMoney(e.amount)+'</td><td style="white-space:nowrap">'+
+      (ok?'<span style="font-size:12px;font-weight:700;color:#3AB06A;background:rgba(58,176,106,.12);padding:4px 9px;border-radius:8px">✓ '+mxE(mxTr('Sent','Gönderildi'))+'</span>'
+         :'<button class="bimp" style="background:#C0614A;border-color:#C0614A;color:#fff;padding:5px 12px;font-size:12px" onclick="fnEsmmOne(this,\''+e.id+'\')">'+mxE(mxTr('Send','Gönder'))+'</button>')+'</td></tr>';}).join('')+'</table>';
+  if(un&&fnEsF!=='sent')h+='<div style="margin-top:12px"><button class="bimp" id="fnBulkBtn" onclick="fnBulkIssue()">'+mxE(mxTr('Send all not sent','Gönderilmeyenlerin hepsini gönder'))+' ('+un+')</button></div>';
+  b.innerHTML=h;
+}
+async function fnEsmmOne(btn,id){
+  btn.disabled=true;btn.textContent='…';
+  var r=await db.functions.invoke('einvoice',{body:{action:'issue',entry_id:id}}),err=r.data&&r.data.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  if(err)alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));
+  fnLoad();
+}
 function fnUninv(e){return e.kind==='income'&&e.einvoice_status!=='issued'&&!String(e.invoice_no||'').trim();}
 function fnDelta(c,p,lowGood){c=Number(c||0);p=Number(p||0);if(p<=0)return '';var x=Math.round((c-p)/p*100);if(!x)return '';var good=lowGood?x<0:x>0;
   return '<div class="l" style="color:'+(good?'#6FCF97':'#F0A28F')+';font-weight:700">'+(x>0?'▲':'▼')+' %'+Math.abs(x)+' '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';}
@@ -2483,6 +2510,7 @@ async function fnLoad(){
     (fnProfit?'<div class="imp-num" style="cursor:pointer;text-align:left;min-width:260px" onclick="switchTab(\'stock\')"><div class="l" style="display:flex;justify-content:space-between;gap:10px"><b style="color:#F5F1EB">'+mxE(mxTr('Stock','Stok'))+'</b><span>'+mxE(mxTr('not in profit','kâra karışmaz'))+' ›</span></div><div style="display:flex;gap:14px;margin-top:8px">'+
       [[mxTr('On the shelf','Rafta'),pf.stock_value],[mxTr('Bought','Alınan'),pf.stock_bought],[mxTr('Used','Kullanılan'),used]].map(function(x){return '<div><div class="l">'+mxE(x[0])+'</div><b style="font-size:15px">'+mxMoney(x[1]||0)+'</b></div>';}).join('')+'</div></div>':'')+
     (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
+  var et=document.getElementById('fnEsmmTab');if(et)et.style.display=fnEinv?'':'none';if(fnTab==='esmm'&&!fnEinv)fnTab='entries';
   fnView(fnTab);
 }
 // ---- Profit tab: fees − products used − fixed expenses (cash stays on Entries) ----
@@ -2544,6 +2572,7 @@ function fnView(v){
   var b=document.getElementById('fnBody');
   if(v==='cash'){fnCashRender();return;}
   if(v==='profit'){fnProfitRender();return;}
+  if(v==='esmm'){fnEsmmRender();return;}
   if(v==='entries'){
     var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')],['stock',mxTr('Stock purchases','Stok alımı')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
     var chips='<div class="pfl" style="border:none;padding:0 0 10px">'+fl.map(function(x){return '<button class="'+(x[0]===fnFilter?'on':'')+'" onclick="fnSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>';
@@ -4252,6 +4281,7 @@ function vfOpen(){
       '<option value="all">'+mxE(mxTr('In full','Tamamı'))+'</option><option value="part">'+mxE(mxTr('Partial','Kısmi'))+'</option><option value="later">'+mxE(mxTr('Later','Sonra'))+'</option></select>'+
       '<div id="vfRecW" style="display:none"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Received','Alınan'))+'</label><input class="mi" id="vfRec" type="number" min="0" step="0.01"></div>'+
       '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Method','Yöntem'))+'</label><select class="mi" id="vfMeth"><option value="cash">'+mxE(fnMeth('cash'))+'</option><option value="card">'+mxE(fnMeth('card'))+'</option><option value="transfer">'+mxE(fnMeth('transfer'))+'</option></select></div>'+
+    (vfEinvAuto()?'<label id="vfEsW" style="display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:10px 12px;border-radius:12px;background:#1C1929;border:1px solid rgba(184,154,106,.45);cursor:pointer"><input type="checkbox" id="vfEsmm"'+((vfData.einvoice||{}).issue_mode==='auto'?' checked':'')+' style="width:18px;height:18px;accent-color:#B89A6A"><span><b style="font-size:14px">'+mxE(mxTr('Issue e-SMM','e-SMM oluştur'))+'</b><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(mxTr('Off: waits in Accounting › e-SMM to be sent','Kapalı: Muhasebe › e-SMM listesinde “Gönder” olarak bekler'))+'</div></span></label>':'')+
     '<div id="vfErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
   mxOpen(mxTr('Fee','Ücret'),b,(c?[{label:mxTr('Delete fee','Ücreti sil'),cls:'bdel',fn:vfDelete}]:[]).concat([{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]));
   vfLinesDraw();
@@ -4296,7 +4326,10 @@ async function vfDelete(){
   if(r.error){var m=r.error.message||'';document.getElementById('vfErr').textContent=m.indexOf('einvoice_issued')>=0?mxTr("An e-receipt was issued for this payment, so it can't be deleted. Enter a refund in Accounts.",'Bu ödeme için e-SMM kesilmiş; silinemez. Muhasebeden iade kaydı girin.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
   mxClose();vfLoad(selVid);
 }
+function vfEinvAuto(){var ei=vfData&&vfData.einvoice;return !!(ei&&ei.enabled===true&&ei.provider!=='manual');}
 async function vfSave(){
+  var esOn=!!(document.getElementById('vfEsmm')&&document.getElementById('vfEsmm').checked&&document.getElementById('vfPayBox').style.display!=='none');
+  var before={};((vfData&&vfData.payments)||[]).forEach(function(p){before[p.id]=1;});
   var amt=parseFloat(document.getElementById('vfAmt').value),err=document.getElementById('vfErr'),items=null;
   if(vfLines.length){
     vfLinesRead();amt=vfLinesTotal();items=[];
@@ -4310,7 +4343,12 @@ async function vfSave(){
   var pay=document.getElementById('vfPayBox').style.display==='none'?0:mode==='all'?left:mode==='part'?(parseFloat(document.getElementById('vfRec').value)||0):0;
   var r=await db.rpc('save_visit_fee_items',{p_visit_id:selVid,p_amount:amt,p_description:document.getElementById('vfDesc').value,p_pay:pay,p_method:document.getElementById('vfMeth').value,p_items:items});
   if(r.error){var m=r.error.message||'';err.textContent=m.indexOf('below_paid')>=0?mxTr("The amount can't be less than what was already paid.",'Tutar, alınan ödemeden az olamaz.'):m.indexOf('has_installments')>=0?mxTr("This fee has installments; edit it from the patient account.",'Bu ücret taksitli; hasta hesabından düzenleyin.'):m.indexOf('over_pay')>=0?mxTr("The payment can't be more than the remaining amount.",'Alınan tutar kalandan fazla olamaz.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
-  mxClose();vfLoad(selVid);
+  mxClose();
+  if(esOn){var f=await db.rpc('get_visit_fee',{p_visit_id:selVid});
+    var fresh=((f.data&&f.data.payments)||[]).filter(function(p){return !before[p.id]&&!p.einvoice_status;});
+    for(var i=0;i<fresh.length;i++){await vfEinv('issue',fresh[i].id);}
+    if(fresh.length)return;}
+  vfLoad(selVid);
 }
 // ---- e-SMM on the visit fee card ----
 function vfEinvHtml(d){

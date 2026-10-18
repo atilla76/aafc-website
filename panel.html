@@ -286,6 +286,12 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
 .fmleg .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid #fff}
 .fmdl{display:inline-block;margin-top:8px;padding:7px 14px;background:#B89A6A;color:#1C1929;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
 /* IMPORT */
+.st-wrap{display:flex;gap:24px;align-items:flex-start}.st-nav{width:270px;flex:none;position:sticky;top:10px}.st-main{flex:1;min-width:0}
+.st-g{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#B89A6A;font-weight:700;margin:16px 0 6px 4px}.st-g:first-child{margin-top:0}
+.st-it{padding:8px 12px;border-radius:10px;cursor:pointer;margin-bottom:2px}.st-it b{display:block;font-size:14px;font-weight:500;color:#E8E3EC}.st-it span{display:block;font-size:11.5px;color:rgba(245,241,235,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-it:hover{background:rgba(245,241,235,.05)}.st-it.on{background:rgba(184,154,106,.16)}.st-it.on b{color:#F5F1EB;font-weight:700}
+.st-l{display:block;font-size:12px;color:rgba(245,241,235,.6);margin:6px 0 4px}.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:900px){.st-wrap{flex-direction:column}.st-nav{width:100%;position:static}.st-grid{grid-template-columns:1fr}}
 .imp-step{background:rgba(245,241,235,0.03);border:1px solid rgba(245,241,235,0.08);border-radius:14px;padding:18px;margin-bottom:16px}
 .imp-step h3{font-size:14px;font-weight:600;color:#B89A6A;margin-bottom:4px}
 .imp-step .hint{font-size:12px;color:rgba(245,241,235,0.45);margin-bottom:12px}
@@ -377,6 +383,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
     <button class="tab" data-tab="trk" id="tabTrk" style="display:none" onclick="switchTab('trk')">ÜTS / İTS</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
+    <button class="tab" data-tab="settings" onclick="switchTab('settings')">SETTINGS</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
     <button class="tab" id="tabOut" style="margin-left:auto;color:#E07A6A" onclick="doLogout()" title="">SIGN OUT</button>
   </div>
@@ -520,6 +527,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
       <div id="apptWl"></div>
       <div id="apptResF" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
       <div id="apptList"><div class="loader">Loading...</div></div>
+      <div class="hint" id="apptStHint" style="margin-top:14px"></div>
       <div style="margin-top:24px">
       <div class="imp-step">
         <h3>Blocked times</h3>
@@ -684,14 +692,14 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
         </div>
       </div>
 
-      <div class="imp-step" id="ulStep">
+      <div id="ulHome"><div class="imp-step" id="ulStep">
         <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
           <div style="flex:1;min-width:240px"><h3 id="ulT"></h3><div class="hint" id="ulH"></div></div>
           <div class="imp-actions" id="ulActs"></div>
         </div>
         <div id="ulLink" style="margin-top:12px"></div>
         <div id="ulFiles" style="margin-top:12px"></div>
-      </div>
+      </div></div>
 
       <div class="imp-step">
         <h3>Previous imports</h3><!--imp-prev-->
@@ -787,6 +795,32 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
         <div class="imp-actions"><button class="bimp" onclick="trkOpen()">Ayarlar</button></div>
       </div>
       <div id="trkBox"></div>
+    </div>
+  </div>
+  <!-- SETTINGS TAB (same groups and order as the app) -->
+  <div class="tcontent" id="tab-settings" style="flex-direction:column">
+    <div class="tab-content st-wrap">
+      <div class="st-nav" id="stNav"></div>
+      <div class="st-main">
+        <div class="st-sec" id="st-clinic" style="display:none"><div id="st-clinic-f"></div></div>
+        <div class="st-sec" id="st-users" style="display:none"><div id="st-users-f"></div></div>
+        <div class="st-sec" id="st-doctors" style="display:none"><div id="st-doctors-f"></div></div>
+        <div class="st-sec" id="st-rooms" style="display:none"><div id="st-rooms-f"></div></div>
+        <div class="st-sec" id="st-watermark" style="display:none"><div id="st-watermark-f"></div></div>
+        <div class="st-sec" id="st-blocks" style="display:none"><div id="st-blocks-f"></div></div>
+        <div class="st-sec" id="st-calendar" style="display:none"><div id="st-calendar-f"></div></div>
+        <div class="st-sec" id="st-reminders" style="display:none"><div id="st-reminders-f"></div></div>
+        <div class="st-sec" id="st-consents" style="display:none"><div id="st-consents-f"></div></div>
+        <div class="st-sec" id="st-sentconsents" style="display:none"><div id="st-sentconsents-f"></div></div>
+        <div class="st-sec" id="st-aftercare" style="display:none"><div id="st-aftercare-f"></div></div>
+        <div class="st-sec" id="st-qr" style="display:none"><div id="st-qr-f"></div></div>
+        <div class="st-sec" id="st-einvoice" style="display:none"><div id="st-einvoice-f"></div></div>
+        <div class="st-sec" id="st-enabiz" style="display:none"><div id="st-enabiz-f"></div></div>
+        <div class="st-sec" id="st-access" style="display:none"><div id="st-access-f"></div></div>
+        <div class="st-sec" id="st-upload" style="display:none"><div id="st-upload-f"></div></div>
+        <div class="st-sec" id="st-language" style="display:none"><div id="st-language-f"></div></div>
+        <div class="st-sec" id="st-password" style="display:none"><div id="st-password-f"></div></div>
+      </div>
     </div>
   </div>
   <!-- STOCK TAB -->
@@ -1025,6 +1059,8 @@ function switchTab(name){
   if(name==='trk')trkLoad();
   if(name==='finance')fnLoad();
   if(name==='recall')rcLoad();
+  if(name==='settings')stLoad();
+  if(name!=='settings')stUploadReturn();
 }
 
 function fmtDate(d){return d.toISOString().split('T')[0]}
@@ -2140,6 +2176,7 @@ async function dlCSV(){sp('Fetching...');var a=await fetchAll();var rows=['Patie
 function mxE(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function mxOpen(title,body,btns){
   document.getElementById('mxTitle').textContent=title;
+  var mxb=document.querySelector('#mxModal > div');if(mxb){mxb.style.maxWidth='520px';mxb.style.width='';}
   document.getElementById('mxBody').innerHTML=body;
   var b=document.getElementById('mxBtns');b.innerHTML='';
   (btns||[]).forEach(function(x){var el=document.createElement('button');el.className=x.cls||'bsave';el.textContent=x.label;el.onclick=x.fn;b.appendChild(el);});
@@ -4161,6 +4198,7 @@ async function acSend(wa){
   mxClose();acLoad(id);
 }
 async function acEditList(){
+  if(stAcInline&&curTab()==='settings'){mxClose();stAcLoad();return;}
   await acTemplates();
   mxOpen(mxTr('Aftercare texts','İşlem sonrası öneri metinleri'),'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:10px;line-height:1.45">'+mxE(mxTr("Keywords pick the right text from the procedure names in the visit. Texts go out under your clinic's name; adjust them to your own practice.",'Anahtar kelimeler, vizitteki işlem adına göre doğru metni otomatik seçer. Metinler sizin klinik onayınızla gönderilir; kendi uygulamanıza göre düzenleyin.'))+'</div>'+
     acTpl.map(function(t){return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="flex:1;min-width:0"><b>'+mxE(t.name)+'</b><div style="font-size:12px;color:rgba(245,241,235,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+mxE(String(t.body||'').split('\n')[0])+'</div></div><button class="btn bedit" onclick="acEditOne(\''+t.id+'\')">'+mxE(mxTr('Edit','Düzenle'))+'</button><button class="btn bdel" onclick="acDel(\''+t.id+'\')">'+mxE(mxTr('Delete','Sil'))+'</button></div>';}).join(''),
@@ -4204,6 +4242,329 @@ async function stKnownBox(serial){
   return true;
 }
 
+// ============ SETTINGS (same groups and order as the app) ============
+var ST_ITEMS=[
+  ['g','Clinic and team','Klinik ve ekip'],
+  ['clinic','Clinic info','Klinik bilgileri','Name, logo, address','Ad, logo, adres'],
+  ['users','Users','Kullanıcılar','Team members and roles','Ekip ve yetkiler'],
+  ['doctors','Doctors','Doktorlar','Multi-doctor clinic: appointments by doctor','Çok doktorlu klinik: randevular doktora göre'],
+  ['rooms','Rooms & devices','Odalar ve cihazlar','Prevent room / device double-booking','Oda / cihaz çakışmasını önleyin'],
+  ['watermark','Watermark','Filigran','On shared photos and collages','Paylaşılan fotoğraf ve kolajlarda'],
+  ['g','Appointments','Randevu'],
+  ['booking','Online booking','Online randevu','Patients book from your link','Hastalar linkten randevu alır','tab:booking'],
+  ['blocks','Blocked times','Kapalı saatler','Surgery, hospital, personal','Ameliyat, hastane, özel'],
+  ['calendar','Calendar subscription','Takvim aboneliği','Appointments in your phone calendar','Randevular telefon takviminde'],
+  ['g','Patient communication','Hasta iletişimi'],
+  ['reminders','Reminders','Hatırlatıcılar','Appointment · birthday · recall · review · installment','Randevu · doğum günü · geri çağırma · yorum · taksit'],
+  ['consents','Consent templates','Onam şablonları','Texts in 10 languages','10 dilde metinler'],
+  ['sentconsents','Sent consents','Gönderilen onamlar','Signed / pending','İmzalı / bekleyen'],
+  ['aftercare','Aftercare texts','İşlem sonrası öneri metinleri','Sent to the patient from the visit','Vizitten hastaya gönderilir'],
+  ['qr','QR codes','Karekodlar','Instagram, website, Google review','Instagram, web sitesi, Google yorum'],
+  ['g','Business','İşletme'],
+  ['stock','Stock','Stok','Products, lots and expiry tracking','Ürün, lot ve son kullanma takibi','tab:stock'],
+  ['finance','Accounting','Muhasebe','Income, expenses, instalments, e-SMM','Gelir, gider, taksit, e-SMM','tab:finance'],
+  ['einvoice','e-Invoice (e-SMM)','e-Fatura (e-SMM)','Provider, credentials, sending','Sağlayıcı, bilgiler, gönderim'],
+  ['enabiz','e-Nabız (MBYS)','e-Nabız (MBYS)','Automatic sending','Otomatik gönderim','tr'],
+  ['tracking','ÜTS / İTS','ÜTS / İTS','Product tracking notifications','Ürün takip bildirimleri','tab:trk'],
+  ['g','Data','Veriler'],
+  ['access','Data access','Veri erişimi','Sign in on a computer · aafclinic.com/panel','Bilgisayardan giriş · aafclinic.com/panel'],
+  ['backup','Backup and migration','Yedekleme ve taşıma','Download · import from your old program','İndir · eski programdan aktar','tab:backup'],
+  ['upload','Secure upload link','Güvenli yükleme linki','Receive old program files securely','Eski programdaki dosyaları güvenle alın'],
+  ['g','Account and app','Hesap ve uygulama'],
+  ['language','Language','Dil','Panel language','Panel dili'],
+  ['password','Change password','Şifre değiştir','Update your password','Şifrenizi güncelleyin'],
+  ['support','Support','Destek','Questions · support@aafclinic.com','Sorular · support@aafclinic.com','url:help.html']
+];
+var stSel='clinic',stMoved=false;
+function stIsTr(){return (clinic&&(clinic.phone_country==='+90'||clinic.currency==='TRY'))||LANG==='tr';}
+function stNav(){
+  var el=document.getElementById('stNav');if(!el)return;
+  el.innerHTML=ST_ITEMS.filter(function(x){return !(x[5]==='tr'&&!stIsTr())&&!(x[0]==='tracking'&&!stIsTr());}).map(function(x){
+    if(x[0]==='g')return '<div class="st-g">'+mxE(mxTr(x[1],x[2]))+'</div>';
+    return '<div class="st-it'+(x[0]===stSel?' on':'')+'" onclick="stGo(\''+x[0]+'\')"><b>'+mxE(mxTr(x[1],x[2]))+'</b><span>'+mxE(mxTr(x[3],x[4]))+'</span></div>';
+  }).join('');
+}
+function stLoad(){stMove();stNav();stGo(stSel,true);}
+function stMove(){
+  var hh=document.getElementById('apptStHint');if(hh)hh.innerHTML='<a href="#" style="color:#B89A6A" onclick="switchTab(\'settings\');stGo(\'blocks\');return false">'+mxE(mxTr('Blocked times, doctors, rooms and calendar subscription → Settings','Kapalı saatler, doktorlar, odalar ve takvim aboneliği → Ayarlar'))+'</a>';
+  if(!stMoved){stMoved=true;
+    // the blocks that used to live on the Appointments tab move here, like in the app
+    [['blList','blocks'],['prList','doctors'],['rsList','rooms'],['cfEnabled','calendar'],['soQrs','qr'],['pcClinic','clinic']].forEach(function(p){
+      var n=document.getElementById(p[0]),box=n&&n.closest('.imp-step'),dst=document.getElementById('st-'+p[1]);
+      if(!box||!dst)return;
+      if(p[1]!=='clinic'){document.getElementById('st-'+p[1]+'-f').innerHTML=stHead(p[1]);var h=box.querySelector('h3');if(h)h.style.display='none';}
+      dst.appendChild(box);
+    });
+  }
+}
+function stGo(k,quiet){
+  var it=ST_ITEMS.find(function(x){return x[0]===k;});if(!it)return;
+  var lk=it[5]||'';
+  if(lk.indexOf('tab:')===0){switchTab(lk.slice(4));return;}
+  if(lk.indexOf('url:')===0){window.open(lk.slice(4),'_blank');return;}
+  stSel=k;stNav();
+  document.querySelectorAll('.st-sec').forEach(function(s){s.style.display=s.id==='st-'+k?'block':'none';});
+  var f={clinic:stClinicLoad,users:stUsersLoad,doctors:function(){prLoad();},rooms:function(){rsLoad();},watermark:stWmLoad,blocks:function(){blLoad();},calendar:function(){cfLoad();},
+    reminders:stRemLoad,consents:stConsLoad,sentconsents:stSentLoad,aftercare:stAcLoad,qr:stQrLoad,einvoice:stEinvLoad,enabiz:stEnabizLoad,access:stAccessLoad,upload:stUploadLoad,language:stLangLoad,password:stPwLoad}[k];
+  if(f)f();
+}
+function stHead(k,extra){var it=ST_ITEMS.find(function(x){return x[0]===k;});return '<div class="tab-head"><div><h2>'+mxE(mxTr(it[1],it[2]))+'</h2><div class="sub">'+mxE(mxTr(it[3],it[4]))+'</div></div>'+(extra||'')+'</div>';}
+function stMsg(id,ok,t){var e=document.getElementById(id);if(!e)return;e.style.color=ok?'#3AB06A':'#E05555';e.textContent=t||(ok?mxTr('Saved','Kaydedildi'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));if(ok)setTimeout(function(){if(e.textContent)e.textContent='';},2500);}
+function stField(id,label,val,ph,type){return '<div><label class="st-l">'+mxE(label)+'</label><input class="mi" id="'+id+'"'+(type?' type="'+type+'"':'')+' value="'+mxE(val||'')+'" placeholder="'+mxE(ph||'')+'"></div>';}
+async function stReloadClinic(){var r=await db.from('clinic').select('*').eq('id',cid).single();if(r.data)clinic=r.data;return clinic;}
+
+// ---- clinic info ----
+var ST_CUR=[['TRY','₺ TRY'],['EUR','€ EUR'],['USD','$ USD'],['GBP','£ GBP'],['CHF','CHF'],['AED','AED'],['RUB','₽ RUB'],['KRW','₩ KRW'],['CNY','¥ CNY'],['JPY','¥ JPY']];
+async function stClinicLoad(){
+  var c=await stReloadClinic(),b=document.getElementById('st-clinic-f');if(!b)return;
+  var logo='';if(c.logo_url){logo=c.logo_url.indexOf('http')===0?c.logo_url:(await getSigned(c.logo_url))||'';}
+  b.innerHTML=stHead('clinic')+'<div class="imp-step"><div style="display:flex;gap:18px;align-items:center;margin-bottom:12px">'+
+      '<div style="width:88px;height:88px;border-radius:16px;background:#1C1929;border:1px solid rgba(245,241,235,.12);display:flex;align-items:center;justify-content:center;overflow:hidden">'+(logo?'<img src="'+mxE(logo)+'" style="max-width:100%;max-height:100%">':'<span style="color:rgba(245,241,235,.35);font-size:12px">LOGO</span>')+'</div>'+
+      '<div><label class="bimp2" style="cursor:pointer;display:inline-block">'+mxE(mxTr('Upload logo','Logo yükle'))+'<input type="file" accept="image/*" style="display:none" onchange="stLogo(this)"></label>'+(c.logo_url?' <button class="bimp2" onclick="stLogoDel()">'+mxE(mxTr('Remove','Kaldır'))+'</button>':'')+'<div class="hint" style="margin-top:6px">'+mxE(mxTr('Used on reports, consents and collages.','Rapor, onam ve kolajlarda kullanılır.'))+'</div></div></div>'+
+    '<div class="st-grid">'+stField('ciName',mxTr('Clinic name','Klinik adı'),c.name)+stField('ciDoctor',mxTr('Doctor','Doktor'),c.doctor,'Dr. …')+
+      stField('ciSpec',mxTr('Speciality','Uzmanlık'),c.speciality)+stField('ciPhone',mxTr('Phone','Telefon'),c.phone,'+90 …')+'</div>'+
+    stField('ciAddr',mxTr('Address','Adres'),c.address)+
+    '<div class="st-grid"><div><label class="st-l">'+mxE(mxTr('Currency','Para birimi'))+'</label><select class="mi" id="ciCur"><option value="">—</option>'+ST_CUR.map(function(x){return '<option value="'+x[0]+'"'+(c.currency===x[0]?' selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div><div></div></div>'+
+    '<h3 style="margin-top:14px">'+mxE(mxTr('Social media','Sosyal medya'))+'</h3><div class="st-grid">'+stField('ciIg','Instagram',c.instagram,'@kullanici')+stField('ciWeb',mxTr('Website','Web sitesi'),c.website,'https://')+
+      stField('ciFb','Facebook',c.facebook)+stField('ciTt','TikTok',c.tiktok)+stField('ciYt','YouTube',c.youtube)+'</div>'+
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:14px"><button class="bimp" onclick="stClinicSave()">'+mxE(mxTr('Save','Kaydet'))+'</button><span id="ciMsg" style="font-size:13px"></span></div></div>';
+  pcClinicLoad();
+}
+async function stClinicSave(){
+  var d={name:mxV('ciName'),doctor:mxV('ciDoctor'),speciality:mxV('ciSpec'),phone:mxV('ciPhone'),address:mxV('ciAddr'),currency:document.getElementById('ciCur').value||null,
+    instagram:mxV('ciIg'),website:mxV('ciWeb'),facebook:mxV('ciFb'),tiktok:mxV('ciTt'),youtube:mxV('ciYt')};
+  var r=await db.from('clinic').update(d).eq('id',cid);stMsg('ciMsg',!r.error);if(!r.error)Object.assign(clinic,d);
+}
+async function stLogo(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  if(f.size>5*1024*1024){alert(mxTr('The image is too large (max 5 MB).','Görsel çok büyük (en fazla 5 MB).'));return;}
+  var name='logo_'+Date.now()+'.'+((f.name.split('.').pop()||'jpg').toLowerCase());
+  var up=await db.storage.from('visit-files').upload(name,f,{contentType:f.type||'image/jpeg'});
+  if(up.error){alert(mxTr('Upload failed','Yükleme başarısız')+': '+up.error.message);return;}
+  var r=await db.from('clinic').update({logo_url:name}).eq('id',cid);if(r.error){alert(r.error.message);return;}
+  clinic.logo_url=name;stClinicLoad();
+}
+async function stLogoDel(){if(!confirm(mxTr('Remove the logo?','Logo kaldırılsın mı?')))return;await db.from('clinic').update({logo_url:null}).eq('id',cid);clinic.logo_url=null;stClinicLoad();}
+
+// ---- reminders (message templates) ----
+var ST_REM=[
+  ['reminder_message','Appointment reminder','Randevu hatırlatma','Dear patient [name], we remind you of your appointment on [date] at [time]. Have a good day.','Sayın hastamız [ad], [tarih] tarihinde [saat] saatindeki randevunuzu hatırlatırız. İyi günler dileriz.',['[name]','[date]','[time]','[clinic]'],['[ad]','[tarih]','[saat]','[klinik]']],
+  ['birthday_message','Birthday','Doğum günü','Dear [name], happy birthday! Wishing you a year filled with health and happiness. [clinic_name]','Sevgili [ad], doğum gününüz kutlu olsun! Sağlık ve mutluluk dolu bir yıl dileriz. [klinik_adi]',['[name]','[clinic]','[doctor]'],['[ad]','[klinik]','[doktor]']],
+  ['recall_control_message','Check-up','Kontrol','Hi [name], it is time for your check-up after your [procedure]. Shall we book an appointment for you? — [clinic]','Merhaba [ad], [islem] sonrası kontrol zamanınız geldi. Size uygun bir gün için randevu oluşturalım mı? — [klinik]',['[name]','[procedure]','[clinic]'],['[ad]','[islem]','[klinik]']],
+  ['recall_repeat_message','Repeat','Tekrar','Hi [name], it has been a while since your last [procedure]. Shall we book a touch-up at a time that suits you? — [clinic]','Merhaba [ad], son [islem] uygulamanızın üzerinden zaman geçti. Tazeleme için size uygun bir gün ayarlayalım mı? — [klinik]',['[name]','[procedure]','[clinic]'],['[ad]','[islem]','[klinik]']],
+  ['review_message','Google review','Google yorum','Hi [name], thank you for choosing us. We would be very happy if you shared your experience on Google: [link] — [clinic]','Merhaba [ad], bizi tercih ettiğiniz için teşekkür ederiz. Deneyiminizi Google\'da paylaşırsanız çok mutlu oluruz: [link] — [klinik]',['[name]','[link]','[clinic]'],['[ad]','[link]','[klinik]']],
+  ['installment_message','Installment','Taksit','Hi [name], this is a reminder for your installment of [amount] due on [date]. Have a nice day — [clinic]','Merhaba [ad], [tarih] vadeli [tutar] tutarındaki taksit ödemenizi hatırlatmak isteriz. İyi günler dileriz — [klinik]',['[name]','[date]','[amount]','[clinic]'],['[ad]','[tarih]','[tutar]','[klinik]']]
+];
+var stRemK=0;
+async function stRemLoad(){await stReloadClinic();stRemDraw();}
+function stRemDraw(){
+  var b=document.getElementById('st-reminders-f');if(!b)return;var t=ST_REM[stRemK],tr=LANG==='tr';
+  var v=clinic[t[0]]||mxTr(t[3],t[4]),toks=tr?t[6]:t[5];
+  b.innerHTML=stHead('reminders')+'<div class="imp-step"><div class="pfl" style="border:none;padding:0 0 12px">'+ST_REM.map(function(x,i){return '<button class="'+(i===stRemK?'on':'')+'" onclick="stRemK='+i+';stRemDraw()">'+mxE(mxTr(x[1],x[2]))+'</button>';}).join('')+'</div>'+
+    '<textarea class="mi" id="remTx" rows="5" style="min-height:120px;font-size:14px;line-height:1.5" oninput="stRemPv()">'+mxE(v)+'</textarea>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">'+toks.map(function(x){return '<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="stIns(\'remTx\',\''+x+'\');stRemPv()">+ '+x+'</button>';}).join('')+'</div>'+
+    (t[0]==='review_message'?'<div class="st-grid">'+stField('remLink',mxTr('Google review link','Google yorum linki'),clinic.google_review_url,'https://g.page/r/…')+'<div><label class="st-l">'+mxE(mxTr('Send after (days)','Kaç gün sonra gönderilsin'))+'</label><select class="mi" id="remDelay">'+[1,2,3,4,5,6,7].map(function(n){return '<option'+((clinic.review_delay_days||2)===n?' selected':'')+'>'+n+'</option>';}).join('')+'</select></div></div>':'')+
+    '<label class="st-l">'+mxE(mxTr('Preview','Önizleme'))+'</label><div id="remPv" style="background:#0f2a1f;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#d9f2e3;white-space:pre-wrap"></div>'+
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:14px"><button class="bimp" onclick="stRemSave()">'+mxE(mxTr('Save','Kaydet'))+'</button><button class="bimp2" onclick="document.getElementById(\'remTx\').value=mxTr(ST_REM[stRemK][3],ST_REM[stRemK][4]);stRemPv()">'+mxE(mxTr('Default text','Varsayılan metin'))+'</button><span id="remMsg" style="font-size:13px"></span></div></div>';
+  stRemPv();
+}
+function stIns(id,tok){var e=document.getElementById(id);var s=e.selectionStart||e.value.length,en=e.selectionEnd||s;e.value=e.value.slice(0,s)+tok+e.value.slice(en);e.focus();e.selectionStart=e.selectionEnd=s+tok.length;}
+function stRemPv(){
+  var m=document.getElementById('remTx').value,ex=LANG==='tr'?{n:'Ayşe',p:'Botoks',d:'24.10.2026',t:'14:30',a:'2.500 ₺'}:{n:'Anna',p:'Botox',d:'24.10.2026',t:'14:30',a:'€250'};
+  m=mxFill(m,ex.n,ex.p);var rep=function(list,v){list.forEach(function(x){m=m.split(x).join(v);});};
+  rep(['[klinik_adi]','[clinic_name]'],clinic.name||'');rep(['[tarih]','[date]'],ex.d);rep(['[saat]','[time]'],ex.t);rep(['[tutar]','[amount]'],ex.a);rep(['[doktor]','[doctor]','[doktor_adi]','[doctor_name]'],clinic.doctor||'');
+  rep(['[link]'],(document.getElementById('remLink')&&document.getElementById('remLink').value)||clinic.google_review_url||'https://g.page/r/…');
+  document.getElementById('remPv').textContent=m;
+}
+async function stRemSave(){
+  var t=ST_REM[stRemK],d={};d[t[0]]=document.getElementById('remTx').value.trim();
+  if(t[0]==='review_message'){d.google_review_url=mxV('remLink');d.review_delay_days=+document.getElementById('remDelay').value;}
+  var r=await db.from('clinic').update(d).eq('id',cid);stMsg('remMsg',!r.error);if(!r.error)Object.assign(clinic,d);
+}
+
+// ---- users ----
+var stUsers=[];
+async function stUsersLoad(){
+  var b=document.getElementById('st-users-f');if(!b)return;
+  var r=await db.from('users').select('*').eq('clinic_id',cid).order('created_at',{ascending:false});stUsers=r.data||[];
+  var me=(await db.auth.getUser()).data.user,meId=me&&me.id,full=stUsers.length>=5;
+  b.innerHTML=stHead('users','<div class="imp-actions"><span class="hint" style="margin:0">'+mxE(mxTr('[n] / 5 users','[n] / 5 kullanıcı').replace('[n]',stUsers.length))+'</span></div>')+
+    '<div class="imp-step"><table class="fmt"><tr><th>'+mxE(mxTr('Name','Ad'))+'</th><th>E-mail</th><th>'+mxE(mxTr('Role','Yetki'))+'</th><th>'+mxE(mxTr('Collects payments','Tahsilat yapar'))+'</th><th>'+mxE(mxTr('Status','Durum'))+'</th><th></th></tr>'+
+    stUsers.map(function(u){var adm=u.role==='Admin',self=u.auth_id===meId,on=u.active!==false;
+      return '<tr><td><b>'+mxE(u.name||'')+'</b>'+(self?' <span class="hint" style="margin:0">('+mxE(mxTr('you','siz'))+')</span>':'')+'</td><td>'+mxE(u.email||'')+'</td>'+
+        '<td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px;background:'+(adm?'rgba(184,154,106,.18);color:#D4B896':'rgba(155,143,212,.18);color:#B8AEE8')+'">'+mxE(adm?mxTr('Admin','Yönetici'):mxTr('User','Kullanıcı'))+'</span></td>'+
+        '<td><input type="checkbox"'+(u.can_collect||adm?' checked':'')+(adm?' disabled':'')+' onchange="stUserCollect(\''+u.id+'\',this.checked)"></td>'+
+        '<td style="color:'+(on?'#3AB06A':'rgba(245,241,235,.45)')+'">'+mxE(on?mxTr('Active','Aktif'):mxTr('Inactive','Pasif'))+'</td>'+
+        '<td style="white-space:nowrap">'+(self?'':'<button class="btn bedit" onclick="stUserUpd(\''+u.id+'\',{role:\''+(adm?'User':'Admin')+'\'})">'+mxE(adm?mxTr('Make user','Kullanıcı yap'):mxTr('Make admin','Yönetici yap'))+'</button> '+
+          '<button class="btn bedit" onclick="stUserUpd(\''+u.id+'\',{active:'+(!on)+'})">'+mxE(on?mxTr('Deactivate','Pasif yap'):mxTr('Activate','Aktif yap'))+'</button> '+
+          '<button class="btn bedit" onclick="stUserReset(\''+u.id+'\')">'+mxE(mxTr('Reset password','Şifre sıfırla'))+'</button> '+
+          '<button class="btn bdel" onclick="stUserDel(\''+u.id+'\')">'+mxE(mxTr('Delete','Sil'))+'</button>')+'</td></tr>';}).join('')+'</table></div>'+
+    (full?'<div class="hint">'+mxE(mxTr('The user limit is reached.','Kullanıcı sınırına ulaşıldı.'))+'</div>':
+    '<div class="imp-step"><h3>'+mxE(mxTr('Add user','Kullanıcı ekle'))+'</h3><div class="st-grid">'+stField('uName',mxTr('Name','Ad soyad'),'')+stField('uMail','E-mail','','','email')+stField('uPw',mxTr('Password (min. 8)','Şifre (en az 8)'),'','','password')+
+      '<div><label class="st-l">'+mxE(mxTr('Role','Yetki'))+'</label><select class="mi" id="uRole"><option value="User">'+mxE(mxTr('User','Kullanıcı'))+'</option><option value="Admin">'+mxE(mxTr('Admin','Yönetici'))+'</option></select></div></div>'+
+      '<div style="display:flex;gap:10px;align-items:center"><button class="bimp" onclick="stUserAdd()">'+mxE(mxTr('Add','Ekle'))+'</button><span id="uMsg" style="font-size:13px"></span></div></div>');
+}
+function stUserName(id){var u=stUsers.find(function(x){return x.id===id;})||{};return u.name||u.email||'';}
+async function stUserUpd(id,d){if(!confirm(mxTr('Apply this change for [name]?','[name] için bu değişiklik yapılsın mı?').replace('[name]',stUserName(id))))return;var r=await db.from('users').update(d).eq('id',id);if(r.error)alert(r.error.message);stUsersLoad();}
+async function stUserCollect(id,on){var r=await db.rpc('set_user_can_collect',{p_user_id:id,p_on:on});if(r.error){alert(r.error.message);stUsersLoad();}}
+async function stUserReset(id){var u=stUsers.find(function(x){return x.id===id;});if(!u||!u.email)return;
+  var r=await db.auth.signInWithOtp({email:u.email,options:{shouldCreateUser:false}});alert(r.error?r.error.message:mxTr('A sign-in link was sent to [email].','[email] adresine giriş linki gönderildi.').replace('[email]',u.email));}
+async function stUserDel(id){var u=stUsers.find(function(x){return x.id===id;});if(!u)return;
+  if(!confirm(mxTr('Delete [name]? This cannot be undone.','[name] silinsin mi? Geri alınamaz.').replace('[name]',stUserName(id))))return;
+  if(u.auth_id){try{await db.functions.invoke('delete-user',{body:{user_id:u.auth_id}});}catch(e){}}
+  var r=await db.from('users').delete().eq('id',id);if(r.error)alert(r.error.message);stUsersLoad();}
+async function stUserAdd(){
+  var n=mxV('uName'),m=mxV('uMail'),p=document.getElementById('uPw').value;
+  if(!n||!/.+@.+\..+/.test(m)||p.length<8){stMsg('uMsg',false,mxTr('Enter name, a valid e-mail and a password of at least 8 characters.','Ad, geçerli e-posta ve en az 8 karakterli şifre girin.'));return;}
+  var r=await db.functions.invoke('create-user',{body:{email:m,password:p,name:n,role:document.getElementById('uRole').value,clinic_id:cid}}),err=r.data&&r.data.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  if(err){stMsg('uMsg',false,String(err));return;}
+  stUsersLoad();
+}
+
+// ---- watermark (device setting in the app; the panel has its own photo report options) ----
+function stWmLoad(){var b=document.getElementById('st-watermark-f');if(!b)return;
+  b.innerHTML=stHead('watermark')+'<div class="imp-step"><div class="hint" style="margin:0 0 10px">'+mxE(mxTr('In the app the watermark is set per device (logo / clinic name, position, opacity). In the panel, before/after reports and collages use the clinic logo and name; their layout is chosen on the report screen of each visit.','Uygulamada filigran her cihazda ayrı ayarlanır (logo / klinik adı, konum, saydamlık). Panelde önce-sonra rapor ve kolajlar klinik logosu ve adını kullanır; düzen her vizitin rapor ekranında seçilir.'))+'</div>'+
+  '<button class="bimp2" onclick="stGo(\'clinic\')">'+mxE(mxTr('Edit logo and clinic name','Logo ve klinik adını düzenle'))+'</button></div>';}
+
+// ---- consent templates ----
+var stCons=[],stConsLang='';
+var ST_LN={tr:'Türkçe',en:'English',de:'Deutsch',es:'Español',fr:'Français',it:'Italiano',pt:'Português',ru:'Русский',ko:'한국어',zh:'中文',ar:'العربية'};
+async function stConsLoad(){
+  var r=await db.from('consent_templates').select('id,name,procedure_type,language,content,is_active,updated_at').eq('clinic_id',cid).is('deleted_at',null).order('name');stCons=r.data||[];
+  var langs=[];stCons.forEach(function(t){if(langs.indexOf(t.language)<0)langs.push(t.language);});langs.sort();
+  if(!stConsLang||langs.indexOf(stConsLang)<0)stConsLang=langs.indexOf(LANG)>=0?LANG:(langs[0]||'');
+  var b=document.getElementById('st-consents-f');if(!b)return;
+  var list=stCons.filter(function(t){return t.language===stConsLang;});
+  b.innerHTML=stHead('consents','<div class="imp-actions"><button class="bimp" onclick="stConsEdit(null)">+ '+mxE(mxTr('New template','Yeni şablon'))+'</button></div>')+
+    (langs.length>1?'<div class="pfl" style="border:none;padding:0 0 10px">'+langs.map(function(l){return '<button class="'+(l===stConsLang?'on':'')+'" onclick="stConsLang=\''+l+'\';stConsLoad()">'+mxE(ST_LN[l]||l)+' · '+stCons.filter(function(t){return t.language===l;}).length+'</button>';}).join('')+'</div>':'')+
+    '<div class="imp-step">'+(list.length?'<table class="fmt"><tr><th>'+mxE(mxTr('Template','Şablon'))+'</th><th>'+mxE(mxTr('Length','Uzunluk'))+'</th><th>'+mxE(mxTr('Updated','Güncellendi'))+'</th><th></th></tr>'+list.map(function(t){
+      return '<tr style="cursor:pointer" onclick="stConsEdit(\''+t.id+'\')"><td><b>'+mxE(t.name)+'</b>'+(t.is_active===false?' <span class="hint" style="margin:0">('+mxE(mxTr('hidden','gizli'))+')</span>':'')+'</td><td>'+mxE(String((t.content||'').length))+'</td><td>'+(t.updated_at?mxDate(String(t.updated_at).slice(0,10)):'')+'</td><td><button class="btn bedit" onclick="event.stopPropagation();stConsEdit(\''+t.id+'\')">'+mxE(mxTr('Edit','Düzenle'))+'</button></td></tr>';}).join('')+'</table>'
+      :'<div class="hint" style="margin:0">'+mxE(mxTr('No templates yet. Languages are added from the app (Settings › Consent templates).','Henüz şablon yok. Dil eklemek uygulamadan yapılır (Ayarlar › Onam şablonları).'))+'</div>')+'</div>';
+}
+function stConsEdit(id){
+  var t=id?stCons.find(function(x){return x.id===id;}):{language:stConsLang||LANG,name:'',content:''};if(!t)return;
+  mxOpen(id?mxTr('Edit consent','Onamı düzenle'):mxTr('New consent','Yeni onam'),
+    '<label class="st-l">'+mxE(mxTr('Name','Ad'))+'</label><input class="mi" id="coN" value="'+mxE(t.name||'')+'">'+
+    '<label class="st-l">'+mxE(mxTr('Text','Metin'))+' <span class="hint" style="margin:0">'+mxE(mxTr('[name], [date], [procedure], [clinic], [doctor] are filled in when sent.','[ad], [tarih], [islem], [klinik], [doktor] gönderilirken doldurulur.'))+'</span></label>'+
+    '<textarea class="mi" id="coC" style="min-height:52vh;font-size:14px;line-height:1.55">'+mxE(t.content||'')+'</textarea><div id="coErr" style="color:#E05555;font-size:12.5px"></div>',
+    (id?[{label:mxTr('Delete','Sil'),cls:'bdel',fn:function(){stConsDel(id);}}]:[]).concat([{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:function(){stConsSave(id,t.language);}}]));
+  var m=document.querySelector('#mxModal > div');if(m){m.style.maxWidth='900px';m.style.width='92vw';}
+}
+async function stConsSave(id,lang){
+  var n=mxV('coN'),c=document.getElementById('coC').value.trim();
+  if(!n||!c){document.getElementById('coErr').textContent=mxTr('Enter a name and the text.','Ad ve metni girin.');return;}
+  var row={name:n,content:c,updated_at:new Date().toISOString()},r;
+  r=id?await db.from('consent_templates').update(row).eq('id',id):await db.from('consent_templates').insert(Object.assign(row,{clinic_id:cid,language:lang||LANG,procedure_type:'custom',is_default:false,is_active:true}));
+  if(r.error){document.getElementById('coErr').textContent=mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+  mxClose();stConsLoad();
+}
+async function stConsDel(id){if(!confirm(mxTr('Delete this template?','Bu şablon silinsin mi?')))return;await db.from('consent_templates').update({deleted_at:new Date().toISOString()}).eq('id',id);mxClose();stConsLoad();}
+
+// ---- sent consents ----
+var stSentF='all';
+async function stSentLoad(){
+  var b=document.getElementById('st-sentconsents-f');if(!b)return;
+  var r=await db.from('consent_records').select('id,patient_id,template_name,patient_name,status,sent_at,signed_at,revoked_at').eq('clinic_id',cid).is('deleted_at',null).order('sent_at',{ascending:false}).limit(300);
+  var rows=r.data||[],sig=function(x){return x.status==='signed';};
+  var list=stSentF==='signed'?rows.filter(sig):stSentF==='pending'?rows.filter(function(x){return !sig(x)&&!x.revoked_at;}):rows;
+  b.innerHTML=stHead('sentconsents')+'<div class="pfl" style="border:none;padding:0 0 10px">'+[['all',mxTr('All','Tümü')+' · '+rows.length],['signed',mxTr('Signed','İmzalı')+' · '+rows.filter(sig).length],['pending',mxTr('Pending','Bekleyen')+' · '+rows.filter(function(x){return !sig(x)&&!x.revoked_at;}).length]].map(function(x){return '<button class="'+(x[0]===stSentF?'on':'')+'" onclick="stSentF=\''+x[0]+'\';stSentLoad()">'+mxE(x[1])+'</button>';}).join('')+'</div>'+
+    '<div class="imp-step">'+(list.length?'<table class="fmt"><tr><th>'+mxE(mxTr('Patient','Hasta'))+'</th><th>'+mxE(mxTr('Consent','Onam'))+'</th><th>'+mxE(mxTr('Sent','Gönderildi'))+'</th><th>'+mxE(mxTr('Status','Durum'))+'</th></tr>'+list.map(function(x){
+      var st=x.revoked_at?[mxTr('Revoked','İptal'),'rgba(245,241,235,.45)']:sig(x)?[mxTr('Signed','İmzalı')+(x.signed_at?' · '+mxDate(String(x.signed_at).slice(0,10)):''),'#3AB06A']:[mxTr('Pending','Bekliyor'),'#D4963A'];
+      return '<tr style="cursor:pointer" onclick="switchTab(\'patients\');selP(\''+x.patient_id+'\')"><td><b>'+mxE(x.patient_name||'')+'</b></td><td>'+mxE(x.template_name||'')+'</td><td>'+(x.sent_at?mxDate(String(x.sent_at).slice(0,10)):'')+'</td><td style="color:'+st[1]+';font-weight:600">'+mxE(st[0])+'</td></tr>';}).join('')+'</table>':'<div class="hint" style="margin:0">'+mxE(mxTr('Nothing here.','Kayıt yok.'))+'</div>')+'</div>';
+}
+
+// ---- aftercare texts (inline list, same editor as the visit screen) ----
+var stAcInline=false;
+async function stAcLoad(){
+  stAcInline=true;await acTemplates();var b=document.getElementById('st-aftercare-f');if(!b)return;
+  b.innerHTML=stHead('aftercare','<div class="imp-actions"><button class="bimp" onclick="acEditOne(null)">+ '+mxE(mxTr('New text','Yeni metin'))+'</button></div>')+'<div class="imp-step"><div class="hint" style="margin:0 0 10px">'+mxE(mxTr('Keywords pick the right text from the procedure names in the visit.','Anahtar kelimeler vizitteki işlem adından doğru metni seçer.'))+'</div>'+
+    (acTpl.length?'<table class="fmt"><tr><th>'+mxE(mxTr('Title','Başlık'))+'</th><th>'+mxE(mxTr('Keywords','Anahtar kelimeler'))+'</th><th>'+mxE(mxTr('Text','Metin'))+'</th><th></th></tr>'+acTpl.map(function(t){
+      return '<tr><td><b>'+mxE(t.name)+'</b></td><td style="font-size:12.5px">'+mxE(t.keywords||'')+'</td><td style="font-size:12.5px;color:rgba(245,241,235,.65);max-width:420px">'+mxE(String(t.body||'').slice(0,140))+(String(t.body||'').length>140?'…':'')+'</td><td style="white-space:nowrap"><button class="btn bedit" onclick="acEditOne(\''+t.id+'\')">'+mxE(mxTr('Edit','Düzenle'))+'</button> <button class="btn bdel" onclick="acDel(\''+t.id+'\')">'+mxE(mxTr('Delete','Sil'))+'</button></td></tr>';}).join('')+'</table>':'')+'</div>';
+}
+
+// ---- QR codes: the existing social media block ----
+function stQrLoad(){if(typeof soFill==='function'){soFill();soShow();}}
+
+// ---- e-invoice (e-SMM) settings ----
+var stEi={};
+async function stEinvLoad(){
+  var r=await db.rpc('get_einvoice_settings');stEi=r.data||{};var s=stEi,iss=s.issuer||{},b=document.getElementById('st-einvoice-f');if(!b)return;
+  var prov=s.provider||'manual';
+  b.innerHTML=stHead('einvoice')+'<div class="imp-step">'+
+    '<label class="st-l">'+mxE(mxTr('Provider','Sağlayıcı'))+'</label><select class="mi" id="eiProv" onchange="stEinvVis()">'+[['manual',mxTr('I issue them elsewhere (manual)','Başka yerden kesiyorum (manuel)')],['parasut','Paraşüt'],['nilvera','Nilvera']].map(function(x){return '<option value="'+x[0]+'"'+(prov===x[0]?' selected':'')+'>'+mxE(x[1])+'</option>';}).join('')+'</select>'+
+    '<div id="eiBox">'+
+      '<div class="st-grid"><div id="eiDocW"><label class="st-l">'+mxE(mxTr('Document','Belge'))+'</label><select class="mi" id="eiDoc"><option value="e_smm"'+(s.doc_type!=='e_archive'?' selected':'')+'>e-SMM</option><option value="e_archive"'+(s.doc_type==='e_archive'?' selected':'')+'>e-Arşiv</option></select></div>'+
+        '<div id="eiEnvW"><label class="st-l">'+mxE(mxTr('Environment','Ortam'))+'</label><select class="mi" id="eiEnv"><option value="live"'+(s.environment!=='test'?' selected':'')+'>'+mxE(mxTr('Live','Gerçek'))+'</option><option value="test"'+(s.environment==='test'?' selected':'')+'>Test</option></select></div></div>'+
+      '<div id="eiPar"><h3>Paraşüt</h3><div class="st-grid">'+stField('eiCo',mxTr('Company ID','Şirket numarası'),s.company_id)+stField('eiCid','Client ID',s.client_id)+
+        stField('eiCs','Client Secret','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiUser',mxTr('User (e-mail)','Kullanıcı (e-posta)'),s.username)+
+        stField('eiPw',mxTr('Password','Şifre'),'',s.has_password?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSvc',mxTr('Service name on the receipt','Makbuzdaki hizmet adı'),s.service_name,mxTr('Medical service','Muayene ve tedavi hizmeti'))+'</div></div>'+
+      '<div id="eiNil"><h3>Nilvera</h3><div class="st-grid">'+stField('eiKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSer',mxTr('Series (3 letters)','Seri (3 harf)'),s.series,'SMM')+'</div>'+
+        '<h3>'+mxE(mxTr('Issuer','Düzenleyen'))+'</h3><div class="st-grid">'+stField('eiTax',mxTr('Tax / ID number','VKN / TCKN'),iss.tax_number)+stField('eiIName',mxTr('Name / title','Ad soyad / unvan'),iss.name)+stField('eiOff',mxTr('Tax office','Vergi dairesi'),iss.tax_office)+stField('eiCity',mxTr('City','İl'),iss.city)+stField('eiDist',mxTr('District','İlçe'),iss.district)+'</div>'+stField('eiAddr',mxTr('Address','Adres'),iss.address)+'</div>'+
+      '<div class="st-grid"><div><label class="st-l">'+mxE(mxTr('VAT rate %','KDV oranı %'))+'</label><input class="mi" id="eiVat" type="number" min="0" max="30" step="1" value="'+(s.vat_rate!=null?s.vat_rate:'')+'"></div>'+
+        '<div><label class="st-l">'+mxE(mxTr('On the fee screen, “Issue e-SMM” starts','Ücret ekranında “e-SMM oluştur”'))+'</label><select class="mi" id="eiMode"><option value="ask"'+(s.issue_mode!=='auto'?' selected':'')+'>'+mxE(mxTr('switched off','kapalı başlar'))+'</option><option value="auto"'+(s.issue_mode==='auto'?' selected':'')+'>'+mxE(mxTr('switched on','açık başlar'))+'</option></select></div></div>'+
+      '<label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:14px"><input type="checkbox" id="eiOn"'+(s.enabled?' checked':'')+'> '+mxE(mxTr('Turn on e-SMM sending','e-SMM gönderimini aç'))+'</label>'+
+    '</div>'+
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button class="bimp" onclick="stEinvSave()">'+mxE(mxTr('Save','Kaydet'))+'</button><button class="bimp2" id="eiTestB" onclick="stEinvTest()">'+mxE(mxTr('Test connection','Bağlantıyı test et'))+'</button><span id="eiMsg" style="font-size:13px"></span></div>'+
+    '<div class="hint" style="margin-top:10px">'+mxE(mxTr('Secrets are stored encrypted and never shown again.','Şifreler şifreli saklanır, bir daha gösterilmez.'))+'</div></div>';
+  stEinvVis();
+}
+function stEinvVis(){var p=document.getElementById('eiProv').value;document.getElementById('eiBox').style.display=p==='manual'?'none':'block';
+  document.getElementById('eiPar').style.display=p==='parasut'?'block':'none';document.getElementById('eiNil').style.display=p==='nilvera'?'block':'none';
+  document.getElementById('eiDocW').style.display=p==='parasut'?'block':'none';document.getElementById('eiEnvW').style.display=p==='nilvera'?'block':'none';
+  document.getElementById('eiTestB').style.display=p==='manual'?'none':'';}
+async function stEinvSave(){
+  var p=document.getElementById('eiProv').value,par=p==='parasut',vat=document.getElementById('eiVat').value;
+  var d={provider:p,environment:document.getElementById('eiEnv').value,series:mxV('eiSer'),
+    issuer:{tax_number:mxV('eiTax'),name:mxV('eiIName'),tax_office:mxV('eiOff'),address:mxV('eiAddr'),district:mxV('eiDist'),city:mxV('eiCity')},
+    doc_type:p==='nilvera'?'e_smm':document.getElementById('eiDoc').value,company_id:mxV('eiCo'),client_id:mxV('eiCid'),
+    client_secret:par?mxV('eiCs'):mxV('eiKey'),username:mxV('eiUser'),password:par?document.getElementById('eiPw').value:'',
+    vat_rate:vat===''?null:+vat,service_name:mxV('eiSvc'),account_id:stEi.account_id||null,enabled:p!=='manual'&&document.getElementById('eiOn').checked};
+  var r=await db.rpc('save_einvoice_settings',{p:d});
+  if(!r.error){await db.rpc('set_einvoice_issue_mode',{p_mode:document.getElementById('eiMode').value});}
+  stMsg('eiMsg',!r.error);if(!r.error)stEinvLoad();
+}
+async function stEinvTest(){
+  stMsg('eiMsg',true,mxTr('Testing…','Test ediliyor…'));
+  var r=await db.functions.invoke('einvoice',{body:{action:'test'}}),err=r.data&&r.data.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  stMsg('eiMsg',!err,err?mxTr('Connection failed','Bağlantı kurulamadı')+': '+vfEinvErr(String(err)):mxTr('Connection OK','Bağlantı başarılı'));
+}
+
+// ---- e-Nabız ----
+async function stEnabizLoad(){
+  var c=await stReloadClinic(),b=document.getElementById('st-enabiz-f');if(!b)return;
+  b.innerHTML=stHead('enabiz')+'<div class="imp-step"><div style="font-size:14px;margin-bottom:10px">'+mxE(mxTr('Status','Durum'))+': <b style="color:'+(c.enabiz_configured?'#3AB06A':'rgba(245,241,235,.55)')+'">'+mxE(c.enabiz_configured?mxTr('Connected','Bağlı'):mxTr('Not set up yet','Henüz kurulmadı'))+'</b></div>'+
+    '<label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="enAuto"'+(c.enabiz_auto!==false?' checked':'')+' onchange="stEnabizSave()"> '+mxE(mxTr('Send visits to e-Nabız automatically','Vizitleri e-Nabız’a otomatik gönder'))+'</label>'+
+    '<div class="hint" style="margin-top:10px">'+mxE(mxTr('Per patient and per visit exceptions are set on the patient and visit screens.','Hasta ve vizit bazında istisnalar hasta ve vizit ekranlarında ayarlanır.'))+'</div><span id="enMsg" style="font-size:13px"></span></div>';
+}
+async function stEnabizSave(){var on=document.getElementById('enAuto').checked;var r=await db.from('clinic').update({enabiz_auto:on}).eq('id',cid);stMsg('enMsg',!r.error);if(!r.error)clinic.enabiz_auto=on;}
+
+// ---- data access ----
+function stAccessLoad(){var b=document.getElementById('st-access-f');if(!b)return;var u='https://aafclinic.com/panel';
+  b.innerHTML=stHead('access')+'<div class="imp-step"><div class="hint" style="margin:0 0 12px">'+mxE(mxTr('Sign in on any computer with your e-mail and password. All data stays in sync with the app.','Herhangi bir bilgisayardan e-posta ve şifrenizle giriş yapın. Tüm veriler uygulamayla eşittir.'))+'</div>'+
+    '<div class="bk-row"><span class="bk-link">'+u+'</span><button class="bimp2" onclick="navigator.clipboard.writeText(\''+u+'\');stMsg(\'daMsg\',true,mxTr(\'Copied\',\'Kopyalandı\'))">'+mxE(mxTr('Copy link','Linki kopyala'))+'</button><span id="daMsg" style="font-size:13px"></span></div></div>';}
+
+// ---- secure upload link: borrow the block from the Import tab ----
+function stUploadLoad(){var s=document.getElementById('ulStep'),d=document.getElementById('st-upload-f');if(s&&d&&s.parentNode!==d){d.innerHTML=stHead('upload');d.appendChild(s);}ulLoad();}
+function stUploadReturn(){var s=document.getElementById('ulStep'),h=document.getElementById('ulHome');if(s&&h&&s.parentNode!==h)h.appendChild(s);}
+
+// ---- language ----
+function stLangLoad(){var b=document.getElementById('st-language-f');if(!b)return;
+  b.innerHTML=stHead('language')+'<div class="imp-step"><select class="mi langsel" style="max-width:320px" onchange="setPanelLang(this.value)">'+PANEL_LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===LANG?' selected':'')+'>'+x[1]+'</option>';}).join('')+'</select>'+
+  '<div class="hint" style="margin-top:8px">'+mxE(mxTr('The app language is chosen in the app.','Uygulamanın dili uygulamadan seçilir.'))+'</div></div>';}
+
+// ---- change password ----
+function stPwLoad(){var b=document.getElementById('st-password-f');if(!b)return;
+  b.innerHTML=stHead('password')+'<div class="imp-step" style="max-width:460px">'+stField('pw1',mxTr('New password (min. 8)','Yeni şifre (en az 8)'),'','','password')+stField('pw2',mxTr('New password again','Yeni şifre tekrar'),'','','password')+
+  '<div style="display:flex;gap:10px;align-items:center;margin-top:6px"><button class="bimp" onclick="stPwSave()">'+mxE(mxTr('Change password','Şifreyi değiştir'))+'</button><span id="pwMsg" style="font-size:13px"></span></div></div>';}
+async function stPwSave(){var a=document.getElementById('pw1').value,b2=document.getElementById('pw2').value;
+  if(a.length<8){stMsg('pwMsg',false,mxTr('At least 8 characters.','En az 8 karakter.'));return;}
+  if(a!==b2){stMsg('pwMsg',false,mxTr('Passwords do not match.','Şifreler aynı değil.'));return;}
+  var r=await db.auth.updateUser({password:a});stMsg('pwMsg',!r.error,r.error?r.error.message:mxTr('Password changed','Şifre değiştirildi'));if(!r.error){document.getElementById('pw1').value='';document.getElementById('pw2').value='';}}
+
+setTimeout(stMove,0);
+function curTab(){var t=document.querySelector('.tab.on[data-tab]');return t?t.dataset.tab:'';}
 // ---- ÜTS / İTS notifications (admin) ----
 var trkCfg=null;
 function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım')})[q.kind]||q.kind;}
@@ -4759,7 +5120,7 @@ var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU 
 'Due recalls (next 7 days and overdue)':'Zamanı gelenler (7 gün içinde ve gecikenler)','Ask for a Google review':'Google yorumu iste','Due date':'Vade','Procedure':'İşlem',
 'Panel Login':'Panel Girişi','Sign in with your clinic account':'Klinik hesabınızla giriş yapın','EMAIL':'E-POSTA','PASSWORD':'ŞİFRE',
 'Sign In':'Giriş Yap','Signing in...':'Giriş yapılıyor...','Invalid email or password':'E-posta veya şifre hatalı','User not found':'Kullanıcı bulunamadı',
-'Sign Out':'Çıkış','SIGN OUT':'ÇIKIŞ','Help':'Yardım','HELP':'YARDIM','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
+'Sign Out':'Çıkış','SIGN OUT':'ÇIKIŞ','Help':'Yardım','HELP':'YARDIM','SETTINGS':'AYARLAR','Backup and Export':'Yedekleme ve Dışa Aktarma','— Download all clinic data including photos':'— Fotoğraflar dahil tüm klinik verisini indirin',
 'ZIP with photos':'Fotoğraflı ZIP','HTML Report':'HTML Rapor',
 'HOME':'ANA SAYFA','BACKUP':'YEDEKLEME','PATIENTS':'HASTALAR','AGENDA':'AJANDA','APPOINTMENTS':'RANDEVULAR','STATISTICS':'İSTATİSTİK','IMPORT':'İÇE AKTAR','ONLINE BOOKING':'ONLINE RANDEVU',
 'Search patients...':'Hasta ara...','Name, phone, ID or procedure':'Ad, telefon veya işlem ara','+ Add':'+ Ekle','Add Patient':'Hasta Ekle','Edit Patient':'Hastayı Düzenle','View Patient':'Hastayı Gör',

@@ -4492,16 +4492,17 @@ async function stEinvLoad(){
   var r=await db.rpc('get_einvoice_settings');stEi=r.data||{};var s=stEi,iss=s.issuer||{},b=document.getElementById('st-einvoice-f');if(!b)return;
   var prov=s.provider||'manual';
   b.innerHTML=stHead('einvoice')+'<div class="imp-step">'+
-    '<label class="st-l">'+mxE(mxTr('Provider','Sağlayıcı'))+'</label><select class="mi" id="eiProv" onchange="stEinvVis()">'+[['manual',mxTr('I issue them elsewhere (manual)','Başka yerden kesiyorum (manuel)')],['parasut','Paraşüt'],['nilvera','Nilvera']].map(function(x){return '<option value="'+x[0]+'"'+(prov===x[0]?' selected':'')+'>'+mxE(x[1])+'</option>';}).join('')+'</select>'+
+    '<label class="st-l">'+mxE(mxTr('Provider','Sağlayıcı'))+'</label><select class="mi" id="eiProv" onchange="stEinvVis()">'+[['manual',mxTr('I issue them elsewhere (manual)','Başka yerden kesiyorum (manuel)')],['parasut','Paraşüt'],['nilvera','Nilvera'],['isnet','İşNet (e-Çırak)']].map(function(x){return '<option value="'+x[0]+'"'+(prov===x[0]?' selected':'')+'>'+mxE(x[1])+'</option>';}).join('')+'</select>'+
     '<div id="eiBox">'+
       '<div class="st-grid"><div id="eiDocW"><label class="st-l">'+mxE(mxTr('Document','Belge'))+'</label><select class="mi" id="eiDoc"><option value="e_smm"'+(s.doc_type!=='e_archive'?' selected':'')+'>e-SMM</option><option value="e_archive"'+(s.doc_type==='e_archive'?' selected':'')+'>e-Arşiv</option></select></div>'+
         '<div id="eiEnvW"><label class="st-l">'+mxE(mxTr('Environment','Ortam'))+'</label><select class="mi" id="eiEnv"><option value="live"'+(s.environment!=='test'?' selected':'')+'>'+mxE(mxTr('Live','Gerçek'))+'</option><option value="test"'+(s.environment==='test'?' selected':'')+'>Test</option></select></div></div>'+
       '<div id="eiPar"><h3>Paraşüt</h3><div class="st-grid">'+stField('eiCo',mxTr('Company ID','Şirket numarası'),s.company_id)+stField('eiCid','Client ID',s.client_id)+
         stField('eiCs','Client Secret','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiUser',mxTr('User (e-mail)','Kullanıcı (e-posta)'),s.username)+
-        stField('eiPw',mxTr('Password','Şifre'),'',s.has_password?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSvc',mxTr('Service name on the receipt','Makbuzdaki hizmet adı'),s.service_name,mxTr('Medical service','Muayene ve tedavi hizmeti'))+'</div></div>'+
-      '<div id="eiNil"><h3>Nilvera</h3><div class="st-grid">'+stField('eiKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSer',mxTr('Series (3 letters)','Seri (3 harf)'),s.series,'SMM')+'</div>'+
-        '<h3>'+mxE(mxTr('Issuer','Düzenleyen'))+'</h3><div class="st-grid">'+stField('eiTax',mxTr('Tax / ID number','VKN / TCKN'),iss.tax_number)+stField('eiIName',mxTr('Name / title','Ad soyad / unvan'),iss.name)+stField('eiOff',mxTr('Tax office','Vergi dairesi'),iss.tax_office)+stField('eiCity',mxTr('City','İl'),iss.city)+stField('eiDist',mxTr('District','İlçe'),iss.district)+'</div>'+stField('eiAddr',mxTr('Address','Adres'),iss.address)+'</div>'+
-      '<div class="st-grid"><div><label class="st-l">'+mxE(mxTr('VAT rate %','KDV oranı %'))+'</label><input class="mi" id="eiVat" type="number" min="0" max="30" step="1" value="'+(s.vat_rate!=null?s.vat_rate:'')+'"></div>'+
+        stField('eiPw',mxTr('Password','Şifre'),'',s.has_password?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+'</div></div>'+
+      '<div id="eiNil"><h3>Nilvera</h3><div class="st-grid">'+stField('eiKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSer',mxTr('Series (3 letters)','Seri (3 harf)'),s.series,'SMM')+'</div></div>'+
+      '<div id="eiIsn"><h3>İşNet</h3><div class="hint">'+mxE(mxTr('No password needed: İşNet recognises AAFC by your tax number and our fixed server address. In Test mode receipts go to İşNet\'s test company and are not real.','Şifre gerekmez: İşNet, AAFC\'yi VKN/TCKN\'niz ve sabit sunucu adresimizle tanır. Test ortamında makbuzlar İşNet\'in test firmasına kesilir, gerçek değildir.'))+'</div></div>'+
+      '<div id="eiIss"><h3>'+mxE(mxTr('Issuer','Düzenleyen'))+'</h3><div class="st-grid">'+stField('eiTax',mxTr('Tax / ID number','VKN / TCKN'),iss.tax_number)+stField('eiIName',mxTr('Name / title','Ad soyad / unvan'),iss.name)+stField('eiOff',mxTr('Tax office','Vergi dairesi'),iss.tax_office)+stField('eiCity',mxTr('City','İl'),iss.city)+stField('eiDist',mxTr('District','İlçe'),iss.district)+'</div>'+stField('eiAddr',mxTr('Address','Adres'),iss.address)+'</div>'+
+      '<div class="st-grid">'+stField('eiSvc',mxTr('Service name on the receipt','Makbuzdaki hizmet adı'),s.service_name,mxTr('Medical service','Muayene ve tedavi hizmeti'))+'<div><label class="st-l">'+mxE(mxTr('VAT rate %','KDV oranı %'))+'</label><input class="mi" id="eiVat" type="number" min="0" max="30" step="1" value="'+(s.vat_rate!=null?s.vat_rate:'')+'"></div>'+
         '<div><label class="st-l">'+mxE(mxTr('On the fee screen, “Issue e-SMM” starts','Ücret ekranında “e-SMM oluştur”'))+'</label><select class="mi" id="eiMode"><option value="ask"'+(s.issue_mode!=='auto'?' selected':'')+'>'+mxE(mxTr('switched off','kapalı başlar'))+'</option><option value="auto"'+(s.issue_mode==='auto'?' selected':'')+'>'+mxE(mxTr('switched on','açık başlar'))+'</option></select></div></div>'+
       '<label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:14px"><input type="checkbox" id="eiOn"'+(s.enabled?' checked':'')+'> '+mxE(mxTr('Turn on e-SMM sending','e-SMM gönderimini aç'))+'</label>'+
     '</div>'+
@@ -4511,14 +4512,15 @@ async function stEinvLoad(){
 }
 function stEinvVis(){var p=document.getElementById('eiProv').value;document.getElementById('eiBox').style.display=p==='manual'?'none':'block';
   document.getElementById('eiPar').style.display=p==='parasut'?'block':'none';document.getElementById('eiNil').style.display=p==='nilvera'?'block':'none';
-  document.getElementById('eiDocW').style.display=p==='parasut'?'block':'none';document.getElementById('eiEnvW').style.display=p==='nilvera'?'block':'none';
+  document.getElementById('eiIsn').style.display=p==='isnet'?'block':'none';document.getElementById('eiIss').style.display=p==='nilvera'||p==='isnet'?'block':'none';
+  document.getElementById('eiDocW').style.display=p==='parasut'?'block':'none';document.getElementById('eiEnvW').style.display=p==='nilvera'||p==='isnet'?'block':'none';
   document.getElementById('eiTestB').style.display=p==='manual'?'none':'';}
 async function stEinvSave(){
   var p=document.getElementById('eiProv').value,par=p==='parasut',vat=document.getElementById('eiVat').value;
   var d={provider:p,environment:document.getElementById('eiEnv').value,series:mxV('eiSer'),
     issuer:{tax_number:mxV('eiTax'),name:mxV('eiIName'),tax_office:mxV('eiOff'),address:mxV('eiAddr'),district:mxV('eiDist'),city:mxV('eiCity')},
-    doc_type:p==='nilvera'?'e_smm':document.getElementById('eiDoc').value,company_id:mxV('eiCo'),client_id:mxV('eiCid'),
-    client_secret:par?mxV('eiCs'):mxV('eiKey'),username:mxV('eiUser'),password:par?document.getElementById('eiPw').value:'',
+    doc_type:p==='nilvera'||p==='isnet'?'e_smm':document.getElementById('eiDoc').value,company_id:mxV('eiCo'),client_id:mxV('eiCid'),
+    client_secret:par?mxV('eiCs'):p==='nilvera'?mxV('eiKey'):'',username:mxV('eiUser'),password:par?document.getElementById('eiPw').value:'',
     vat_rate:vat===''?null:+vat,service_name:mxV('eiSvc'),account_id:stEi.account_id||null,enabled:p!=='manual'&&document.getElementById('eiOn').checked};
   var r=await db.rpc('save_einvoice_settings',{p:d});
   if(!r.error){await db.rpc('set_einvoice_issue_mode',{p_mode:document.getElementById('eiMode').value});}

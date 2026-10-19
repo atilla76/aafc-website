@@ -2618,7 +2618,7 @@ function fnView(v){
     if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
-      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':e.category==='stock'?'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(212,184,150,.14);color:#D4B896">'+mxE(mxTr('STOCK','STOK'))+'</span>':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':e.category==='stock'?'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(212,184,150,.14);color:#D4B896">'+mxE(mxTr('STOCK','STOK'))+'</span>':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':e.einvoice_status==='cancelled'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Cancelled','İptal edildi'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
   }else if(v==='recv'){
     if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
@@ -4723,11 +4723,13 @@ function vfEinvHtml(d){
     else if(st==='pending'){t=mxTr('e-Document is being processed','e-Belge işleniyor');c='#B89A6A';}
     else if(st==='error'){t=mxTr('e-Document failed','e-Belge kesilemedi')+(p.einvoice_error?' · '+p.einvoice_error:'');c='#E05555';}
     else if(st==='deferred'){t=mxTr('To be issued later','Sonra kesilecek');c='#D4963A';}
+    else if(st==='cancelled'){t=mxTr('Cancelled','İptal edildi')+(p.einvoice_error?' · '+String(p.einvoice_error).replace(/^İptal: /,'').replace(/ · ETTN .*$/,''):'');c='#E05555';}
     else if(st==='external'||no){t=mxTr('Issued elsewhere','Başka yerden kesildi')+' · '+no;c='#3AB06A';}
     else{t=mxTr('Not issued yet','Henüz kesilmedi');c='#D4963A';}
-    var open=!st||st==='error'||st==='deferred';if(!st&&no)open=false;
+    var open=!st||st==='error'||st==='deferred'||st==='cancelled';if(!st&&no)open=false;
     var b='',btn='class="bimp2" style="padding:5px 10px;font-size:12px"';
     if(st==='issued'&&auto)b+='<button '+btn+' onclick="event.stopPropagation();vfEinv(\'pdf\',\''+p.id+'\')">PDF</button>';
+    if(st==='issued'&&auto&&ei.provider==='isnet')b+='<button '+btn.replace('style="','style="color:#E05555;border-color:rgba(224,85,85,.5);')+' onclick="event.stopPropagation();vfCancel(\''+p.id+'\',\''+mxE(no)+'\')">'+mxE(mxTr('Cancel','İptal et'))+'</button>';
     if((open||st==='pending')&&auto)b+='<button '+btn.replace('style="','style="background:#B89A6A;color:#1C1929;border-color:#B89A6A;')+' onclick="event.stopPropagation();vfEinv(\'issue\',\''+p.id+'\')">'+mxE(mxTr('Send','Gönder'))+'</button>';
     if(open&&st!=='deferred')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'deferred\')">'+mxE(mxTr("I'll issue it later",'Sonra keseceğim'))+'</button>';
     if(open)b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'external\')">'+mxE(mxTr('Issued elsewhere','Başka yerden kesildi'))+'</button>';
@@ -4751,6 +4753,14 @@ async function vfEinv(action,entryId){
   if(err){alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));}
   else if(action==='pdf'){if(d.url)window.open(d.url,'_blank');}
   else alert(d.status==='issued'?mxTr('e-Document issued','e-Belge kesildi'):mxTr('e-Document is being processed, check again shortly','e-Belge işleniyor, birazdan tekrar deneyin'));
+  if(selVid)vfLoad(selVid);
+}
+async function vfCancel(entryId,no){
+  var why=prompt('e-SMM '+no+'\n'+mxTr('Cancel this receipt? This cannot be undone. Reason:','Bu makbuz iptal edilsin mi? Geri alınamaz. İptal sebebi:'),mxTr('Incorrect receipt','Hatalı düzenlendi'));
+  if(why===null)return;why=why.trim();if(!why){alert(mxTr('Enter a reason.','İptal sebebi girin.'));return;}
+  var r=await db.functions.invoke('einvoice',{body:{action:'cancel',entry_id:entryId,reason:why}}),d=r.data,err=d&&d.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  alert(err?mxTr('Could not cancel','İptal edilemedi')+': '+vfEinvErr(String(err)):mxTr('e-SMM cancelled. You can issue a corrected one with Send.','e-SMM iptal edildi. Düzeltilmiş makbuzu Gönder ile kesebilirsiniz.'));
   if(selVid)vfLoad(selVid);
 }
 async function vfMark(entryId,status){

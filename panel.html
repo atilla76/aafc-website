@@ -2528,7 +2528,7 @@ async function fnLoad(){
   fnProfit=res[7].data||null;var pp=res[8].data||null;
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
   var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
-  fnEinv=!!(res[6].data&&res[6].data.enabled)&&stIsTr();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
+  fnEinv=!!(res[6].data&&res[6].data.enabled)&&!!einvCountry();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
   var closed=!!cd.closing;
   document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
     '<div style="font-size:22px">'+(closed?'🔒':'🔓')+'</div><div style="flex:1"><b style="font-size:15px">'+mxE(mxTr('Today','Bugün'))+' '+mxMoney(td)+'</b><div style="font-size:12px;color:rgba(245,241,235,.6)">'+
@@ -2547,7 +2547,7 @@ async function fnLoad(){
     (fnProfit?'<div class="imp-num" style="cursor:pointer;text-align:left;min-width:260px" onclick="switchTab(\'stock\')"><div class="l" style="display:flex;justify-content:space-between;gap:10px"><b style="color:#F5F1EB">'+mxE(mxTr('Stock','Stok'))+'</b><span>'+mxE(mxTr('not in profit','kâra karışmaz'))+' ›</span></div><div style="display:flex;gap:14px;margin-top:8px">'+
       [[mxTr('On the shelf','Rafta'),pf.stock_value],[mxTr('Bought','Alınan'),pf.stock_bought],[mxTr('Used','Kullanılan'),used]].map(function(x){return '<div><div class="l">'+mxE(x[0])+'</div><b style="font-size:15px">'+mxMoney(x[1]||0)+'</b></div>';}).join('')+'</div></div>':'')+
     (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
-  var et=document.getElementById('fnEsmmTab');if(et)et.style.display=fnEinv?'':'none';if(fnTab==='esmm'&&!fnEinv)fnTab='entries';
+  var et=document.getElementById('fnEsmmTab');if(et){et.style.display=fnEinv?'':'none';et.textContent=einvCountry()==='90'?'e-SMM':mxTr('Invoices','Faturalar');}if(fnTab==='esmm'&&!fnEinv)fnTab='entries';
   fnView(fnTab);
 }
 // ---- Profit tab: fees − products used − fixed expenses (cash stays on Entries) ----
@@ -4263,7 +4263,7 @@ var ST_ITEMS=[
   ['g','Business','İşletme'],
   ['stock','Stock','Stok','Products, lots and expiry tracking','Ürün, lot ve son kullanma takibi','tab:stock'],
   ['finance','Accounting','Muhasebe','Income, expenses, instalments, e-SMM','Gelir, gider, taksit, e-SMM','tab:finance'],
-  ['einvoice','e-Invoice (e-SMM)','e-Fatura (e-SMM)','Provider, credentials, sending','Sağlayıcı, bilgiler, gönderim','tr'],
+  ['einvoice','e-Invoice','e-Fatura (e-SMM)','Provider, credentials, sending','Sağlayıcı, bilgiler, gönderim','einv'],
   ['enabiz','e-Nabız (MBYS)','e-Nabız (MBYS)','Automatic sending','Otomatik gönderim','tr'],
   ['tracking','ÜTS / İTS','ÜTS / İTS','Product tracking notifications','Ürün takip bildirimleri','tab:trk'],
   ['g','Data','Veriler'],
@@ -4277,9 +4277,12 @@ var ST_ITEMS=[
 ];
 var stSel='clinic',stMoved=false;
 function stIsTr(){return (clinic&&(clinic.phone_country==='+90'||clinic.currency==='TRY'))||LANG==='tr';}
+// e-invoice integrations by clinic country: 90 Türkiye (e-SMM), 351 Portugal (InvoiceXpress), 34 Spain (B2Brouter / VERI*FACTU)
+function einvCountry(){var d=String((clinic&&clinic.phone_country)||'').replace('+','');if(d)return ['90','351','34'].indexOf(d)>=0?d:'';if(clinic&&clinic.currency==='TRY')return '90';return {tr:'90',pt:'351',es:'34'}[LANG]||'';}
+function einvDocName(){return einvCountry()==='90'?'e-SMM':mxTr('Invoice','Fatura');}
 function stNav(){
   var el=document.getElementById('stNav');if(!el)return;
-  el.innerHTML=ST_ITEMS.filter(function(x){return !(x[5]==='tr'&&!stIsTr())&&!(x[0]==='tracking'&&!stIsTr());}).map(function(x){
+  el.innerHTML=ST_ITEMS.filter(function(x){return !(x[5]==='tr'&&!stIsTr())&&!(x[5]==='einv'&&!einvCountry())&&!(x[0]==='tracking'&&!stIsTr());}).map(function(x){
     if(x[0]==='g')return '<div class="st-g">'+mxE(mxTr(x[1],x[2]))+'</div>';
     return '<div class="st-it'+(x[0]===stSel?' on':'')+'" onclick="stGo(\''+x[0]+'\')"><b>'+mxE(mxTr(x[1],x[2]))+'</b><span>'+mxE(mxTr(x[3],x[4]))+'</span></div>';
   }).join('');
@@ -4492,7 +4495,7 @@ async function stEinvLoad(){
   var r=await db.rpc('get_einvoice_settings');stEi=r.data||{};var s=stEi,iss=s.issuer||{},b=document.getElementById('st-einvoice-f');if(!b)return;
   var prov=s.provider||'manual';
   b.innerHTML=stHead('einvoice')+'<div class="imp-step">'+
-    '<label class="st-l">'+mxE(mxTr('Provider','Sağlayıcı'))+'</label><select class="mi" id="eiProv" onchange="stEinvVis()">'+[['manual',mxTr('I issue them elsewhere (manual)','Başka yerden kesiyorum (manuel)')],['parasut','Paraşüt'],['nilvera','Nilvera'],['isnet','İşNet (e-Çırak)']].map(function(x){return '<option value="'+x[0]+'"'+(prov===x[0]?' selected':'')+'>'+mxE(x[1])+'</option>';}).join('')+'</select>'+
+    '<label class="st-l">'+mxE(mxTr('Provider','Sağlayıcı'))+'</label><select class="mi" id="eiProv" onchange="stEinvVis()">'+[['manual',mxTr('I issue them elsewhere (manual)','Başka yerden kesiyorum (manuel)')]].concat({'90':[['parasut','Paraşüt'],['nilvera','Nilvera'],['isnet','İşNet (e-Çırak)']],'351':[['invoicexpress','InvoiceXpress']],'34':[['b2brouter','B2Brouter (VERI*FACTU)']]}[einvCountry()]||[]).map(function(x){return '<option value="'+x[0]+'"'+(prov===x[0]?' selected':'')+'>'+mxE(x[1])+'</option>';}).join('')+'</select>'+
     '<div id="eiBox">'+
       '<div class="st-grid"><div id="eiDocW"><label class="st-l">'+mxE(mxTr('Document','Belge'))+'</label><select class="mi" id="eiDoc"><option value="e_smm"'+(s.doc_type!=='e_archive'?' selected':'')+'>e-SMM</option><option value="e_archive"'+(s.doc_type==='e_archive'?' selected':'')+'>e-Arşiv</option></select></div>'+
         '<div id="eiEnvW"><label class="st-l">'+mxE(mxTr('Environment','Ortam'))+'</label><select class="mi" id="eiEnv"><option value="live"'+(s.environment!=='test'?' selected':'')+'>'+mxE(mxTr('Live','Gerçek'))+'</option><option value="test"'+(s.environment==='test'?' selected':'')+'>Test</option></select></div></div>'+
@@ -4501,10 +4504,12 @@ async function stEinvLoad(){
         stField('eiPw',mxTr('Password','Şifre'),'',s.has_password?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+'</div></div>'+
       '<div id="eiNil"><h3>Nilvera</h3><div class="st-grid">'+stField('eiKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSer',mxTr('Series (3 letters)','Seri (3 harf)'),s.series,'SMM')+'</div></div>'+
       '<div id="eiIsn"><h3>İşNet</h3><div class="hint">'+mxE(mxTr('No password needed: İşNet recognises AAFC by your tax number and our fixed server address. In Test mode receipts go to İşNet\'s test company and are not real.','Şifre gerekmez: İşNet, AAFC\'yi VKN/TCKN\'niz ve sabit sunucu adresimizle tanır. Test ortamında makbuzlar İşNet\'in test firmasına kesilir, gerçek değildir.'))+'</div></div>'+
+      '<div id="eiIx"><h3>InvoiceXpress</h3><div class="st-grid">'+stField('eiIxAcc',mxTr('Account name (the part before .app.invoicexpress.com)','Hesap adı (.app.invoicexpress.com öncesi)'),s.provider==='invoicexpress'?s.company_id:'')+stField('eiIxKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+'</div><div class="hint">'+mxE(mxTr('InvoiceXpress › Settings › API. Issues a certified invoice-receipt (fatura-recibo); with 0% VAT the exemption M07 (art. 9 CIVA) is used.','InvoiceXpress › Ayarlar › API. Sertifikalı fatura-makbuz (fatura-recibo) keser; KDV %0 ise M07 muafiyeti (CIVA md. 9) kullanılır.'))+'</div></div>'+
+      '<div id="eiB2"><h3>B2Brouter · VERI*FACTU</h3><div class="st-grid">'+stField('eiB2Acc',mxTr('Account ID','Hesap numarası'),s.provider==='b2brouter'?s.company_id:'')+stField('eiB2Key','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiB2Ser',mxTr('Series','Seri'),s.provider==='b2brouter'?s.series:'','T')+'</div><div class="hint">'+mxE(mxTr('Issues a simplified invoice (ticket) and registers it with VERI*FACTU (AEAT). Turn on VERI*FACTU in your B2Brouter account first. Keys starting with test_ use the sandbox.','Basitleştirilmiş fatura (ticket) keser ve VERI*FACTU\'ya (AEAT) bildirir. Önce B2Brouter hesabınızda VERI*FACTU\'yu açın. test_ ile başlayan anahtarlar deneme ortamını kullanır.'))+'</div></div>'+
       '<div id="eiIss"><h3>'+mxE(mxTr('Issuer','Düzenleyen'))+'</h3><div class="st-grid">'+stField('eiTax',mxTr('Tax / ID number','VKN / TCKN'),iss.tax_number)+stField('eiIName',mxTr('Name / title','Ad soyad / unvan'),iss.name)+stField('eiOff',mxTr('Tax office','Vergi dairesi'),iss.tax_office)+stField('eiCity',mxTr('City','İl'),iss.city)+stField('eiDist',mxTr('District','İlçe'),iss.district)+'</div>'+stField('eiAddr',mxTr('Address','Adres'),iss.address)+'</div>'+
       '<div class="st-grid">'+stField('eiSvc',mxTr('Service name on the receipt','Makbuzdaki hizmet adı'),s.service_name,mxTr('Medical service','Muayene ve tedavi hizmeti'))+'<div><label class="st-l">'+mxE(mxTr('VAT rate %','KDV oranı %'))+'</label><input class="mi" id="eiVat" type="number" min="0" max="30" step="1" value="'+(s.vat_rate!=null?s.vat_rate:'')+'"></div>'+
-        '<div><label class="st-l">'+mxE(mxTr('On the fee screen, “Issue e-SMM” starts','Ücret ekranında “e-SMM oluştur”'))+'</label><select class="mi" id="eiMode"><option value="ask"'+(s.issue_mode!=='auto'?' selected':'')+'>'+mxE(mxTr('switched off','kapalı başlar'))+'</option><option value="auto"'+(s.issue_mode==='auto'?' selected':'')+'>'+mxE(mxTr('switched on','açık başlar'))+'</option></select></div></div>'+
-      '<label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:14px"><input type="checkbox" id="eiOn"'+(s.enabled?' checked':'')+'> '+mxE(mxTr('Turn on e-SMM sending','e-SMM gönderimini aç'))+'</label>'+
+        '<div><label class="st-l">'+mxE(einvCountry()==='90'?mxTr('On the fee screen, “Issue e-SMM” starts','Ücret ekranında “e-SMM oluştur”'):mxTr('On the fee screen, “Issue invoice” starts','Ücret ekranında “Fatura kes”'))+'</label><select class="mi" id="eiMode"><option value="ask"'+(s.issue_mode!=='auto'?' selected':'')+'>'+mxE(mxTr('switched off','kapalı başlar'))+'</option><option value="auto"'+(s.issue_mode==='auto'?' selected':'')+'>'+mxE(mxTr('switched on','açık başlar'))+'</option></select></div></div>'+
+      '<label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:14px"><input type="checkbox" id="eiOn"'+(s.enabled?' checked':'')+'> '+mxE(einvCountry()==='90'?mxTr('Turn on e-SMM sending','e-SMM gönderimini aç'):mxTr('Turn on invoice sending','Fatura gönderimini aç'))+'</label>'+
     '</div>'+
     '<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap"><button class="bimp" onclick="stEinvSave()">'+mxE(mxTr('Save','Kaydet'))+'</button><button class="bimp2" id="eiTestB" onclick="stEinvTest()">'+mxE(mxTr('Test connection','Bağlantıyı test et'))+'</button><span id="eiMsg" style="font-size:13px"></span></div>'+
     '<div class="hint" style="margin-top:10px">'+mxE(mxTr('Secrets are stored encrypted and never shown again.','Şifreler şifreli saklanır, bir daha gösterilmez.'))+'</div></div>';
@@ -4512,15 +4517,16 @@ async function stEinvLoad(){
 }
 function stEinvVis(){var p=document.getElementById('eiProv').value;document.getElementById('eiBox').style.display=p==='manual'?'none':'block';
   document.getElementById('eiPar').style.display=p==='parasut'?'block':'none';document.getElementById('eiNil').style.display=p==='nilvera'?'block':'none';
-  document.getElementById('eiIsn').style.display=p==='isnet'?'block':'none';document.getElementById('eiIss').style.display=p==='nilvera'||p==='isnet'?'block':'none';
+  document.getElementById('eiIsn').style.display=p==='isnet'?'block':'none';document.getElementById('eiIx').style.display=p==='invoicexpress'?'block':'none';document.getElementById('eiB2').style.display=p==='b2brouter'?'block':'none';document.getElementById('eiIss').style.display=p==='nilvera'||p==='isnet'?'block':'none';
   document.getElementById('eiDocW').style.display=p==='parasut'?'block':'none';document.getElementById('eiEnvW').style.display=p==='nilvera'||p==='isnet'?'block':'none';
   document.getElementById('eiTestB').style.display=p==='manual'?'none':'';}
 async function stEinvSave(){
   var p=document.getElementById('eiProv').value,par=p==='parasut',vat=document.getElementById('eiVat').value;
-  var d={provider:p,environment:document.getElementById('eiEnv').value,series:mxV('eiSer'),
+  var ix=p==='invoicexpress',b2=p==='b2brouter';
+  var d={provider:p,environment:document.getElementById('eiEnv').value,series:b2?mxV('eiB2Ser'):mxV('eiSer'),
     issuer:{tax_number:mxV('eiTax'),name:mxV('eiIName'),tax_office:mxV('eiOff'),address:mxV('eiAddr'),district:mxV('eiDist'),city:mxV('eiCity')},
-    doc_type:p==='nilvera'||p==='isnet'?'e_smm':document.getElementById('eiDoc').value,company_id:mxV('eiCo'),client_id:mxV('eiCid'),
-    client_secret:par?mxV('eiCs'):p==='nilvera'?mxV('eiKey'):'',username:mxV('eiUser'),password:par?document.getElementById('eiPw').value:'',
+    doc_type:par?document.getElementById('eiDoc').value:'e_smm',company_id:ix?mxV('eiIxAcc'):b2?mxV('eiB2Acc'):mxV('eiCo'),client_id:mxV('eiCid'),
+    client_secret:par?mxV('eiCs'):p==='nilvera'?mxV('eiKey'):ix?mxV('eiIxKey'):b2?mxV('eiB2Key'):'',username:mxV('eiUser'),password:par?document.getElementById('eiPw').value:'',
     vat_rate:vat===''?null:+vat,service_name:mxV('eiSvc'),account_id:stEi.account_id||null,enabled:p!=='manual'&&document.getElementById('eiOn').checked};
   var r=await db.rpc('save_einvoice_settings',{p:d});
   if(!r.error){await db.rpc('set_einvoice_issue_mode',{p_mode:document.getElementById('eiMode').value});}
@@ -4644,7 +4650,7 @@ function vfOpen(){
       '<option value="all">'+mxE(mxTr('In full','Tamamı'))+'</option><option value="part">'+mxE(mxTr('Partial','Kısmi'))+'</option><option value="later">'+mxE(mxTr('Later','Sonra'))+'</option></select>'+
       '<div id="vfRecW" style="display:none"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Received','Alınan'))+'</label><input class="mi" id="vfRec" type="number" min="0" step="0.01"></div>'+
       '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Method','Yöntem'))+'</label><select class="mi" id="vfMeth"><option value="cash">'+mxE(fnMeth('cash'))+'</option><option value="card">'+mxE(fnMeth('card'))+'</option><option value="transfer">'+mxE(fnMeth('transfer'))+'</option></select></div>'+
-    (vfEinvAuto()?'<label id="vfEsW" style="display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:10px 12px;border-radius:12px;background:#1C1929;border:1px solid rgba(184,154,106,.45);cursor:pointer"><input type="checkbox" id="vfEsmm"'+((vfData.einvoice||{}).issue_mode==='auto'?' checked':'')+' style="width:18px;height:18px;accent-color:#B89A6A"><span><b style="font-size:14px">'+mxE(mxTr('Issue e-SMM','e-SMM oluştur'))+'</b><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(mxTr('Off: waits in Accounting › e-SMM to be sent','Kapalı: Muhasebe › e-SMM listesinde “Gönder” olarak bekler'))+'</div></span></label>':'')+
+    (vfEinvAuto()?'<label id="vfEsW" style="display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:10px 12px;border-radius:12px;background:#1C1929;border:1px solid rgba(184,154,106,.45);cursor:pointer"><input type="checkbox" id="vfEsmm"'+((vfData.einvoice||{}).issue_mode==='auto'?' checked':'')+' style="width:18px;height:18px;accent-color:#B89A6A"><span><b style="font-size:14px">'+mxE(einvCountry()==='90'?mxTr('Issue e-SMM','e-SMM oluştur'):mxTr('Issue invoice','Fatura kes'))+'</b><div style="font-size:11.5px;color:rgba(245,241,235,.55)">'+mxE(einvCountry()==='90'?mxTr('Off: waits in Accounting › e-SMM to be sent','Kapalı: Muhasebe › e-SMM listesinde “Gönder” olarak bekler'):mxTr('Off: waits in Accounting › Invoices to be sent','Kapalı: Muhasebe › Faturalar listesinde bekler'))+'</div></span></label>':'')+
     '<div id="vfErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
   mxOpen(mxTr('Fee','Ücret'),b,(c?[{label:mxTr('Delete fee','Ücreti sil'),cls:'bdel',fn:vfDelete}]:[]).concat([{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:vfSave}]));
   vfLinesDraw();
@@ -4689,7 +4695,7 @@ async function vfDelete(){
   if(r.error){var m=r.error.message||'';document.getElementById('vfErr').textContent=m.indexOf('einvoice_issued')>=0?mxTr("An e-receipt was issued for this payment, so it can't be deleted. Enter a refund in Accounts.",'Bu ödeme için e-SMM kesilmiş; silinemez. Muhasebeden iade kaydı girin.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
   mxClose();vfLoad(selVid);
 }
-function vfEinvAuto(){var ei=vfData&&vfData.einvoice;return !!(ei&&ei.enabled===true&&ei.provider!=='manual');}
+function vfEinvAuto(){var ei=vfData&&vfData.einvoice;return !!(ei&&ei.enabled===true&&ei.provider!=='manual'&&einvCountry());}
 async function vfSave(){
   var esOn=!!(document.getElementById('vfEsmm')&&document.getElementById('vfEsmm').checked&&document.getElementById('vfPayBox').style.display!=='none');
   var before={};((vfData&&vfData.payments)||[]).forEach(function(p){before[p.id]=1;});
@@ -4715,10 +4721,10 @@ async function vfSave(){
 }
 // ---- e-SMM on the visit fee card ----
 function vfEinvHtml(d){
-  var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length||!stIsTr())return '';
+  var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length||!einvCountry())return '';
   var auto=ei.provider!=='manual'&&ei.enabled===true,h='';
   ps.forEach(function(p){
-    var st=p.einvoice_status||null,no=String(p.invoice_no||'').trim(),t,c;
+    var st=p.einvoice_status||null,no=String(p.invoice_no||'').trim(),t,c,dn=einvDocName();
     if(st==='issued'){t=mxTr('e-Document issued','e-Belge kesildi')+(no?' · '+no:'');c='#3AB06A';}
     else if(st==='pending'){t=mxTr('e-Document is being processed','e-Belge işleniyor');c='#B89A6A';}
     else if(st==='error'){t=mxTr('e-Document failed','e-Belge kesilemedi')+(p.einvoice_error?' · '+p.einvoice_error:'');c='#E05555';}
@@ -4729,12 +4735,12 @@ function vfEinvHtml(d){
     var open=!st||st==='error'||st==='deferred'||st==='cancelled';if(!st&&no)open=false;
     var b='',btn='class="bimp2" style="padding:5px 10px;font-size:12px"';
     if(st==='issued'&&auto)b+='<button '+btn+' onclick="event.stopPropagation();vfEinv(\'pdf\',\''+p.id+'\')">PDF</button>';
-    if(st==='issued'&&auto&&ei.provider==='isnet')b+='<button '+btn.replace('style="','style="color:#E05555;border-color:rgba(224,85,85,.5);')+' onclick="event.stopPropagation();vfCancel(\''+p.id+'\',\''+mxE(no)+'\')">'+mxE(mxTr('Cancel','İptal et'))+'</button>';
+    if(st==='issued'&&auto&&(ei.provider==='isnet'||ei.provider==='invoicexpress'))b+='<button '+btn.replace('style="','style="color:#E05555;border-color:rgba(224,85,85,.5);')+' onclick="event.stopPropagation();vfCancel(\''+p.id+'\',\''+mxE(no)+'\')">'+mxE(mxTr('Cancel','İptal et'))+'</button>';
     if((open||st==='pending')&&auto)b+='<button '+btn.replace('style="','style="background:#B89A6A;color:#1C1929;border-color:#B89A6A;')+' onclick="event.stopPropagation();vfEinv(\'issue\',\''+p.id+'\')">'+mxE(mxTr('Send','Gönder'))+'</button>';
     if(open&&st!=='deferred')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'deferred\')">'+mxE(mxTr("I'll issue it later",'Sonra keseceğim'))+'</button>';
     if(open)b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'external\')">'+mxE(mxTr('Issued elsewhere','Başka yerden kesildi'))+'</button>';
     if(st==='deferred'||st==='external')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',null)">'+mxE(mxTr('Remove mark','İşareti kaldır'))+'</button>';
-    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">e-SMM'+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">'+dn+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
   });
   if(ei.provider!=='manual'&&ei.enabled!==true)h+='<div style="font-size:12px;color:#D4963A;margin-top:6px">'+mxE(mxTr('e-SMM sending is off: Settings › e-Invoice › “Turn on e-SMM sending”.','e-SMM gönderimi kapalı: Ayarlar › e-Fatura › “e-SMM gönderimini aç”.'))+'</div>';
   return h;

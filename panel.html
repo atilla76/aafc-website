@@ -4734,6 +4734,7 @@ function vfEinvHtml(d){
     if(st==='deferred'||st==='external')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',null)">'+mxE(mxTr('Remove mark','İşareti kaldır'))+'</button>';
     h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">e-SMM'+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
   });
+  if(ei.provider!=='manual'&&ei.enabled!==true)h+='<div style="font-size:12px;color:#D4963A;margin-top:6px">'+mxE(mxTr('e-SMM sending is off: Settings › e-Invoice › “Turn on e-SMM sending”.','e-SMM gönderimi kapalı: Ayarlar › e-Fatura › “e-SMM gönderimini aç”.'))+'</div>';
   return h;
 }
 function vfProfitHtml(d,amount){

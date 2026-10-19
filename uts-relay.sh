@@ -65,6 +65,20 @@ $HOST {
 				header_up -X-Forwarded-For
 			}
 		}
+		handle_path /isnet-test/* {
+			reverse_proxy https://einvoiceservicetest.isnet.net.tr {
+				header_up Host einvoiceservicetest.isnet.net.tr
+				header_up -X-Relay-Key
+				header_up -X-Forwarded-For
+			}
+		}
+		handle_path /isnet/* {
+			reverse_proxy https://einvoiceservice.isnet.net.tr {
+				header_up Host einvoiceservice.isnet.net.tr
+				header_up -X-Relay-Key
+				header_up -X-Forwarded-For
+			}
+		}
 		handle_path /prod/* {
 			reverse_proxy https://utsuygulama.saglik.gov.tr {
 				header_up Host utsuygulama.saglik.gov.tr

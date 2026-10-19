@@ -30,6 +30,7 @@
   .hero-note { font-size: 14px !important; color: #B89A6A !important; letter-spacing: .3px; margin-top: -20px; }
   .hero-note span { opacity: .75; }
   html:not([data-lang="tr"]) .tr-only { display: none; }
+  html[data-lang="tr"] .intl-only { display: none; }
   .hero-visual { display: flex; justify-content: center; align-items: center; position: relative; }
   .phone-frame { width: 280px; aspect-ratio: 9/19.5; background: #0a0a14; border-radius: 38px; border: 4px solid #2a2738; padding: 8px; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,154,106,0.15); }
   .phone-frame::before { content: ''; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px; background: #0a0a14; border-radius: 14px; z-index: 2; }
@@ -154,6 +155,7 @@ if (window.location.search.includes('code=')) {
     <h1 data-en-html="Complete clinic management for<br><span>aesthetic clinics</span>" data-tr-html="Estetik klinikler için<br><span>uçtan uca klinik yönetimi</span>">Complete clinic management for<br><span>aesthetic clinics</span></h1>
     <p data-en="Appointments, patient records and photos, digital consent, injection maps, stock and accounting in one app — with e-invoicing, WhatsApp reminders and a patient portal. On your phone, tablet and in the browser. Built by a clinician, for clinicians." data-tr="Randevu, hasta dosyası ve fotoğraflar, dijital onam, enjeksiyon haritası, stok ve muhasebe tek uygulamada; e‑SMM / e‑Arşiv fatura, WhatsApp hatırlatmaları ve hasta portalı dahil. Telefon, tablet ve tarayıcıda. Bir hekim tarafından, hekimler için yapıldı.">Appointments, patient records and photos, digital consent, injection maps, stock and accounting in one app — with e-invoicing, WhatsApp reminders and a patient portal. On your phone, tablet and in the browser. Built by a clinician, for clinicians.</p>
     <p class="hero-note tr-only">ÜTS &amp; İTS entegrasyonu · <span>MBYS entegrasyonu çok yakında</span></p>
+    <p class="hero-note intl-only" data-en="Lot and serial tracking per patient · supports EU MDR (UDI) record-keeping">Lot and serial tracking per patient · supports EU MDR (UDI) record-keeping</p>
     <div class="badges">
       <a href="https://apps.apple.com/app/id6762765636" class="badge"><i class="fa-brands fa-apple" style="font-size:22px"></i><span data-en="Download on App Store" data-tr="App Store'dan indir">Download on App Store</span></a>
       <a href="https://play.google.com/store/apps/details?id=com.aafcclinic.app" class="badge"><i class="fa-brands fa-google-play" style="font-size:20px"></i><span data-en="Get it on Google Play" data-tr="Google Play'den indir">Get it on Google Play</span></a>

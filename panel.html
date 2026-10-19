@@ -2528,7 +2528,7 @@ async function fnLoad(){
   fnProfit=res[7].data||null;var pp=res[8].data||null;
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
   var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
-  fnEinv=!!(res[6].data&&res[6].data.enabled);fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
+  fnEinv=!!(res[6].data&&res[6].data.enabled)&&stIsTr();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
   var closed=!!cd.closing;
   document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
     '<div style="font-size:22px">'+(closed?'🔒':'🔓')+'</div><div style="flex:1"><b style="font-size:15px">'+mxE(mxTr('Today','Bugün'))+' '+mxMoney(td)+'</b><div style="font-size:12px;color:rgba(245,241,235,.6)">'+
@@ -4263,7 +4263,7 @@ var ST_ITEMS=[
   ['g','Business','İşletme'],
   ['stock','Stock','Stok','Products, lots and expiry tracking','Ürün, lot ve son kullanma takibi','tab:stock'],
   ['finance','Accounting','Muhasebe','Income, expenses, instalments, e-SMM','Gelir, gider, taksit, e-SMM','tab:finance'],
-  ['einvoice','e-Invoice (e-SMM)','e-Fatura (e-SMM)','Provider, credentials, sending','Sağlayıcı, bilgiler, gönderim'],
+  ['einvoice','e-Invoice (e-SMM)','e-Fatura (e-SMM)','Provider, credentials, sending','Sağlayıcı, bilgiler, gönderim','tr'],
   ['enabiz','e-Nabız (MBYS)','e-Nabız (MBYS)','Automatic sending','Otomatik gönderim','tr'],
   ['tracking','ÜTS / İTS','ÜTS / İTS','Product tracking notifications','Ürün takip bildirimleri','tab:trk'],
   ['g','Data','Veriler'],
@@ -4715,7 +4715,7 @@ async function vfSave(){
 }
 // ---- e-SMM on the visit fee card ----
 function vfEinvHtml(d){
-  var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length)return '';
+  var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length||!stIsTr())return '';
   var auto=ei.provider!=='manual'&&ei.enabled===true,h='';
   ps.forEach(function(p){
     var st=p.einvoice_status||null,no=String(p.invoice_no||'').trim(),t,c;

@@ -4634,7 +4634,7 @@ async function vfLoad(id){
     var rem=Number(d.remaining||0),paid=Number(d.paid||0);
     var tag=rem<=0.009?['58,176,106',mxTr('Paid','Ödendi')]:paid>0?['212,150,58',mxTr('Partial','Kısmi')]:['192,97,74',mxTr('Unpaid','Ödenmedi')];
     h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:20px;color:#F5F1EB">'+vfMoney(c.amount)+'</b><span style="flex:1;font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(c.description||'')+'</span><span style="padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;color:rgb('+tag[0]+');background:rgba('+tag[0]+',0.14)">'+mxE(tag[1])+'</span></div>'+((c.items||[]).length>=2?'<div style="font-size:12.5px;color:#F5F1EB;margin-top:4px">'+c.items.map(function(x){return mxE(x.label)+' '+vfMoney(x.amount);}).join(' &nbsp;·&nbsp; ')+'</div>':'')+
-      '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b></span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div>'+vfProfitHtml(d,Number(c.amount||0))+vfEinvHtml(d)+'</div>';
+      '<div style="display:flex;gap:16px;margin-top:6px;font-size:12.5px"><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Paid','Ödenen'))+' <b style="color:#3AB06A">'+vfMoney(paid)+'</b>'+vfMethods(d)+'</span><span style="color:rgba(245,241,235,0.6)">'+mxE(mxTr('Remaining','Kalan'))+' <b style="color:'+(rem>0.009?'#D4963A':'rgba(245,241,235,0.6)')+'">'+vfMoney(rem)+'</b></span></div>'+vfProfitHtml(d,Number(c.amount||0))+vfEinvHtml(d)+'</div>';
   }
   el.innerHTML='<div class="sec">'+mxE(mxTr('FEE','ÜCRET'))+'</div>'+h;
 }
@@ -4720,6 +4720,8 @@ async function vfSave(){
   vfLoad(selVid);
 }
 // ---- e-SMM on the visit fee card ----
+// payment methods used on this fee, e.g. " · Cash, Card"
+function vfMethods(d){var ms=[];(d.payments||[]).forEach(function(p){var m=fnMeth(p.method);if(ms.indexOf(m)<0)ms.push(m);});return ms.length?' <span style="color:rgba(245,241,235,0.55)">· '+mxE(ms.join(', '))+'</span>':'';}
 function vfEinvHtml(d){
   var ei=d.einvoice,ps=d.payments||[];if(!ei||!ps.length||!einvCountry())return '';
   var auto=ei.provider!=='manual'&&ei.enabled===true,h='';
@@ -4740,7 +4742,7 @@ function vfEinvHtml(d){
     if(open&&st!=='deferred')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'deferred\')">'+mxE(mxTr("I'll issue it later",'Sonra keseceğim'))+'</button>';
     if(open)b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',\'external\')">'+mxE(mxTr('Issued elsewhere','Başka yerden kesildi'))+'</button>';
     if(st==='deferred'||st==='external')b+='<button '+btn+' onclick="event.stopPropagation();vfMark(\''+p.id+'\',null)">'+mxE(mxTr('Remove mark','İşareti kaldır'))+'</button>';
-    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">'+dn+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)"><div style="flex:1;min-width:160px"><b style="font-size:13px;color:#F5F1EB">'+dn+(ps.length>1?' · '+vfMoney(p.amount):'')+'</b><span style="font-size:12px;color:rgba(245,241,235,0.55)"> · '+mxE(fnMeth(p.method))+'</span><div style="font-size:12px;color:'+c+'">'+mxE(t)+'</div></div>'+b+'</div>';
   });
   if(ei.provider!=='manual'&&ei.enabled!==true)h+='<div style="font-size:12px;color:#D4963A;margin-top:6px">'+mxE(mxTr('e-SMM sending is off: Settings › e-Invoice › “Turn on e-SMM sending”.','e-SMM gönderimi kapalı: Ayarlar › e-Fatura › “e-SMM gönderimini aç”.'))+'</div>';
   return h;

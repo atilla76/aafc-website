@@ -4709,7 +4709,7 @@ async function vfLoad(id){
   if(!c&&!pk){
     h='<div style="'+box+';display:flex;align-items:center;gap:12px" onclick="vfOpen()"><span style="font-size:20px;color:#3AB06A">＋</span><div style="flex:1"><div style="font-size:14px;font-weight:600;color:#F5F1EB">'+mxE(mxTr('Add fee','Ücret ekle'))+'</div><div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount and payment go to the accounts','Tutar ve ödeme muhasebeye işlenir'))+'</div></div><span style="color:rgba(245,241,235,0.5)">›</span></div>';
   }else if(!c){
-    h='<div style="'+box+'" onclick="vfOpen()"><div style="display:flex;justify-content:space-between"><b style="color:#F5F1EB">'+mxE(pk.name||'')+'</b><span style="font-size:12px;color:rgba(245,241,235,0.6)">'+pk.used+' / '+pk.total+'</span></div><div style="font-size:12px;color:rgba(245,241,235,0.6);margin-top:4px">'+mxE(mxTr('This session was taken from the package, no separate fee.','Bu seans paketten düşüldü, ayrı ücret alınmadı.'))+'</div></div>';
+    h='<div style="'+box+'" onclick="vfPkgChoice()"><div style="display:flex;justify-content:space-between"><b style="color:#F5F1EB">'+mxE(pk.name||'')+'</b><span style="font-size:12px;color:rgba(245,241,235,0.6)">'+pk.used+' / '+pk.total+'</span></div><div style="font-size:12px;color:rgba(245,241,235,0.6);margin-top:4px">'+mxE(mxTr('This session was taken from the package, no separate fee.','Bu seans paketten düşüldü, ayrı ücret alınmadı.'))+'</div></div>';
   }else{
     var rem=Number(d.remaining||0),paid=Number(d.paid||0);
     var tag=rem<=0.009?['58,176,106',mxTr('Paid','Ödendi')]:paid>0?['212,150,58',mxTr('Partial','Kısmi')]:['192,97,74',mxTr('Unpaid','Ödenmedi')];
@@ -4774,6 +4774,12 @@ async function vfDelete(){
   var r=await db.rpc('delete_visit_fee',{p_visit_id:selVid});
   if(r.error){var m=r.error.message||'';document.getElementById('vfErr').textContent=m.indexOf('einvoice_issued')>=0?mxTr("An e-receipt was issued for this payment, so it can't be deleted. Enter a refund in Accounts.",'Bu ödeme için e-SMM kesilmiş; silinemez. Muhasebeden iade kaydı girin.'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
   mxClose();vfLoad(selVid);
+}
+function vfPkgChoice(){
+  mxOpen(mxTr('This session was taken from a package','Bu seans paketten düşüldü'),
+    '<div class="hint" style="margin:0">'+mxE(mxTr('A payment for the package should go to the package balance, not a new fee for this visit.','Paket için alınan ödeme pakete sayılmalı; bu vizite yeni ücret eklenmez.'))+'</div>',
+    [{label:mxTr('Add a separate fee (not in the package)','Paket dışı ayrı ücret ekle'),cls:'bcancel',fn:function(){mxClose();vfOpen();}},
+     {label:mxTr('Take a package payment','Paket ödemesi al'),fn:function(){mxClose();if(selPid)fnAccount(selPid);}}]);
 }
 function vfEinvAuto(){var ei=vfData&&vfData.einvoice;return !!(ei&&ei.enabled===true&&ei.provider!=='manual'&&einvCountry());}
 async function vfSave(){

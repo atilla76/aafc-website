@@ -851,6 +851,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
           <button class="bimp2" onclick="fnShift(-1)">‹</button><span id="fnPeriod" style="min-width:130px;text-align:center;align-self:center"></span><button class="bimp2" onclick="fnShift(1)">›</button>
           <select class="bk-in" id="fnMode" onchange="fnLoad()"><option value="m">Month</option><option value="y">Year</option></select>
           <button class="bimp2" onclick="fnCsv()">Export CSV</button>
+          <button class="bimp" id="fnMkBtn" style="display:none;background:#C9A96E;border-color:#C9A96E;color:#1a1a1a" onclick="fnReceipt()">🧾 Makbuz kes</button>
           <button class="bimp" onclick="fnEntryModal()">+ Add entry</button>
         </div>
       </div>
@@ -2507,6 +2508,70 @@ async function fnEsmmOne(btn,id){
   if(err)alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));
   fnLoad();
 }
+
+// ---- Standalone e-SMM receipt (TR only) ----
+var fnEiS={},fnMk={to:'p',pat:null,sp:0};
+function fnReceipt(){
+  fnMk={to:'p',pat:null,sp:0};var vat=fnEiS.vat_rate!=null?fnEiS.vat_rate:10,biz=fnEiS.provider==='isnet';
+  var seg=function(id,opts,cur,fn){return '<div style="display:flex;gap:6px;margin-bottom:8px" id="'+id+'">'+opts.map(function(o){return '<button type="button" class="'+(o[0]===cur?'bimp':'bimp2')+'" style="flex:1;padding:8px" onclick="'+fn+'(\''+o[0]+'\')">'+mxE(o[1])+'</button>';}).join('')+'</div>';};
+  mxOpen('Makbuz kes (e-SMM)',
+    '<div class="st-l">Kime</div>'+(biz?seg('mkTo',[['p','Hasta / kişi'],['b','İşletme']],'p','fnMkTo'):'')+
+    '<div id="mkPat"></div>'+
+    '<div id="mkPerson"><input class="mi" id="mkPName" placeholder="Ad soyad (hasta seçmediyseniz)"><input class="mi" id="mkPTc" inputmode="numeric" maxlength="11" placeholder="T.C. kimlik no (opsiyonel)"></div>'+
+    '<div id="mkBiz" style="display:none"><input class="mi" id="mkBName" placeholder="Unvan (ör. Big Gusto Pizzeria — Ad Soyad)">'+
+      '<div style="display:flex;gap:6px"><input class="mi" id="mkBTax" inputmode="numeric" maxlength="11" placeholder="VKN / TCKN" style="flex:1"><input class="mi" id="mkBOff" placeholder="Vergi dairesi" style="flex:1"></div>'+
+      '<input class="mi" id="mkBAddr" placeholder="Adres (cadde, sokak, no)"><div style="display:flex;gap:6px"><input class="mi" id="mkBTown" placeholder="İlçe" style="flex:1"><input class="mi" id="mkBCity" placeholder="İl" style="flex:1"></div></div>'+
+    '<div class="st-l" style="margin-top:6px">Tahsil edilen tutar (KDV dahil)</div><input class="mi" id="mkAmt" inputmode="decimal" placeholder="0,00" style="font-size:20px;font-weight:700" oninput="fnMkCalc()">'+
+    '<div style="display:flex;gap:6px"><div style="flex:1"><div class="st-l">KDV %</div><input class="mi" id="mkVat" type="number" value="'+vat+'" readonly title="Ayarlar › e-Fatura" style="opacity:.7"></div>'+
+      '<div style="flex:1"><div class="st-l">Tarih</div><input class="mi" id="mkDate" type="date" value="'+mxIso(new Date())+'"></div></div>'+
+    '<div class="st-l">Ödeme</div><select class="mi" id="mkMeth">'+FN_METHODS.map(function(m){return '<option value="'+m+'">'+mxE(fnMeth(m))+'</option>';}).join('')+'</select>'+
+    '<input class="mi" id="mkDesc" value="'+mxE(fnEiS.service_name||'Muayene ve tedavi hizmeti')+'" placeholder="Açıklama">'+
+    '<div id="mkSpBox" style="display:none"><div class="st-l">Stopaj (gelir vergisi kesintisi)</div>'+seg('mkSp',[['0','Yok'],['20','%20']],'0','fnMkSp')+
+      '<div class="hint" style="margin:0 0 8px">Sadece işletme stopaj keserek ödediyse %20 seçin.</div></div>'+
+    '<div id="mkCalc" class="imp-step" style="padding:10px 12px;font-size:13px;margin-top:4px"></div><div id="mkMsg" style="font-size:13px;margin-top:6px"></div>',
+    [{label:'Vazgeç',cls:'bcancel',fn:mxClose},{label:'e-SMM kes',fn:fnMkIssue}]);
+  fnMkRenderPat();fnMkCalc();
+}
+function fnMkTo(t){fnMk.to=t;['p','b'].forEach(function(k,i){var b=document.querySelectorAll('#mkTo button')[i];if(b)b.className=k===t?'bimp':'bimp2';});
+  document.getElementById('mkBiz').style.display=t==='b'?'':'none';document.getElementById('mkSpBox').style.display=t==='b'?'':'none';
+  if(t!=='b')fnMkSp('0');fnMkRenderPat();}
+function fnMkSp(v){fnMk.sp=+v;['0','20'].forEach(function(k,i){var b=document.querySelectorAll('#mkSp button')[i];if(b)b.className=k===v?'bimp':'bimp2';});fnMkCalc();}
+function fnMkRenderPat(){var box=document.getElementById('mkPat');if(!box)return;var p=fnMk.pat;
+  document.getElementById('mkPerson').style.display=fnMk.to==='p'&&!p?'':'none';
+  if(p){box.innerHTML='<div class="mi" style="display:flex;justify-content:space-between"><span>👤 '+mxE((p.name||'')+' '+(p.surname||''))+(fnMk.to==='p'?' <span style="color:rgba(245,241,235,.45);font-size:12px">'+(p.national_id?'TC ✓':'TC yok → 11111111111')+'</span>':'')+'</span><a style="cursor:pointer;color:#C0614A" onclick="fnMk.pat=null;fnMkRenderPat()">✕</a></div>';return;}
+  box.innerHTML='<input class="mi" placeholder="'+(fnMk.to==='b'?'Hasta ara (işletme bilgisi kayıtlıysa dolar)':'Hasta ara')+'" oninput="fnMkSearch(this.value)"><div id="mkPatRes"></div>';}
+var fnMkT=null;
+function fnMkSearch(q){clearTimeout(fnMkT);var res=document.getElementById('mkPatRes');if(q.trim().length<2){res.innerHTML='';return;}
+  fnMkT=setTimeout(async function(){var r=await db.rpc('search_patients',{p_clinic_id:cid,p_query:q.trim()});var list=(r.data||[]).slice(0,6);window._mkPats=list;
+    res.innerHTML=list.map(function(p,i){return '<div style="padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(245,241,235,.06)" onclick="fnMkPick('+i+')">'+mxE((p.name||'')+' '+(p.surname||''))+' <span style="color:rgba(245,241,235,.4)">'+mxE(p.phone||'')+'</span></div>';}).join('');},300);}
+async function fnMkPick(i){var p=window._mkPats[i];var r=await db.from('patients').select('id,name,surname,national_id,billing').eq('id',p.id).single();
+  fnMk.pat=r.data||p;var b=(r.data&&r.data.billing)||null;
+  if(b){if(fnMk.to!=='b'&&fnEiS.provider==='isnet')fnMkTo('b');[['mkBName','name'],['mkBTax','tax_no'],['mkBOff','tax_office'],['mkBAddr','address'],['mkBTown','town'],['mkBCity','city']].forEach(function(f){var el=document.getElementById(f[0]);if(el&&!el.value)el.value=b[f[1]]||'';});}
+  fnMkRenderPat();}
+function fnMkCalc(){var el=document.getElementById('mkCalc');if(!el)return;var T=mxNum(mxV('mkAmt'))||0,v=+(document.getElementById('mkVat').value||0),sp=fnMk.sp||0;
+  var net=T/(1+v/100-sp/100),kdv=net*v/100,st=net*sp/100,row=function(a,b,bold){return '<div style="display:flex;justify-content:space-between;'+(bold?'font-weight:700;border-top:1px solid rgba(245,241,235,.12);padding-top:5px;margin-top:3px':'')+'"><span>'+a+'</span><span>'+b+'</span></div>';};
+  el.innerHTML=row('Brüt ücret',mxMoney(net))+row('KDV %'+v,'+ '+mxMoney(kdv))+(sp?row('Stopaj %'+sp,'− '+mxMoney(st)):'')+row('Tahsil edilen',mxMoney(T),true);}
+async function fnMkIssue(){
+  var msg=document.getElementById('mkMsg'),T=mxNum(mxV('mkAmt'));if(!T||T<=0){msg.innerHTML='<span style="color:#E05555">Tutarı girin</span>';return;}
+  var vat=+(document.getElementById('mkVat').value||0),p=fnMk.pat,rc=null;
+  if(fnMk.to==='b'){rc={name:mxV('mkBName').trim(),tax_no:mxV('mkBTax').replace(/\D/g,''),tax_office:mxV('mkBOff').trim(),address:mxV('mkBAddr').trim(),town:mxV('mkBTown').trim(),city:mxV('mkBCity').trim()};
+    if(!rc.name||!/^\d{10,11}$/.test(rc.tax_no)){msg.innerHTML='<span style="color:#E05555">Unvan ve 10 haneli VKN (veya 11 haneli TCKN) gerekli</span>';return;}
+    if(rc.tax_no.length===10&&!rc.tax_office){msg.innerHTML='<span style="color:#E05555">VKN için vergi dairesi gerekli</span>';return;}}
+  else if(!p){var nm=mxV('mkPName').trim(),tc=mxV('mkPTc').replace(/\D/g,'');if(tc&&tc.length!==11){msg.innerHTML='<span style="color:#E05555">T.C. kimlik no 11 hane olmalı</span>';return;}
+    if(nm||tc)rc={name:nm,tax_no:tc};}
+  var btns=document.querySelectorAll('#mxBtns button');btns.forEach(function(b){b.disabled=true;});msg.textContent='Kesiliyor…';
+  var row={clinic_id:cid,currency:clinic.currency||'TRY',kind:'income',amount:T,category:'treatment',method:document.getElementById('mkMeth').value,entry_date:mxV('mkDate'),
+    patient_id:p?p.id:null,description:mxV('mkDesc')||null,esmm_recipient:rc,esmm_stopaj:fnMk.to==='b'?fnMk.sp:0};
+  var ins=await db.from('finance_entries').insert(row).select('id').single();
+  if(ins.error){msg.innerHTML='<span style="color:#E05555">'+mxE(ins.error.message)+'</span>';btns.forEach(function(b){b.disabled=false;});return;}
+  if(p&&fnMk.to==='b')await db.from('patients').update({billing:rc}).eq('id',p.id);
+  var r=await db.functions.invoke('einvoice',{body:{action:'issue',entry_id:ins.data.id}}),err=r.data&&r.data.error;
+  if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
+  fnLoad();
+  if(err){msg.innerHTML='<span style="color:#E05555">Kesilemedi: '+mxE(vfEinvErr(String(err)))+'</span><div class="hint" style="margin:4px 0 0">Kayıt muhasebeye eklendi; düzeltip e-SMM sekmesinden tekrar gönderebilirsiniz.</div>';btns.forEach(function(b){b.disabled=false;});return;}
+  msg.innerHTML='<span style="color:#3AB06A;font-weight:700">✓ Makbuz kesildi '+mxE((r.data&&r.data.invoice_no)||'')+'</span>';
+  setTimeout(mxClose,1600);
+}
 function fnUninv(e){return e.kind==='income'&&e.einvoice_status!=='issued'&&!String(e.invoice_no||'').trim();}
 function fnDelta(c,p,lowGood){c=Number(c||0);p=Number(p||0);if(p<=0)return '';var x=Math.round((c-p)/p*100);if(!x)return '';var good=lowGood?x<0:x>0;
   return '<div class="l" style="color:'+(good?'#6FCF97':'#F0A28F')+';font-weight:700">'+(x>0?'▲':'▼')+' %'+Math.abs(x)+' '+mxE(mxTr('vs previous','önceki döneme göre'))+'</div>';}
@@ -2534,7 +2599,7 @@ async function fnLoad(){
   fnProfit=res[7].data||null;var pp=res[8].data||null;
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
   var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
-  fnEinv=!!(res[6].data&&res[6].data.enabled)&&!!einvCountry();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';
+  fnEinv=!!(res[6].data&&res[6].data.enabled)&&!!einvCountry();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';fnEiS=res[6].data||{};var mkb=document.getElementById('fnMkBtn');if(mkb)mkb.style.display=fnEinv&&einvCountry()==='90'?'':'none';
   var closed=!!cd.closing;
   document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
     '<div style="font-size:22px">'+(closed?'🔒':'🔓')+'</div><div style="flex:1"><b style="font-size:15px">'+mxE(mxTr('Today','Bugün'))+' '+mxMoney(td)+'</b><div style="font-size:12px;color:rgba(245,241,235,.6)">'+

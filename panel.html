@@ -2349,15 +2349,23 @@ async function stOpen(id){
     var soon=l.expiry_date&&new Date(l.expiry_date)<new Date(Date.now()+30*864e5);
     return '<tr style="opacity:'+(Number(l.remaining)>0?1:.45)+'"><td><b>'+mxE(l.lot_no)+'</b></td><td style="color:'+(soon?'#C0614A':'inherit')+'">'+mxDate(l.expiry_date)+'</td><td>'+mxDate(l.opened_at)+'</td><td>'+mxQty(l.remaining)+' '+u+'</td><td style="white-space:nowrap">'+
       (l.opened_at?'':'<button class="btn bedit" onclick="stOpenLot(\''+l.lot_id+'\')">Vial opened</button> ')+
-      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button> <button class="btn bedit" style="'+(l.unit_cost==null?'color:#D4963A;border-color:rgba(212,150,58,.5)':'')+'" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(l.unit_cost==null?mxTr('Enter box price','Kutu fiyatı gir'):mxTr('Box price','Kutu fiyatı')+' '+mxMoney(Number(l.unit_cost)*(Number(stSel.pack_size)||1)))+'</button></td></tr>';}).join('');
+      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(mxTr('Edit','Düzenle'))+'</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button> <button class="btn bedit" style="'+(l.unit_cost==null?'color:#D4963A;border-color:rgba(212,150,58,.5)':'')+'" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(l.unit_cost==null?mxTr('Enter box price','Kutu fiyatı gir'):mxTr('Box price','Kutu fiyatı')+' '+mxMoney(Number(l.unit_cost)*(Number(stSel.pack_size)||1)))+'</button></td></tr>';}).join('');
 }
 async function stCost(lotId,unitCost){
   var pack=Number(stSel&&stSel.pack_size)||1,cur=unitCost==null?'':Math.round(unitCost*pack*100)/100;
-  var v=prompt(mxTr('Box price','Kutu fiyatı')+(pack>1?' (1 = '+pack+' '+(stSel.unit==='ml'?'ml':'u')+')':''),cur);
-  if(v===null)return;var n=mxNum(v);if(!(n>0)){alert(mxTr('Enter an amount.','Miktar girin.'));return;}
-  var r=await db.from('stock_lots').update({unit_cost:n/pack}).eq('id',lotId);
-  if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
-  stOpen(stSel.id);
+  var r0=await db.from('stock_lots').select('lot_no,expiry_date,supplier').eq('id',lotId).maybeSingle();var x=r0.data||{};
+  var lb=function(t){return '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(t)+'</label>';};
+  var b=lb(mxTr('Box price','Kutu fiyatı')+(pack>1?' (1 = '+pack+' '+(stSel.unit==='ml'?'ml':mxTr('units','ünite'))+')':''))+'<input class="mi" id="lcCost" inputmode="decimal" value="'+mxE(cur)+'">'+
+    lb(mxTr('Supplier','Tedarikçi'))+'<input class="mi" id="lcSup" value="'+mxE(x.supplier||'')+'">'+
+    lb(mxTr('Expiry date','Son kullanma tarihi'))+'<input class="mi" id="lcExp" type="date" value="'+mxE(x.expiry_date||'')+'">'+
+    lb(mxTr('Lot / serial no','Lot / seri no'))+'<input class="mi" id="lcLot" value="'+mxE(x.lot_no||'')+'">'+
+    '<div id="lcErr" style="color:#E05555;font-size:12.5px;margin-top:6px"></div>';
+  mxOpen(mxTr('Edit','Düzenle')+' · LOT '+mxE(x.lot_no||''),b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:async function(){
+    var cs=mxV('lcCost'),n=cs?mxNum(cs):null,lot=mxV('lcLot');
+    if((cs&&!(n>0))||!lot){document.getElementById('lcErr').textContent=mxTr('Check the price and lot number.','Fiyatı ve lot numarasını kontrol edin.');return;}
+    var r=await db.from('stock_lots').update({unit_cost:n==null?null:n/pack,supplier:mxV('lcSup')||null,expiry_date:mxV('lcExp')||null,lot_no:lot}).eq('id',lotId);
+    if(r.error){document.getElementById('lcErr').textContent=mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');return;}
+    mxClose();stOpen(stSel.id);}}]);
 }
 function spF(id,label,val,help){return '<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(label)+'</label><input class="mi" id="'+id+'" value="'+mxE(val==null?'':val)+'" style="margin-bottom:2px"><div style="font-size:11.5px;color:rgba(245,241,235,0.45);margin:0 0 10px">'+mxE(help)+'</div>';}
 function stProductModal(p){

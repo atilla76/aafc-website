@@ -5118,12 +5118,15 @@ async function bdOpen(){
   var fill=function(n){return mxFill(tpl,n,'').split('[klinik_adi]').join(clinic.name||'').split('[clinic_name]').join(clinic.name||'');};
   var b=rows.length?rows.map(function(x){var n=((x.name||'')+' '+(x.surname||'')).trim();
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(245,241,235,.08)"><div style="flex:1;min-width:0"><b>'+mxE(n)+'</b>'+(x.age!=null?' <span style="color:rgba(245,241,235,.55)">· '+x.age+'</span>':'')+'<div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxE(x.phone||mxTr('No phone','Telefon yok'))+'</div></div>'+
-      (x.phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.phone,fill(x.name||n))+'">WhatsApp</a>':'')+
+      (x.phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.phone,fill(x.name||n))+'">WhatsApp</a>':'<button class="btn bedit" onclick="bdAddPhone(\''+x.id+'\')">'+mxE(mxTr('Add phone','Telefon ekle'))+'</button>')+
       '<button class="btn bedit" onclick="mxClose();switchTab(\'patients\');selP(\''+x.id+'\')">'+mxE(mxTr('Patient','Hasta'))+'</button></div>';}).join('')
     :'<div style="color:rgba(245,241,235,.6)">'+mxE(mxTr('No birthdays today.','Bugün doğum günü yok.'))+'</div>';
   b+='<div style="font-size:11.5px;color:rgba(245,241,235,.5);margin-top:10px">'+mxE(mxTr('Message text: Settings → Reminders in the app.','Mesaj metni: uygulamada Ayarlar → Hatırlatmalar.'))+'</div>';
   mxOpen('🎂 '+mxTr('Birthdays today','Bugünün doğum günleri'),b,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
 }
+async function bdAddPhone(id){var v=prompt(mxTr('Add phone','Telefon ekle'),'');var d=String(v||'').replace(/\D/g,'');if(d.length<8)return;
+  var ph=String(v).trim().charAt(0)==='+'?'+'+d:d.indexOf('00')===0?'+'+d.slice(2):'+90'+d.replace(/^0+/,'').replace(/^90(?=\d{10}$)/,'');
+  var r=await db.from('patients').update({phone:ph}).eq('id',id);if(r.error){alert(r.error.message);return;}bdOpen();}
 function hmAlert(tone,icon,title,sub,on){
   var c={red:'224,85,85',amber:'212,150,58',gold:'184,154,106',teal:'42,158,138'}[tone];
   return '<div class="hm-alert" style="background:rgba('+c+',0.10);border-color:rgba('+c+',0.35)" onclick="'+on+'"><div class="ic" style="background:rgba('+c+',0.2)">'+icon+'</div><div style="min-width:0"><div class="t">'+mxE(title)+'</div>'+(sub?'<div class="s">'+mxE(sub)+'</div>':'')+'</div></div>';

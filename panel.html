@@ -4440,7 +4440,7 @@ function stWmLoad(){var b=document.getElementById('st-watermark-f');if(!b)return
 var stCons=[],stConsLang='';
 var ST_LN={tr:'Türkçe',en:'English',de:'Deutsch',es:'Español',fr:'Français',it:'Italiano',pt:'Português',ru:'Русский',ko:'한국어',zh:'中文',ar:'العربية'};
 async function stConsLoad(){
-  var r=await db.from('consent_templates').select('id,name,procedure_type,language,content,is_active,updated_at').eq('clinic_id',cid).is('deleted_at',null).order('name');stCons=r.data||[];
+  var r=await db.from('consent_templates').select('id,name,procedure_type,language,content,is_active,updated_at').eq('clinic_id',cid).is('deleted_at',null).order('name');stCons=r.data||[];var _top={kvkk:0,photo:1,messages:2};stCons.sort(function(a,b){var pa=_top[a.procedure_type]!=null?_top[a.procedure_type]:9,pb=_top[b.procedure_type]!=null?_top[b.procedure_type]:9;return pa!==pb?pa-pb:String(a.name||'').localeCompare(String(b.name||''),'tr');});
   var langs=[];stCons.forEach(function(t){if(langs.indexOf(t.language)<0)langs.push(t.language);});langs.sort();
   if(!stConsLang||langs.indexOf(stConsLang)<0)stConsLang=langs.indexOf(LANG)>=0?LANG:(langs[0]||'');
   var b=document.getElementById('st-consents-f');if(!b)return;

@@ -2647,6 +2647,9 @@ async function fnProfitRender(){
   var warn=function(t,list){if(!list||!list.length)return '';return '<div style="margin-top:10px;padding:10px 14px;border-radius:12px;background:rgba(212,150,58,.08);color:#D4963A;font-size:12.5px"><b>'+mxE(t.replace('[n]',list.length))+'</b> '+list.map(function(v){return '<a href="#" style="color:#D4963A" onclick="event.preventDefault();fnOpenVisit(\''+v.patient_id+'\',\''+v.visit_id+'\')">'+mxE((v.patient||'')+' · '+mxDate(v.date))+'</a>';}).join(', ')+'</div>';};
   h+=warn(mxTr('[n] visits used products with no box price; cost is incomplete.','[n] vizitte kullanılan ürünün kutu fiyatı girilmemiş; maliyet eksik.'),d.missing_cost);
   h+=warn(mxTr('[n] visits have no fee entered.','[n] vizitin ücreti girilmemiş.'),d.missing_fee);
+  var nm=d.missing_material||[];
+  if(nm.length)h+='<div style="margin-top:10px;padding:10px 14px;border-radius:12px;background:rgba(212,150,58,.08);color:#D4963A;font-size:12.5px"><b>'+mxE(mxTr('[n] paid visits have no products entered; their cost counts as 0.','[n] ücretli vizitte malzeme girilmemiş; maliyeti 0 sayılıyor.').replace('[n]',d.missing_material_count||nm.length))+'</b> '+mxE(mxTr('Enter the products in the visit, or confirm that none were used.','Vizitte ürünü gir ya da ürün kullanılmadığını onayla.'))+
+    '<div style="margin-top:6px">'+nm.map(function(v){return '<div id="nm_'+v.visit_id+'" style="display:flex;gap:10px;align-items:center;padding:5px 0;border-top:1px solid rgba(212,150,58,.15)"><a href="#" style="color:#D4963A;flex:1" onclick="event.preventDefault();fnOpenVisit(\''+v.patient_id+'\',\''+v.visit_id+'\')">'+mxE((v.patient||'')+' · '+mxDate(v.date)+' · '+mxMoney(v.fee)+(v.what?' · '+v.what:''))+'</a><button class="bimp2" style="color:#3AB06A;border-color:rgba(58,176,106,.4);white-space:nowrap" onclick="fnNoMaterial(\''+v.visit_id+'\')">✓ '+mxE(mxTr('No product used','Malzeme kullanılmadı'))+'</button></div>';}).join('')+'</div></div>';
   var procs=d.by_procedure||[],prods=d.by_product||[];
   h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;align-items:flex-start">';
   if(procs.length)h+='<div class="imp-step" style="flex:1.6;min-width:320px"><div class="l" style="font-size:11px;letter-spacing:1.2px;color:rgba(245,241,235,.6);font-weight:600;margin-bottom:6px">'+mxE(mxTr('BY PROCEDURE','İŞLEME GÖRE'))+'</div><table class="fmt"><tr><th></th><th style="text-align:right">'+mxE(mxTr('Count','Adet'))+'</th><th style="text-align:right">'+mxE(mxTr('Avg fee','Ort. ücret'))+'</th><th style="text-align:right">'+mxE(mxTr('Avg cost','Ort. maliyet'))+'</th><th style="text-align:right">'+mxE(mxTr('Profit','Kâr'))+'</th><th style="text-align:right">'+mxE(mxTr('Margin','Marj'))+'</th></tr>'+
@@ -2657,6 +2660,7 @@ async function fnProfitRender(){
     '<div style="margin-top:10px;font-size:12.5px;color:rgba(245,241,235,.6);line-height:1.5">'+mxE(mxTr('Stock on the shelf is worth [x]. That is most of the gap between cash and profit.','Rafta duran stok değeri [x]. Kasa ile kâr arasındaki fark büyük ölçüde bu.').replace('[x]',mxMoney(d.stock_value)))+'</div></div></div>';
   b.innerHTML=h;
 }
+async function fnNoMaterial(vid){var r=await db.rpc('set_visit_no_material',{p_visit_id:vid,p_on:true});if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}fnProfitRender();}
 async function fnOpenVisit(pid,vid){switchTab('patients');await selP(pid);selV(vid);}
 // ---- e-SMM: issue mode + bulk send (entries › not invoiced) ----
 var fnEinvMode='ask';

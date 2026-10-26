@@ -4725,7 +4725,7 @@ async function vfLoad(id){
 function vfOpen(){
   var d=vfData||{},c=d.charge,paid=Number(d.paid||0),v=vis.find(function(x){return x.id===selVid;})||{};
   var rem=c?Number(d.remaining||0):0;
-  var it=(c&&c.items)||[];vfLines=it.length>=2?it.map(function(x){return {l:x.label,a:x.amount};}):c?[{l:c.description||mxTr('Consultation','Muayene'),a:c.amount}]:[{l:mxTr('Consultation','Muayene'),a:''}];
+  var it=(c&&c.items)||[];vfLines=it.length>=1?it.map(function(x){return {l:x.label,a:x.amount,v:x.vat||10};}):c?[{l:c.description||mxTr('Consultation','Muayene'),a:c.amount,v:10}]:[{l:mxTr('Consultation','Muayene'),a:'',v:10}];
   var b='<div id="vfAmtW" style="display:none"><label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label><input class="mi" id="vfAmt" type="number" min="0" step="0.01" value="'+(c?c.amount:'')+'" oninput="vfPayVis()" style="font-size:20px;font-weight:700">'+
     '</div><div id="vfLinesW"></div>'+
     (paid>0?'<div style="font-size:12.5px;color:#3AB06A;margin:4px 0 8px">'+mxE(mxTr('Paid','Ödenen'))+': '+vfMoney(paid)+'</div>':'')+
@@ -4740,7 +4740,7 @@ function vfOpen(){
 }
 // ---- fee split by procedure (patient_charges.items) ----
 var vfLines=[];
-function vfLinesRead(){document.querySelectorAll('#vfLinesW [data-i]').forEach(function(r){var i=+r.getAttribute('data-i');vfLines[i]={l:r.querySelector('.vfl').value,a:r.querySelector('.vfa').value};});}
+function vfLinesRead(){document.querySelectorAll('#vfLinesW [data-i]').forEach(function(r){var i=+r.getAttribute('data-i'),k=r.querySelector('.vfk');vfLines[i]={l:r.querySelector('.vfl').value,a:r.querySelector('.vfa').value,v:k?+k.value:((vfLines[i]||{}).v||10)};});}
 function vfLinesTotal(){return vfLines.reduce(function(s,x){return s+(parseFloat(x.a)||0);},0);}
 // payment part shows only while something is left to collect (also after the amount is raised)
 function vfPayVis(){
@@ -4751,11 +4751,14 @@ function vfPayVis(){
 }
 function vfLinesDraw(){
   var w=document.getElementById('vfLinesW'),aw=document.getElementById('vfAmtW');if(!w)return;setTimeout(vfPayVis,0);
-  if(!vfLines.length)vfLines=[{l:'',a:''}];
+  if(!vfLines.length)vfLines=[{l:'',a:'',v:10}];
+  var tr=einvCountry()==='90';
   w.innerHTML='<label style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Amount','Tutar'))+' ('+mxE(curSym())+')</label>'+vfLines.map(function(x,i){
     return '<div data-i="'+i+'" style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><input class="mi vfl" style="flex:1;margin:0" placeholder="'+mxE(mxTr('Procedure','İşlem'))+'" value="'+mxE(x.l||'')+'">'+
       '<input class="mi vfa" type="number" min="0" step="0.01" style="width:110px;margin:0;text-align:right;font-weight:700" placeholder="0" value="'+(x.a===''||x.a==null?'':x.a)+'" oninput="vfLinesRead();document.getElementById(\'vfTot\').textContent=vfMoney(vfLinesTotal());vfPayVis()">'+
-      (i===vfLines.length-1?'<button type="button" class="bimp2" title="'+mxE(mxTr('Add line','Satır ekle'))+'" style="padding:6px 10px;color:#B89A6A;font-weight:700" onclick="vfLinesRead();vfLines.push({l:\'\',a:\'\'});vfLinesDraw()">＋</button>':'')+
+      // KDV % per line (Turkey): %10 standard, %20 option
+      (tr?'<select class="mi vfk" style="width:72px;margin:0;padding:6px 4px'+((x.v||10)==20?';color:#D4963A':'')+'">'+[10,20].map(function(r){return '<option value="'+r+'"'+((x.v||10)==r?' selected':'')+'>%'+r+'</option>';}).join('')+'</select>':'')+
+      (i===vfLines.length-1?'<button type="button" class="bimp2" title="'+mxE(mxTr('Add line','Satır ekle'))+'" style="padding:6px 10px;color:#B89A6A;font-weight:700" onclick="vfLinesRead();vfLines.push({l:\'\',a:\'\',v:10});vfLinesDraw()">＋</button>':'')+
       (vfLines.length>1?'<button type="button" class="bimp2" style="padding:6px 10px" onclick="vfLinesRead();vfLineDel('+i+')">✕</button>':'')+'</div>';
   }).join('')+'<div style="display:flex;justify-content:flex-end;align-items:center;margin:4px 0 10px">'+
     '<span style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Total','Toplam'))+' <b id="vfTot" style="font-size:18px;color:#F5F1EB">'+vfMoney(vfLinesTotal())+'</b></span></div>';
@@ -4786,9 +4789,9 @@ async function vfSave(){
     vfLinesRead();amt=vfLinesTotal();items=[];
     for(var k=0;k<vfLines.length;k++){var a=parseFloat(vfLines[k].a)||0,l=String(vfLines[k].l||'').trim();if(a<=0)continue;
       if(!l){err.textContent=mxTr('Enter a procedure name on every line with an amount','Tutarı olan her satıra işlem adı yazın');return;}
-      items.push({label:l,amount:a});}
+      var it1={label:l,amount:a};if(einvCountry()==='90')it1.vat=vfLines[k].v||10;items.push(it1);}
     desc=items.map(function(x){return x.label;}).join(' + ');
-    if(items.length<2)items=null;
+    if(!items.length)items=null; // single line too, so its KDV rate is kept
   }
   if(!(amt>0)){err.textContent=mxTr('Enter the amount','Tutarı girin');return;}
   var paid=Number((vfData&&vfData.paid)||0),left=Math.max(amt-paid,0),mode=document.getElementById('vfMode').value;

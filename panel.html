@@ -2501,19 +2501,17 @@ function fnEsmmRender(){
   if(un&&fnEsF!=='sent')h+='<div style="margin-top:12px"><button class="bimp" id="fnBulkBtn" onclick="fnBulkIssue()">'+mxE(mxTr('Send all not sent','Gönderilmeyenlerin hepsini gönder'))+' ('+un+')</button></div>';
   b.innerHTML=h;
 }
-async function fnEsmmPdf(btn,id){var t=btn.textContent;btn.disabled=true;btn.textContent='…';var w=window.open('','_blank');
-  var r=await db.functions.invoke('einvoice',{body:{action:'pdf',entry_id:id}}),d=r.data||{},err=d.error;
+async function fnEsmmPdf(btn,id){var t=btn.textContent;btn.disabled=true;btn.textContent='…';
+  await einvPdfOpen(id);btn.disabled=false;btn.textContent=t;}
+// receipt PDF: the function returns the file itself; shown as blob:aafclinic.com/… (storage address never appears)
+async function einvPdfOpen(id){
+  var w=window.open('','_blank');
+  var r=await db.functions.invoke('einvoice-pdf',{body:{entry_id:id}}),d=r.data||{},err=d.error;
   if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
-  btn.disabled=false;btn.textContent=t;
-  if(err||!d.url){if(w)w.close();alert('PDF açılamadı: '+vfEinvErr(String(err||'pdf_not_ready')));return;}
-  einvPdfShow(d.url,w);}
-// receipt PDF shown from a local copy (blob:aafclinic.com/…) so the storage address never appears; direct link only if that fails
-async function einvPdfShow(url,w){
-  w=w||window.open('','_blank');
-  try{var res=await fetch(url);if(!res.ok)throw 0;var b=await res.blob();
-    var u=URL.createObjectURL(new Blob([b],{type:'application/pdf'}));
-    if(w)w.location=u;else window.open(u,'_blank');setTimeout(function(){URL.revokeObjectURL(u);},120000);}
-  catch(_){if(w)w.location=url;else window.open(url,'_blank');}
+  if(err||!d.pdf){if(w)w.close();alert(mxTr('PDF could not be opened','PDF açılamadı')+': '+vfEinvErr(String(err||'pdf_not_ready')));return;}
+  var bin=atob(d.pdf),u8=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  var u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));
+  if(w)w.location=u;else window.open(u,'_blank');setTimeout(function(){URL.revokeObjectURL(u);},300000);
 }
 async function fnEsmmOne(btn,id){
   btn.disabled=true;btn.textContent='…';
@@ -4849,12 +4847,11 @@ function vfProfitHtml(d,amount){
 }
 function vfEinvErr(e){if(/oluşturulmadığı/.test(e))return mxTr("The receipt is still being prepared at İşNet (not signed yet). Try again in a few minutes.","Makbuz İşNet'te henüz hazırlanıyor (imzalanmadı). Birkaç dakika sonra tekrar deneyin.");return {not_configured:mxTr('Set up e-SMM first (Accounts › e-SMM).','Önce e-SMM ayarlarını yapın (Muhasebe › e-SMM).'),vat_rate_missing:mxTr('VAT rate is not selected.','KDV oranı seçilmedi.'),auth_failed:mxTr('Provider login failed: check the credentials.','Sağlayıcı girişi başarısız: bilgileri kontrol edin.'),forbidden:mxTr('Only admins can do this.','Bunu yalnızca yöneticiler yapabilir.')}[e]||e;}
 async function vfEinv(action,entryId){
-  var pw=action==='pdf'?window.open('','_blank'):null;
+  if(action==='pdf'){await einvPdfOpen(entryId);return;}
   var r=await db.functions.invoke('einvoice',{body:{action:action,entry_id:entryId}});
   var d=r.data,err=d&&d.error;
   if(r.error&&!err){try{var j=await r.error.context.json();err=j&&j.error;}catch(_){err=r.error.message;}}
-  if(err){if(pw)pw.close();alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));}
-  else if(action==='pdf'){if(d.url)einvPdfShow(d.url,pw);else if(pw)pw.close();}
+  if(err){alert(mxTr('e-Document failed','e-Belge kesilemedi')+': '+vfEinvErr(String(err)));}
   else alert(d.status==='issued'?mxTr('e-Document issued','e-Belge kesildi'):mxTr('e-Document is being processed, check again shortly','e-Belge işleniyor, birazdan tekrar deneyin'));
   if(selVid)vfLoad(selVid);
 }

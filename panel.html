@@ -384,6 +384,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="trk" id="tabTrk" style="display:none" onclick="switchTab('trk')">ÜTS / İTS</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <button class="tab" data-tab="settings" onclick="switchTab('settings')">SETTINGS</button>
+    <button class="tab" data-tab="rel" id="tabRel" style="display:none" onclick="switchTab('rel')">SÜRÜM TESTİ</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
     <button class="tab" id="tabOut" style="margin-left:auto;color:#E07A6A" onclick="doLogout()" title="">SIGN OUT</button>
   </div>
@@ -870,6 +871,15 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
   </div>
 
   <!-- RECALL TAB -->
+  <div class="tcontent" id="tab-rel" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Sürüm testi</h2><div class="sub">Her sürümde Android ve iPhone'da tam tur. Kayıtlar YS-KY-02 (TS-R01) ve F-11 için kanıttır.</div></div>
+        <div class="imp-actions"><button class="bimp" onclick="relNew()">Yeni test turu</button></div>
+      </div>
+      <div id="relBox"></div>
+    </div>
+  </div>
   <div class="tcontent" id="tab-recall" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
@@ -1033,6 +1043,7 @@ async function showApp(user){
   var ur=await db.from('users').select('clinic_id').eq('auth_id',user.id).single();
   if(!ur.data){alert('User not found');return;}
   cid=ur.data.clinic_id;
+  db.rpc('is_edeca_staff').then(function(r){var b=document.getElementById('tabRel');if(b)b.style.display=r.data===true?'':'none';});
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
   trkLoad();
   clinic=cr.data||{};
@@ -1058,6 +1069,7 @@ function switchTab(name){
   if(name==='booking')bkLoad();
   if(name==='stock')stLoad();
   if(name==='trk')trkLoad();
+  if(name==='rel')relLoad();
   if(name==='finance')fnLoad();
   if(name==='recall')rcLoad();
   if(name==='settings')stLoad();
@@ -4663,6 +4675,75 @@ function curTab(){var t=document.querySelector('.tab.on[data-tab]');return t?t.d
 // ---- ÜTS / İTS notifications (admin) ----
 var trkCfg=null;
 function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım')})[q.kind]||q.kind;}
+// ---- Release regression checklist (EDECA staff only; table release_test_runs) ----
+var REL_ITEMS=[
+ ['login','Giriş / çıkış, oturum açık kalıyor'],
+ ['patient','Hasta kaydı: yeni, düzenle, ara'],
+ ['photo','5 açı fotoğraf çekimi, açı eşleştirme'],
+ ['collage','Kolaj / karşılaştırma, PDF, paylaşım'],
+ ['appt','Randevu: oluştur, taşı, iptal, kapalı gün'],
+ ['visit','Vizit detay: yazı alanları, enjeksiyon haritası, sona kadar kaydırma'],
+ ['consent','Onam gönder, hasta imzalar, PDF açılır'],
+ ['fee','Ücret, ödeme, paket seansı sorusu'],
+ ['esmm','e-SMM kes, PDF aç / paylaş'],
+ ['stock','Stok: karekod okut, elle ekle, kullanım'],
+ ['uts','ÜTS / İTS kuyruğu: gönderildi'],
+ ['reports','Raporlar, kâr sekmesi'],
+ ['lang','Dil değiştir (TR / EN)'],
+ ['update','Açılış ve güncelleme ekranı']
+];
+var relRuns=[],relOpen=null;
+async function relLoad(){
+  var box=document.getElementById('relBox');if(!box)return;
+  var r=await db.from('release_test_runs').select('*').order('started_at',{ascending:false}).limit(40);
+  if(r.error){box.innerHTML='<div class="imp-step">'+mxE(r.error.message)+'</div>';return;}
+  relRuns=r.data||[];if(!relOpen&&relRuns.length&&!relRuns[0].finished_at)relOpen=relRuns[0].id;
+  box.innerHTML=relRuns.length?relRuns.map(relCard).join(''):'<div class="imp-step" style="color:rgba(245,241,235,.6)">Henüz test turu yok. “Yeni test turu” ile başlayın.</div>';
+}
+function relCount(x){var ok=0,fail=0,na=0;REL_ITEMS.forEach(function(it){var v=(x.results||{})[it[0]];if(!v)return;if(v.r==='ok')ok++;else if(v.r==='fail')fail++;else if(v.r==='na')na++;});return {ok:ok,fail:fail,na:na,left:REL_ITEMS.length-ok-fail-na};}
+function relCard(x){
+  var c=relCount(x),plat={android:'Android',ios:'iPhone',panel:'Panel'}[x.platform]||x.platform,open=relOpen===x.id;
+  var st=x.finished_at?(c.fail?'<span style="color:#E05555">✗ '+c.fail+' hata</span>':'<span style="color:#3AB06A">✓ Tamamlandı</span>'):'<span style="color:#B89A6A">Devam ediyor · '+c.left+' kaldı</span>';
+  var h='<div class="imp-step"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="relToggle(\''+x.id+'\')"><div><b>'+mxE(x.version)+(x.build?' ('+x.build+')':'')+' · '+mxE(plat)+'</b> <span style="color:rgba(245,241,235,.6);font-size:12.5px">'+mxE(x.device||'')+' · '+mxE(new Date(x.started_at).toLocaleString('tr-TR'))+'</span></div><div style="font-size:13px">'+st+' · '+c.ok+'/'+REL_ITEMS.length+'</div></div>';
+  if(open){
+    h+='<div style="margin-top:12px">'+REL_ITEMS.map(function(it){var v=(x.results||{})[it[0]]||{},b=function(k,t,col){var on=v.r===k;return '<button class="bimp2" style="padding:6px 12px;'+(on?'background:'+col+';color:#1C1929;border-color:'+col:'')+'" '+(x.finished_at?'disabled':'')+' onclick="relSet(\''+x.id+'\',\''+it[0]+'\',\''+k+'\')">'+t+'</button>';};
+      return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)"><div style="flex:1;min-width:220px;font-size:13.5px">'+mxE(it[1])+(v.note?'<div style="color:#E07A6A;font-size:12px">'+mxE(v.note)+'</div>':'')+'</div>'+b('ok','✓','#3AB06A')+b('fail','✗','#E05555')+b('na','—','rgba(245,241,235,.5)')+'</div>';}).join('')+'</div>';
+    h+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+(x.finished_at?'<button class="bimp2" onclick="relReopen(\''+x.id+'\')">Tekrar aç</button>':'<button class="bimp" onclick="relFinish(\''+x.id+'\')">Turu bitir</button>')+'<button class="bimp2" onclick="relDel(\''+x.id+'\')">Sil</button></div>';
+    if(x.note)h+='<div style="margin-top:8px;font-size:12.5px;color:rgba(245,241,235,.7)">'+mxE(x.note)+'</div>';
+  }
+  return h+'</div>';
+}
+function relToggle(id){relOpen=relOpen===id?null:id;var b=document.getElementById('relBox');b.innerHTML=relRuns.map(relCard).join('');}
+async function relSet(id,key,r){
+  var x=relRuns.find(function(y){return y.id===id;});if(!x||x.finished_at)return;
+  var res=Object.assign({},x.results||{}),note=null;
+  if(r==='fail'){note=prompt('Ne oldu? (kısa)','');if(note===null)return;}
+  if(res[key]&&res[key].r===r)delete res[key];else res[key]=note?{r:r,note:note}:{r:r};
+  var u=await db.from('release_test_runs').update({results:res}).eq('id',id);
+  if(u.error){alert(u.error.message);return;}
+  x.results=res;relToggle(id);relToggle(id);
+}
+async function relFinish(id){
+  var x=relRuns.find(function(y){return y.id===id;}),c=relCount(x);
+  if(c.left&&!confirm(c.left+' madde işaretlenmedi. Yine de bitirilsin mi?'))return;
+  await db.from('release_test_runs').update({finished_at:new Date().toISOString()}).eq('id',id);relOpen=null;relLoad();
+}
+async function relReopen(id){await db.from('release_test_runs').update({finished_at:null}).eq('id',id);relOpen=id;relLoad();}
+async function relDel(id){if(!confirm('Bu test turu silinsin mi?'))return;await db.from('release_test_runs').delete().eq('id',id);relLoad();}
+function relNew(){
+  var last=relRuns[0]||{};
+  var b='<div class="st-grid">'+
+    '<div><label class="st-l">Sürüm</label><input id="relV" class="mi" value="'+mxE(last.version||'')+'" placeholder="1.2.6"></div>'+
+    '<div><label class="st-l">Build</label><input id="relB" class="mi" type="number" value="'+mxE(last.build?last.build:'')+'" placeholder="59"></div>'+
+    '<div><label class="st-l">Platform</label><select id="relP" class="mi"><option value="android">Android</option><option value="ios">iPhone</option><option value="panel">Panel</option></select></div>'+
+    '<div><label class="st-l">Cihaz</label><input id="relD" class="mi" placeholder="iPhone 15 Pro, iOS 26 / Samsung A54"></div></div>';
+  mxOpen('Yeni test turu',b,[{label:'İptal',cls:'bcancel',fn:mxClose},{label:'Başlat',cls:'bsave',fn:async function(){
+    var v=document.getElementById('relV').value.trim();if(!v){alert('Sürüm girin');return;}
+    var bn=parseInt(document.getElementById('relB').value,10);
+    var r=await db.from('release_test_runs').insert({version:v,build:isNaN(bn)?null:bn,platform:document.getElementById('relP').value,device:document.getElementById('relD').value.trim()||null}).select().single();
+    if(r.error){alert(r.error.message);return;}
+    mxClose();relOpen=r.data.id;relLoad();}}]);
+}
 async function trkLoad(){
   if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
   var b=document.getElementById('tabTrk'),box=document.getElementById('trkBox');if(!b||!box)return;

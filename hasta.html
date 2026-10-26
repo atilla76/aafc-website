@@ -48,7 +48,7 @@ h1{font-size:24px;font-weight:600;margin-top:10px}
 <div class="lbx" id="lbx"><div class="img"><img id="lbImg" alt=""></div>
   <div class="b"><button onclick="lb(-1)">‹</button><span id="lbC" style="color:var(--mid);align-self:center;font-size:13px"></span><button onclick="lb(1)">›</button><button onclick="document.getElementById('lbx').classList.remove('on')">✕</button></div></div>
 <script>
-const FN = 'https://hugxacklprzujswtaike.supabase.co/functions/v1/patient-portal';
+const FN = 'https://api.aafclinic.com/functions/v1/patient-portal';
 const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
 const LANGS = {
   tr: { title: 'Hasta Portalı', hi: (n) => n ? `Merhaba ${n}` : 'Merhaba', pinAsk: 'Güvenliğiniz için kayıtlı telefon numaranızın son 4 hanesini girin.', go: 'Giriş', wrong: 'Hatalı giriş, lütfen tekrar deneyin.', locked: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar deneyin.',

@@ -927,9 +927,9 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
 <div class="prog" id="prog">Preparing...</div>
 
 <script>
-var SU='https://hugxacklprzujswtaike.supabase.co';
-var SK='sb_publishable_LX6iLHBbCePCCdnsTeVwlA_IE7BwBkX';
-var db=supabase.createClient(SU,SK);
+var SU='https://api.aafclinic.com';
+var SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Z3hhY2tscHJ6dWpzd3RhaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzE3MTEsImV4cCI6MjA5MDkwNzcxMX0.fiUlndOn2dAzAZ_h3uNw730tiMAIIu0K9Q1lQGZjB4w';
+var db=supabase.createClient(SU,SK,{auth:{storageKey:'sb-hugxacklprzujswtaike-auth-token'}}); // keeps logins from before api.aafclinic.com
 var AL=['Front','Left 45','Left Profile','Right 45','Right Profile'];
 var BUCKET='visit-files';
 var cid=null,pts=[],selPid=null,selVid=null,vis=[],selPt=null,editPid=null,clinic={};
@@ -3416,7 +3416,7 @@ async function apptBlocks(){
     var s=String(b.start_time).slice(0,5),e=String(b.end_time).slice(0,5);
     return '<div style="font-size:13px;padding:2px 0">⛔ '+(s==='00:00'&&e==='23:59'?trText('All day'):s+' – '+e)+(b.reason?' · '+bkEsc(b.reason):'')+'</div>';}).join('')+'</div>':'';
 }
-var CF_BASE='https://hugxacklprzujswtaike.supabase.co/functions/v1/calendar-feed?t=',cfData=null;
+var CF_BASE='https://api.aafclinic.com/functions/v1/calendar-feed?t=',cfData=null;
 async function blLoad(){
   if(!document.getElementById('blDate').value)document.getElementById('blDate').value=mxIso(new Date());
   var r=await db.from('clinic_time_blocks').select('*').eq('clinic_id',cid).gte('block_date',mxIso(new Date())).order('block_date').order('start_time');

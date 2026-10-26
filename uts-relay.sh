@@ -4,7 +4,7 @@
 # which hands it out only to the registered relay IP.
 set -euo pipefail
 HOST="uts.aafclinic.com"
-ENROLL="https://hugxacklprzujswtaike.supabase.co/functions/v1/uts-relay-enroll"
+ENROLL="https://api.aafclinic.com/functions/v1/uts-relay-enroll"
 
 echo "== AAFC ÜTS relay setup =="
 export DEBIAN_FRONTEND=noninteractive

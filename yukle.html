@@ -54,7 +54,7 @@ h1{font-size:24px;font-weight:600;margin-top:10px}
 <input type="file" id="inFiles" multiple style="display:none">
 <input type="file" id="inDir" webkitdirectory directory multiple style="display:none">
 <script>
-const FN = 'https://hugxacklprzujswtaike.supabase.co/functions/v1/migration-upload';
+const FN = 'https://api.aafclinic.com/functions/v1/migration-upload';
 const TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
 const PART = 40 * 1024 * 1024;       // bucket limit is 50 MB per object
 const MAX_FILE = 5 * 1024 * 1024 * 1024;

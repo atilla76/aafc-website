@@ -5110,7 +5110,9 @@ async function enVisitLoad(id){
   h+='</div>';
   if(st==='skipped'&&s.patient_enabled&&s.visit_skip)h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+EN_REASONS.map(function(k){
     var on=s.reason===k;return '<button class="bimp2" style="padding:5px 10px;font-size:12px;'+(on?'background:#B89A6A;color:#1C1929;border-color:#B89A6A':'')+'" onclick="enSetVisit(\''+id+'\',false,\''+k+'\')">'+mxE(enReason(k))+'</button>';}).join('')+'</div>';
-  if(st!=='skipped'&&(st!=='sent'||s.ref==='MBYS (manuel)'))h+='<div style="margin-top:8px"><button class="bimp2" style="padding:6px 12px;font-size:12.5px" onclick="mbOpen(\''+id+'\')">⧉ '+mxE(mxTr('MBYS summary','MBYS özeti'))+'</button></div>';
+  if(st!=='skipped'&&(st!=='sent'||s.ref==='MBYS (manuel)'))h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="bimp2" style="padding:6px 12px;font-size:12.5px" onclick="mbOpen(\''+id+'\')">⧉ '+mxE(mxTr('MBYS summary','MBYS özeti'))+'</button>'+
+    (st!=='sent'?'<button class="bimp2" style="padding:6px 12px;font-size:12.5px;color:#3AB06A;border-color:rgba(58,176,106,.45)" onclick="mbQuick(\''+id+'\',true)">✓ '+mxE(mxTr('Entered in MBYS','MBYS’ye girdim'))+'</button>'
+      :'<button class="bimp2" style="padding:6px 12px;font-size:12.5px" onclick="mbQuick(\''+id+'\',false)">↶ '+mxE(mxTr('Remove mark','İşareti kaldır'))+'</button>')+'</div>';
   el.innerHTML=h;
 }
 // Texts the visit fills in by itself (History, Findings, complaint fallback); d = get_visit_mbys_summary row
@@ -5151,6 +5153,7 @@ async function mbOpen(id){
 }
 function mbCopy(i){var f=window._mbF||[];var t=i<0?f.filter(function(x){return x[1]||x[2];}).map(function(x){return x[2]?'\n'+String(x[0]).toUpperCase():x[0]+': '+x[1];}).join('\n').trim():(f[i]&&!f[i][2]&&f[i][1]);if(!t)return;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){mxUndoToast(mxTr('Copied','Kopyalandı'),null);},function(){prompt('',t);});}
+async function mbQuick(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}enVisitLoad(id);hmMbys=hmMbys.filter(function(x){return x.visit_id!==id||!done;});}
 async function mbMark(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}mxClose();enVisitLoad(id);if(window._mbTodo){hmMbys=hmMbys.filter(function(x){return x.visit_id!==id||!done;});hmRender();mbTodoOpen();}}
 // Visits still to be entered by hand in the Ministry's MBYS (Turkey only, Turkish text)
 async function mbTodoOpen(){

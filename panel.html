@@ -5151,7 +5151,35 @@ async function mbOpen(id){
 }
 function mbCopy(i){var f=window._mbF||[];var t=i<0?f.filter(function(x){return x[1]||x[2];}).map(function(x){return x[2]?'\n'+String(x[0]).toUpperCase():x[0]+': '+x[1];}).join('\n').trim():(f[i]&&!f[i][2]&&f[i][1]);if(!t)return;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){mxUndoToast(mxTr('Copied','Kopyalandı'),null);},function(){prompt('',t);});}
-async function mbMark(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}mxClose();enVisitLoad(id);}
+async function mbMark(id,done){var r=await db.rpc('mark_visit_enabiz_manual',{p_visit_id:id,p_done:done});if(r.error){alert(mxTr('Error','Hata'));return;}mxClose();enVisitLoad(id);if(window._mbTodo){hmMbys=hmMbys.filter(function(x){return x.visit_id!==id||!done;});hmRender();mbTodoOpen();}}
+// Visits still to be entered by hand in the Ministry's MBYS (Turkey only, Turkish text)
+async function mbTodoOpen(){
+  var m=await db.rpc('get_mbys_todo',{p_days:60});if(m.error){alert('Hata: '+m.error.message);return;}
+  hmMbys=m.data||[];hmRender();window._mbTodo=true;
+  var L=hmMbys;
+  var b='<div class="hint" style="margin-bottom:10px">Son 60 günün MBYS’ye girilmemiş vizitleri. Özet’ten alanları kopyalayıp MBYS’ye gir, sonra “Girdim” de; liste bir daha göstermez. Daha önce girdiklerini toplu işaretleyebilirsin.</div>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:10px;border-radius:10px;background:rgba(245,241,235,.04)">'+
+    '<span style="font-size:13px">Bu tarih dahil öncekilerin hepsini girdim:</span><input type="date" id="mbUntil" class="mi" style="width:auto" max="'+fmtDate(new Date())+'">'+
+    '<button class="bimp2" onclick="mbBulk(\'until\')">İşaretle</button></div>'+
+    (L.length?L.map(function(x){return '<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)">'+
+      '<input type="checkbox" class="mbChk" value="'+x.visit_id+'" style="width:18px;height:18px">'+
+      '<div style="flex:1;min-width:0;cursor:pointer" onclick="window._mbTodo=true;mbOpen(\''+x.visit_id+'\')"><div style="font-weight:600;font-size:13.5px">'+mxE(x.patient)+(x.no_id?' <span style="color:#F0A28F;font-size:11.5px">· T.C. no eksik</span>':'')+'</div>'+
+      '<div style="color:rgba(245,241,235,.6);font-size:12px">'+mxDate(x.date)+(x.what?' · '+mxE(x.what):'')+(x.type==='Control'?' · Kontrol':'')+'</div></div>'+
+      '<button class="bimp2" style="padding:5px 10px;font-size:12px" onclick="window._mbTodo=true;mbOpen(\''+x.visit_id+'\')">Özet</button></div>';}).join('')
+     :'<div style="color:#3AB06A;padding:14px 0">Girilecek vizit kalmadı.</div>');
+  mxOpen('MBYS’ye girilecekler ('+L.length+')',b,[
+    {label:'Kapat',cls:'bcancel',fn:function(){window._mbTodo=false;mxClose();}},
+    {label:'Seçilenleri girdim',fn:function(){mbBulk('sel');}}]);
+}
+async function mbBulk(mode){
+  var p={};
+  if(mode==='until'){var d=(document.getElementById('mbUntil')||{}).value;if(!d){alert('Tarih seç');return;}
+    var n=hmMbys.filter(function(x){return x.date<=d;}).length;if(!n){alert('Bu tarihe kadar girilecek vizit yok');return;}
+    if(!confirm(mxDate(d)+' ve öncesindeki '+n+' vizit MBYS’ye girildi olarak işaretlensin mi?'))return;p={p_until:d};}
+  else{var ids=[].slice.call(document.querySelectorAll('.mbChk:checked')).map(function(c){return c.value;});if(!ids.length){alert('Vizit seç');return;}p={p_visit_ids:ids};}
+  var r=await db.rpc('mark_visits_enabiz_manual',p);if(r.error){alert('Hata: '+r.error.message);return;}
+  mbTodoOpen();
+}
 async function enSetVisit(id,send,reason){
   var r=await db.rpc('set_visit_enabiz',{p_visit_id:id,p_send:send,p_reason:send?null:reason});
   if(r.error){alert('Error: '+r.error.message);return;}
@@ -5230,7 +5258,9 @@ async function hmLoad(){
   var r=await db.rpc('get_home_summary',{p_clinic_id:cid,p_date:fmtDate(new Date(n.getTime()-n.getTimezoneOffset()*60000)),p_now:hm});
   if(r.error){el.innerHTML='<div class="loader">'+mxE(r.error.message)+'</div>';return;}
   hmSum=r.data||{};hmRender();
+  if(enInTurkey()){var m=await db.rpc('get_mbys_todo',{p_days:60});if(!m.error){hmMbys=m.data||[];hmRender();}}
 }
+var hmMbys=[];
 function hmRender(){
   var s=hmSum||{},t=s.today||{},el=document.getElementById('hmBody');
   var total=t.total||0,conf=t.confirmed||0,onl=t.online||0,canc=t.cancelled||0,st=s.setup||{};
@@ -5270,6 +5300,7 @@ function hmRender(){
   if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.form_id?"hmOpenForm('"+mxE(g.form_id)+"')":g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
   if(s.birthdays>0){var bn=(s.birthday_names||[]).map(function(b){return b.name+(b.age!=null?' ('+b.age+')':'');});al+=hmAlert('gold','🎂',mxTr('Birthdays today','Bugünün doğum günleri')+' · '+s.birthdays,bn.join(' · ')+(s.birthdays>bn.length?' …':''),"bdOpen()");}
   if((s.recalls||0)>0){al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'),"switchTab('recall')");}
+  if(hmMbys.length)al+=hmAlert('teal','🏥','MBYS’ye girilecek vizit · '+hmMbys.length,'En eskisi '+mxDate(hmMbys[0].date),'mbTodoOpen()');
   if(s.installments_due>0)al+=hmAlert('red','💳',mxTrV('[n] instalments due','[n] taksit vadesi geldi',{n:s.installments_due}),'',"switchTab('finance')");
   if(al)h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Attention','Dikkat')+'</span></div>'+al+'</div>';
   // shortcuts

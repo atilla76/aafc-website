@@ -5303,7 +5303,7 @@ function hmRender(){
   if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.form_id?"hmOpenForm('"+mxE(g.form_id)+"')":g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
   if(s.birthdays>0){var bn=(s.birthday_names||[]).map(function(b){return b.name+(b.age!=null?' ('+b.age+')':'');});al+=hmAlert('gold','🎂',mxTr('Birthdays today','Bugünün doğum günleri')+' · '+s.birthdays,bn.join(' · ')+(s.birthdays>bn.length?' …':''),"bdOpen()");}
   if((s.recalls||0)>0){al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'),"switchTab('recall')");}
-  if(hmMbys.length)al+=hmAlert('teal','🏥','MBYS’ye girilecek vizit · '+hmMbys.length,'En eskisi '+mxDate(hmMbys[0].date),'mbTodoOpen()');
+  if(hmMbys.length)al+=hmAlert('teal','🏥','MBYS’ye girilecek vizit · '+hmMbys.length,'En eskisi '+mxDate(hmMbys[hmMbys.length-1].date),'mbTodoOpen()');
   if(s.installments_due>0)al+=hmAlert('red','💳',mxTrV('[n] instalments due','[n] taksit vadesi geldi',{n:s.installments_due}),'',"switchTab('finance')");
   if(al)h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Attention','Dikkat')+'</span></div>'+al+'</div>';
   // shortcuts

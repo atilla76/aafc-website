@@ -126,10 +126,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const fmt = (iso) => { try { return new Date(String(iso).slice(0, 10) + 'T12:00:00').toLocaleDateString(LOCALES[LC], { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return iso; } };
 let D = null, flat = [], cur = 0;
 
-function head(i) { return `<div class="brand">${esc(((i && i.clinic) || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`; }
+function head(i) { return `<div class="brand">${esc(((i && i.clinic) || 'Klirena').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`; }
 function foot(i) {
   i = i || {};
-  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a><br>` : ''}${i.website ? esc(i.website) + ' · ' : ''}AAFC</div>`;
+  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a><br>` : ''}${i.website ? esc(i.website) + ' · ' : ''}Klirena</div>`;
 }
 function msg(t) { app.innerHTML = head(D) + `<div class="card"><div class="muted">${t}</div></div>` + foot(D); }
 

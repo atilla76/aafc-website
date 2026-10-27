@@ -111,7 +111,7 @@ async function call(pin) {
   const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: TOKEN, pin: pin || '' }), cache: 'no-store' });
   return r.json();
 }
-function brand(name) { return `<div class="brand">${esc(String(name || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div>`; }
+function brand(name) { return `<div class="brand">${esc(String(name || 'Klirena').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div>`; }
 function msg(t) { app.innerHTML = brand(head0 && head0.clinic) + `<h1>${L.title}</h1><div class="card"><div class="muted" style="text-align:center">${t}</div></div>`; }
 
 function pinScreen() {
@@ -172,7 +172,7 @@ function render() {
   // visits
   if (D.visits.length) h += `<div class="card"><div class="step">${L.visits}</div><div class="sub" style="margin:0">${D.visits.map((v) => esc(fmt(v.date))).join(' · ')}</div></div>`;
   h += `<div class="muted" style="text-align:center;margin-top:14px">${esc(L.valid(fmt(D.expires_at)))}</div>
-    <div class="foot">${c.phone ? `<a href="tel:${esc(String(c.phone).replace(/\s/g, ''))}">${L.call}: ${esc(c.phone)}</a><br>` : ''}${c.address ? esc(c.address) + '<br>' : ''}${c.website ? esc(c.website) + ' · ' : ''}AAFC</div>`;
+    <div class="foot">${c.phone ? `<a href="tel:${esc(String(c.phone).replace(/\s/g, ''))}">${L.call}: ${esc(c.phone)}</a><br>` : ''}${c.address ? esc(c.address) + '<br>' : ''}${c.website ? esc(c.website) + ' · ' : ''}Klirena</div>`;
   app.innerHTML = h;
 }
 function lbOpen(i) { cur = i; lbShow(); document.getElementById('lbx').classList.add('on'); }

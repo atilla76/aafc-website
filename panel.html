@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="/images/aafc_logo.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AAFC Panel</title>
+<title>Klirena Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -355,7 +355,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
 
 <div class="lw" id="loginWrap">
   <div class="lb2">
-    <div class="logo"><img src="images/logo_mark.png" alt="" style="width:34px;height:34px;vertical-align:middle;margin:-4px 8px 0 0">AAFC <select class="langsel" onchange="setPanelLang(this.value)" title="Language" style="float:right;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:3px 4px;font-size:11px;cursor:pointer;letter-spacing:0;font-family:inherit;max-width:86px"></select></div>
+    <div class="logo"><img src="images/logo_mark.png" alt="" style="width:34px;height:34px;vertical-align:middle;margin:-4px 8px 0 0">Klirena <select class="langsel" onchange="setPanelLang(this.value)" title="Language" style="float:right;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:3px 4px;font-size:11px;cursor:pointer;letter-spacing:0;font-family:inherit;max-width:86px"></select></div>
     <h2>Panel Login</h2>
     <p>Sign in with your clinic account</p>
     <span class="lbl">EMAIL</span>
@@ -404,7 +404,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <div class="layout">
       <div class="sb">
         <div class="sh">
-          <span class="sl">AAFC</span>
+          <span class="sl">Klirena</span>
           <select class="langsel" onchange="setPanelLang(this.value)" title="Language" style="margin-right:6px;background:rgba(184,154,106,0.12);border:1px solid rgba(184,154,106,0.3);color:#B89A6A;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer;font-family:inherit"></select>
           <button class="bout" onclick="doLogout()">Sign Out</button>
         </div>
@@ -2150,9 +2150,9 @@ async function mkZIP(all,fn){
 }
 
 async function mkHTML(all,fn){
-  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AAFC Report</title>';
+  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Klirena Report</title>';
   h+='<style>body{font-family:sans-serif;background:#1C1929;color:#F5F1EB;padding:20px}h1{color:#B89A6A}.pt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px}h2{color:#B89A6A;font-size:18px;margin-bottom:8px}.inf{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px}.vs{border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:10px}h3{font-size:14px;color:#9B8FD4;margin-bottom:8px}.phs{display:flex;flex-wrap:wrap;gap:8px}.phs img{width:140px;height:186px;object-fit:cover;border-radius:6px}.lb{font-size:10px;color:rgba(255,255,255,0.3);text-align:center}</style>';
-  h+='</head><body><h1>AAFC Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
+  h+='</head><body><h1>Klirena Clinic Report</h1><p style="color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:24px">'+new Date().toLocaleDateString()+'</p>';
   for(var i=0;i<all.length;i++){
     var p=all[i];
     h+='<div class="pt"><h2>'+(p.name||'')+' '+(p.surname||'')+'</h2><div class="inf">'+[p.birth_date,p.phone,p.city].filter(Boolean).join(' · ')+'</div>';
@@ -4602,7 +4602,7 @@ async function stEinvLoad(){
         stField('eiCs','Client Secret','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiUser',mxTr('User (e-mail)','Kullanıcı (e-posta)'),s.username)+
         stField('eiPw',mxTr('Password','Şifre'),'',s.has_password?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+'</div></div>'+
       '<div id="eiNil"><h3>Nilvera</h3><div class="st-grid">'+stField('eiKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiSer',mxTr('Series (3 letters)','Seri (3 harf)'),s.series,'SMM')+'</div></div>'+
-      '<div id="eiIsn"><h3>İşNet</h3><div class="hint">'+mxE('Şifre gerekmez: İşNet, AAFC\'yi VKN/TCKN\'niz ve sabit sunucu adresimizle tanır. Test ortamında makbuzlar İşNet\'in test firmasına kesilir, gerçek değildir.')+'<br>'+mxE('Kesilen makbuzlar Nette Fatura\'da (nettefatura.isnet.net.tr) görünür.')+'</div></div>'+
+      '<div id="eiIsn"><h3>İşNet</h3><div class="hint">'+mxE('Şifre gerekmez: İşNet, Klirena\'yı VKN/TCKN\'niz ve sabit sunucu adresimizle tanır. Test ortamında makbuzlar İşNet\'in test firmasına kesilir, gerçek değildir.')+'<br>'+mxE('Kesilen makbuzlar Nette Fatura\'da (nettefatura.isnet.net.tr) görünür.')+'</div></div>'+
       '<div id="eiIx"><h3>InvoiceXpress</h3><div class="st-grid">'+stField('eiIxAcc',mxTr('Account name (the part before .app.invoicexpress.com)','Hesap adı (.app.invoicexpress.com öncesi)'),s.provider==='invoicexpress'?s.company_id:'')+stField('eiIxKey','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+'</div><div class="hint">'+mxE(mxTr('InvoiceXpress › Settings › API. Issues a certified invoice-receipt (fatura-recibo); with 0% VAT the exemption M07 (art. 9 CIVA) is used.','InvoiceXpress › Ayarlar › API. Sertifikalı fatura-makbuz (fatura-recibo) keser; KDV %0 ise M07 muafiyeti (CIVA md. 9) kullanılır.'))+'</div></div>'+
       '<div id="eiB2"><h3>B2Brouter · VERI*FACTU</h3><div class="st-grid">'+stField('eiB2Acc',mxTr('Account ID','Hesap numarası'),s.provider==='b2brouter'?s.company_id:'')+stField('eiB2Key','API key','',s.has_client_secret?mxTr('saved — leave empty to keep','kayıtlı — değiştirmek istemiyorsan boş bırak'):'','password')+stField('eiB2Ser',mxTr('Series','Seri'),s.provider==='b2brouter'?s.series:'','T')+'</div><div class="hint">'+mxE(mxTr('Issues a simplified invoice (ticket) and registers it with VERI*FACTU (AEAT). Turn on VERI*FACTU in your B2Brouter account first. Keys starting with test_ use the sandbox.','Basitleştirilmiş fatura (ticket) keser ve VERI*FACTU\'ya (AEAT) bildirir. Önce B2Brouter hesabınızda VERI*FACTU\'yu açın. test_ ile başlayan anahtarlar deneme ortamını kullanır.'))+'</div></div>'+
       '<div id="eiIss"><h3>'+mxE(mxTr('Issuer','Düzenleyen'))+'</h3><div class="st-grid">'+stField('eiTax',mxTr('Tax / ID number','VKN / TCKN'),iss.tax_number)+stField('eiIName',mxTr('Name / title','Ad soyad / unvan'),iss.name)+stField('eiOff',mxTr('Tax office','Vergi dairesi'),iss.tax_office)+stField('eiCity',mxTr('City','İl'),iss.city)+stField('eiDist',mxTr('District','İlçe'),iss.district)+'</div>'+stField('eiAddr',mxTr('Address','Adres'),iss.address)+'</div>'+
@@ -5334,7 +5334,7 @@ var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU 
 'Procedure':'İşlem','Description':'Açıklama','Price':'Fiyat','Detail':'Detay','First 50 notes shown':'İlk 50 not gösteriliyor',
 'Before':'Öncesi','After':'Sonrası','BEFORE':'ÖNCESİ','AFTER':'SONRASI','Before: ':'Öncesi: ','After: ':'Sonrası: ','BEFORE / AFTER COMPARISON':'ÖNCESİ / SONRASI KARŞILAŞTIRMA',
 'Front':'Ön','Left 45':'Sol 45','Right 45':'Sağ 45','Left Profile':'Sol Profil','Right Profile':'Sağ Profil',
-'Generate PDF Report':'PDF Rapor Oluştur','AAFC Clinic Report':'AAFC Klinik Raporu','AAFC Report':'AAFC Raporu',
+'Generate PDF Report':'PDF Rapor Oluştur','Klirena Clinic Report':'Klirena Klinik Raporu','Klirena Report':'Klirena Raporu',
 'Preparing...':'Hazırlanıyor...','Loading...':'Yükleniyor...','Loading images...':'Görseller yükleniyor...','Loading logo...':'Logo yükleniyor...',
 'Creating ZIP...':'ZIP oluşturuluyor...','Fetching...':'Getiriliyor...','Error':'Hata','Error: ':'Hata: ',
 'Daily Agenda':'Günlük Ajanda','Visits completed on the selected day':'Seçilen günde yapılan vizitler','No visits on this day.':'Bu günde vizit yok.',
@@ -5409,7 +5409,7 @@ function setPanelLang(l){
   document.documentElement.lang=LANG;
   document.querySelectorAll('.langsel').forEach(function(s){s.innerHTML=PANEL_LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===LANG?' selected':'')+'>'+x[1]+'</option>';}).join('');});
   if(LANG==='en')return;
-  document.title='AAFC Panel';
+  document.title='Klirena Panel';
   trNode(document.body);
   new MutationObserver(function(ms){ms.forEach(function(m){
     if(m.type==='characterData')trNode(m.target);

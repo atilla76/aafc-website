@@ -245,7 +245,7 @@ async function init() {
   render();
 }
 
-function notFound() { app.innerHTML = `<div class="brand">AAFC</div><div class="card"><div class="muted">${L.notFound}</div></div>`; }
+function notFound() { app.innerHTML = `<div class="brand">Klirena</div><div class="card"><div class="muted">${L.notFound}</div></div>`; }
 
 async function pickService(i, silent) {
   st.service = st.info.services[i];
@@ -313,7 +313,7 @@ function icsHref() {
   const endD = new Date(`${r.date}T${r.time}:00`); endD.setMinutes(endD.getMinutes() + (r.duration || 30));
   const p = (n) => String(n).padStart(2, '0');
   const end = `${endD.getFullYear()}${p(endD.getMonth() + 1)}${p(endD.getDate())}T${p(endD.getHours())}${p(endD.getMinutes())}00`;
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AAFC//Booking//TR', 'BEGIN:VEVENT', `UID:${r.id}@aafclinic.com`,
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Klirena//Booking//TR', 'BEGIN:VEVENT', `UID:${r.id}@aafclinic.com`,
     `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${st.service.name} - ${i.name || ''}`,
     `LOCATION:${(i.address || '').replace(/\n/g, ' ')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
@@ -362,7 +362,7 @@ function waHref() {
 
 function render(keepForm) {
   const i = st.info;
-  let h = `<div class="brand">${esc((i.speciality || 'AAFC').toLocaleUpperCase('tr'))}</div>
+  let h = `<div class="brand">${esc((i.speciality || 'Klirena').toLocaleUpperCase('tr'))}</div>
     <h1>${esc(i.name || '')}</h1>
     ${i.doctor ? `<div class="sub">${esc(i.doctor)}</div>` : ''}
     ${i.address ? `<div class="sub">${esc(i.address)}</div>` : ''}
@@ -461,7 +461,7 @@ function render(keepForm) {
 
 function foot() {
   const i = st.info || {};
-  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a> · ` : ''}AAFC</div>`;
+  return `<div class="foot">${i.phone ? `<a href="tel:${esc(String(i.phone).replace(/\s/g, ''))}">${L.call}: ${esc(i.phone)}</a> · ` : ''}Klirena</div>`;
 }
 
 init();

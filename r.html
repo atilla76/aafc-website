@@ -103,12 +103,12 @@ function icsHref() {
   const p = (n) => String(n).padStart(2, '0');
   const s = new Date(`${D.date}T${D.time}:00`), e = new Date(s.getTime() + (D.duration || 30) * 60000);
   const f = (d) => `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AAFC//Appointment//TR', 'BEGIN:VEVENT', `UID:${TOKEN}@aafclinic.com`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`,
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Klirena//Appointment//TR', 'BEGIN:VEVENT', `UID:${TOKEN}@aafclinic.com`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`,
     `SUMMARY:${(D.service ? D.service + ' - ' : '') + (D.clinic || '')}`, `LOCATION:${String(D.address || '').replace(/\n/g, ' ')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
 }
 function foot() {
-  return `<div class="foot">${D && D.phone ? `<a href="tel:${esc(String(D.phone).replace(/\s/g, ''))}">${L.call}: ${esc(D.phone)}</a> · ` : ''}AAFC</div>`;
+  return `<div class="foot">${D && D.phone ? `<a href="tel:${esc(String(D.phone).replace(/\s/g, ''))}">${L.call}: ${esc(D.phone)}</a> · ` : ''}Klirena</div>`;
 }
 function state(icon, color, text) {
   return `<div class="state"><div class="ic" style="background:${color}22;color:${color}">${icon}</div><div style="font-size:16px;line-height:1.5">${text}</div></div>`;
@@ -116,7 +116,7 @@ function state(icon, color, text) {
 
 function render() {
   if (!D) return;
-  let h = `<div class="brand">${esc(String(D.clinic || 'AAFC').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>
+  let h = `<div class="brand">${esc(String(D.clinic || 'Klirena').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>
     <div class="sub">${esc(L.hi(D.first_name))}</div>
     <div class="card"><div class="sub" style="margin:0">${esc(longDate(D.date))}</div><div class="big">${esc(D.time)}${D.service ? ' · ' + esc(D.service) : ''}</div>
     ${D.doctor ? `<div class="sub">${esc(D.doctor)}</div>` : ''}${D.address ? `<div class="sub">${esc(D.address)}</div>` : ''}</div><div class="card">`;

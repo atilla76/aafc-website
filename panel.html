@@ -5160,7 +5160,7 @@ async function mbTodoOpen(){
   var m=await db.rpc('get_mbys_todo',{p_days:60});if(m.error){alert('Hata: '+m.error.message);return;}
   hmMbys=m.data||[];hmRender();window._mbTodo=true;
   var L=hmMbys;
-  var b='<div class="hint" style="margin-bottom:10px">Son 60 günün MBYS’ye girilmemiş vizitleri. Özet’ten alanları kopyalayıp MBYS’ye gir, sonra “Girdim” de; liste bir daha göstermez. Daha önce girdiklerini toplu işaretleyebilirsin.</div>'+
+  var b='<div class="hint" style="margin-bottom:10px">1 Ekim 2026’dan (zorunluluk başlangıcı) bu yana MBYS’ye girilmemiş vizitler. Özet’ten alanları kopyalayıp MBYS’ye gir, sonra “Girdim” de; liste bir daha göstermez. Daha önce girdiklerini toplu işaretleyebilirsin.</div>'+
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:10px;border-radius:10px;background:rgba(245,241,235,.04)">'+
     '<span style="font-size:13px">Bu tarih dahil öncekilerin hepsini girdim:</span><input type="date" id="mbUntil" class="mi" style="width:auto" max="'+fmtDate(new Date())+'">'+
     '<button class="bimp2" onclick="mbBulk(\'until\')">İşaretle</button></div>'+

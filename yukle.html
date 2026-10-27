@@ -167,7 +167,7 @@ async function call(body) {
 }
 
 function head() { return `<div class="brand">${esc(((INFO && INFO.clinic) || 'Klirena').toLocaleUpperCase(LC === 'tr' ? 'tr' : undefined))}</div><h1>${L.title}</h1>`; }
-function msg(t) { app.innerHTML = head() + `<div class="card"><div class="muted">${t}</div></div><div class="foot">Klirena · aafclinic.com</div>`; }
+function msg(t) { app.innerHTML = head() + `<div class="card"><div class="muted">${t}</div></div><div class="foot">Klirena · klirena.com</div>`; }
 
 async function init() {
   if (!TOKEN) return msg(L.notFound);
@@ -191,7 +191,7 @@ function render() {
     </div>
     ${prev.length ? `<div class="card"><div class="step">${L.previous}</div>${prev.map((f) => `<div class="row"><div class="nm"><b>${esc(f.name)}</b><span>${fmtSize(f.size)}</span></div><span class="st ok">✓</span></div>`).join('')}</div>` : ''}
     <div class="card"><div class="lock">${LOCK}<div>${L.secure}<br>${esc(L.valid(fmtDate(INFO.expires_at)))}</div></div></div>
-    <div class="foot">Klirena · aafclinic.com</div>`;
+    <div class="foot">Klirena · klirena.com</div>`;
   const fi = document.getElementById('inFiles'), di = document.getElementById('inDir');
   document.getElementById('bFiles').onclick = () => fi.click();
   document.getElementById('bDir').onclick = () => di.click();

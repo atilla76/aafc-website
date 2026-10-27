@@ -348,7 +348,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
 .bk-x{background:none;border:none;color:#C0614A;cursor:pointer;font-size:16px}
 @media(max-width:700px){.bk-day{grid-template-columns:1fr 1fr;}.bk-day .sep{display:none}}
 </style>
-<link rel="canonical" href="https://aafclinic.com/panel" />
+<link rel="canonical" href="https://klirena.com/panel" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -721,7 +721,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
         <h3>Booking page</h3>
         <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bkEnabled"> Accept online bookings</label></div>
         <div class="bk-row"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bkIntake"> Ask for a health form after online booking</label></div>
-        <div class="bk-row"><span class="hint" style="margin:0">aafclinic.com/randevu?k=</span><input class="bk-in" id="bkSlug" placeholder="your-clinic" style="width:220px" oninput="bkLink()"></div>
+        <div class="bk-row"><span class="hint" style="margin:0">klirena.com/randevu?k=</span><input class="bk-in" id="bkSlug" placeholder="your-clinic" style="width:220px" oninput="bkLink()"></div>
         <div class="bk-row"><span class="bk-link" id="bkLink"></span></div>
         <div class="bk-row"><button class="bimp2" onclick="bkCopy()">Copy link</button><button class="bimp2" onclick="bkOpen()">Open page</button><span id="bkMsg" class="hint" style="margin:0"></span></div>
         <div class="hint" style="margin-top:8px">Short welcome text (optional)</div>
@@ -1945,7 +1945,7 @@ function apCreatePt(i){
 }
 
 function apConfirmLine(a){var ex=apExtras[a.appointment_id];if(!ex||!ex.confirm_token||(a.status&&a.status!=='planned'))return '';
-  return '\n\n'+mxTr('To confirm or cancel your appointment:','Randevunuzu teyit etmek veya iptal etmek için:')+'\nhttps://aafclinic.com/r?t='+encodeURIComponent(ex.confirm_token);}
+  return '\n\n'+mxTr('To confirm or cancel your appointment:','Randevunuzu teyit etmek veya iptal etmek için:')+'\nhttps://klirena.com/r?t='+encodeURIComponent(ex.confirm_token);}
 function normPhone(p){return (p||'').replace(/[^0-9+]/g,'');}
 
 function buildReminder(a){
@@ -2515,7 +2515,7 @@ function fnEsmmRender(){
 }
 async function fnEsmmPdf(btn,id){var t=btn.textContent;btn.disabled=true;btn.textContent='…';
   await einvPdfOpen(id);btn.disabled=false;btn.textContent=t;}
-// receipt PDF: the function returns the file itself; shown as blob:aafclinic.com/… (storage address never appears)
+// receipt PDF: the function returns the file itself; shown as blob:klirena.com/… (storage address never appears)
 async function einvPdfOpen(id){
   var w=window.open('','_blank');
   var r=await db.functions.invoke('einvoice-pdf',{body:{entry_id:id}}),d=r.data||{},err=d.error;
@@ -3011,7 +3011,7 @@ function wlTable(el,rows){
 }
 async function wlNotify(el,i){
   var w=wlRows[el][i],lg=(w.lang||'tr').slice(0,2),T=WL_MSG[lg]||WL_MSG.tr;
-  var link=wlSlug?'https://aafclinic.com/randevu?k='+encodeURIComponent(wlSlug)+'&lang='+lg:'';
+  var link=wlSlug?'https://klirena.com/randevu?k='+encodeURIComponent(wlSlug)+'&lang='+lg:'';
   var msg=(w.wanted_date?T[0]:T[1]).replace('[name]',String(w.name||'').trim().split(' ')[0]).replace('[date]',mxDate(w.wanted_date)).replace('[link]',link);
   var ph=mxWaDigits(w.phone);
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
@@ -3026,7 +3026,7 @@ async function wlAnswer(el,i,yes){delete wlAsk[el+i];var w=wlRows[el][i];
 async function wlSet(el,i,st){var w=wlRows[el][i],prev=w.status||'waiting';await db.from('booking_waitlist').update({status:st}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);
   mxUndoToast(st==='booked'?mxTrV('[name] booked','[name] randevu verildi',{name:w.name||''}):mxTrV('[name] removed','[name] listeden çıkarıldı',{name:w.name||''}),async function(){await db.from('booking_waitlist').update({status:prev}).eq('id',w.id);wlLoad(el,el==='apptWl'?fmtDate(apptDate):null);});}
 
-// ============ PATIENT PORTAL (aafclinic.com/hasta?t=) ============
+// ============ PATIENT PORTAL (klirena.com/hasta?t=) ============
 var ptActive=null;
 async function ptLoad(pid){
   var r=await db.from('patient_portals').select('id,token,expires_at,view_count').eq('patient_id',pid).is('revoked_at',null).gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(1);
@@ -3043,7 +3043,7 @@ async function ptSend(wa){
   if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
   var r=await db.rpc('create_patient_portal',{p_patient_id:selPid});
   if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
-  var url='https://aafclinic.com/hasta?t='+encodeURIComponent(r.data.token);
+  var url='https://klirena.com/hasta?t='+encodeURIComponent(r.data.token);
   if(wa){ph=mxWaDigits(ph);
     var msg=mxTrV('Hello [name], here is your [clinic] patient portal: [link]\nYou can see your appointments, packages, photos and consent forms there. Use the last 4 digits of your phone number to sign in.',
       'Merhaba [name], [clinic] hasta portalınız: [link]\nRandevularınızı, paketlerinizi, fotoğraflarınızı ve onam formlarınızı buradan görebilirsiniz. Giriş için telefon numaranızın son 4 hanesini kullanın.',{name:p.name||'',clinic:clinic.name||'',link:url});
@@ -3054,7 +3054,7 @@ async function ptSend(wa){
 async function ptRevoke(){if(!ptActive||!confirm(mxTr('Revoke the portal link? The patient will no longer be able to sign in.','Portal linki iptal edilsin mi? Hasta artık giriş yapamaz.')))return;
   await db.from('patient_portals').update({revoked_at:new Date().toISOString()}).eq('id',ptActive.id);ptLoad(selPid);}
 
-// ============ PHOTO SHARE (aafclinic.com/foto?t=) ============
+// ============ PHOTO SHARE (klirena.com/foto?t=) ============
 var psSel={},psDays=30,psShares=[];
 async function psOpen(){
   mxOpen(mxTr('Share photos','Fotoğraf paylaş'),'<div class="loader">…</div>',[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
@@ -3096,7 +3096,7 @@ async function psSend(wa){
   if(wa&&!ph){m.textContent=mxTr('Patient has no phone number','Hastanın telefonu yok');m.style.color='#C0614A';return;}
   var r=await db.rpc('create_photo_share',{p_patient_id:selPid,p_photo_ids:ids,p_days:parseInt(mxV('psDays'))||30,p_note:mxV('psNote')||null});
   if(r.error||!r.data){m.textContent=mxTr('Error','Hata');m.style.color='#C0614A';return;}
-  var url='https://aafclinic.com/foto?t='+encodeURIComponent(r.data.token);
+  var url='https://klirena.com/foto?t='+encodeURIComponent(r.data.token);
   if(wa){
     ph=mxWaDigits(ph);
     var msg=mxTrV('Hello [name], [clinic] is sharing your photos with you: [link] (The link is valid until [date].)',
@@ -3212,7 +3212,7 @@ var IN_RISK=['pregnant','allergy','anticoag','chronic','autoimmune','neuro','iso
 var inForms=[];
 function inLabel(k){for(var i=0;i<IN_Q.length;i++)if(IN_Q[i][0]===k)return mxTr(IN_Q[i][1],IN_Q[i][2]);return k;}
 function inFlagText(f,k){var d=((f.answers||{})[k+'_detail']||'').trim();return inLabel(k)+(d?': '+d:'');}
-function inUrl(tok){return 'https://aafclinic.com/form?t='+encodeURIComponent(tok);}
+function inUrl(tok){return 'https://klirena.com/form?t='+encodeURIComponent(tok);}
 // ---- Patient consent status (sending stays in the app: template + OTP via WhatsApp) ----
 async function csLoad(pid){
   var box=document.getElementById('pConsent');if(!box)return;box.innerHTML='<div class="hint" style="margin:0">…</div>';
@@ -3320,7 +3320,7 @@ var bkData=null;
 function bkEsc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function bkSlugify(t){var m={'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u','Ç':'c','Ğ':'g','İ':'i','Ö':'o','Ş':'s','Ü':'u'};
   return (t||'').replace(/[çğıöşüÇĞİÖŞÜ]/g,function(c){return m[c]}).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);}
-function bkUrl(){return 'https://aafclinic.com/randevu?k='+encodeURIComponent(document.getElementById('bkSlug').value.trim());}
+function bkUrl(){return 'https://klirena.com/randevu?k='+encodeURIComponent(document.getElementById('bkSlug').value.trim());}
 function bkLink(){document.getElementById('bkLink').textContent=document.getElementById('bkSlug').value.trim()?bkUrl():'';bkCodes();}
 function bkCodes(){var has=document.getElementById('bkSlug').value.trim(),u=bkUrl(),q=document.getElementById('bkQr');if(!q)return;
   if(!has){q.innerHTML='';document.getElementById('bkBtnCode').value='';document.getElementById('bkEmbedCode').value='';return;}
@@ -3329,7 +3329,7 @@ function bkCodes(){var has=document.getElementById('bkSlug').value.trim(),u=bkUr
   var bg=light?'#9A7B4C':'#B89A6A',fg=light?'#FFFFFF':'#12101E';
   document.getElementById('bkBtnCode').value='<a href="'+u+'" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;background:'+bg+';color:'+fg+';border-radius:10px;font:600 16px -apple-system,Segoe UI,Roboto,sans-serif;text-decoration:none">'+label+'</a>';
   var eu=u+'&embed=1'+(light?'&theme=light':'');
-  document.getElementById('bkEmbedCode').value='<iframe id="aafc-booking" src="'+eu+'" title="'+label+'" loading="lazy" style="width:100%;max-width:560px;height:780px;border:0"></iframe>\n<script>addEventListener("message",function(e){if(e.origin==="https://aafclinic.com"&&e.data&&e.data.aafcBooking){var f=document.getElementById("aafc-booking");if(f)f.style.height=(e.data.h+16)+"px";}});<\/script>';
+  document.getElementById('bkEmbedCode').value='<iframe id="aafc-booking" src="'+eu+'" title="'+label+'" loading="lazy" style="width:100%;max-width:560px;height:780px;border:0"></iframe>\n<script>addEventListener("message",function(e){if(e.origin==="https://klirena.com"&&e.data&&e.data.aafcBooking){var f=document.getElementById("aafc-booking");if(f)f.style.height=(e.data.h+16)+"px";}});<\/script>';
 }
 function bkCopyCode(id){navigator.clipboard.writeText(document.getElementById(id).value).then(function(){var e=document.getElementById('bkShareMsg');e.textContent=mxTr('Copied','Kopyalandı');e.style.color='#3AB06A';setTimeout(function(){e.textContent='';},3000);});}
 function bkQrDownload(){var u=bkUrl();try{var qr=qrcode(0,'M');qr.addData(u);qr.make();var n=qr.getModuleCount(),sc=Math.ceil(1024/(n+8)),sz=(n+8)*sc,c=document.createElement('canvas');c.width=c.height=sz;
@@ -3985,7 +3985,7 @@ function migInit(){
 }
 // ============ SECURE UPLOAD LINK (migration) ============
 var ulData=null;
-function ulUrl(t){return 'https://aafclinic.com/yukle.html?t='+encodeURIComponent(t)+'&lang='+LANG;}
+function ulUrl(t){return 'https://klirena.com/yukle.html?t='+encodeURIComponent(t)+'&lang='+LANG;}
 function ulSize(b){b=Number(b)||0;var u=['B','KB','MB','GB'],i=0;while(b>=1024&&i<3){b/=1024;i++;}return (i?b.toFixed(b<10?1:0):b)+' '+u[i];}
 async function ulLoad(){
   document.getElementById('ulT').textContent=mxTr('Secure upload link','Güvenli yükleme linki');
@@ -4366,7 +4366,7 @@ var ST_ITEMS=[
   ['enabiz','e-Nabız (MBYS)','e-Nabız (MBYS)','Automatic sending','Otomatik gönderim','tr'],
   ['tracking','ÜTS / İTS','ÜTS / İTS','Product tracking notifications','Ürün takip bildirimleri','tab:trk'],
   ['g','Data','Veriler'],
-  ['access','Data access','Veri erişimi','Sign in on a computer · aafclinic.com/panel','Bilgisayardan giriş · aafclinic.com/panel'],
+  ['access','Data access','Veri erişimi','Sign in on a computer · klirena.com/panel','Bilgisayardan giriş · klirena.com/panel'],
   ['backup','Backup and migration','Yedekleme ve taşıma','Download · import from your old program','İndir · eski programdan aktar','tab:backup'],
   ['upload','Secure upload link','Güvenli yükleme linki','Receive old program files securely','Eski programdaki dosyaları güvenle alın'],
   ['g','Account and app','Hesap ve uygulama'],
@@ -4648,7 +4648,7 @@ async function stEnabizLoad(){
 async function stEnabizSave(){var on=document.getElementById('enAuto').checked;var r=await db.from('clinic').update({enabiz_auto:on}).eq('id',cid);stMsg('enMsg',!r.error);if(!r.error)clinic.enabiz_auto=on;}
 
 // ---- data access ----
-function stAccessLoad(){var b=document.getElementById('st-access-f');if(!b)return;var u='https://aafclinic.com/panel';
+function stAccessLoad(){var b=document.getElementById('st-access-f');if(!b)return;var u='https://klirena.com/panel';
   b.innerHTML=stHead('access')+'<div class="imp-step"><div class="hint" style="margin:0 0 12px">'+mxE(mxTr('Sign in on any computer with your e-mail and password. All data stays in sync with the app.','Herhangi bir bilgisayardan e-posta ve şifrenizle giriş yapın. Tüm veriler uygulamayla eşittir.'))+'</div>'+
     '<div class="bk-row"><span class="bk-link">'+u+'</span><button class="bimp2" onclick="navigator.clipboard.writeText(\''+u+'\');stMsg(\'daMsg\',true,mxTr(\'Copied\',\'Kopyalandı\'))">'+mxE(mxTr('Copy link','Linki kopyala'))+'</button><span id="daMsg" style="font-size:13px"></span></div></div>';}
 

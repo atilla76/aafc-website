@@ -78,7 +78,9 @@
     -webkit-tap-highlight-color: transparent;
   }
   .btn:active { background: var(--goldLt); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn:disabled, .btn.dim { opacity: 0.5; }
+  .checkbox-row.need { outline: 2px solid var(--red); outline-offset: 4px; border-radius: 6px; }
+  .checkbox-row input { width: 22px; height: 22px; flex: none; }
   .btn.secondary { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
   .btn.danger { background: var(--red); color: white; }
   
@@ -247,7 +249,7 @@
       
       <div id="sign-alert" class="alert error hidden"></div>
       
-      <button class="btn" id="sign-btn" disabled>Onaylıyorum</button>
+      <button class="btn" id="sign-btn">Onaylıyorum</button>
     </div>
   </div>
 
@@ -317,14 +319,16 @@ const I18N = {
     closeNote: 'Bu sayfayı kapatabilirsiniz. Klinik onamınızı panelden takip edebilir.',
     privacy: 'Gizlilik',
     terms: 'Şartlar',
-    footer: '<span id="i18n-footer">KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı</span>',
+    footer: 'KVKK & GDPR Uyumlu · Şifreli & Hash Korumalı',
     otpRequired: 'Lütfen 6 haneli kodu girin.',
     otpInvalid: 'Kod hatalı. Tekrar deneyin.',
     otpInvalidLeft: 'Kod hatalı. {n} deneme hakkınız kaldı.',
     otpExpired: 'Kod süresi dolmuş. Klinikten yeni bir link isteyin.',
     otpTooMany: 'Çok fazla yanlış deneme. Klinikten yeni link isteyin.',
     saveFailed: 'Onam kaydedilemedi.',
-    otpReq: 'OTP doğrulaması gerekli.'
+    otpReq: 'OTP doğrulaması gerekli.',
+    needSig: 'Lütfen imza alanına imzanızı çizin.',
+    needCheck: 'Lütfen onay kutusunu işaretleyin.'
   },
   en: {
     title: 'Consent Form | Klirena',
@@ -373,7 +377,9 @@ const I18N = {
     otpExpired: 'Code expired. Please request a new link from the clinic.',
     otpTooMany: 'Too many failed attempts. Please request a new link from the clinic.',
     saveFailed: 'Could not save consent.',
-    otpReq: 'OTP verification required.'
+    otpReq: 'OTP verification required.',
+    needSig: 'Please draw your signature in the box.',
+    needCheck: 'Please tick the consent checkbox.'
   },
   de: {
     title: 'Einwilligungsformular | Klirena',
@@ -422,7 +428,9 @@ const I18N = {
     otpExpired: 'Code abgelaufen. Bitte fordern Sie einen neuen Link an.',
     otpTooMany: 'Zu viele Fehlversuche. Bitte fordern Sie einen neuen Link an.',
     saveFailed: 'Einwilligung konnte nicht gespeichert werden.',
-    otpReq: 'OTP-Bestätigung erforderlich.'
+    otpReq: 'OTP-Bestätigung erforderlich.',
+    needSig: 'Bitte unterschreiben Sie im Feld.',
+    needCheck: 'Bitte setzen Sie das Häkchen zur Einwilligung.'
   },
   es: {
     title: 'Formulario de Consentimiento | Klirena',
@@ -471,7 +479,9 @@ const I18N = {
     otpExpired: 'Código expirado. Solicite un nuevo enlace.',
     otpTooMany: 'Demasiados intentos fallidos. Solicite un nuevo enlace.',
     saveFailed: 'No se pudo guardar el consentimiento.',
-    otpReq: 'Verificación OTP requerida.'
+    otpReq: 'Verificación OTP requerida.',
+    needSig: 'Dibuje su firma en el recuadro.',
+    needCheck: 'Marque la casilla de consentimiento.'
   },
   fr: {
     title: 'Formulaire de Consentement | Klirena',
@@ -520,7 +530,9 @@ const I18N = {
     otpExpired: 'Code expiré. Demandez un nouveau lien.',
     otpTooMany: 'Trop de tentatives échouées. Demandez un nouveau lien.',
     saveFailed: 'Impossible d\'enregistrer le consentement.',
-    otpReq: 'Vérification OTP requise.'
+    otpReq: 'Vérification OTP requise.',
+    needSig: 'Veuillez dessiner votre signature dans le cadre.',
+    needCheck: 'Veuillez cocher la case de consentement.'
   },
   it: {
     title: 'Modulo di Consenso | Klirena',
@@ -569,7 +581,9 @@ const I18N = {
     otpExpired: 'Codice scaduto. Richiedi un nuovo link.',
     otpTooMany: 'Troppi tentativi falliti. Richiedi un nuovo link.',
     saveFailed: 'Impossibile salvare il consenso.',
-    otpReq: 'Verifica OTP richiesta.'
+    otpReq: 'Verifica OTP richiesta.',
+    needSig: 'Disegni la sua firma nel riquadro.',
+    needCheck: 'Spunti la casella del consenso.'
   },
   pt: {
     title: 'Formulário de Consentimento | Klirena',
@@ -618,7 +632,9 @@ const I18N = {
     otpExpired: 'Código expirado. Solicite um novo link.',
     otpTooMany: 'Muitas tentativas falhadas. Solicite um novo link.',
     saveFailed: 'Não foi possível salvar o consentimento.',
-    otpReq: 'Verificação OTP necessária.'
+    otpReq: 'Verificação OTP necessária.',
+    needSig: 'Desenhe a sua assinatura no quadro.',
+    needCheck: 'Marque a caixa de consentimento.'
   },
   ru: {
     title: 'Форма согласия | Klirena',
@@ -667,7 +683,9 @@ const I18N = {
     otpExpired: 'Код истёк. Запросите новую ссылку.',
     otpTooMany: 'Слишком много неудачных попыток. Запросите новую ссылку.',
     saveFailed: 'Не удалось сохранить согласие.',
-    otpReq: 'Требуется подтверждение OTP.'
+    otpReq: 'Требуется подтверждение OTP.',
+    needSig: 'Пожалуйста, нарисуйте подпись в поле.',
+    needCheck: 'Пожалуйста, отметьте галочку согласия.'
   },
   ko: {
     title: '동의서 | Klirena',
@@ -716,7 +734,9 @@ const I18N = {
     otpExpired: '코드가 만료되었습니다. 새 링크를 요청하세요.',
     otpTooMany: '실패 시도가 너무 많습니다. 새 링크를 요청하세요.',
     saveFailed: '동의서를 저장할 수 없습니다.',
-    otpReq: 'OTP 인증이 필요합니다.'
+    otpReq: 'OTP 인증이 필요합니다.',
+    needSig: '상자에 서명해 주세요.',
+    needCheck: '동의 체크박스를 선택해 주세요.'
   },
   zh: {
     title: '同意书 | Klirena',
@@ -765,7 +785,9 @@ const I18N = {
     otpExpired: '代码已过期。请请求新链接。',
     otpTooMany: '失败尝试次数过多。请请求新链接。',
     saveFailed: '无法保存同意书。',
-    otpReq: '需要 OTP 验证。'
+    otpReq: '需要 OTP 验证。',
+    needSig: '请在框内签名。',
+    needCheck: '请勾选同意框。'
   }
 };
 
@@ -1048,7 +1070,7 @@ function initSignatureCanvas() {
   canvas.addEventListener('touchend', stopDraw);
   
   document.getElementById('clear-signature').addEventListener('click', clearSignature);
-  document.getElementById('consent-checkbox').addEventListener('change', updateSignButton);
+  document.getElementById('consent-checkbox').addEventListener('change', () => { document.querySelector('.checkbox-row').classList.remove('need'); updateSignButton(); });
 }
 
 function getPos(e) {
@@ -1065,6 +1087,13 @@ function startDraw(e) {
   const pos = getPos(e);
   ctx.beginPath();
   ctx.moveTo(pos.x, pos.y);
+  ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+  ctx.stroke();
+  if (!hasSignature) {
+    hasSignature = true;
+    document.getElementById('signature-hint').classList.add('hidden');
+    updateSignButton();
+  }
 }
 
 function draw(e) {
@@ -1100,7 +1129,9 @@ function clearSignature() {
 
 function updateSignButton() {
   const checked = document.getElementById('consent-checkbox').checked;
-  document.getElementById('sign-btn').disabled = !(hasSignature && checked && (!needsId || nidOk()));
+  const ready = hasSignature && checked && (!needsId || nidOk());
+  document.getElementById('sign-btn').classList.toggle('dim', !ready);
+  if (ready) hideAlert('sign-alert');
 }
 
 // İMZA GÖNDER
@@ -1108,7 +1139,9 @@ document.getElementById('sign-btn').addEventListener('click', submitSignature);
 
 async function submitSignature() {
   const checked = document.getElementById('consent-checkbox').checked;
-  if (!hasSignature || !checked || (needsId && !nidOk())) return;
+  if (needsId && !nidOk()) { showAlert('sign-alert', t.nidInvalid); document.getElementById('nid-input').focus(); return; }
+  if (!hasSignature) { showAlert('sign-alert', t.needSig); document.querySelector('.signature-box').scrollIntoView({behavior:'smooth', block:'center'}); return; }
+  if (!checked) { showAlert('sign-alert', t.needCheck); document.querySelector('.checkbox-row').classList.add('need'); return; }
   
   const btn = document.getElementById('sign-btn');
   btn.disabled = true;

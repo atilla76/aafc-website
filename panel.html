@@ -3978,7 +3978,7 @@ function migInit(){
   document.getElementById('mgDropTxt').textContent=mxTr('Drop files and folders here','Dosyaları ve klasörleri buraya bırakın');
   document.getElementById('mgBtnFiles').textContent=mxTr('Choose files (Excel, CSV, ZIP)','Dosya seç (Excel, CSV, ZIP)');
   document.getElementById('mgBtnDir').textContent=mxTr('Choose photo folder','Fotoğraf klasörü seç');
-  document.getElementById('mgHelp').innerHTML=mxTr('<b>Can’t export from your old program, or the files are on another computer?</b> Create a <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">secure upload link</a> below and send it to whoever has the files (your old software company, your assistant). The files arrive here. Need help? Write to <a href="mailto:support@aafclinic.com?subject=Data%20migration">support@aafclinic.com</a> — never send patient data by e-mail.','<b>Eski programdan dışa aktaramıyor musunuz ya da dosyalar başka bir bilgisayarda mı?</b> Aşağıdan <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">güvenli yükleme linki</a> oluşturup dosyalar kimdeyse ona gönderin (eski program firması, asistanınız). Dosyalar buraya gelir. Yardım için <a href="mailto:support@aafclinic.com?subject=Veri%20ta%C5%9F%C4%B1ma">support@aafclinic.com</a> — hasta verisini asla e-postayla göndermeyin.');
+  document.getElementById('mgHelp').innerHTML=mxTr('<b>Can’t export from your old program, or the files are on another computer?</b> Create a <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">secure upload link</a> below and send it to whoever has the files (your old software company, your assistant). The files arrive here. Need help? Write to <a href="mailto:support@klirena.com?subject=Data%20migration">support@klirena.com</a> — never send patient data by e-mail.','<b>Eski programdan dışa aktaramıyor musunuz ya da dosyalar başka bir bilgisayarda mı?</b> Aşağıdan <a href="#ulStep" onclick="document.getElementById(\'ulStep\').scrollIntoView({behavior:\'smooth\'});return false">güvenli yükleme linki</a> oluşturup dosyalar kimdeyse ona gönderin (eski program firması, asistanınız). Dosyalar buraya gelir. Yardım için <a href="mailto:support@klirena.com?subject=Veri%20ta%C5%9F%C4%B1ma">support@klirena.com</a> — hasta verisini asla e-postayla göndermeyin.');
   ulLoad();
   document.getElementById('impPrevHint').textContent=mxTr('Every import can be undone: what it added is removed (records you have changed since then are kept).','Her aktarım geri alınabilir: eklediği kayıtlar silinir (sonradan üzerinde işlem yaptığınız kayıtlar korunur).');
   migRender();
@@ -4372,7 +4372,7 @@ var ST_ITEMS=[
   ['g','Account and app','Hesap ve uygulama'],
   ['language','Language','Dil','Panel language','Panel dili'],
   ['password','Change password','Şifre değiştir','Update your password','Şifrenizi güncelleyin'],
-  ['support','Support','Destek','Questions · support@aafclinic.com','Sorular · support@aafclinic.com','url:help.html']
+  ['support','Support','Destek','Questions · support@klirena.com','Sorular · support@klirena.com','url:help.html']
 ];
 var stSel='clinic',stMoved=false;
 function stIsTr(){return (clinic&&(clinic.phone_country==='+90'||clinic.currency==='TRY'))||LANG==='tr';}

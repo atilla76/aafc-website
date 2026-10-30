@@ -385,6 +385,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <button class="tab" data-tab="settings" onclick="switchTab('settings')">SETTINGS</button>
     <button class="tab" data-tab="rel" id="tabRel" style="display:none" onclick="switchTab('rel')">SÜRÜM TESTİ</button>
+    <button class="tab" data-tab="onb" id="tabOnb" style="display:none" onclick="switchTab('onb')">KARŞILAMA</button>
     <a class="tab" href="help.html" target="_blank" style="text-decoration:none">HELP</a>
     <button class="tab" id="tabOut" style="margin-left:auto;color:#E07A6A" onclick="doLogout()" title="">SIGN OUT</button>
   </div>
@@ -880,6 +881,14 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
       <div id="relBox"></div>
     </div>
   </div>
+  <div class="tcontent" id="tab-onb" style="flex-direction:column">
+    <div class="tab-content">
+      <div class="tab-head">
+        <div><h2>Karşılama e-postaları</h2><div class="sub">Yeni kliniklere giden 3 e-posta: 1 hoş geldiniz · 2 içe aktarma (hasta yoksa) · 3 takıldınız mı (vizit yoksa). Yanıtlar support@klirena.com’a gelir.</div></div>
+      </div>
+      <div id="onbBox"></div>
+    </div>
+  </div>
   <div class="tcontent" id="tab-recall" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
@@ -1043,7 +1052,7 @@ async function showApp(user){
   var ur=await db.from('users').select('clinic_id').eq('auth_id',user.id).single();
   if(!ur.data){alert('User not found');return;}
   cid=ur.data.clinic_id;
-  db.rpc('is_edeca_staff').then(function(r){var b=document.getElementById('tabRel');if(b)b.style.display=r.data===true?'':'none';});
+  db.rpc('is_edeca_staff').then(function(r){['tabRel','tabOnb'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=r.data===true?'':'none';});});
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
   trkLoad();
   clinic=cr.data||{};
@@ -1070,6 +1079,7 @@ function switchTab(name){
   if(name==='stock')stLoad();
   if(name==='trk')trkLoad();
   if(name==='rel')relLoad();
+  if(name==='onb')onbLoad();
   if(name==='finance')fnLoad();
   if(name==='recall')rcLoad();
   if(name==='settings')stLoad();
@@ -4693,6 +4703,16 @@ var REL_ITEMS=[
  ['update','Açılış ve güncelleme ekranı']
 ];
 var relRuns=[],relOpen=null;
+async function onbLoad(){
+  var box=document.getElementById('onbBox');if(!box)return;
+  var r=await db.rpc('get_onboarding_status');
+  if(r.error){box.innerHTML='<div class="imp-step">'+mxE(r.error.message)+'</div>';return;}
+  var d=r.data||[],act=d.filter(function(x){return x.visits>0;}).length;
+  if(!d.length){box.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.6)">Henüz e-posta gönderilmedi.</div>';return;}
+  box.innerHTML='<div class="imp-step"><b>'+d.length+'</b> kliniğe gönderildi · kullanmaya başlayan: <b style="color:#3AB06A">'+act+'</b> · çıkış yapan: '+d.filter(function(x){return x.optout;}).length+'</div>'+
+   '<div class="imp-step"><div class="imp-wrap" style="max-height:none"><table class="fmt"><tr><th>Klinik</th><th>E-posta</th><th>Dil</th><th>Kayıt</th><th>Hasta</th><th>Vizit</th><th>Gönderilen</th></tr>'+
+   d.map(function(x){return '<tr><td>'+mxE(x.clinic)+'</td><td>'+mxE(x.email)+'</td><td>'+mxE(x.lang)+'</td><td>'+mxE(new Date(x.created).toLocaleDateString('tr-TR'))+'</td><td>'+x.patients+'</td><td'+(x.visits>0?' style="color:#3AB06A"':'')+'>'+x.visits+'</td><td>'+mxE(x.steps||'')+(x.optout?' <span style="color:#E05555">· çıkış</span>':'')+'</td></tr>';}).join('')+'</table></div></div>';
+}
 async function relLoad(){
   var box=document.getElementById('relBox');if(!box)return;
   var r=await db.from('release_test_runs').select('*').order('started_at',{ascending:false}).limit(40);
@@ -4707,7 +4727,7 @@ function relCard(x){
   var h='<div class="imp-step"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="relToggle(\''+x.id+'\')"><div><b>'+mxE(x.version)+(x.build?' ('+x.build+')':'')+' · '+mxE(plat)+'</b> <span style="color:rgba(245,241,235,.6);font-size:12.5px">'+mxE(x.device||'')+' · '+mxE(new Date(x.started_at).toLocaleString('tr-TR'))+'</span></div><div style="font-size:13px">'+st+' · '+c.ok+'/'+REL_ITEMS.length+'</div></div>';
   if(open){
     h+='<div style="margin-top:12px">'+REL_ITEMS.map(function(it){var v=(x.results||{})[it[0]]||{},b=function(k,t,col){var on=v.r===k;return '<button class="bimp2" style="padding:6px 12px;'+(on?'background:'+col+';color:#1C1929;border-color:'+col:'')+'" '+(x.finished_at?'disabled':'')+' onclick="relSet(\''+x.id+'\',\''+it[0]+'\',\''+k+'\')">'+t+'</button>';};
-      return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)"><div style="flex:1;min-width:220px;font-size:13.5px">'+mxE(it[1])+(v.note?'<div style="color:#E07A6A;font-size:12px">'+mxE(v.note)+'</div>':'')+'</div>'+b('ok','✓','#3AB06A')+b('fail','✗','#E05555')+b('na','—','rgba(245,241,235,.5)')+'</div>';}).join('')+'</div>';
+      return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)"><div style="flex:1;min-width:220px;font-size:13.5px">'+mxE(it[1])+(v.note?'<div style="color:#E07A6A;font-size:12px">'+mxE(v.note)+'</div>':'')+(v.retest?'<div style="color:#3AB06A;font-size:12px">'+mxE(v.retest)+'</div>':'')+'</div>'+b('ok','✓','#3AB06A')+b('fail','✗','#E05555')+b('na','—','rgba(245,241,235,.5)')+'</div>';}).join('')+'</div>';
     h+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+(x.finished_at?'<button class="bimp2" onclick="relReopen(\''+x.id+'\')">Tekrar aç</button>':'<button class="bimp" onclick="relFinish(\''+x.id+'\')">Turu bitir</button>')+'<button class="bimp2" onclick="relDel(\''+x.id+'\')">Sil</button></div>';
     if(x.note)h+='<div style="margin-top:8px;font-size:12.5px;color:rgba(245,241,235,.7)">'+mxE(x.note)+'</div>';
   }

@@ -2555,17 +2555,27 @@ function fnReceipt(){
     '<div id="mkBiz" style="display:none"><input class="mi" id="mkBName" placeholder="Unvan (ör. Big Gusto Pizzeria — Ad Soyad)">'+
       '<div style="display:flex;gap:6px"><input class="mi" id="mkBTax" inputmode="numeric" maxlength="11" placeholder="VKN / TCKN" style="flex:1"><input class="mi" id="mkBOff" placeholder="Vergi dairesi" style="flex:1"></div>'+
       '<input class="mi" id="mkBAddr" placeholder="Adres (cadde, sokak, no)"><div style="display:flex;gap:6px"><input class="mi" id="mkBTown" placeholder="İlçe" style="flex:1"><input class="mi" id="mkBCity" placeholder="İl" style="flex:1"></div></div>'+
-    '<div class="st-l" style="margin-top:6px">Tahsil edilen tutar (KDV dahil)</div><input class="mi" id="mkAmt" inputmode="decimal" placeholder="0,00" style="font-size:20px;font-weight:700" oninput="fnMkCalc()">'+
-    '<div style="display:flex;gap:6px"><div style="flex:1"><div class="st-l">KDV %</div><input class="mi" id="mkVat" type="number" value="'+vat+'" readonly title="Ayarlar › e-Fatura" style="opacity:.7"></div>'+
-      '<div style="flex:1"><div class="st-l">Tarih</div><input class="mi" id="mkDate" type="date" value="'+mxIso(new Date())+'"></div></div>'+
-    '<div class="st-l">Ödeme</div><select class="mi" id="mkMeth">'+FN_METHODS.map(function(m){return '<option value="'+m+'">'+mxE(fnMeth(m))+'</option>';}).join('')+'</select>'+
-    '<input class="mi" id="mkDesc" value="'+mxE(fnEiS.service_name||'Muayene ve tedavi hizmeti')+'" placeholder="Açıklama">'+
+    '<div class="st-l" style="margin-top:6px">Hizmetler (tutarlar KDV dahil)</div><div id="mkLines"></div>'+
+    '<datalist id="mkSvcList"><option value="Muayene ücreti"><option value="Muayene ve tedavi hizmeti"><option value="'+mxE(fnEiS.service_name||'Tıbbi uygulama')+'"></datalist>'+
+    '<button type="button" class="bimp2" style="width:100%;padding:8px;margin:0 0 8px" onclick="fnMkAdd()">+ Satır ekle (farklı hizmet / KDV oranı)</button>'+
+    '<div style="display:flex;gap:6px"><div style="flex:1"><div class="st-l">Tarih</div><input class="mi" id="mkDate" type="date" value="'+mxIso(new Date())+'"></div>'+
+      '<div style="flex:1"><div class="st-l">Ödeme</div><select class="mi" id="mkMeth">'+FN_METHODS.map(function(m){return '<option value="'+m+'">'+mxE(fnMeth(m))+'</option>';}).join('')+'</select></div></div>'+
     '<div id="mkSpBox" style="display:none"><div class="st-l">Stopaj (gelir vergisi kesintisi)</div>'+seg('mkSp',[['0','Yok'],['20','%20']],'0','fnMkSp')+
       '<div class="hint" style="margin:0 0 8px">Sadece işletme stopaj keserek ödediyse %20 seçin.</div></div>'+
     '<div id="mkCalc" class="imp-step" style="padding:10px 12px;font-size:13px;margin-top:4px"></div><div id="mkMsg" style="font-size:13px;margin-top:6px"></div>',
     [{label:'Vazgeç',cls:'bcancel',fn:mxClose},{label:'e-SMM kes',fn:fnMkIssue}]);
-  fnMkRenderPat();fnMkCalc();
+  fnMk.lines=[{label:fnEiS.service_name||'Muayene ve tedavi hizmeti',amount:'',vat:vat}];fnMkRenderLines();fnMkRenderPat();
 }
+var FN_MK_VATS=[0,1,10,20];
+function fnMkRenderLines(){var box=document.getElementById('mkLines');if(!box)return;var one=fnMk.lines.length===1;
+  box.innerHTML=fnMk.lines.map(function(l,i){var vs=FN_MK_VATS.indexOf(+l.vat)<0?FN_MK_VATS.concat([+l.vat]):FN_MK_VATS;
+    return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">'+
+      '<input class="mi" list="mkSvcList" style="flex:2;margin:0;min-width:0" value="'+mxE(l.label)+'" placeholder="Hizmet" oninput="fnMk.lines['+i+'].label=this.value">'+
+      '<input class="mi" inputmode="decimal" style="flex:1;margin:0;min-width:0;font-weight:700" value="'+mxE(l.amount)+'" placeholder="0,00" oninput="fnMk.lines['+i+'].amount=this.value;fnMkCalc()">'+
+      '<select class="mi" style="width:74px;margin:0" onchange="fnMk.lines['+i+'].vat=+this.value;fnMkCalc()">'+vs.map(function(v){return '<option value="'+v+'"'+(+l.vat===v?' selected':'')+'>%'+v+'</option>';}).join('')+'</select>'+
+      (one?'':'<a style="cursor:pointer;color:#C0614A;padding:0 4px" onclick="fnMk.lines.splice('+i+',1);fnMkRenderLines()">✕</a>')+'</div>';}).join('');
+  fnMkCalc();}
+function fnMkAdd(){fnMk.lines.push({label:'',amount:'',vat:fnEiS.vat_rate!=null?(+fnEiS.vat_rate===10?20:10):20});fnMkRenderLines();}
 function fnMkTo(t){fnMk.to=t;['p','b'].forEach(function(k,i){var b=document.querySelectorAll('#mkTo button')[i];if(b)b.className=k===t?'bimp':'bimp2';});
   document.getElementById('mkBiz').style.display=t==='b'?'':'none';document.getElementById('mkSpBox').style.display=t==='b'?'':'none';
   if(t!=='b')fnMkSp('0');fnMkRenderPat();}
@@ -2582,12 +2592,17 @@ async function fnMkPick(i){var p=window._mkPats[i];var r=await db.from('patients
   fnMk.pat=r.data||p;var b=(r.data&&r.data.billing)||null;
   if(b){if(fnMk.to!=='b'&&fnEiS.provider==='isnet')fnMkTo('b');[['mkBName','name'],['mkBTax','tax_no'],['mkBOff','tax_office'],['mkBAddr','address'],['mkBTown','town'],['mkBCity','city']].forEach(function(f){var el=document.getElementById(f[0]);if(el&&!el.value)el.value=b[f[1]]||'';});}
   fnMkRenderPat();}
-function fnMkCalc(){var el=document.getElementById('mkCalc');if(!el)return;var T=mxNum(mxV('mkAmt'))||0,v=+(document.getElementById('mkVat').value||0),sp=fnMk.sp||0;
-  var net=T/(1+v/100-sp/100),kdv=net*v/100,st=net*sp/100,row=function(a,b,bold){return '<div style="display:flex;justify-content:space-between;'+(bold?'font-weight:700;border-top:1px solid rgba(245,241,235,.12);padding-top:5px;margin-top:3px':'')+'"><span>'+a+'</span><span>'+b+'</span></div>';};
-  el.innerHTML=row('Brüt ücret',mxMoney(net))+row('KDV %'+v,'+ '+mxMoney(kdv))+(sp?row('Stopaj %'+sp,'− '+mxMoney(st)):'')+row('Tahsil edilen',mxMoney(T),true);}
+function fnMkCalc(){var el=document.getElementById('mkCalc');if(!el)return;var sp=fnMk.sp||0,net=0,st=0,T=0,byV={};
+  (fnMk.lines||[]).forEach(function(l){var a=mxNum(l.amount)||0,v=+l.vat||0;if(a<=0)return;var n=a/(1+v/100-sp/100);net+=n;st+=n*sp/100;T+=a;byV[v]=(byV[v]||0)+n*v/100;});
+  var row=function(a,b,bold){return '<div style="display:flex;justify-content:space-between;'+(bold?'font-weight:700;border-top:1px solid rgba(245,241,235,.12);padding-top:5px;margin-top:3px':'')+'"><span>'+a+'</span><span>'+b+'</span></div>';};
+  var vs=Object.keys(byV).sort(function(a,b){return a-b;});if(!vs.length)vs=[String((fnMk.lines&&fnMk.lines[0]&&fnMk.lines[0].vat)||0)];
+  el.innerHTML=row('Brüt ücret',mxMoney(net))+vs.map(function(v){return row('KDV %'+v,'+ '+mxMoney(byV[v]||0));}).join('')+(sp?row('Stopaj %'+sp,'− '+mxMoney(st)):'')+row('Tahsil edilen',mxMoney(T),true);}
 async function fnMkIssue(){
-  var msg=document.getElementById('mkMsg'),T=mxNum(mxV('mkAmt'));if(!T||T<=0){msg.innerHTML='<span style="color:#E05555">Tutarı girin</span>';return;}
-  var vat=+(document.getElementById('mkVat').value||0),p=fnMk.pat,rc=null;
+  var msg=document.getElementById('mkMsg'),ls=(fnMk.lines||[]).map(function(l){return {label:String(l.label||'').trim(),amount:Math.round((mxNum(l.amount)||0)*100)/100,vat:+l.vat||0};});
+  if(ls.some(function(l){return l.amount>0&&!l.label;})){msg.innerHTML='<span style="color:#E05555">Her satıra hizmet adı yazın</span>';return;}
+  ls=ls.filter(function(l){return l.amount>0;});var T=Math.round(ls.reduce(function(a,l){return a+l.amount;},0)*100)/100;
+  if(!T||T<=0){msg.innerHTML='<span style="color:#E05555">Tutarı girin</span>';return;}
+  var p=fnMk.pat,rc=null;
   if(fnMk.to==='b'){rc={name:mxV('mkBName').trim(),tax_no:mxV('mkBTax').replace(/\D/g,''),tax_office:mxV('mkBOff').trim(),address:mxV('mkBAddr').trim(),town:mxV('mkBTown').trim(),city:mxV('mkBCity').trim()};
     if(!rc.name||!/^\d{10,11}$/.test(rc.tax_no)){msg.innerHTML='<span style="color:#E05555">Unvan ve 10 haneli VKN (veya 11 haneli TCKN) gerekli</span>';return;}
     if(rc.tax_no.length===10&&!rc.tax_office){msg.innerHTML='<span style="color:#E05555">VKN için vergi dairesi gerekli</span>';return;}}
@@ -2595,7 +2610,7 @@ async function fnMkIssue(){
     if(nm||tc)rc={name:nm,tax_no:tc};}
   var btns=document.querySelectorAll('#mxBtns button');btns.forEach(function(b){b.disabled=true;});msg.textContent='Kesiliyor…';
   var row={clinic_id:cid,currency:clinic.currency||'TRY',kind:'income',amount:T,category:'treatment',method:document.getElementById('mkMeth').value,entry_date:mxV('mkDate'),
-    patient_id:p?p.id:null,description:mxV('mkDesc')||null,esmm_recipient:rc,esmm_stopaj:fnMk.to==='b'?fnMk.sp:0};
+    patient_id:p?p.id:null,description:ls.map(function(l){return l.label;}).join(' + ').slice(0,250)||null,esmm_lines:ls,esmm_recipient:rc,esmm_stopaj:fnMk.to==='b'?fnMk.sp:0};
   var ins=await db.from('finance_entries').insert(row).select('id').single();
   if(ins.error){msg.innerHTML='<span style="color:#E05555">'+mxE(ins.error.message)+'</span>';btns.forEach(function(b){b.disabled=false;});return;}
   if(p&&fnMk.to==='b')await db.from('patients').update({billing:rc}).eq('id',p.id);

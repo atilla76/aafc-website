@@ -2040,8 +2040,10 @@ async function repLoad(){
           (d.is_admin?'<div title="'+mxE(mxMoney(inc[i]))+'" style="width:40%;height:'+(mi?2+120*inc[i]/mi:2)+'px;background:#B89A6A;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div>':'')+
           '<div title="'+vis[i]+'" style="width:'+(d.is_admin?40:60)+'%;height:'+(mv?2+120*vis[i]/mv:2)+'px;background:#8E86D6;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div></div>'+
           '<div style="font-size:10px;color:'+(last?'#F5F1EB':'rgba(245,241,235,.45)')+';margin-top:4px">'+mxE(ml(x.month))+(x.month.slice(5)==='01'?' '+x.month.slice(2,4):'')+'</div></div>';}).join('')+'</div></div>';}
-  if((d.procedures||[]).length){var rc={};((rev&&rev.by_category)||[]).forEach(function(x){rc[x.category]=x.total;});
-    h+='<div class="imp-step"><h3>'+mxE(mxTr('Procedures','İşlemler'))+'</h3>'+bars(d.procedures,'#B89A6A',function(x){return repCat(x.category);},function(x){return [x.visits,x.visits+(x.controls?' + '+x.controls:'')+(rev&&rc[x.category]?' · '+mxMoney(rc[x.category]):'')];})+
+  if((d.procedures||[]).length){var rc={},rn={};((rev&&rev.by_category)||[]).forEach(function(x){if(x.category){rc[x.category]=x.total;rn[x.category]=x.count;}});
+    var prs=d.procedures.slice();Object.keys(rc).forEach(function(k){if(!prs.some(function(x){return x.category===k;}))prs.push({category:k,visits:0,controls:0});});
+    h+='<div class="imp-step"><h3>'+mxE(mxTr('Procedures','İşlemler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+mxE(mxTr('visits','vizit'))+(rev?' · '+mxE(mxTr('revenue (payments)','ciro (tahsilat)')):'')+'</span></h3>'+bars(prs,'#B89A6A',function(x){return repCat(x.category);},function(x){var n=rn[x.category]||0;
+      return [x.visits||0.0001,x.visits+' '+mxTr('visits','vizit')+(x.controls?' + '+x.controls:'')+(rev&&rc[x.category]?' · '+mxMoney(rc[x.category])+(n&&n!==x.visits?' ('+n+' '+mxTr('payments','tahsilat')+')':''):'')];})+
       (rev&&!Number(rev.total)?'<div style="font-size:12px;color:rgba(245,241,235,.45)">'+mxE(mxTr('No payments recorded in this period. Add them in Accounting.','Bu dönemde tahsilat kaydı yok. Ödemeleri Muhasebe\'den girin.'))+'</div>':'')+'</div>';}
   var tot=Number(ap.total||0);function pc(n){return tot?'%'+Math.round(100*Number(n||0)/tot):'—';}
   var sent=Number(rs.sent||0),bk=Number(rs.booked||0);

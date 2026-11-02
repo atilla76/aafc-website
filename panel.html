@@ -593,7 +593,7 @@ select.mi option,select.mi optgroup{background:#1C1929;color:#F5F1EB}
     <div class="tab-content">
       <div class="tab-head">
         <div><h2>Statistics</h2><div class="sub" id="repSub">Clinic activity across periods</div></div>
-        <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repLoad()"><option value="month">This Month</option><option value="year">This Year</option><option value="12m">Last 12 months</option></select></div>
+        <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repRangeCh()"><option value="month">This Month</option><option value="lastmonth">Last Month</option><option value="pick">Choose month</option><option value="year">This Year</option><option value="lastyear">Last Year</option><option value="12m">Last 12 months</option></select><input class="bk-in" type="month" id="repMonth" style="display:none;margin-left:6px" onchange="repLoad()"></div>
       </div>
       <div id="statsBody" style="display:none"></div>
       <div id="repBody"></div>
@@ -1999,10 +1999,17 @@ async function loadStatsTab(){repLoad();}
 var REP_CAT={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP'],'Diğer':['Other','Diğer'],'Lipoliz':['Lipolysis','Lipoliz'],
   'Gençlik aşısı':['Skin booster','Gençlik aşısı'],'İp / lifting':['Threads / lifting','İp / lifting'],'Peeling':['Peeling','Peeling'],'Cihaz / lazer':['Device / laser','Cihaz / lazer'],'Muayene':['Consultation','Muayene']};
 function repCat(c){var x=REP_CAT[c];return x?mxTr(x[0],x[1]):c;}
+function repRangeCh(){var v=document.getElementById('repRange').value,mi=document.getElementById('repMonth');mi.style.display=v==='pick'?'':'none';
+  if(v==='pick'&&!mi.value){var d=new Date();d.setMonth(d.getMonth()-1);mi.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}repLoad();}
+function repPickMonth(ym){document.getElementById('repRange').value='pick';var mi=document.getElementById('repMonth');mi.value=ym;mi.style.display='';repLoad();}
 async function repLoad(){
   var b=document.getElementById('repBody');b.innerHTML='<div class="loader">'+mxE(mxTr('Loading...','Yükleniyor...'))+'</div>';
   var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate()),v=document.getElementById('repRange').value,f,pf,pt;
-  if(v==='year'){f=new Date(now.getFullYear(),0,1);pf=new Date(now.getFullYear()-1,0,1);pt=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());}
+  if(v==='lastmonth'||v==='pick'){var ym=v==='pick'?(document.getElementById('repMonth').value||''):'';var y0=now.getFullYear(),m0=now.getMonth()-1;
+    if(ym){y0=+ym.slice(0,4);m0=+ym.slice(5,7)-1;}
+    f=new Date(y0,m0,1);t=new Date(y0,m0+1,0);if(t>now)t=new Date(now.getFullYear(),now.getMonth(),now.getDate());pf=new Date(y0,m0-1,1);pt=new Date(y0,m0,0);}
+  else if(v==='lastyear'){f=new Date(now.getFullYear()-1,0,1);t=new Date(now.getFullYear()-1,11,31);pf=new Date(now.getFullYear()-2,0,1);pt=new Date(now.getFullYear()-2,11,31);}
+  else if(v==='year'){f=new Date(now.getFullYear(),0,1);pf=new Date(now.getFullYear()-1,0,1);pt=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());}
   else if(v==='12m'){f=new Date(now.getFullYear()-1,now.getMonth(),now.getDate()+1);pf=new Date(f.getFullYear()-1,f.getMonth(),f.getDate());pt=new Date(f.getTime()-864e5);}
   else{f=new Date(now.getFullYear(),now.getMonth(),1);pf=new Date(now.getFullYear(),now.getMonth()-1,1);var ld=new Date(now.getFullYear(),now.getMonth(),0).getDate();pt=new Date(pf.getFullYear(),pf.getMonth(),Math.min(now.getDate(),ld));}
   document.getElementById('repSub').textContent=dmy(mxIso(f))+' – '+dmy(mxIso(t));
@@ -2028,7 +2035,7 @@ async function repLoad(){
     function ml(ym){try{return new Date(ym+'-01T00:00:00').toLocaleDateString(loc,{month:'short'});}catch(e){return ym.slice(5);}}
     h+='<div class="imp-step"><h3>'+mxE(mxTr('Last 12 months','Son 12 ay'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+(d.is_admin?'<span style="color:#B89A6A">■</span> '+mxE(mxTr('Revenue','Ciro'))+' &nbsp;':'')+'<span style="color:#8E86D6">■</span> '+mxE(mxTr('Visits','Vizitler'))+'</span></h3>'+
       '<div style="display:flex;align-items:flex-end;gap:6px;height:150px;margin:8px 0 4px">'+m.map(function(x,i){var last=i===m.length-1;
-        return '<div style="flex:1;text-align:center"><div style="height:126px;display:flex;align-items:flex-end;justify-content:center;gap:2px">'+
+        return '<div style="flex:1;text-align:center;cursor:pointer" title="'+mxE(mxTr('Show this month','Bu ayı göster'))+'" onclick="repPickMonth(\''+x.month+'\')"><div style="height:126px;display:flex;align-items:flex-end;justify-content:center;gap:2px">'+
           (d.is_admin?'<div title="'+mxE(mxMoney(inc[i]))+'" style="width:40%;height:'+(mi?2+120*inc[i]/mi:2)+'px;background:#B89A6A;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div>':'')+
           '<div title="'+vis[i]+'" style="width:'+(d.is_admin?40:60)+'%;height:'+(mv?2+120*vis[i]/mv:2)+'px;background:#8E86D6;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div></div>'+
           '<div style="font-size:10px;color:'+(last?'#F5F1EB':'rgba(245,241,235,.45)')+';margin-top:4px">'+mxE(ml(x.month))+(x.month.slice(5)==='01'?' '+x.month.slice(2,4):'')+'</div></div>';}).join('')+'</div></div>';}
@@ -5410,7 +5417,7 @@ var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU 
 'Could not load agenda.':'Ajanda yüklenemedi.','Appointment Book':'Randevu Defteri','Scheduled appointments. Send WhatsApp or SMS reminders.':'Planlanan randevular. WhatsApp veya SMS hatırlatma gönderin.',
 'No appointments on this day.':'Bu günde randevu yok.','Could not load appointments.':'Randevular yüklenemedi.','Today':'Bugün',
 'Statistics':'İstatistikler','Clinic activity across periods':'Dönemlere göre klinik aktivitesi','Could not load statistics.':'İstatistikler yüklenemedi.',
-'Patients':'Hastalar','New Patients':'Yeni Hastalar','Controls':'Kontroller','This Month':'Bu Ay','Last Month':'Geçen Ay','This Year':'Bu Yıl','Last Year':'Geçen Yıl',
+'Patients':'Hastalar','New Patients':'Yeni Hastalar','Controls':'Kontroller','This Month':'Bu Ay','Last Month':'Geçen Ay','Choose month':'Ay seç','This Year':'Bu Yıl','Last Year':'Geçen Yıl',
 'All Time':'Tüm Zamanlar','vs last month':'geçen aya göre','vs last year':'geçen yıla göre',
 'Monday':'Pazartesi','Tuesday':'Salı','Wednesday':'Çarşamba','Thursday':'Perşembe','Friday':'Cuma','Saturday':'Cumartesi','Sunday':'Pazar',
 // import

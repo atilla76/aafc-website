@@ -4839,8 +4839,12 @@ var REL_ITEMS=[
  ['uts','ÜTS / İTS kuyruğu: gönderildi'],
  ['reports','Raporlar, kâr sekmesi'],
  ['lang','Dil değiştir (TR / EN)'],
- ['update','Açılış ve güncelleme ekranı']
+ ['update','Açılış ve güncelleme ekranı'],
+ ['consult','Muayene: yeni vizit sekmesi, reçete PDF, tahlil, ilaç/aşı + alerji uyarısı, onam, çalışma şekli','1.2.8']
 ];
+// items with a 3rd field count only from that version on (older rounds keep their own list)
+function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
+function relItems(x){return REL_ITEMS.filter(function(it){return !it[2]||relVer(x.version)>=relVer(it[2]);});}
 var relRuns=[],relOpen=null;
 async function onbLoad(){
   var box=document.getElementById('onbBox');if(!box)return;
@@ -4859,13 +4863,13 @@ async function relLoad(){
   relRuns=r.data||[];if(!relOpen&&relRuns.length&&!relRuns[0].finished_at)relOpen=relRuns[0].id;
   box.innerHTML=relRuns.length?relRuns.map(relCard).join(''):'<div class="imp-step" style="color:rgba(245,241,235,.6)">Henüz test turu yok. “Yeni test turu” ile başlayın.</div>';
 }
-function relCount(x){var ok=0,fail=0,na=0;REL_ITEMS.forEach(function(it){var v=(x.results||{})[it[0]];if(!v)return;if(v.r==='ok')ok++;else if(v.r==='fail')fail++;else if(v.r==='na')na++;});return {ok:ok,fail:fail,na:na,left:REL_ITEMS.length-ok-fail-na};}
+function relCount(x){var ok=0,fail=0,na=0;relItems(x).forEach(function(it){var v=(x.results||{})[it[0]];if(!v)return;if(v.r==='ok')ok++;else if(v.r==='fail')fail++;else if(v.r==='na')na++;});return {ok:ok,fail:fail,na:na,left:relItems(x).length-ok-fail-na};}
 function relCard(x){
   var c=relCount(x),plat={android:'Android',ios:'iPhone',panel:'Panel'}[x.platform]||x.platform,open=relOpen===x.id;
   var st=x.finished_at?(c.fail?'<span style="color:#E05555">✗ '+c.fail+' hata</span>':'<span style="color:#3AB06A">✓ Tamamlandı</span>'):'<span style="color:#B89A6A">Devam ediyor · '+c.left+' kaldı</span>';
-  var h='<div class="imp-step"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="relToggle(\''+x.id+'\')"><div><b>'+mxE(x.version)+(x.build?' ('+x.build+')':'')+' · '+mxE(plat)+'</b> <span style="color:rgba(245,241,235,.6);font-size:12.5px">'+mxE(x.device||'')+' · '+mxE(new Date(x.started_at).toLocaleString('tr-TR'))+'</span></div><div style="font-size:13px">'+st+' · '+c.ok+'/'+REL_ITEMS.length+'</div></div>';
+  var h='<div class="imp-step"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="relToggle(\''+x.id+'\')"><div><b>'+mxE(x.version)+(x.build?' ('+x.build+')':'')+' · '+mxE(plat)+'</b> <span style="color:rgba(245,241,235,.6);font-size:12.5px">'+mxE(x.device||'')+' · '+mxE(new Date(x.started_at).toLocaleString('tr-TR'))+'</span></div><div style="font-size:13px">'+st+' · '+c.ok+'/'+relItems(x).length+'</div></div>';
   if(open){
-    h+='<div style="margin-top:12px">'+REL_ITEMS.map(function(it){var v=(x.results||{})[it[0]]||{},b=function(k,t,col){var on=v.r===k;return '<button class="bimp2" style="padding:6px 12px;'+(on?'background:'+col+';color:#1C1929;border-color:'+col:'')+'" '+(x.finished_at?'disabled':'')+' onclick="relSet(\''+x.id+'\',\''+it[0]+'\',\''+k+'\')">'+t+'</button>';};
+    h+='<div style="margin-top:12px">'+relItems(x).map(function(it){var v=(x.results||{})[it[0]]||{},b=function(k,t,col){var on=v.r===k;return '<button class="bimp2" style="padding:6px 12px;'+(on?'background:'+col+';color:#1C1929;border-color:'+col:'')+'" '+(x.finished_at?'disabled':'')+' onclick="relSet(\''+x.id+'\',\''+it[0]+'\',\''+k+'\')">'+t+'</button>';};
       return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)"><div style="flex:1;min-width:220px;font-size:13.5px">'+mxE(it[1])+(v.note?'<div style="color:#E07A6A;font-size:12px">'+mxE(v.note)+'</div>':'')+(v.retest?'<div style="color:#3AB06A;font-size:12px">'+mxE(v.retest)+'</div>':'')+'</div>'+b('ok','✓','#3AB06A')+b('fail','✗','#E05555')+b('na','—','rgba(245,241,235,.5)')+'</div>';}).join('')+'</div>';
     h+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+(x.finished_at?'<button class="bimp2" onclick="relReopen(\''+x.id+'\')">Tekrar aç</button>':'<button class="bimp" onclick="relFinish(\''+x.id+'\')">Turu bitir</button>')+'<button class="bimp2" onclick="relDel(\''+x.id+'\')">Sil</button></div>';
     if(x.note)h+='<div style="margin-top:8px;font-size:12.5px;color:rgba(245,241,235,.7)">'+mxE(x.note)+'</div>';

@@ -465,24 +465,45 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
               <div class="sec">VISIT INFO</div>
               <div class="ibox" id="vInfo"></div>
               <div id="vEnabiz" style="margin-top:8px"></div>
-              <div id="nWrap">
-                <div class="sec">COMPLAINT</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vAnam" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vAnam" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec" style="display:flex;gap:8px;align-items:center">HISTORY<span id="vHistAuto" class="vxauto">AUTO</span></div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vHist" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vHist" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec">PROCEDURES</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vProc" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxProcInput()"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec">VISIT NOTES</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vNotesEd" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec" style="display:flex;gap:8px;align-items:center">FINDINGS<span id="vFindAuto" class="vxauto">AUTO</span></div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vFind" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vFind" onclick="vxDictate(this)">🎤</button></div>
-                <div class="sec">PRESCRIPTION</div>
-                <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vRx" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vRx" onclick="vxDictate(this)">🎤</button></div>
-                <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
+              <div id="nWrap" style="display:flex;flex-direction:column">
+                <div id="gAnam">
+                  <div class="sec">COMPLAINT</div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vAnam" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vAnam" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gHist">
+                  <div class="sec" style="display:flex;gap:8px;align-items:center">HISTORY<span id="vHistAuto" class="vxauto">AUTO</span></div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vHist" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vHist" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gProc">
+                  <div class="sec">PROCEDURES</div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vProc" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxProcInput()"></textarea><button class="btn bedit micbtn" data-target="vProc" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gNotes">
+                  <div class="sec" id="vNotesLbl">VISIT NOTES</div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vNotesEd" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vNotesEd" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gFind">
+                  <div class="sec" style="display:flex;gap:8px;align-items:center">FINDINGS<span id="vFindAuto" class="vxauto">AUTO</span></div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vFind" rows="1" style="resize:vertical;margin-bottom:8px" oninput="vxEdited(this)"></textarea><button class="btn bedit micbtn" data-target="vFind" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gRx">
+                  <div class="sec" style="display:flex;gap:8px;align-items:center">PRESCRIPTION<button class="bimp2" id="vRxPdf" style="margin-left:auto;padding:3px 10px;font-size:11.5px" onclick="rxPrint()">PDF</button></div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vRx" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vRx" onclick="vxDictate(this)">🎤</button></div>
+                </div>
+                <div id="gLabs" style="display:none">
+                  <div class="sec">LAB TESTS</div>
+                  <div style="display:flex;gap:6px;align-items:flex-start"><textarea class="mi vxgrow" id="vLabs" rows="1" style="resize:vertical;margin-bottom:8px"></textarea><button class="btn bedit micbtn" data-target="vLabs" onclick="vxDictate(this)">🎤</button></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:12px;color:rgba(245,241,235,.6)" id="vLabResLbl">Results</span><label class="bimp2" style="padding:4px 10px;font-size:12px;cursor:pointer">+ <span id="vLabAddLbl">Add file</span><input type="file" accept="image/*,application/pdf" multiple style="display:none" onchange="labUpload(this)"></label></div>
+                  <div class="dg" id="labGrid" style="margin-bottom:10px"></div>
+                </div>
+                <div id="gSave">
+                  <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px"><span id="vSaveMsg" style="font-size:12px;color:#3AB06A"></span><button class="btn bpdf" onclick="saveVisitText()">Save</button></div>
+                </div>
               </div>
               <div class="sec">DIAGNOSIS (ICD-10)</div>
               <div class="ibox" id="vDx"></div>
               <div id="vUses"></div>
+              <div id="vCons"></div>
               <div id="phWrap" style="display:none"><div class="sec">PHOTOS</div><div class="pg" id="phGrid"></div></div>
               <div id="kWrap" style="display:none"><div class="sec">TREATMENT CARD</div><div class="dg" id="kGrid"></div></div>
               <div id="oWrap" style="display:none"><div class="sec">PATIENT CONSENT</div><div class="dg" id="oGrid"></div></div>
@@ -1226,7 +1247,7 @@ var PR_I18N={"tr":{"prBefore":"Önce","prAfter":"Sonra","prPatient":"Hasta","prR
 function regionL(k,lang){var m={Face:"face",Neck:"neck",Abdomen:"abdomen",Legs:"legs",Other:"other"}[k];return m?prT(lang||LANG,m):k;}
 function prT(lang,k){var d=PR_I18N[lang]||PR_I18N.en;return d[k]||PR_I18N.en[k]||k;}
 function angL(i,lang){return prT(lang||LANG,['front','left45','leftProfile','right45','rightProfile'][i]||'front');}
-function vTypeL(v,lang){return prT(lang||LANG,(v&&v.visit_type==='Control')?'control':'visit');}
+function vTypeL(v,lang){if(v&&v.visit_type==='Consultation')return mxTr('Consultation','Muayene');return prT(lang||LANG,(v&&v.visit_type==='Control')?'control':'visit');}
 function splitProcs(s){return String(s||'').split(/[,;\n]/).map(function(x){return x.trim();}).filter(Boolean).map(function(x){return x.charAt(0).toLocaleUpperCase(LANG)+x.slice(1);});}
 function vDate(v){var s=v&&(v.visit_date||v.created_at);if(!s)return null;var d=new Date(String(s).slice(0,10)+'T00:00:00');return isNaN(d)?null:d;}
 function dmy(s){s=String(s||'').slice(0,10);var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);return m?m[3]+'.'+m[2]+'.'+m[1]:s;}
@@ -1398,7 +1419,7 @@ function renderV(){
     var v=vis[i];
     h+='<div class="vc '+(v.id===selVid?'on':'')+'" onclick="selV(\''+v.id+'\')">';
     h+='<div class="vt">'+mxE(vTypeL(v))+'</div>';
-    h+='<div class="vr">'+mxE(v.region?regionL(v.region):'')+'</div>';
+    h+='<div class="vr">'+mxE(v.visit_type==='Consultation'?(splitProcs(v.anamnesis||'')[0]||''):(v.region?regionL(v.region):''))+'</div>';
     h+='<div class="vd">'+mxE(dmy(v.visit_date))+'</div></div>';
   }
   el.innerHTML=h;
@@ -1424,10 +1445,10 @@ async function saveVisitText(){
   var an=document.getElementById('vAnam').value.trim(),rx=document.getElementById('vRx').value.trim();
   var hEl=document.getElementById('vHist'),fEl=document.getElementById('vFind');
   var hi=hEl.dataset.auto==='1'?'':hEl.value.trim(),fi=fEl.dataset.auto==='1'?'':fEl.value.trim();
-  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null,anamnesis:an||null,prescription:rx||null,history:hi||null,findings:fi||null}).eq('id',selVid);
+  var r=await db.from('visits').update({procedures:document.getElementById('vProc').value.trim()||null,notes:document.getElementById('vNotesEd').value.trim()||null,anamnesis:an||null,prescription:rx||null,history:hi||null,findings:fi||null,lab_requests:document.getElementById('vLabs').value.trim()||null}).eq('id',selVid);
   var m=document.getElementById('vSaveMsg');
   if(r.error){m.style.color='#C0614A';m.textContent=r.error.message;return;}
-  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();v.anamnesis=an;v.prescription=rx;v.history=hi;v.findings=fi;}
+  var v=vis.find(function(x){return x.id===selVid;});if(v){v.procedures=document.getElementById('vProc').value.trim();v.notes=document.getElementById('vNotesEd').value.trim();v.anamnesis=an;v.prescription=rx;v.history=hi;v.findings=fi;v.lab_requests=document.getElementById('vLabs').value.trim();}
   m.style.color='#3AB06A';m.textContent=trText('Saved');setTimeout(function(){m.textContent='';},3000);
 }
 // Dictation via the browser's speech recognition (Chrome / Edge / Safari)
@@ -1456,14 +1477,20 @@ async function nvOpen(){
   try{var r=await db.from('visits').select('procedures').eq('clinic_id',cid).not('procedures','is',null).is('deleted_at',null).order('created_at',{ascending:false}).limit(300);
     (r.data||[]).forEach(function(x){splitProcs(x.procedures).forEach(function(p){if(p.length<2||p.length>40)return;var k=p.toLocaleLowerCase(LANG);freq[k]=(freq[k]||0)+1;nm[k]=p;});});}catch(e){}
   var top=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,8).map(function(k){return nm[k];});
-  nvS={control:false,region:(vis[0]&&vis[0].region)||'Face',date:fmtDate(new Date()),procs:[],top:top,cands:cands,parent:cands.length?cands[0].id:null};
+  var mode='new';
+  try{var wm=await db.from('clinic').select('work_mode').eq('id',cid).single();var w=wm.data&&wm.data.work_mode;
+    if(w==='consult')mode='consult';else if(w==='mixed'){try{if(localStorage.getItem('nv_last_mode')==='consult')mode='consult';}catch(e){}}}catch(e){}
+  nvS={control:false,consult:mode==='consult',region:(vis[0]&&vis[0].region)||'Face',date:fmtDate(new Date()),procs:[],top:top,cands:cands,parent:cands.length?cands[0].id:null};
   nvRender();
 }
 function nvRender(){
-  var o=nvS,h='<div class="prlay" style="grid-template-columns:1fr 1fr;margin-bottom:6px">'+
-    '<button type="button" class="'+(!o.control?'on':'')+'" onclick="nvS.control=false;nvRender()"><b>+ '+mxE(mxTr('New procedure','Yeni işlem'))+'</b></button>'+
-    '<button type="button" class="'+(o.control?'on':'')+'" onclick="nvS.control=true;nvRender()"><b>✓ '+mxE(prT(LANG,'control'))+'</b></button></div>';
-  if(!o.control){
+  var o=nvS,h='<div class="prlay" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:6px">'+
+    '<button type="button" class="'+(!o.control&&!o.consult?'on':'')+'" onclick="nvS.control=false;nvS.consult=false;nvRender()"><b>+ '+mxE(mxTr('New procedure','Yeni işlem'))+'</b></button>'+
+    '<button type="button" class="'+(o.control?'on':'')+'" onclick="nvS.control=true;nvS.consult=false;nvRender()"><b>✓ '+mxE(prT(LANG,'control'))+'</b></button>'+
+    '<button type="button" class="'+(o.consult?'on':'')+'" onclick="nvS.control=false;nvS.consult=true;nvRender()"><b>⚕ '+mxE(mxTr('Consultation','Muayene'))+'</b></button></div>';
+  if(o.consult){
+    h+='<div class="prsec">'+mxE(mxTr('Date','Tarih'))+'</div><input class="mi" type="date" value="'+o.date+'" max="'+fmtDate(new Date())+'" onchange="nvS.date=this.value"/>';
+  }else if(!o.control){
     var sug=o.cands[0],ago=sug?Math.round((new Date()-vDate(sug))/864e5):999;
     if(sug&&ago<=60)h+='<div class="pfdup" style="background:rgba(142,134,214,.14);border-color:rgba(183,176,240,.45);display:flex;gap:8px;align-items:center;margin:8px 0"><span style="flex:1">'+mxE(mxTrV('Follow-up of the [v] visit?','[v] vizidinin kontrolü mü?',{v:dmy(sug.visit_date)+(splitProcs(sug.procedures)[0]?' · '+splitProcs(sug.procedures)[0]:'')}))+'</span><button class="btn bedit" onclick="nvS.control=true;nvS.parent=\''+sug.id+'\';nvRender()">'+mxE(mxTr('Follow-up','Kontrol yap'))+'</button></div>';
     h+='<div class="prsec">'+mxE(mxTr('Region','Bölge'))+'</div><div class="pfchips">'+['Face','Neck','Abdomen','Legs','Other'].map(function(r){return '<button type="button" class="pfc'+(o.region===r?' on':'')+'" onclick="nvS.region=\''+r+'\';nvRender()">'+mxE(regionL(r))+'</button>';}).join('')+'</div>';
@@ -1474,13 +1501,14 @@ function nvRender(){
     if(!o.cands.length)h+='<div class="hint">'+mxE(mxTr('No visit is waiting for a follow-up.','Kontrolü yapılmamış vizit yok.'))+'</div>';
     o.cands.slice(0,12).forEach(function(v){h+='<label class="pfsw" style="padding:8px 10px;border-radius:10px;background:'+(o.parent===v.id?'rgba(142,134,214,.16)':'rgba(245,241,235,.04)')+'"><input type="radio" name="nvp" '+(o.parent===v.id?'checked':'')+' onchange="nvS.parent=\''+v.id+'\';nvRender()"/> <b>'+mxE(dmy(v.visit_date))+'</b> · '+mxE([regionL(v.region||''),splitProcs(v.procedures).join(', ')].filter(Boolean).join(' · '))+'</label>';});
   }
-  mxOpen(mxTr('New visit','Yeni vizit'),h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Create visit','Vizit oluştur'),cls:'bsave',fn:nvCreate}]);
+  mxOpen(mxTr('New visit','Yeni vizit'),h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:o.consult?mxTr('Open consultation','Muayeneyi aç'):mxTr('Create visit','Vizit oluştur'),cls:'bsave',fn:nvCreate}]);
 }
 function nvProc(i){var p=nvS.top[i],k=nvS.procs.indexOf(p);if(k>=0)nvS.procs.splice(k,1);else nvS.procs.push(p);nvRender();}
 async function nvCreate(){
   var o=nvS;if(o.control&&!o.parent)return;
   var par=o.control?vis.find(function(v){return v.id===o.parent;}):null;
-  var row={patient_id:selPt.id,clinic_id:cid,visit_type:o.control?'Control':'Visit',visit_date:o.control?fmtDate(new Date()):o.date,region:par?(par.region||o.region):o.region,parent_visit_id:par?par.id:null,procedures:!o.control&&o.procs.length?o.procs.join(', '):null};
+  if(!o.control){try{localStorage.setItem('nv_last_mode',o.consult?'consult':'new');}catch(e){}}
+  var row={patient_id:selPt.id,clinic_id:cid,visit_type:o.control?'Control':(o.consult?'Consultation':'Visit'),visit_date:o.control?fmtDate(new Date()):o.date,region:par?(par.region||o.region):(o.consult?'Other':o.region),parent_visit_id:par?par.id:null,procedures:!o.control&&!o.consult&&o.procs.length?o.procs.join(', '):null};
   var r=await db.from('visits').insert(row).select().single();
   if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
   mxClose();await selP(selPt.id);if(r.data&&r.data.id)selV(r.data.id);
@@ -1499,13 +1527,15 @@ async function selV(id){
   document.getElementById('vDetail').style.display='block';
   var vi='';
   vi+='<div class="ir"><span class="il">'+mxE(mxTr('Type','Tür'))+'</span><span class="iv">'+mxE(vTypeL(v))+'</span></div>';
-  vi+='<div class="ir"><span class="il">'+mxE(mxTr('Region','Bölge'))+'</span><span class="iv">'+mxE(v.region?regionL(v.region):'-')+'</span></div>';
+  if(v.visit_type!=='Consultation')vi+='<div class="ir"><span class="il">'+mxE(mxTr('Region','Bölge'))+'</span><span class="iv">'+mxE(v.region?regionL(v.region):'-')+'</span></div>';
   vi+='<div class="ir"><span class="il">'+mxE(mxTr('Date','Tarih'))+'</span><span class="iv">'+mxE(dmy(v.visit_date)||'-')+'</span></div>';
   vi+='<div style="text-align:right;margin-top:8px"><button class="btn bdel" onclick="delVisit(\''+v.id+'\')">'+mxE(mxTr('Delete visit','Viziti sil'))+'</button></div>';
   document.getElementById('vInfo').innerHTML=vi;
+  vCons=v.visit_type==='Consultation';vxLayout();
   enVisitLoad(id);
   dxLoad(id);
-  vfLoad(id);puLoad(id);acLoad(id);
+  vfLoad(id);puLoad(id);if(vCons)document.getElementById('vAftercare').innerHTML='';else acLoad(id);
+  document.getElementById('vLabs').value=v.lab_requests||'';consLoad(id);
   document.getElementById('vProc').value=v.procedures||'';
   document.getElementById('vNotesEd').value=v.notes||'';
   document.getElementById('vAnam').value=v.anamnesis||'';document.getElementById('vRx').value=v.prescription||'';
@@ -1531,6 +1561,7 @@ async function selV(id){
   await sDocs('kWrap','kGrid',(dr.data||[]).filter(function(d){return d.doc_type==='kart';}));
   await sDocs('oWrap','oGrid',(dr.data||[]).filter(function(d){return d.doc_type==='onam';}));
   await sDocs('bWrap','bGrid',(dr.data||[]).filter(function(d){return d.doc_type==='barkod';}));
+  await labDocs((dr.data||[]).filter(function(d){return d.doc_type==='tahlil';}));
   loadFaceMaps(id);
 }
 
@@ -1546,6 +1577,74 @@ async function sDocs(wid,gid,docs){
     if(isPdf){h+='<div class="dc" style="display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="window.open(\''+u+'\',\'_blank\')"><div style="text-align:center;color:#B89A6A"><div style="font-size:34px">PDF</div><div style="font-size:11px;margin-top:4px">Open</div></div></div>';}else{h+='<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';}
   });
   document.getElementById(gid).innerHTML=h;
+}
+
+// ---- Consultation visits: field order, lab tests, prescription PDF, consents ----
+var vCons=false;
+function vxLayout(){
+  var ord=vCons?{gAnam:1,gHist:2,gFind:3,gNotes:4,gRx:5,gLabs:6,gProc:7,gSave:9}:{gAnam:1,gHist:2,gProc:3,gNotes:4,gFind:5,gRx:6,gLabs:7,gSave:9};
+  Object.keys(ord).forEach(function(k){var e=document.getElementById(k);if(e)e.style.order=ord[k];});
+  document.getElementById('gProc').style.display=vCons?'none':'';
+  document.getElementById('gLabs').style.display=vCons?'':'none';
+  document.getElementById('vNotesLbl').textContent=vCons?mxTr('OUTCOME / ADVICE','SONUÇ / ÖNERİ'):mxTr('VISIT NOTES','AÇIKLAMA');
+  document.getElementById('vNotesEd').placeholder=vCons?mxTr('Plan, advice, follow-up date…','Plan, öneri, kontrol zamanı…'):'';
+  document.getElementById('vLabs').placeholder=mxTr('Tests requested (e.g. CBC, ferritin, TSH)','İstenen tahliller (ör. hemogram, ferritin, TSH)');
+  var cw=document.getElementById('vCons');if(cw&&!vCons)cw.innerHTML='';
+}
+async function labDocs(docs){
+  var g=document.getElementById('labGrid');if(!g)return;
+  if(!docs.length){g.innerHTML='';return;}
+  var urls=await getSignedBatch(docs.map(function(d){return d.file_path;}).filter(Boolean));
+  g.innerHTML=docs.map(function(d){var u=urls[d.file_path]||'';var isPdf=(d.file_path||'').toLowerCase().indexOf('.pdf')>-1;
+    return isPdf?'<div class="dc" style="display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="window.open(\''+u+'\',\'_blank\')"><div style="text-align:center;color:#B89A6A"><div style="font-size:30px">PDF</div></div></div>':'<div class="dc"><img src="'+u+'" onclick="openLb(\''+u+'\')"/></div>';}).join('');
+}
+async function labUpload(inp){
+  var files=Array.prototype.slice.call(inp.files||[]);inp.value='';if(!files.length||!selVid)return;
+  var vid=selVid;
+  for(var i=0;i<files.length;i++){var f=files[i];
+    if(f.size>20*1024*1024){alert(mxTr('The file is too large (max 20 MB).','Dosya çok büyük (en fazla 20 MB).'));continue;}
+    var ext=(f.type==='application/pdf'||/\.pdf$/i.test(f.name))?'pdf':'jpg';
+    var name='doc_'+vid+'_tahlil_'+Date.now()+'_'+i+'.'+ext;
+    var up=await db.storage.from('visit-files').upload(name,f,{contentType:f.type||(ext==='pdf'?'application/pdf':'image/jpeg')});
+    if(up.error){alert(mxTr('Upload failed','Yükleme başarısız')+': '+up.error.message);continue;}
+    var r=await db.from('documents').insert({visit_id:vid,clinic_id:cid,doc_type:'tahlil',file_path:name});
+    if(r.error)alert(r.error.message);}
+  if(selVid===vid){var dr=await db.from('documents').select('*').eq('visit_id',vid).eq('doc_type','tahlil').is('deleted_at',null);labDocs(dr.data||[]);}
+}
+async function rxPrint(){
+  var rx=document.getElementById('vRx').value.trim();if(!rx){alert(mxTr('Write the prescription first.','Önce reçeteyi yazın.'));return;}
+  var p=selPt||{},c=clinic||{},v=vis.find(function(x){return x.id===selVid;})||{};
+  var logo='';if(c.logo_url){logo=c.logo_url.indexOf('http')===0?c.logo_url:(await getSigned(c.logo_url))||'';}
+  var dx='';try{var s2=await db.rpc('get_visit_mbys_summary',{p_visit_id:selVid});dx=((s2.data&&s2.data.diagnoses)||[]).map(function(d){return [d.code,d.name].filter(Boolean).join(' ');}).join(', ');}catch(e){}
+  var w=window.open('','_blank');if(!w){alert(mxTr('Allow pop-ups to print.','Yazdırmak için açılır pencerelere izin verin.'));return;}
+  var kv=function(k,val){return val?'<tr><td style="color:#6E6878;padding:2px 12px 2px 0;white-space:nowrap">'+mxE(k)+'</td><td>'+mxE(val)+'</td></tr>':'';};
+  var lines=rx.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+mxE(mxTr('Prescription','Reçete'))+'</title><style>@page{size:A5;margin:14mm}body{font-family:Arial,Helvetica,sans-serif;color:#1C1929;font-size:13px;margin:0}h1{font-size:13px;letter-spacing:1px;color:#B89A6A;margin:14px 0 8px}.rx{font-size:22px;font-weight:700;margin:14px 0 6px}ol{padding-left:20px}li{margin-bottom:8px}.sig{margin-top:60px;text-align:right}.sig div{display:inline-block;border-top:1px solid #6E6878;padding-top:4px;min-width:180px;text-align:center;font-size:12px}.foot{margin-top:22px;text-align:center;color:#6E6878;font-size:11px}</style></head><body>'+
+    '<div style="display:flex;gap:12px;align-items:flex-start;border-bottom:2px solid #B89A6A;padding-bottom:8px">'+(logo?'<img src="'+mxE(logo)+'" style="width:56px;height:56px;object-fit:contain">':'')+
+    '<div style="flex:1"><div style="font-size:16px;font-weight:700">'+mxE(c.name||'')+'</div><div>'+mxE(c.doctor||'')+'</div><div style="color:#6E6878;font-size:11px">'+mxE(c.speciality||'')+'</div></div><div style="color:#6E6878">'+mxE(dmy(v.visit_date)||'')+'</div></div>'+
+    '<h1>'+mxE(mxTr('PRESCRIPTION','REÇETE'))+'</h1><table>'+kv(mxTr('Patient','Hasta'),((p.name||'')+' '+(p.surname||'')).trim())+kv(mxTr('ID number','T.C. Kimlik No'),p.national_id)+kv(mxTr('Date of birth','Doğum tarihi'),p.birth_date)+kv(mxTr('Diagnosis','Tanı'),dx)+'</table>'+
+    '<div class="rx">Rx</div><ol>'+lines.map(function(x){return '<li>'+mxE(x)+'</li>';}).join('')+'</ol>'+
+    '<div class="sig"><div>'+mxE(c.doctor||mxTr('Physician signature / stamp','Hekim imza / kaşe'))+'</div></div>'+
+    '<div class="foot">'+mxE([c.address,c.phone].filter(Boolean).join('  ·  '))+'</div>'+
+    (logo?'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>':'<script>window.onload=function(){window.print();};<\/script>')+'</body></html>');
+  w.document.close();
+}
+async function consLoad(id){
+  var el=document.getElementById('vCons');if(!el)return;
+  if(!vCons){el.innerHTML='';return;}
+  var r=await db.from('consent_records').select('id,template_name,status,signed_at,created_at').eq('visit_id',id).in('status',['pending','otp_verified','signed']).is('deleted_at',null).order('created_at',{ascending:false});
+  if(selVid!==id)return;
+  var rows=(r.data||[]).map(function(x){var signed=x.status==='signed';
+    return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><span>'+mxE(x.template_name||mxTr('Consent','Onam'))+'</span><span style="font-size:12px;color:'+(signed?'#3AB06A':'#D4963A')+'">'+mxE(signed?mxTr('Signed','İmzalı')+' · '+dmy(String(x.signed_at||'').slice(0,10)):mxTr('Awaiting signature','İmza bekliyor'))+'</span></div>';}).join('');
+  el.innerHTML='<div class="sec" style="display:flex;align-items:center;gap:8px">'+mxE(mxTr('CONSENT (INVASIVE PROCEDURE)','ONAM (GİRİŞİMSEL İŞLEM)'))+'<button class="bimp2" style="margin-left:auto;padding:3px 10px;font-size:11.5px" onclick="consPick()">+ '+mxE(mxTr('Add consent','Onam ekle'))+'</button></div><div class="ibox">'+
+    (rows||'<div style="font-size:12.5px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Send a new consent from the app (visit › Consent › Add consent): the patient signs from the link with a code and the signed PDF is linked to this visit. A consent the patient already signed can be linked here.','Yeni onamı uygulamadan gönderin (vizit › Onam › Onam ekle): hasta linkten kodla imzalar, imzalı PDF bu vizite bağlanır. Hastanın daha önce imzaladığı onamı buradan bağlayabilirsiniz.'))+'</div>')+'</div>';
+}
+async function consPick(){
+  if(!selPt||!selVid)return;
+  var r=await db.from('consent_records').select('id,template_name,signed_at').eq('patient_id',selPt.id).eq('status','signed').is('visit_id',null).is('deleted_at',null).order('signed_at',{ascending:false}).limit(30);
+  var list=r.data||[];
+  var h=list.length?list.map(function(x){return '<label class="pfsw" style="padding:6px 0"><input type="radio" name="cpk" value="'+x.id+'"/> '+mxE(x.template_name||'')+' · '+mxE(dmy(String(x.signed_at||'').slice(0,10)))+'</label>';}).join(''):'<div class="hint">'+mxE(mxTr('This patient has no signed consent waiting to be linked. Send a new one from the app.','Bu hastanın bağlanmayı bekleyen imzalı onamı yok. Yenisini uygulamadan gönderin.'))+'</div>';
+  mxOpen(mxTr('Add consent','Onam ekle'),h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose}].concat(list.length?[{label:mxTr('Link to this visit','Bu vizite bağla'),cls:'bsave',fn:async function(){var x=document.querySelector('input[name="cpk"]:checked');if(!x)return;var u=await db.from('consent_records').update({visit_id:selVid}).eq('id',x.value);if(u.error){alert(u.error.message);return;}mxClose();consLoad(selVid);}}]:[]));
 }
 
 // ============ MODAL ============
@@ -2908,9 +3007,9 @@ function rcRender(){
   var t=document.getElementById('rcList');
   t.innerHTML=rc.length?'<tr><th>Patient</th><th>Phone</th><th>Procedure</th><th>Type</th><th>Due date</th><th></th></tr>'+rc.map(function(x,i){
     var name=(x.patient_name||'')+' '+(x.patient_surname||''),ctl=x.kind==='control';
-    var tpl=(ctl?clinic.recall_control_message:clinic.recall_repeat_message)||(ctl?mxTr('Hi [name], it is time for your check-up after your [procedure]. Shall we book an appointment for you? — [clinic]','Merhaba [ad], [islem] sonrası kontrol zamanınız geldi. Size uygun bir gün için randevu oluşturalım mı? — [klinik]'):mxTr('Hi [name], it has been a while since your last [procedure]. Shall we book a touch-up at a time that suits you? — [clinic]','Merhaba [ad], son [islem] uygulamanızın üzerinden zaman geçti. Tazeleme için size uygun bir gün ayarlayalım mı? — [klinik]'));
+    var tpl=x.kind==='dose'?mxTr('Hi [name], your next dose of [procedure] is due. Shall we book a time that suits you? — [clinic]','Merhaba [ad], [islem] için sonraki doz zamanınız geldi. Size uygun bir gün ayarlayalım mı? — [klinik]'):(ctl?clinic.recall_control_message:clinic.recall_repeat_message)||(ctl?mxTr('Hi [name], it is time for your check-up after your [procedure]. Shall we book an appointment for you? — [clinic]','Merhaba [ad], [islem] sonrası kontrol zamanınız geldi. Size uygun bir gün için randevu oluşturalım mı? — [klinik]'):mxTr('Hi [name], it has been a while since your last [procedure]. Shall we book a touch-up at a time that suits you? — [clinic]','Merhaba [ad], son [islem] uygulamanızın üzerinden zaman geçti. Tazeleme için size uygun bir gün ayarlayalım mı? — [klinik]'));
     var od=Number(x.days_overdue||0);
-    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxE(rcRule(x.rule_label))+'</td><td>'+(ctl?mxTr('Control','Kontrol'):mxTr('Repeat','Tekrar'))+'</td><td style="color:'+(od>0?'#C0614A':'inherit')+'">'+mxDate(x.due_date)+'</td><td style="white-space:nowrap">'+
+    return '<tr><td><b>'+mxE(name)+'</b></td><td>'+mxE(x.patient_phone||'')+'</td><td>'+mxE(rcRule(x.rule_label))+'</td><td>'+(ctl?mxTr('Control','Kontrol'):x.kind==='dose'?mxTr('Next dose','Sonraki doz'):mxTr('Repeat','Tekrar'))+'</td><td style="color:'+(od>0?'#C0614A':'inherit')+'">'+mxDate(x.due_date)+'</td><td style="white-space:nowrap">'+
       (rcAsk['rc'+i]?rcAskHtml('rc',i):(x.patient_phone?'<a class="btn bedit" target="_blank" href="'+mxWa(x.patient_phone,mxFill(tpl,name,rcRule(x.rule_label)))+'" onclick="rcAskSet(\'rc\','+i+')">WhatsApp</a> ':'')+
       '<button class="btn bedit" onclick="rcSkip(\'rc\','+i+')">'+mxTr('Skip','Atla')+'</button>')+'</td></tr>';}).join(''):'<tr><td style="color:rgba(245,241,235,.4)">'+mxTr('No patients to call back right now.','Şu an geri çağrılacak hasta yok.')+'</td></tr>';
   window._rc=rc;window._rv=rv;
@@ -4461,6 +4560,12 @@ async function stClinicLoad(){
     '<div class="st-grid">'+stField('ciName',mxTr('Clinic name','Klinik adı'),c.name)+stField('ciDoctor',mxTr('Doctor','Doktor'),c.doctor,'Dr. …')+
       stField('ciSpec',mxTr('Speciality','Uzmanlık'),c.speciality)+stField('ciPhone',mxTr('Phone','Telefon'),c.phone,'+90 …')+'</div>'+
     stField('ciAddr',mxTr('Address','Adres'),c.address)+
+    '<h3 style="margin-top:14px">'+mxE(mxTr('How you work','Çalışma şekli'))+'</h3>'+
+    [['aesthetic',mxTr('Aesthetic / procedure clinic','Estetik / işlem kliniği'),mxTr('New visits open on "New procedure"; photo capture comes first.','Yeni vizit "Yeni işlem" ile açılır, fotoğraf çekimi öne çıkar.')],
+     ['consult',mxTr('Outpatient (consultations only)','Poliklinik (sadece muayene)'),mxTr('New visits open on "Consultation"; complaint, findings, prescription and diagnosis come first.','Yeni vizit "Muayene" ile açılır; şikâyet, bulgu, reçete ve tanı öne çıkar.')],
+     ['mixed',mxTr('Mixed','Karma'),mxTr('New visits open on the type you used last.','Yeni vizit son seçtiğiniz türle açılır.')]].map(function(x){
+       return '<label class="pfsw" style="align-items:flex-start;padding:6px 0"><input type="radio" name="ciWm" value="'+x[0]+'"'+(((c.work_mode||'aesthetic')===x[0])?' checked':'')+'/> <span><b>'+mxE(x[1])+'</b><br><span class="hint">'+mxE(x[2])+'</span></span></label>';}).join('')+
+    '<div class="hint" style="margin-bottom:10px">'+mxE(mxTr('Sets which type the new visit screen opens on. You can change it on every visit.','Yeni vizit ekranının hangi türle açılacağını belirler. Her vizitte türü değiştirebilirsiniz.'))+'</div>'+
     '<div class="st-grid"><div><label class="st-l">'+mxE(mxTr('Currency','Para birimi'))+'</label><select class="mi" id="ciCur"><option value="">—</option>'+ST_CUR.map(function(x){return '<option value="'+x[0]+'"'+(c.currency===x[0]?' selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div><div></div></div>'+
     '<h3 style="margin-top:14px">'+mxE(mxTr('Social media','Sosyal medya'))+'</h3><div class="st-grid">'+stField('ciIg','Instagram',c.instagram,'@kullanici')+stField('ciWeb',mxTr('Website','Web sitesi'),c.website,'https://')+
       stField('ciFb','Facebook',c.facebook)+stField('ciTt','TikTok',c.tiktok)+stField('ciYt','YouTube',c.youtube)+'</div>'+
@@ -4470,6 +4575,7 @@ async function stClinicLoad(){
 async function stClinicSave(){
   var d={name:mxV('ciName'),doctor:mxV('ciDoctor'),speciality:mxV('ciSpec'),phone:mxV('ciPhone'),address:mxV('ciAddr'),currency:document.getElementById('ciCur').value||null,
     instagram:mxV('ciIg'),website:mxV('ciWeb'),facebook:mxV('ciFb'),tiktok:mxV('ciTt'),youtube:mxV('ciYt')};
+  var wm=document.querySelector('input[name="ciWm"]:checked');if(wm)d.work_mode=wm.value;
   var r=await db.from('clinic').update(d).eq('id',cid);stMsg('ciMsg',!r.error);if(!r.error)Object.assign(clinic,d);
 }
 async function stLogo(inp){
@@ -4997,7 +5103,26 @@ async function vfMark(entryId,status){
   if(selVid)vfLoad(selVid);
 }
 // ---- Products used on the visit (map lines + scanned boxes + manual) ----
-var puItems=[],puProducts=null;
+var puItems=[],puProducts=null,puSeen={};
+function puAllergyHits(product){var a=String((selPt&&selPt.allergies)||'').toLocaleLowerCase('tr');if(!a.trim())return null;
+  return String(product||'').toLocaleLowerCase('tr').split(/[^a-zçğıöşü0-9]+/).filter(function(w){return w.length>=4&&a.indexOf(w)>=0;});}
+var PU_ROUTES=['IM','SC','ID','IV','Lokal','Oral'];
+function puAdmin(id){
+  var e=puItems.find(function(x){return x.id===id;});if(!e)return;
+  var hits=puAllergyHits(e.product),al=String((selPt&&selPt.allergies)||'').trim();
+  var warn=hits&&hits.length?'<div class="pfdup" style="background:rgba(224,85,85,.14);border-color:rgba(224,85,85,.5);color:#F0B4B4;font-weight:700">⚠ '+mxE(mxTr('Warning: allergy record matches this product','Dikkat: alerji kaydı bu ürünle eşleşiyor'))+' — '+mxE(al)+'</div>':
+    '<div class="pfdup" style="background:rgba(58,176,106,.10);border-color:rgba(58,176,106,.4)">✓ '+mxE(al?mxTr('Allergy record checked · no warning','Alerji kaydı kontrol edildi · uyarı yok'):mxTr('No allergy recorded for this patient','Hastada alerji kaydı yok'))+'</div>';
+  var doses=[mxTr('1st dose','1. doz'),mxTr('2nd dose','2. doz'),mxTr('3rd dose','3. doz'),mxTr('Booster','Rapel')];
+  var h='<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:8px">'+mxE([e.lot_no?'LOT '+e.lot_no:'',e.expiry?mxTr('EXP','SKT')+' '+puMY(e.expiry):''].filter(Boolean).join(' · '))+'</div>'+warn+
+    '<div class="prsec">'+mxE(mxTr('Route','Uygulama yolu'))+'</div><div class="pfchips">'+PU_ROUTES.map(function(r){return '<button type="button" class="pfc'+(e.admin_route===r?' on':'')+'" data-v="'+r+'" onclick="puPick(this,\'puR\')">'+mxE(r==='Lokal'?mxTr('Local','Lokal'):r)+'</button>';}).join('')+'</div><input type="hidden" id="puR" value="'+mxE(e.admin_route||'')+'">'+
+    '<div class="prsec">'+mxE(mxTr('Site','Uygulama yeri'))+'</div><input class="mi" id="puSite" value="'+mxE(e.admin_site||'')+'" placeholder="'+mxE(mxTr('e.g. left deltoid','ör. sol deltoid'))+'">'+
+    '<div class="prsec">'+mxE(mxTr('Dose','Doz'))+'</div><div class="pfchips">'+doses.map(function(d){return '<button type="button" class="pfc'+(e.dose_no===d?' on':'')+'" data-v="'+mxE(d)+'" onclick="puPick(this,\'puD\')">'+mxE(d)+'</button>';}).join('')+'</div><input type="hidden" id="puD" value="'+mxE(e.dose_no||'')+'">'+
+    '<div class="prsec">'+mxE(mxTr('Next dose','Sonraki doz'))+'</div><input class="mi" type="date" id="puNext" value="'+mxE(e.next_dose_date||'')+'" min="'+fmtDate(new Date())+'"><div style="font-size:12px;color:rgba(245,241,235,.55);margin-top:4px">'+mxE(mxTr('The patient appears in Recalls when the date comes.','Tarih gelince hasta Geri Çağır listesine düşer.'))+'</div>';
+  mxOpen(e.product||'',h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:async function(){
+    var r=await db.rpc('set_visit_use_admin',{p_use_id:id,p_route:document.getElementById('puR').value||null,p_site:document.getElementById('puSite').value||null,p_dose_no:document.getElementById('puD').value||null,p_next_dose:document.getElementById('puNext').value||null});
+    if(r.error){alert(r.error.message);return;}mxClose();puLoad(selVid);}}]);
+}
+function puPick(b,inp){var on=b.classList.contains('on');Array.prototype.forEach.call(b.parentNode.children,function(x){x.classList.remove('on');});if(!on)b.classList.add('on');document.getElementById(inp).value=on?'':b.getAttribute('data-v');}
 function puQty(q,unit,pack){q=Number(q||0);var f=function(n){return Number(n).toLocaleString(LANG_LOC[LANG]||'en-US',{maximumFractionDigits:2});};
   if(unit==='ml'){if(pack>0){var b=q/pack;if(Math.abs(b-Math.round(b))<0.001&&b>=1)return f(Math.round(b))+' '+mxTr('box','kutu')+' · '+f(q)+' ml';}return f(q)+' ml';}
   return f(q)+' '+mxTr('units','ünite');}
@@ -5006,16 +5131,20 @@ async function puLoad(id){
   var el=document.getElementById('vUses');if(!el)return;
   var r=await db.rpc('visit_product_uses_list',{p_visit_id:id});
   if(selVid!==id)return;
-  puItems=(r.data||[]);
+  var prev=puSeen[id];puItems=(r.data||[]);puSeen[id]=puItems.map(function(e){return e.id;}).filter(Boolean);
+  var fresh=prev&&vCons?puItems.filter(function(e){return e.id&&prev.indexOf(e.id)<0;}):[];
   var tag=function(t,c){return '<span style="padding:2px 7px;border-radius:7px;font-size:10.5px;font-weight:700;color:'+c+';background:'+c+'22">'+mxE(t)+'</span>';};
   var rows=puItems.map(function(e){
     var t=e.source==='map'?tag(mxTr('from map','haritadan'),'#B7B0F0'):e.source==='scan'?tag(mxTr('scanned','okutuldu'),'#6FCF97'):tag(mxTr('manual','elle'),'#9A96A6');
     var sub=[puQty(e.quantity,e.unit,e.pack_size)];if(e.serial_no)sub.push('SN '+e.serial_no);if(e.lot_no)sub.push('LOT '+e.lot_no);if(e.expiry)sub.push(mxTr('EXP','SKT')+' '+puMY(e.expiry));
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><div style="flex:1"><b style="color:#F5F1EB;font-size:13.5px">'+mxE(e.product||'')+'</b> '+t+(e.is_extra?' '+tag(mxTr('extra','ek'),'#D4963A'):'')+'<div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(sub.join(' · '))+'</div></div>'+
+    var adm=[e.admin_route,e.admin_site,e.dose_no].filter(Boolean).join(' · ');
+    var admH=vCons&&e.id?'<div style="font-size:12.5px;margin-top:2px;cursor:pointer" onclick="puAdmin(\''+e.id+'\')">'+(adm?'<span style="color:#F5F1EB">'+mxE(adm)+'</span>':'<span style="color:#D9BE8F">'+mxE(mxTr('Tap to add route and dose','Uygulama bilgisi için tıklayın'))+'</span>')+(e.next_dose_date?' '+tag(mxTr('Next dose','Sonraki doz')+' · '+dmy(e.next_dose_date),'#B89A6A'):'')+'</div>':'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><div style="flex:1"><b style="color:#F5F1EB;font-size:13.5px">'+mxE(e.product||'')+'</b> '+t+(e.is_extra?' '+tag(mxTr('extra','ek'),'#D4963A'):'')+'<div style="font-size:12px;color:rgba(245,241,235,0.6)">'+mxE(sub.join(' · '))+'</div>'+admH+'</div>'+
       (e.id?'<button class="bimp2" style="padding:4px 9px;font-size:12px" onclick="puDelete(\''+e.id+'\')">✕</button>':'')+'</div>';}).join('');
-  el.innerHTML='<div class="sec">'+mxE(mxTr('PRODUCTS USED','KULLANILAN ÜRÜNLER'))+'</div><div class="ibox">'+
-    (rows||'<div style="font-size:12.5px;color:rgba(245,241,235,0.6)">'+mxE(mxTr('Products entered on the injection map appear here automatically. Scan the box to record lot and serial number for the patient.','Enjeksiyon haritasına girilen ürünler burada otomatik görünür. Kutuyu okutursanız lot ve seri no hastaya kaydedilir.'))+'</div>')+
+  el.innerHTML='<div class="sec">'+mxE(vCons?mxTr('DRUGS / VACCINES GIVEN','UYGULANAN İLAÇ / AŞI'):mxTr('PRODUCTS USED','KULLANILAN ÜRÜNLER'))+'</div><div class="ibox">'+
+    (rows||'<div style="font-size:12.5px;color:rgba(245,241,235,0.6)">'+mxE(vCons?mxTr('No drug or vaccine given here. Scan the box code or pick from stock.','Klinikte yapılan ilaç veya aşı yok. Kutunun karekodunu okutun ya da stoktan seçin.'):mxTr('Products entered on the injection map appear here automatically. Scan the box to record lot and serial number for the patient.','Enjeksiyon haritasına girilen ürünler burada otomatik görünür. Kutuyu okutursanız lot ve seri no hastaya kaydedilir.'))+'</div>')+
     '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn bpdf" onclick="puScan()">⌗ '+mxE(mxTr('Scan code','Karekod okut'))+'</button><button class="btn bedit" onclick="puManual()">'+mxE(mxTr('Manual','Elle'))+'</button></div></div>';
+  if(fresh.length)puAdmin(fresh[0].id);
 }
 function puMapQty(pid){return puItems.filter(function(e){return e.source==='map'&&e.product_id===pid;}).reduce(function(a,e){return a+Number(e.quantity||0);},0);}
 function puErr(m){m=m||'';return m.indexOf('insufficient_stock')>=0||m.indexOf('lot_empty')>=0?mxTr('Not enough in stock.','Stokta yeterli miktar yok.'):m.indexOf('serial_used')>=0?mxTr('This box was already scanned (same serial number).','Bu kutu zaten okutulmuş (aynı seri no).'):mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.');}
@@ -5212,7 +5341,7 @@ async function mbTodoOpen(){
     (L.length?L.map(function(x){return '<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(245,241,235,.06)">'+
       '<input type="checkbox" class="mbChk" value="'+x.visit_id+'" style="width:18px;height:18px">'+
       '<div style="flex:1;min-width:0;cursor:pointer" onclick="window._mbTodo=true;mbOpen(\''+x.visit_id+'\')"><div style="font-weight:600;font-size:13.5px">'+mxE(x.patient)+(x.no_id?' <span style="color:#F0A28F;font-size:11.5px">· T.C. no eksik</span>':'')+'</div>'+
-      '<div style="color:rgba(245,241,235,.6);font-size:12px">'+mxDate(x.date)+(x.what?' · '+mxE(x.what):'')+(x.type==='Control'?' · Kontrol':'')+'</div></div>'+
+      '<div style="color:rgba(245,241,235,.6);font-size:12px">'+mxDate(x.date)+(x.what?' · '+mxE(x.what):'')+(x.type==='Control'?' · Kontrol':x.type==='Consultation'?' · Muayene':'')+'</div></div>'+
       '<button class="bimp2" style="padding:5px 10px;font-size:12px" onclick="window._mbTodo=true;mbOpen(\''+x.visit_id+'\')">Özet</button></div>';}).join('')
      :'<div style="color:#3AB06A;padding:14px 0">Girilecek vizit kalmadı.</div>');
   mxOpen('MBYS’ye girilecekler ('+L.length+')',b,[
@@ -5372,7 +5501,7 @@ function hmRender(){
 <script>
 // ============ I18N (TR) ============
 // Exact-match translation of visible text, placeholders and dialogs; dynamic content is caught by a MutationObserver.
-var I18N_TR={'HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU VE GÖZLEM','AUTO':'OTOMATİK','COMPLAINT':'ŞİKAYETİ','HISTORY / COMPLAINT':'ANAMNEZ / ŞİKÂYET','PRESCRIPTION':'REÇETE','Add health info':'Sağlık bilgilerini ekle','PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
+var I18N_TR={'LAB TESTS':'TAHLİLLER','Results':'Sonuçlar','Add file':'Dosya ekle','HISTORY':'HİKAYESİ','VISIT NOTES':'AÇIKLAMA','FINDINGS':'BULGU VE GÖZLEM','AUTO':'OTOMATİK','COMPLAINT':'ŞİKAYETİ','HISTORY / COMPLAINT':'ANAMNEZ / ŞİKÂYET','PRESCRIPTION':'REÇETE','Add health info':'Sağlık bilgilerini ekle','PROFIT':'KÂR','Add':'Ekle','+ New visit':'+ Yeni vizit','PDF report':'PDF rapor','This patient needs at least two visits to compare.':'Karşılaştırmak için bu hastanın en az iki vizitine ihtiyaç var.','Swap':'Yer değiştir','Social media QR codes':'Sosyal medya karekodları','Enter your accounts (@username or link). When you save, we ask whether to create QR codes for them.':'Hesaplarınızı girin (@kullanıcıadı veya link). Kaydedince karekod oluşturalım mı diye sorarız.','Show QR codes':'Karekodları göster','Website (www.clinic.com)':'Web sitesi (www.klinik.com)','Google review link':'Google yorum linki','Doctors':'Doktorlar','For clinics with more than one doctor. The same doctor cannot get two appointments at the same time, and patients can choose a doctor in online booking. Unassigned appointments count as busy for every doctor.':'Birden fazla doktoru olan klinikler için. Aynı doktora aynı saatte iki randevu verilmez, hasta online randevuda doktor seçebilir. Doktor atanmamış randevular tüm doktorları meşgul sayar.','Name (e.g. Dr. Jane Smith)':'Ad (ör. Dr. Ayşe Yılmaz)','Title / speciality (optional)':'Unvan / uzmanlık (isteğe bağlı)','DIAGNOSIS (ICD-10)':'TANI (ICD-10)','Phone country code':'Telefon ülke kodu','Patient phone fields start with this code by default. Numbers are saved in one format: +90 532 111 22 33.':'Hasta telefon alanlarında varsayılan olarak bu kod seçili gelir. Numaralar tek biçimde saklanır: +90 532 111 22 33.','Country code':'Ülke kodu','Rooms & devices':'Odalar ve cihazlar','If you assign a room or device to an appointment, it cannot be given to two appointments at the same time. You can filter the appointment book by room or device.':'Randevuya oda veya cihaz atarsanız aynı saatte iki randevuya verilmesi engellenir. Randevu defterinde odaya veya cihaza göre filtreleyebilirsiniz.','Name (e.g. Room 1, Laser)':'Ad (ör. Oda 1, Lazer)','Room':'Oda','Device':'Cihaz','Waiting list':'Bekleme listesi','Share photos':'Fotoğraf paylaş','DAY CLOSE':'GÜN SONU','Ask for a health form after online booking':'Online randevudan sonra ön bilgi formu iste','Share your booking link':'Randevu linkinizi paylaşın',
 'Instagram: Edit profile → Links → Add external link, paste the link. Also add it to WhatsApp Business, Google Business Profile and story link stickers.':'Instagram: Profili düzenle → Bağlantılar → Harici bağlantı ekle, linki yapıştırın. WhatsApp Business, Google İşletme Profili ve hikâye bağlantı çıkartmasına da ekleyin.',
 'Download QR':'QR indir','Print it for the reception desk, business cards or brochures.':'Resepsiyon, kartvizit veya broşür için yazdırın.',
 'Light theme (for white websites)':'Açık tema (beyaz zeminli siteler için)','Button for your website':'Web siteniz için buton',

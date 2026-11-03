@@ -445,7 +445,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
             <div class="ibox" id="pDx" style="margin-top:10px;display:none"></div>
             <div class="ibox" id="pPkg" style="margin-top:10px"></div>
             <div class="ibox" id="pPortal" style="margin-top:10px"></div>
-            <div class="sec">BEFORE / AFTER COMPARISON</div>
+            <div class="sec" id="cmpSec">BEFORE / AFTER COMPARISON</div>
             <div id="cmpNeed" class="hint" style="display:none">This patient needs at least two visits to compare.</div>
             <div id="cmpWrap">
             <div class="cmpbar">
@@ -1268,6 +1268,7 @@ async function fillCmp(){
   document.getElementById('cmpKA').textContent=prT(LANG,'prAfter').toLocaleUpperCase(LANG);
   document.getElementById('cmpWrap').style.display=vis.length>=2?'block':'none';
   document.getElementById('cmpNeed').style.display=vis.length>=2?'none':'block';
+  ptConsultLayout();
   if(vis.length>=2){
     document.getElementById('cV1').value=vis[vis.length-1].id;
     document.getElementById('cV2').value=vis[0].id;
@@ -1580,6 +1581,13 @@ async function sDocs(wid,gid,docs){
 }
 
 // ---- Consultation visits: field order, lab tests, prescription PDF, consents ----
+// consultation-only patient (no procedure / follow-up visit; in a consultation clinic also before the first visit):
+// the health form, packages and before/after comparison are hidden
+function ptConsultLayout(){
+  var only=!vis.some(function(v){return v.visit_type!=='Consultation';})&&(vis.length>0||(clinic&&clinic.work_mode==='consult'));
+  ['pIntake','pPkg','cmpSec','cmpWrap'].forEach(function(k){var e=document.getElementById(k);if(e)e.style.display=only?'none':'';});
+  var n=document.getElementById('cmpNeed');if(n&&only)n.style.display='none';
+}
 var vCons=false;
 function vxLayout(){
   var ord=vCons?{gAnam:1,gHist:2,gFind:3,gNotes:4,gRx:5,gLabs:6,gProc:7,gSave:9}:{gAnam:1,gHist:2,gProc:3,gNotes:4,gFind:5,gRx:6,gLabs:7,gSave:9};

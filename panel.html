@@ -5266,7 +5266,7 @@ async function puManualInfo(){
   var p=(puProducts||[]).find(function(x){return x.id===document.getElementById('puMProd').value;});if(!p)return;
   var split=p.unit!=='ml',u=document.getElementById('puMUnit');
   u.innerHTML='<option value="1">'+(split?mxE(mxTr('units','ünite')):'ml')+'</option>'+(p.pack_size>0?'<option value="'+p.pack_size+'">'+mxE(split?mxTr('vial','flakon'):mxTr('box','kutu'))+' ('+p.pack_size+')</option>':'');
-  if(!split&&p.pack_size>0)u.value=String(p.pack_size);
+  // ml products start in ml too: a box is rarely used whole
   document.getElementById('puMQty').value=split&&!(p.pack_size>0)?20:1;
   var mq=puMapQty(p.id),lr=await db.from('stock_lot_balance').select('*').eq('product_id',p.id).gt('remaining',0).order('expiry_date',{ascending:true,nullsFirst:false});
   var lots=lr.data||[],op=lots.filter(function(x){return x.opened_at;}),f=op[0]||lots[0];

@@ -5198,7 +5198,7 @@ async function puScanGo(){
   var d=puGs1(document.getElementById('puCode').value),err=document.getElementById('puErr');
   if(!d.raw){return;}
   var prods=puProducts||await puLoadProducts();
-  var p=d.gtin?prods.find(function(x){return x.gtin===d.gtin;}):null;
+  var p=d.gtin?prods.find(function(x){return x.gtin===d.gtin||x.ref_code===d.gtin;}):null;
   puCur={d:d,p:p,used:null,lot:null};
   if(d.serial){var u=await db.rpc('serial_used',{p_serial:d.serial});puCur.used=u.data||null;}
   puScanSheet();

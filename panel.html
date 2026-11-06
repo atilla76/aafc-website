@@ -4911,22 +4911,39 @@ async function trkLoad(){
   if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
   var b=document.getElementById('tabTrk'),box=document.getElementById('trkBox');if(!b||!box)return;
   var show=fnAdmin&&LANG==='tr';b.style.display=show?'':'none';if(!show){box.innerHTML='';return;}
-  var r=await Promise.all([db.rpc('get_tracking'),db.from('track_queue').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}).limit(30)]);
-  trkCfg=r[0].data||{};var q=r[1].data||[];
-  var pids=[...new Set(q.map(function(x){return x.patient_id;}).filter(Boolean))],prids=[...new Set(q.map(function(x){return x.product_id;}).filter(Boolean))];
-  var rr=await Promise.all([pids.length?db.from('patients').select('id,name,surname').in('id',pids):{data:[]},prids.length?db.from('clinic_products').select('id,name').in('id',prids):{data:[]}]);
-  var pmap={},prmap={};(rr[0].data||[]).forEach(function(x){pmap[x.id]=((x.name||'')+' '+(x.surname||'')).trim();});(rr[1].data||[]).forEach(function(x){prmap[x.id]=x.name||'';});
+  var r=await Promise.all([db.rpc('get_tracking'),db.rpc('track_counts')]);
+  trkCfg=r[0].data||{};var cnt=r[1].data||{error:0,pending:0,sent:0};
+  if(trkFilt===null)trkFilt=cnt.error?'error':(cnt.pending?'pending':'sent');
+  b.innerHTML='ÜTS / İTS'+(cnt.error?' <span style="background:#E05555;color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px">'+cnt.error+'</span>':'');
   var pill=function(on,ok,t){return '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600;background:rgba('+(on?'58,176,106':'224,85,85')+',.12);color:'+(on?'#3AB06A':'#E07A6A')+'">'+(on?'● ':'○ ')+t+' — '+(on?'Açık':(ok?'Kapalı':'Kurulmadı'))+'</span>';};
   var head='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+pill(trkCfg.uts_enabled,trkCfg.has_uts_token,'ÜTS')+pill(trkCfg.its_enabled,trkCfg.has_its_password,'İTS')+'</div>';
   var todo=[];
   if(!trkCfg.uts_enabled)todo.push(trkCfg.has_uts_token?'ÜTS token kayıtlı ama gönderim kapalı: Ayarlar → “ÜTS bildirimlerini gönder”i işaretleyin.':'ÜTS sistem token girilmedi (ÜTS → Kullanıcı → Sistem Kullanıcısı Tanımlama, izinli IP 185.92.0.252).');
   if(!trkCfg.its_enabled)todo.push(trkCfg.has_its_password?'İTS bilgileri kayıtlı ama gönderim kapalı: Ayarlar → “İTS bildirimlerini gönder”i işaretleyin.':'İTS kullanıcı adı ve şifresi girilmedi. Botoks gibi ilaçların mal alım ve sarf bildirimleri bekliyor.');
   if(todo.length)head+='<div class="imp-step" style="border-color:rgba(184,154,106,.45)"><h3 style="color:#B89A6A">Hatırlatma</h3>'+todo.map(function(t){return '<div style="font-size:13px;margin:4px 0">• '+mxE(t)+'</div>';}).join('')+'</div>';
-  var st={sent:['#3AB06A',mxTr('Sent','Gönderildi')],pending:['#B89A6A',mxTr('Waiting','Bekliyor')],error:['#E05555',mxTr('Error','Hata')],skipped:['rgba(245,241,235,.45)',mxTr('Skipped','Atlandı')]};
-  box.innerHTML=head+'<div class="imp-step"><h3>'+mxE(mxTr('Notifications','Bildirimler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)">· '+mxE(trkCfg.env==='live'?mxTr('Live','Gerçek ortam'):mxTr('Test environment','Test ortamı'))+'</span></h3>'+
-    (q.length?'<div class="imp-wrap" style="max-height:340px"><table class="fmt"><tr><th>'+mxE(mxTr('Date','Tarih'))+'</th><th></th><th>'+mxE(mxTr('Notification','Bildirim'))+'</th><th>SN</th><th>'+mxE(mxTr('Status','Durum'))+'</th><th></th></tr>'+q.map(function(x){var c=st[x.status]||st.pending;
-      return '<tr><td>'+mxDate(String(x.created_at).slice(0,10))+'</td><td><b>'+(x.system==='its'?'İTS':'ÜTS')+'</b>'+(x.env!=='live'?' <span style="font-size:10px;color:rgba(245,241,235,.45)">test</span>':'')+'</td><td>'+mxE(trkKind(x))+(x.patient_id&&pmap[x.patient_id]?'<div style="font-size:12px"><a href="#" style="color:#B89A6A" onclick="goPatient(\''+x.patient_id+'\');return false">'+mxE(pmap[x.patient_id])+'</a></div>':'')+'</td><td style="font-size:12px">'+mxE(x.serial_no||x.lot_no||'')+(x.product_id&&prmap[x.product_id]?'<div style="font-size:11.5px;color:rgba(245,241,235,.6)">'+mxE(prmap[x.product_id])+'</div>':'')+'</td><td><span style="color:'+c[0]+';font-weight:600">'+mxE(c[1])+'</span>'+(x.message&&x.status!=='sent'?'<div style="font-size:11.5px;color:rgba(245,241,235,.6);max-width:320px">'+mxE(x.message)+'</div>':'')+(x.ref_no?'<div style="font-size:11px;color:rgba(245,241,235,.45)">#'+mxE(x.ref_no)+'</div>':'')+'</td><td>'+(x.status==='error'?'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="trkRetry(\''+x.id+'\')">'+mxE(mxTr('Retry','Tekrar dene'))+'</button>':'')+'</td></tr>';}).join('')+'</table></div>'
-      :'<div style="font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Notifications are sent automatically when a box is scanned into stock and when it is used on a patient.','Kutu karekodla stoka girince ve hastada kullanılınca bildirimler otomatik gönderilir.'))+'</div>')+'</div>';
+  var tab=function(k,t,n){var on=trkFilt===k,red=k==='error'&&n>0;return '<button class="bimp2" style="padding:6px 14px;'+(on?'background:'+(red?'#E05555':'#B89A6A')+';color:#1C1929;border-color:transparent;font-weight:600':(red?'color:#E07A6A;border-color:rgba(224,85,85,.5)':''))+'" onclick="trkSet(\''+k+'\')">'+mxE(t)+(n!=null?' '+n:'')+'</button>';};
+  box.innerHTML=head+'<div class="imp-step"><h3>Bildirimler <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.55)">· '+(trkCfg.env==='live'?'Gerçek ortam':'Test ortamı')+'</span></h3>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">'+tab('error','Hatalı',cnt.error)+tab('pending','Bekleyen',cnt.pending)+tab('sent','Gönderilen',cnt.sent)+'</div><div id="trkList"></div></div>';
+  trkRows=[];trkMore(true);
+}
+var trkFilt=null,trkRows=[];
+var TRK_HINT={supplier:'Tedarikçiden ÜTS\'de verme bildirimi yapmasını isteyin, sonra Tekrar dene\'ye basın.',no_receipt:'Bu kutunun alma bildirimi yapılmamış. Önce alma tamamlanmalı; tedarikçi verme yapınca Tekrar dene.',no_gtin:'Kutunun karekodunda ürün numarası (GTIN) yok. Ürüne GTIN girin ya da tedarikçinin ÜTS gönderimi gelince Tekrar dene.',no_tc:'Hastanın T.C. kimlik numarasını girin, sonra Tekrar dene.',creds:'Ayarlar → ÜTS / İTS bölümünden bilgileri girin.',login:'İTS kullanıcı adı veya şifresi hatalı. Ayarlar → ÜTS / İTS\'den kontrol edin.',network:'Geçici bağlantı sorunu. Biraz sonra Tekrar dene.',its_not_owned:'Kutu İTS\'de sizin stoğunuzda görünmüyor: önce mal alım bildirimi yapılmalı.',its_other:'İTS bildirimi reddetti. Hata kodunu destek ekibine iletin.'};
+function trkSet(k){trkFilt=k;trkLoad();}
+async function trkMore(first){
+  var el=document.getElementById('trkList');if(!el)return;
+  var r=await db.rpc('track_list',{p_status:trkFilt,p_limit:50,p_offset:first?0:trkRows.length});
+  if(r.error){el.innerHTML='<div style="font-size:13px;color:#E07A6A">'+mxE(r.error.message)+'</div>';return;}
+  var d=r.data||[];trkRows=first?d:trkRows.concat(d);
+  if(!trkRows.length){el.innerHTML='<div style="font-size:13px;color:rgba(245,241,235,.6)">'+(trkFilt==='error'?'Hatalı bildirim yok.':trkFilt==='pending'?'Bekleyen bildirim yok.':'Kutu karekodla stoka girince ve hastada kullanılınca bildirimler otomatik gönderilir.')+'</div>';return;}
+  el.innerHTML='<div class="imp-wrap" style="max-height:520px"><table class="fmt"><tr><th>Tarih</th><th></th><th>Bildirim</th><th>Lot / SN</th><th>Durum</th><th></th></tr>'+trkRows.map(trkRow).join('')+'</table></div>'+(d.length===50?'<button class="bimp2" style="margin-top:10px" onclick="trkMore(false)">Daha fazla göster</button>':'');
+}
+function trkRow(x){
+  var st={sent:['#3AB06A','Gönderildi'],pending:['#B89A6A','Bekliyor'],error:['#E05555','Hata'],skipped:['rgba(245,241,235,.45)','Atlandı']},c=st[x.status]||st.pending,err=x.status==='error'||x.status==='skipped';
+  return '<tr><td style="white-space:nowrap">'+mxDate(String(x.created_at).slice(0,10))+'</td><td><b>'+(x.system==='its'?'İTS':'ÜTS')+'</b>'+(x.env!=='live'?' <span style="font-size:10px;color:rgba(245,241,235,.45)">test</span>':'')+'</td>'+
+   '<td>'+mxE(trkKind(x))+(x.product?' · '+mxE(x.product):'')+(x.patient_id&&x.patient?'<div style="font-size:12px"><a href="#" style="color:#B89A6A" onclick="goPatient(\''+x.patient_id+'\');return false">'+mxE(x.patient)+'</a></div>':'')+'</td>'+
+   '<td style="font-size:12px">'+mxE(x.lot_no||'')+(x.serial_no?'<div style="color:rgba(245,241,235,.6)">SN '+mxE(x.serial_no)+'</div>':'')+'</td>'+
+   '<td><span style="color:'+c[0]+';font-weight:600">'+c[1]+'</span>'+(x.message&&x.status!=='sent'?'<div style="font-size:11.5px;color:rgba(245,241,235,.6);max-width:340px">'+mxE(x.message)+'</div>':'')+(err&&x.hint&&TRK_HINT[x.hint]?'<div style="font-size:12px;color:#E0B86A;max-width:340px;margin-top:3px">Ne yapmalı: '+mxE(TRK_HINT[x.hint])+'</div>':'')+(x.ref_no?'<div style="font-size:11px;color:rgba(245,241,235,.45)">#'+mxE(x.ref_no)+'</div>':'')+'</td>'+
+   '<td>'+(err?'<button class="bimp2" style="padding:4px 10px;font-size:12px" onclick="trkRetry(\''+x.id+'\')">Tekrar dene</button>':'')+'</td></tr>';
 }
 async function trkRetry(id){await db.rpc('track_retry',{p_id:id});trkLoad();}
 function trkOpen(){

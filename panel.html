@@ -1104,7 +1104,7 @@ function switchTab(name){
   if(name==='onb')onbLoad();
   if(name==='finance')fnLoad();
   if(name==='recall')rcLoad();
-  if(name==='settings')stLoad();
+  if(name==='settings')setLoad();
   if(name!=='settings')stUploadReturn();
 }
 
@@ -4516,7 +4516,7 @@ var ST_ITEMS=[
   ['password','Change password','Şifre değiştir','Update your password','Şifrenizi güncelleyin'],
   ['support','Support','Destek','Questions · support@klirena.com','Sorular · support@klirena.com','url:help.html']
 ];
-var stSel='clinic',stMoved=false;
+var setSel='clinic',stMoved=false;
 function stIsTr(){return (clinic&&(clinic.phone_country==='+90'||clinic.currency==='TRY'))||LANG==='tr';}
 // e-invoice integrations by clinic country: 90 Türkiye (e-SMM), 351 Portugal (InvoiceXpress), 34 Spain (B2Brouter / VERI*FACTU)
 function einvCountry(){var d=String((clinic&&clinic.phone_country)||'').replace('+','');if(d)return ['90','351','34'].indexOf(d)>=0?d:'';if(clinic&&clinic.currency==='TRY')return '90';return {tr:'90',pt:'351',es:'34'}[LANG]||'';}
@@ -4525,11 +4525,11 @@ function stNav(){
   var el=document.getElementById('stNav');if(!el)return;
   el.innerHTML=ST_ITEMS.filter(function(x){return !(x[5]==='tr'&&!stIsTr())&&!(x[5]==='einv'&&!einvCountry())&&!(x[0]==='tracking'&&!stIsTr());}).map(function(x){
     if(x[0]==='g')return '<div class="st-g">'+mxE(mxTr(x[1],x[2]))+'</div>';
-    return '<div class="st-it'+(x[0]===stSel?' on':'')+'" onclick="stGo(\''+x[0]+'\')"><b>'+mxE(mxTr(x[1],x[2]))+'</b><span>'+mxE(mxTr(x[3],x[4]))+'</span></div>';
+    return '<div class="st-it'+(x[0]===setSel?' on':'')+'" onclick="stGo(\''+x[0]+'\')"><b>'+mxE(mxTr(x[1],x[2]))+'</b><span>'+mxE(mxTr(x[3],x[4]))+'</span></div>';
   }).join('');
 }
-function stLoad(){stMove();stNav();stGo(stSel,true);}
-function stMove(){
+function setLoad(){setMove();stNav();stGo(setSel,true);}
+function setMove(){
   var hh=document.getElementById('apptStHint');if(hh)hh.innerHTML='<a href="#" style="color:#B89A6A" onclick="switchTab(\'settings\');stGo(\'blocks\');return false">'+mxE(mxTr('Blocked times, doctors, rooms and calendar subscription → Settings','Kapalı saatler, doktorlar, odalar ve takvim aboneliği → Ayarlar'))+'</a>';
   if(!stMoved){stMoved=true;
     // the blocks that used to live on the Appointments tab move here, like in the app
@@ -4546,7 +4546,7 @@ function stGo(k,quiet){
   var lk=it[5]||'';
   if(lk.indexOf('tab:')===0){switchTab(lk.slice(4));return;}
   if(lk.indexOf('url:')===0){window.open(lk.slice(4),'_blank');return;}
-  stSel=k;stNav();
+  setSel=k;stNav();
   document.querySelectorAll('.st-sec').forEach(function(s){s.style.display=s.id==='st-'+k?'block':'none';});
   var f={clinic:stClinicLoad,users:stUsersLoad,doctors:function(){prLoad();},rooms:function(){rsLoad();},watermark:stWmLoad,blocks:function(){blLoad();},calendar:function(){cfLoad();},
     reminders:stRemLoad,consents:stConsLoad,sentconsents:stSentLoad,aftercare:stAcLoad,qr:stQrLoad,einvoice:stEinvLoad,enabiz:stEnabizLoad,access:stAccessLoad,upload:stUploadLoad,language:stLangLoad,password:stPwLoad}[k];
@@ -4819,7 +4819,7 @@ async function stPwSave(){var a=document.getElementById('pw1').value,b2=document
   if(a!==b2){stMsg('pwMsg',false,mxTr('Passwords do not match.','Şifreler aynı değil.'));return;}
   var r=await db.auth.updateUser({password:a});stMsg('pwMsg',!r.error,r.error?r.error.message:mxTr('Password changed','Şifre değiştirildi'));if(!r.error){document.getElementById('pw1').value='';document.getElementById('pw2').value='';}}
 
-setTimeout(stMove,0);
+setTimeout(setMove,0);
 function curTab(){var t=document.querySelector('.tab.on[data-tab]');return t?t.dataset.tab:'';}
 // ---- ÜTS / İTS notifications (admin) ----
 var trkCfg=null;
@@ -5126,15 +5126,15 @@ function puAdmin(id){
     '<div class="pfdup" style="background:rgba(58,176,106,.10);border-color:rgba(58,176,106,.4)">✓ '+mxE(al?mxTr('Allergy record checked · no warning','Alerji kaydı kontrol edildi · uyarı yok'):mxTr('No allergy recorded for this patient','Hastada alerji kaydı yok'))+'</div>';
   var doses=[mxTr('1st dose','1. doz'),mxTr('2nd dose','2. doz'),mxTr('3rd dose','3. doz'),mxTr('Booster','Rapel')];
   var h='<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin-bottom:8px">'+mxE([e.lot_no?'LOT '+e.lot_no:'',e.expiry?mxTr('EXP','SKT')+' '+puMY(e.expiry):''].filter(Boolean).join(' · '))+'</div>'+warn+
-    '<div class="prsec">'+mxE(mxTr('Route','Uygulama yolu'))+'</div><div class="pfchips">'+PU_ROUTES.map(function(r){return '<button type="button" class="pfc'+(e.admin_route===r?' on':'')+'" data-v="'+r+'" onclick="puPick(this,\'puR\')">'+mxE(r==='Lokal'?mxTr('Local','Lokal'):r)+'</button>';}).join('')+'</div><input type="hidden" id="puR" value="'+mxE(e.admin_route||'')+'">'+
+    '<div class="prsec">'+mxE(mxTr('Route','Uygulama yolu'))+'</div><div class="pfchips">'+PU_ROUTES.map(function(r){return '<button type="button" class="pfc'+(e.admin_route===r?' on':'')+'" data-v="'+r+'" onclick="puChip(this,\'puR\')">'+mxE(r==='Lokal'?mxTr('Local','Lokal'):r)+'</button>';}).join('')+'</div><input type="hidden" id="puR" value="'+mxE(e.admin_route||'')+'">'+
     '<div class="prsec">'+mxE(mxTr('Site','Uygulama yeri'))+'</div><input class="mi" id="puSite" value="'+mxE(e.admin_site||'')+'" placeholder="'+mxE(mxTr('e.g. left deltoid','ör. sol deltoid'))+'">'+
-    '<div class="prsec">'+mxE(mxTr('Dose','Doz'))+'</div><div class="pfchips">'+doses.map(function(d){return '<button type="button" class="pfc'+(e.dose_no===d?' on':'')+'" data-v="'+mxE(d)+'" onclick="puPick(this,\'puD\')">'+mxE(d)+'</button>';}).join('')+'</div><input type="hidden" id="puD" value="'+mxE(e.dose_no||'')+'">'+
+    '<div class="prsec">'+mxE(mxTr('Dose','Doz'))+'</div><div class="pfchips">'+doses.map(function(d){return '<button type="button" class="pfc'+(e.dose_no===d?' on':'')+'" data-v="'+mxE(d)+'" onclick="puChip(this,\'puD\')">'+mxE(d)+'</button>';}).join('')+'</div><input type="hidden" id="puD" value="'+mxE(e.dose_no||'')+'">'+
     '<div class="prsec">'+mxE(mxTr('Next dose','Sonraki doz'))+'</div><input class="mi" type="date" id="puNext" value="'+mxE(e.next_dose_date||'')+'" min="'+fmtDate(new Date())+'"><div style="font-size:12px;color:rgba(245,241,235,.55);margin-top:4px">'+mxE(mxTr('The patient appears in Recalls when the date comes.','Tarih gelince hasta Geri Çağır listesine düşer.'))+'</div>';
   mxOpen(e.product||'',h,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},{label:mxTr('Save','Kaydet'),cls:'bsave',fn:async function(){
     var r=await db.rpc('set_visit_use_admin',{p_use_id:id,p_route:document.getElementById('puR').value||null,p_site:document.getElementById('puSite').value||null,p_dose_no:document.getElementById('puD').value||null,p_next_dose:document.getElementById('puNext').value||null});
     if(r.error){alert(r.error.message);return;}mxClose();puLoad(selVid);}}]);
 }
-function puPick(b,inp){var on=b.classList.contains('on');Array.prototype.forEach.call(b.parentNode.children,function(x){x.classList.remove('on');});if(!on)b.classList.add('on');document.getElementById(inp).value=on?'':b.getAttribute('data-v');}
+function puChip(b,inp){var on=b.classList.contains('on');Array.prototype.forEach.call(b.parentNode.children,function(x){x.classList.remove('on');});if(!on)b.classList.add('on');document.getElementById(inp).value=on?'':b.getAttribute('data-v');}
 function puQty(q,unit,pack){q=Number(q||0);var f=function(n){return Number(n).toLocaleString(LANG_LOC[LANG]||'en-US',{maximumFractionDigits:2});};
   if(unit==='ml'){if(pack>0){var b=q/pack;if(Math.abs(b-Math.round(b))<0.001&&b>=1)return f(Math.round(b))+' '+mxTr('box','kutu')+' · '+f(q)+' ml';}return f(q)+' ml';}
   return f(q)+' '+mxTr('units','ünite');}

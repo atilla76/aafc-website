@@ -326,6 +326,43 @@ At the end of the day, tap Close the day; that day's cash collection is shown an
 
 "Send to accountant (Excel/CSV)" gives all entries of the selected period as a file. It can also be downloaded in the panel from the ACCOUNTING tab.
 
+## Invoices in Portugal (InvoiceXpress)
+
+Clinics in Portugal issue certified invoice-receipts (fatura-recibo) through InvoiceXpress. You need your own InvoiceXpress account; Klirena does not charge extra. These screens appear only when the clinic phone country code is +351.
+
+### Setup
+
+1. In InvoiceXpress open **Settings › API** and copy the API key. Make sure the VAT rate you will use (for example IVA23) exists in your account.
+2. In the app open **Accounting › menu › e-Invoice**; on a computer open **SETTINGS › e-Invoice** in the panel. Choose **InvoiceXpress**.
+3. Enter the account name (the part before .app.invoicexpress.com) and the API key.
+4. Choose the VAT rate (0, 6, 13 or 23 %) and the service name shown on the document. Aesthetic treatments are usually 23 %; at 0 % the M07 exemption (art. 9 CIVA) is applied. Confirm the rate with your accountant.
+5. Tap **Save and test connection**, then turn sending on.
+
+### Issuing an invoice
+
+- **When taking a payment:** leave **Issue invoice** switched on and save. The invoice-receipt number is written on the payment; the PDF can be opened and shared.
+- **Later:** a payment without an invoice shows **Issue invoice** on the visit fee card and waits in Accounting.
+- If the patient's ID field holds a 9-digit NIF, it is printed on the invoice; otherwise the invoice is issued to a final consumer.
+- A wrong invoice-receipt can be cancelled from the payment; then issue a corrected one. A payment with an issued invoice can't be deleted.
+
+## Invoices in Spain (VERI*FACTU)
+
+Clinics in Spain issue simplified invoices (tickets) through B2Brouter, which registers each one with the tax agency (AEAT) under VERI*FACTU. You need your own B2Brouter account; Klirena does not charge extra. These screens appear only when the clinic phone country code is +34.
+
+### Setup
+
+1. In B2Brouter turn on VERI*FACTU for your account, then copy the account ID and the API key. Keys starting with test_ use the sandbox; use the production key for real invoices.
+2. In the app open **Accounting › menu › e-Invoice**; on a computer open **SETTINGS › e-Invoice** in the panel. Choose **B2Brouter · VERI*FACTU**.
+3. Enter the account ID, the API key and, if you use one, the series.
+4. Choose the VAT rate (0, 10 or 21 %) and the service name shown on the document. Medical services are usually VAT-exempt (0 %); aesthetic treatments may be 21 %. Confirm the rate with your accountant.
+5. Tap **Save and test connection**, then turn sending on.
+
+### Issuing an invoice
+
+- **When taking a payment:** leave **Issue invoice** switched on and save. The ticket is registered and its number (series-year-number) is written on the payment.
+- **Later:** a payment without an invoice shows **Issue invoice** on the visit fee card and waits in Accounting.
+- A VERI*FACTU invoice can't be cancelled from Klirena. If it is wrong, issue a corrective invoice in B2Brouter. A payment with an issued invoice can't be deleted.
+
 ## Stock
 
 You enter stock by scanning the box barcode; the amount is deducted when used on a patient. You can always find which lot was given to which patient.

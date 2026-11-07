@@ -327,6 +327,43 @@ Al final del día, pulse **Cerrar caja**; se muestra el cobro en efectivo de ese
 
 "Enviar al contable (Excel/CSV)" entrega en un archivo todos los movimientos del periodo seleccionado. También se descarga desde la pestaña CONTABILIDAD del panel.
 
+## Facturación en España (VERI*FACTU)
+
+Las clínicas en España emiten facturas simplificadas (tickets) con B2Brouter, que registra cada una en la AEAT a través de VERI*FACTU. Necesita su propia cuenta de B2Brouter; Klirena no cobra nada adicional. Estas pantallas solo aparecen cuando el prefijo del teléfono de la clínica es +34.
+
+### Configuración
+
+1. En B2Brouter active VERI*FACTU en su cuenta y copie el ID de cuenta y la clave API. Las claves que empiezan por test_ usan el entorno de pruebas; para facturas reales use la clave de producción.
+2. En la app abra **Contabilidad › menú › Facturación electrónica**; en el ordenador abra **SETTINGS › e-Invoice** en el panel. Elija **B2Brouter · VERI*FACTU**.
+3. Introduzca el ID de cuenta, la clave API y, si la usa, la serie.
+4. Elija el tipo de IVA (0, 10 o 21 %) y el nombre del servicio que aparece en el documento. Los servicios médicos suelen estar exentos de IVA (0 %); los tratamientos estéticos pueden llevar 21 %. Confirme el tipo con su gestor.
+5. Pulse **Guardar y probar conexión** y después active el envío.
+
+### Emitir una factura
+
+- **Al registrar un pago:** deje **Emitir factura** activado y guarde. El ticket se registra y su número (serie-año-número) queda en el pago.
+- **Más tarde:** un pago sin factura muestra **Emitir factura** en la tarjeta de importes de la visita y queda pendiente en Contabilidad.
+- Una factura VERI*FACTU no se puede anular desde Klirena. Si es errónea, emita una factura rectificativa en B2Brouter. Un pago con factura emitida no se puede borrar.
+
+## Facturación en Portugal (InvoiceXpress)
+
+Las clínicas en Portugal emiten facturas-recibo certificadas (fatura-recibo) con InvoiceXpress. Necesita su propia cuenta de InvoiceXpress; Klirena no cobra nada adicional. Estas pantallas solo aparecen cuando el prefijo del teléfono de la clínica es +351.
+
+### Configuración
+
+1. En InvoiceXpress abra **Configuración › API** y copie la clave API. Compruebe que el tipo de IVA que va a usar (por ejemplo IVA23) existe en su cuenta.
+2. En la app abra **Contabilidad › menú › Facturación electrónica**; en el ordenador abra **SETTINGS › e-Invoice** en el panel. Elija **InvoiceXpress**.
+3. Introduzca el nombre de la cuenta (la parte antes de .app.invoicexpress.com) y la clave API.
+4. Elija el tipo de IVA (0, 6, 13 o 23 %) y el nombre del servicio que aparece en el documento. Los tratamientos estéticos suelen llevar 23 %; con 0 % se aplica la exención M07 (art. 9 CIVA). Confirme el tipo con su gestor.
+5. Pulse **Guardar y probar conexión** y después active el envío.
+
+### Emitir una factura
+
+- **Al registrar un pago:** deje **Emitir factura** activado y guarde. El número de la factura-recibo queda en el pago; el PDF se puede abrir y compartir.
+- **Más tarde:** un pago sin factura muestra **Emitir factura** en la tarjeta de importes de la visita y queda pendiente en Contabilidad.
+- Si el campo de identificación del paciente contiene un NIF de 9 dígitos, se imprime en la factura; si no, se emite a consumidor final.
+- Una factura-recibo errónea se puede anular desde el pago; después emita la correcta. Un pago con factura emitida no se puede borrar.
+
 ## Stock
 
 Registra el stock escaneando el código QR de la caja; al usarlo en un paciente, la cantidad se descuenta. Siempre se puede saber qué lote se aplicó a qué paciente.

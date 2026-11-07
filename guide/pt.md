@@ -327,6 +327,43 @@ No fim do dia, toque em Fechar o dia; o recebimento em dinheiro do dia é exibid
 
 "Enviar ao contador (Excel/CSV)" entrega em arquivo todos os lançamentos do período escolhido. No painel, também é possível baixar pela aba CONTABILIDADE.
 
+## Faturação em Portugal (InvoiceXpress)
+
+As clínicas em Portugal emitem faturas-recibo certificadas através do InvoiceXpress. Precisa da sua própria conta InvoiceXpress; a Klirena não cobra nada a mais. Estes ecrãs só aparecem quando o indicativo do telefone da clínica é +351.
+
+### Configuração
+
+1. No InvoiceXpress abra **Definições › API** e copie a chave API. Confirme que a taxa de IVA que vai usar (por exemplo IVA23) existe na sua conta.
+2. Na app abra **Contabilidade › menu › Faturação eletrónica**; no computador abra **SETTINGS › e-Invoice** no painel. Escolha **InvoiceXpress**.
+3. Introduza o nome da conta (a parte antes de .app.invoicexpress.com) e a chave API.
+4. Escolha a taxa de IVA (0, 6, 13 ou 23 %) e o nome do serviço que aparece no documento. Os tratamentos estéticos têm normalmente 23 %; com 0 % aplica-se a isenção M07 (art. 9.º CIVA). Confirme a taxa com o seu contabilista.
+5. Toque em **Salvar e testar conexão** e depois ative o envio.
+
+### Emitir uma fatura
+
+- **Ao registar um pagamento:** deixe **Emitir fatura** ativo e guarde. O número da fatura-recibo fica no pagamento; o PDF pode ser aberto e partilhado.
+- **Mais tarde:** um pagamento sem fatura mostra **Emitir fatura** no cartão de valores da visita e fica pendente na Contabilidade.
+- Se o campo de identificação do paciente tiver um NIF de 9 dígitos, este é impresso na fatura; caso contrário, a fatura é emitida a consumidor final.
+- Uma fatura-recibo errada pode ser anulada a partir do pagamento; depois emita a correta. Um pagamento com fatura emitida não pode ser apagado.
+
+## Faturação em Espanha (VERI*FACTU)
+
+As clínicas em Espanha emitem faturas simplificadas (tickets) através da B2Brouter, que regista cada uma na AEAT pelo VERI*FACTU. Precisa da sua própria conta B2Brouter; a Klirena não cobra nada a mais. Estes ecrãs só aparecem quando o indicativo do telefone da clínica é +34.
+
+### Configuração
+
+1. Na B2Brouter ative o VERI*FACTU na sua conta e copie o ID da conta e a chave API. As chaves que começam por test_ usam o ambiente de testes; para faturas reais use a chave de produção.
+2. Na app abra **Contabilidade › menu › Faturação eletrónica**; no computador abra **SETTINGS › e-Invoice** no painel. Escolha **B2Brouter · VERI*FACTU**.
+3. Introduza o ID da conta, a chave API e, se usar, a série.
+4. Escolha a taxa de IVA (0, 10 ou 21 %) e o nome do serviço. Os serviços médicos costumam estar isentos (0 %); os tratamentos estéticos podem ter 21 %. Confirme a taxa com o seu contabilista.
+5. Toque em **Salvar e testar conexão** e depois ative o envio.
+
+### Emitir uma fatura
+
+- **Ao registar um pagamento:** deixe **Emitir fatura** ativo e guarde. O ticket é registado e o seu número (série-ano-número) fica no pagamento.
+- **Mais tarde:** um pagamento sem fatura mostra **Emitir fatura** no cartão de valores da visita e fica pendente na Contabilidade.
+- Uma fatura VERI*FACTU não pode ser anulada na Klirena. Se estiver errada, emita uma fatura retificativa na B2Brouter. Um pagamento com fatura emitida não pode ser apagado.
+
 ## Estoque
 
 Você dá entrada no estoque lendo o código da caixa; ao usar no paciente, a quantidade é baixada. Sempre é possível saber qual lote foi aplicado em qual paciente.

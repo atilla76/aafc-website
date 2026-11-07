@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/images/aafc_logo.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User guide — Klirena</title>
+<meta name="description" content="Step-by-step user guide for the Klirena clinic app and web panel: patients, photos, consents, appointments, accounting, stock and more.">
+<link rel="canonical" href="https://klirena.com/guide" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { color-scheme: dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1C1929; color: #F5F1EB; line-height: 1.65; }
+  a { color: #B89A6A; text-decoration: none; }
+  nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 60px; border-bottom: 1px solid rgba(245,241,235,0.08); flex-wrap: wrap; }
+  .logo { font-size: 22px; font-weight: 600; color: #B89A6A; letter-spacing: 3px; }
+  .nav-links { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: rgba(245,241,235,0.6); font-size: 14px; }
+  .nav-links a.on, .nav-links a:hover { color: #F5F1EB; }
+  #langSel { cursor: pointer; font: inherit; font-size: 13px; background: rgba(184,154,106,0.12); border: 1px solid rgba(184,154,106,0.3); color: #B89A6A; border-radius: 8px; padding: 6px; }
+  .container { max-width: 820px; margin: 0 auto; padding: 56px 40px 90px; }
+  h1 { font-size: 38px; font-weight: 300; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .sub { color: rgba(245,241,235,0.55); margin-bottom: 26px; }
+  #q { width: 100%; font: inherit; font-size: 16px; padding: 14px 16px 14px 44px; border-radius: 12px; border: 1px solid rgba(245,241,235,0.14); background: rgba(245,241,235,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23b89a6a' stroke-width='2'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M13 13l4 4'/%3E%3C/svg%3E") 15px center no-repeat; color: #F5F1EB; outline: none; }
+  #q:focus { border-color: rgba(184,154,106,0.6); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 6px; }
+  .chips a { font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(245,241,235,0.12); color: rgba(245,241,235,0.7); }
+  .chips a:hover { border-color: #B89A6A; color: #B89A6A; }
+  h2 { font-size: 13px; letter-spacing: 1.4px; text-transform: uppercase; color: #B89A6A; font-weight: 600; margin: 34px 0 10px; scroll-margin-top: 16px; }
+  .group { background: rgba(245,241,235,0.03); border: 1px solid rgba(245,241,235,0.08); border-radius: 14px; overflow: hidden; }
+  details.qa + details.qa { border-top: 1px solid rgba(245,241,235,0.07); }
+  details.qa summary { cursor: pointer; list-style: none; padding: 15px 44px 15px 18px; font-size: 15.5px; font-weight: 500; position: relative; }
+  details.qa summary::-webkit-details-marker { display: none; }
+  details.qa summary::after { content: "+"; position: absolute; right: 18px; top: 12px; font-size: 20px; color: #B89A6A; }
+  details.qa[open] summary::after { content: "−"; }
+  details.qa .ans { padding: 0 18px 16px; color: rgba(245,241,235,0.75); font-size: 15px; }
+  .tpl { margin-top: 10px; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(245,241,235,0.08); font-style: italic; white-space: pre-wrap; font-size: 14px; }
+  .btn { display: inline-block; margin-top: 12px; background: #B89A6A; color: #1C1929; font-weight: 600; font-size: 14px; padding: 8px 16px; border-radius: 8px; border: 0; cursor: pointer; font-family: inherit; }
+  .btn.ghost { background: transparent; color: #B89A6A; border: 1px solid rgba(184,154,106,0.5); }
+  mark { background: rgba(184,154,106,0.35); color: inherit; border-radius: 3px; }
+  .none { color: rgba(245,241,235,0.5); padding: 30px 0; text-align: center; }
+  .contact { margin-top: 44px; background: rgba(184,154,106,0.08); border: 1px solid rgba(184,154,106,0.25); border-radius: 14px; padding: 18px 20px; }
+  .contact b { display: block; margin-bottom: 4px; }
+  footer { border-top: 1px solid rgba(245,241,235,0.08); padding: 24px 60px; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer p, footer a { font-size: 13px; color: rgba(245,241,235,0.4); }
+  @media (max-width: 600px) { nav { padding: 16px 20px; } .nav-links { gap: 14px; } .container { padding: 36px 16px 60px; } h1 { font-size: 28px; } footer { padding: 20px 16px; flex-direction: column; } }
+</style>
+<style>
+  .doc h2 { font-size: 22px; letter-spacing: 0; text-transform: none; color: #F5F1EB; font-weight: 500; margin: 44px 0 12px; padding-top: 18px; border-top: 1px solid rgba(245,241,235,0.08); }
+  .doc h3 { font-size: 16.5px; color: #B89A6A; font-weight: 600; margin: 26px 0 8px; scroll-margin-top: 16px; }
+  .doc p { margin: 8px 0; color: rgba(245,241,235,0.82); }
+  .doc ol, .doc ul { margin: 8px 0 8px 22px; color: rgba(245,241,235,0.82); }
+  .doc li { margin: 4px 0; }
+  .doc table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; display: block; overflow-x: auto; }
+  .doc th, .doc td { text-align: left; vertical-align: top; padding: 8px 10px; border: 1px solid rgba(245,241,235,0.1); }
+  .doc th { background: rgba(184,154,106,0.1); color: #F5F1EB; font-weight: 600; }
+  .doc strong { color: #F5F1EB; font-weight: 600; }
+  .doc code { background: rgba(245,241,235,0.08); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .toc { columns: 2; column-gap: 24px; margin: 18px 0 20px; padding: 14px 18px; background: rgba(245,241,235,0.03); border: 1px solid rgba(245,241,235,0.08); border-radius: 14px; }
+  .toc a { display: block; font-size: 14px; padding: 3px 0; color: rgba(245,241,235,0.75); break-inside: avoid; }
+  .toc a:hover { color: #B89A6A; }
+  #q { margin-top: 6px; }
+  .doc .hide { display: none; }
+  @media (max-width: 600px) { .toc { columns: 1; } }
+</style></head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Klirena</a>
+  <div class="nav-links">
+    <a href="index.html" data-ui="2">Home</a>
+    <a href="help.html" data-ui="3">Help</a>
+    <a href="guide.html" class="on" data-ui="7">User guide</a>
+    <select id="langSel" aria-label="Language" onchange="setLang(this.value)"></select>
+  </div>
+</nav>
+<main class="container">
+  <h1 id="t">User guide</h1>
+  <p class="sub" id="s"></p>
+  <input id="q" type="search" autocomplete="off" oninput="filt()">
+  <div class="toc" id="toc"></div>
+  <div class="doc" id="doc"><p class="none">…</p></div>
+  <div class="contact"><b id="c1"></b><span id="c2"></span> <a href="mailto:support@klirena.com">support@klirena.com</a></div>
+</main>
+<footer>
+  <p>© 2026 EDECA Yazılım Ticaret ve Sanayi Limited Şirketi</p>
+  <div><a href="privacy.html" data-ui="4">Privacy</a> · <a href="terms.html" data-ui="5">Terms</a> · <a href="help.html" data-ui="3">Help</a></div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+var U={
+tr:["Kullanım kılavuzu","Klirena uygulaması ve web panelinin adım adım anlatımı.","Ana sayfa","Yardım","Gizlilik","Koşullar","Kılavuzda ara","Kılavuz","Cevabını bulamadınız mı?","Bize yazın:","Sonuç yok."],
+en:["User guide","Step-by-step guide to the Klirena app and web panel.","Home","Help","Privacy","Terms","Search the guide","User guide","Can't find what you need?","Write to us:","No results."],
+de:["Benutzerhandbuch","Schritt-für-Schritt-Anleitung für die Klirena-App und das Web-Panel.","Startseite","Hilfe","Datenschutz","AGB","Im Handbuch suchen","Handbuch","Nicht gefunden, was Sie suchen?","Schreiben Sie uns:","Keine Treffer."],
+es:["Guía de uso","Guía paso a paso de la app Klirena y el panel web.","Inicio","Ayuda","Privacidad","Términos","Buscar en la guía","Guía","¿No encuentra lo que busca?","Escríbanos:","Sin resultados."],
+fr:["Guide d'utilisation","Guide pas à pas de l'application Klirena et du panneau web.","Accueil","Aide","Confidentialité","Conditions","Rechercher dans le guide","Guide","Vous ne trouvez pas ?","Écrivez-nous :","Aucun résultat."],
+it:["Guida all'uso","Guida passo passo all'app Klirena e al pannello web.","Home","Aiuto","Privacy","Termini","Cerca nella guida","Guida","Non trovate quello che cercate?","Scriveteci:","Nessun risultato."],
+pt:["Guia de uso","Guia passo a passo do app Klirena e do painel web.","Início","Ajuda","Privacidade","Termos","Pesquisar no guia","Guia","Não encontrou o que procura?","Escreva-nos:","Sem resultados."],
+ru:["Руководство пользователя","Пошаговое руководство по приложению Klirena и веб-панели.","Главная","Помощь","Конфиденциальность","Условия","Поиск по руководству","Руководство","Не нашли ответ?","Напишите нам:","Ничего не найдено."],
+ko:["사용 가이드","Klirena 앱과 웹 패널 단계별 안내.","홈","도움말","개인정보","약관","가이드 검색","가이드","원하는 내용을 찾지 못하셨나요?","문의:","결과가 없습니다."],
+zh:["使用指南","Klirena 应用和网页面板的分步指南。","首页","帮助","隐私","条款","搜索指南","指南","没有找到所需内容？","联系我们：","没有结果。"]};
+var LANGS=[["tr","TR · Türkçe"],["en","EN · English"],["de","DE · Deutsch"],["es","ES · Español"],["fr","FR · Français"],["it","IT · Italiano"],["pt","PT · Português"],["ru","RU · Русский"],["ko","KO · 한국어"],["zh","ZH · 中文"]];
+var L='en',cache={};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function low(s){return String(s).toLocaleLowerCase(L==='tr'?'tr':undefined).normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function show(md){
+  md=md.replace(/^\s*# .*\n/,'');
+  var el=document.getElementById('doc');el.innerHTML=marked.parse(md);
+  var toc='',n=0;
+  el.querySelectorAll('h2,h3').forEach(function(h){n++;h.id='g'+n;if(h.tagName==='H2')toc+='<a href="#g'+n+'">'+esc(h.textContent)+'</a>';});
+  document.getElementById('toc').innerHTML=toc;
+  if(location.hash){var t=document.getElementById(location.hash.slice(1));if(t)t.scrollIntoView();}
+  filt();
+}
+function filt(){
+  var q=low(document.getElementById('q').value.trim()),el=document.getElementById('doc');
+  document.getElementById('toc').style.display=q?'none':'';
+  var kids=[].slice.call(el.children),secs=[],cur=null;
+  kids.forEach(function(k){if(/^H[23]$/.test(k.tagName)){cur={h:k,b:[]};secs.push(cur);}else if(cur)cur.b.push(k);else k.classList.toggle('hide',!!q);});
+  var any=false;
+  secs.forEach(function(s){var hit=!q||low(s.h.textContent+' '+s.b.map(function(b){return b.textContent;}).join(' ')).indexOf(q)>=0;
+    if(hit&&q)any=true;[s.h].concat(s.b).forEach(function(b){b.classList.toggle('hide',!hit);});});
+  var none=document.getElementById('none');
+  if(q&&!any){if(!none){none=document.createElement('p');none.id='none';none.className='none';el.appendChild(none);}none.textContent=U[L][10];none.style.display='';}
+  else if(none)none.style.display='none';
+}
+function setLang(l){
+  if(!U[l])l='en';L=l;var u=U[l];
+  document.documentElement.lang=l;document.title=u[0]+' — Klirena';
+  document.getElementById('t').textContent=u[0];document.getElementById('s').textContent=u[1];
+  document.getElementById('q').placeholder=u[6];
+  document.getElementById('c1').textContent=u[8];document.getElementById('c2').textContent=u[9];
+  document.querySelectorAll('[data-ui]').forEach(function(a){a.textContent=u[+a.getAttribute('data-ui')];});
+  var s=document.getElementById('langSel');s.innerHTML=LANGS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===l?' selected':'')+'>'+x[1]+'</option>';}).join('');
+  try{localStorage.setItem('aafc_lang',l);}catch(e){}
+  if(cache[l])return show(cache[l]);
+  fetch('guide/'+l+'.md').then(function(r){return r.ok?r.text():fetch('guide/en.md').then(function(x){return x.text();});}).then(function(t){cache[l]=t;if(L===l)show(t);});
+}
+(function(){
+  var p=new URLSearchParams(location.search),q=(p.get('lang')||'').toLowerCase(),saved=null;
+  try{saved=localStorage.getItem('aafc_lang');}catch(e){}
+  var nav=(navigator.languages&&navigator.languages[0]||navigator.language||'en').toLowerCase().slice(0,2);
+  setLang(U[q]?q:(U[saved]?saved:(U[nav]?nav:'en')));
+})();
+</script>
+</body>
+</html>

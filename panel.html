@@ -3370,9 +3370,16 @@ async function csLoad(pid){
 async function inLoad(pid){
   var box=document.getElementById('pIntake');box.innerHTML='<div class="hint" style="margin:0">…</div>';
   var r=await db.from('patient_intake_forms').select('id,token,status,answers,flags,created_at,expires_at,completed_at,reviewed_at').eq('patient_id',pid).is('deleted_at',null).order('created_at',{ascending:false}).limit(10);
+  var v=await db.from('visits').select('visit_date').eq('patient_id',pid).eq('visit_type','Visit').is('deleted_at',null).order('visit_date',{ascending:false}).limit(1);
   if(selPid!==pid)return;
+  inLastProc=(v.data&&v.data[0])?v.data[0].visit_date:null;
   inForms=r.data||[];inRender();
 }
+var inLastProc=null;
+// a health form is good for one procedure: due again once a procedure on/after it is past, or after 12 months
+function inUsed(f){var d=new Date(f.completed_at);if(isNaN(d))return false;var now=new Date();if((now-d)/864e5>365)return true;
+  if(!inLastProc)return false;var ds=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2),ts=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
+  return inLastProc>=ds&&inLastProc<ts;}
 function inRender(){
   var box=document.getElementById('pIntake');
   var done=inForms.filter(function(f){return f.status==='completed';}),pend=inForms.filter(function(f){return f.status==='pending';});
@@ -3380,7 +3387,7 @@ function inRender(){
     '<span><button class="bimp2" onclick="inSend()">'+mxTr('Send via WhatsApp','WhatsApp ile gönder')+'</button> <button class="bimp2" onclick="inCopy()">'+mxTr('Copy link','Linki kopyala')+'</button></span></div>';
   if(done.length){
     var f=done[0],fl=f.flags||[];
-    if((new Date()-new Date(f.completed_at))/864e5>365)h+='<div style="margin-top:8px;font-size:13px;color:#D4963A;font-weight:600">'+mxTr('Time to update: the form is over 12 months old. Send a new one.','Güncelleme zamanı: form 12 aydan eski. Yenisini gönderin.')+'</div>';
+    if(inUsed(f))h+='<div style="margin-top:8px;font-size:13px;color:#D4963A;font-weight:600">'+mxTr('Update before the next procedure: this form was used for an earlier one. Send a new one.','Yeni işlem için güncelleyin: bu form önceki işlemde kullanıldı. Yenisini gönderin.')+'</div>';
     h+='<div style="margin-top:8px;font-size:13px;color:#3AB06A">✓ '+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+' <a href="#" onclick="inView(\''+f.id+'\');return false" style="color:#D4B896;margin-left:8px">'+mxTr('View answers','Yanıtları gör')+'</a></div>';
     h+=fl.length?'<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">'+fl.map(function(k){return '<span style="background:rgba(192,97,74,.14);border:1px solid rgba(192,97,74,.45);color:#E08A73;border-radius:8px;padding:3px 8px;font-size:12px">⚠ '+mxE(inFlagText(f,k))+'</span>';}).join('')+'</div>'
       :'<div style="margin-top:6px;font-size:12px;color:#3AB06A">'+mxTr('No risk flags','Risk işareti yok')+'</div>';

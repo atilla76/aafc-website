@@ -3358,13 +3358,13 @@ function inUrl(tok){return 'https://klirena.com/form?t='+encodeURIComponent(tok)
 // ---- Patient consent status (sending stays in the app: template + OTP via WhatsApp) ----
 async function csLoad(pid){
   var box=document.getElementById('pConsent');if(!box)return;box.innerHTML='<div class="hint" style="margin:0">…</div>';
-  var r=await db.from('consent_records').select('id,template_name,status,sent_at,signed_at').eq('patient_id',pid).is('deleted_at',null).order('sent_at',{ascending:false}).limit(20);
+  var r=await db.from('consent_records').select('id,template_name,status,sent_at,signed_at,visit_id').eq('patient_id',pid).is('deleted_at',null).order('sent_at',{ascending:false}).limit(20);
   if(selPid!==pid)return;
   var rows=(r.data||[]).filter(function(c){return c.status!=='revoked'&&c.status!=='expired';});
-  var w=rows.find(function(c){return c.status==='pending'||c.status==='otp_verified';}),sg=rows.find(function(c){return c.status==='signed';});
+  var w=rows.find(function(c){return c.status==='pending'||c.status==='otp_verified';}),sg=rows.find(function(c){return c.status==='signed'&&!c.visit_id;}),lk=rows.some(function(c){return c.status==='signed'&&c.visit_id;});
   var t=w?'<span style="color:#D4963A">'+mxE(mxTr('[name] · awaiting signature ([date])','[name] · imza bekleniyor ([date])').replace('[name]',w.template_name||'').replace('[date]',mxDate(w.sent_at)))+'</span>'
     :sg?'<span style="color:#3AB06A">'+mxE(mxTr('[name] · signed [date]','[name] · imzalandı [date]').replace('[name]',sg.template_name||'').replace('[date]',mxDate(sg.signed_at)))+'</span>'
-    :'<span style="color:rgba(245,241,235,.45)">'+mxE(mxTr('No consent sent yet','Henüz onam gönderilmedi'))+'</span>';
+    :'<span style="color:rgba(245,241,235,.45)">'+mxE(lk?mxTr('Signed consents are in their visits','İmzalı onamlar vizitlerinde'):mxTr('No consent sent yet','Henüz onam gönderilmedi'))+'</span>';
   box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:13px;color:#F5F1EB">'+mxE(mxTr('Consent','Onam'))+'</b><span style="font-size:12.5px">'+t+'</span></div>';
 }
 async function inLoad(pid){
@@ -3380,6 +3380,7 @@ function inRender(){
     '<span><button class="bimp2" onclick="inSend()">'+mxTr('Send via WhatsApp','WhatsApp ile gönder')+'</button> <button class="bimp2" onclick="inCopy()">'+mxTr('Copy link','Linki kopyala')+'</button></span></div>';
   if(done.length){
     var f=done[0],fl=f.flags||[];
+    if((new Date()-new Date(f.completed_at))/864e5>365)h+='<div style="margin-top:8px;font-size:13px;color:#D4963A;font-weight:600">'+mxTr('Time to update: the form is over 12 months old. Send a new one.','Güncelleme zamanı: form 12 aydan eski. Yenisini gönderin.')+'</div>';
     h+='<div style="margin-top:8px;font-size:13px;color:#3AB06A">✓ '+mxTr('Completed','Dolduruldu')+' · '+mxDate(f.completed_at)+' <a href="#" onclick="inView(\''+f.id+'\');return false" style="color:#D4B896;margin-left:8px">'+mxTr('View answers','Yanıtları gör')+'</a></div>';
     h+=fl.length?'<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">'+fl.map(function(k){return '<span style="background:rgba(192,97,74,.14);border:1px solid rgba(192,97,74,.45);color:#E08A73;border-radius:8px;padding:3px 8px;font-size:12px">⚠ '+mxE(inFlagText(f,k))+'</span>';}).join('')+'</div>'
       :'<div style="margin-top:6px;font-size:12px;color:#3AB06A">'+mxTr('No risk flags','Risk işareti yok')+'</div>';

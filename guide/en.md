@@ -278,6 +278,32 @@ The time for a check-up and repeat is calculated automatically by procedure (eac
 
 The statistics screen shows how many messages were sent and how many of those patients booked an appointment.
 
+## Messages (WhatsApp, Instagram, Facebook)
+
+Messages sent to the clinic's WhatsApp Business number, Instagram account and Facebook Page arrive in one inbox in Klirena. This section appears once the clinic's Meta account is connected. For now we set up the connection together with you: support@klirena.com.
+
+### Connection
+- Your clinic number stays in the WhatsApp Business app on your phone. The same number works on the phone and in Klirena; whichever you reply from, the conversation shows on both.
+- The last 6 months of chats can be imported when you connect.
+- Patients see the clinic's number, not your personal one.
+
+### Using it
+- In the app **Home → Messages**, in the panel the **MESSAGES** tab. The unread count is shown and new messages arrive without refreshing.
+- If the phone number matches a patient, the conversation is linked automatically; otherwise use **Link to patient**. From a linked conversation you open the patient card with one tap.
+- Messages you send from the WhatsApp Business app on your phone are marked **From phone**.
+- ✓ sent, ✓✓ delivered, gold ✓✓ read.
+
+### 24-hour rule
+You can reply freely within 24 hours after the person writes to you. After that, until they write again, only templates approved by Meta (e.g. appointment reminders) can be sent.
+
+### Costs
+- **Incoming messages are free.**
+- **Replies:** the first 1,000 replies per number per month are free. After that Meta charges per message by the recipient's country; for Türkiye about $0.0009, i.e. 1,000 replies ≈ $0.90.
+- **Utility messages** (appointment reminders, confirmations): Türkiye 1,000 messages ≈ $0.90.
+- **Marketing / announcement messages:** Türkiye 1,000 messages ≈ $11.
+- **Instagram and Facebook messages are free.**
+- Meta bills these charges to the clinic's Meta account. Rates depend on the recipient's country and Meta may update them every quarter (November 2026). Current rates for other countries: [Meta WhatsApp pricing](https://developers.facebook.com/docs/whatsapp/pricing).
+
 ## Fees, packages and accounting
 
 The fee is entered in the visit; collection, remaining balance, installments and package sessions are posted to the patient account and to accounting automatically. Only admin users see this section.

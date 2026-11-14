@@ -278,6 +278,31 @@ Il momento del controllo e della ripetizione viene calcolato automaticamente in 
 
 La schermata delle statistiche mostra quanti messaggi sono stati inviati e quanti pazienti hanno poi prenotato.
 
+## Messaggi (WhatsApp, Instagram, Facebook)
+
+I messaggi inviati al numero WhatsApp Business, all'account Instagram e alla Pagina Facebook della clinica arrivano in un'unica casella in Klirena. Questa sezione compare dopo il collegamento dell'account Meta della clinica. Per ora effettuiamo il collegamento insieme a te: support@klirena.com.
+
+### Collegamento
+- Il numero della clinica resta nell'app WhatsApp Business del telefono. Lo stesso numero funziona sul telefono e in Klirena; la conversazione compare su entrambi.
+- Al collegamento si possono importare le chat degli ultimi 6 mesi.
+- I pazienti vedono il numero della clinica, non il tuo numero personale.
+
+### Uso
+- Nell'app **Home → Messaggi**, nel pannello la scheda **MESSAGGI**. Il numero di non letti è visibile e i nuovi messaggi arrivano senza ricaricare.
+- Se il telefono corrisponde a un paziente, la conversazione viene collegata automaticamente; altrimenti **Collega al paziente**.
+- I messaggi inviati dall'app WhatsApp Business del telefono sono indicati **Dal telefono**.
+- ✓ inviato, ✓✓ consegnato, ✓✓ dorato letto.
+
+### Regola delle 24 ore
+Puoi rispondere liberamente entro 24 ore dall'ultimo messaggio della persona. Dopo, finché non riscrive, si possono inviare solo modelli approvati da Meta (es. promemoria appuntamento).
+
+### Costi
+- **I messaggi ricevuti sono gratuiti.**
+- **Risposte:** le prime 1.000 risposte per numero al mese sono gratuite. Poi Meta addebita per messaggio in base al paese del destinatario; esempio Turchia: circa 0,0009 $, cioè 1.000 risposte ≈ 0,90 $.
+- **Messaggi di servizio** (promemoria, conferme) e **marketing**: prezzi per paese (Turchia: 1.000 ≈ 0,90 $ e ≈ 11 $).
+- **I messaggi Instagram e Facebook sono gratuiti.**
+- Meta fattura questi importi all'account Meta della clinica; le tariffe possono cambiare ogni trimestre (novembre 2026). Tariffe attuali: [prezzi WhatsApp di Meta](https://developers.facebook.com/docs/whatsapp/pricing).
+
 ## Compensi, pacchetti e contabilità
 
 Il compenso si inserisce nella visita; incasso, saldo dovuto, rate e sedute del pacchetto vengono registrati da soli nel conto del paziente e nella contabilità. Questa sezione è visibile solo agli utenti admin.

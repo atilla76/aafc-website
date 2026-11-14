@@ -278,6 +278,31 @@ Le moment du contrôle et du renouvellement est calculé automatiquement selon l
 
 L'écran des statistiques indique combien de messages ont été envoyés et combien de patients ont ensuite pris rendez-vous.
 
+## Messages (WhatsApp, Instagram, Facebook)
+
+Les messages envoyés au numéro WhatsApp Business, au compte Instagram et à la Page Facebook de la clinique arrivent dans une seule boîte de réception Klirena. Cette section apparaît une fois le compte Meta de la clinique connecté. Pour l'instant, nous faisons la connexion avec vous : support@klirena.com.
+
+### Connexion
+- Le numéro de la clinique reste dans l'application WhatsApp Business du téléphone. Le même numéro fonctionne sur le téléphone et dans Klirena ; la conversation s'affiche des deux côtés.
+- Les discussions des 6 derniers mois peuvent être importées lors de la connexion.
+- Les patients voient le numéro de la clinique, pas votre numéro personnel.
+
+### Utilisation
+- Dans l'application **Accueil → Messages**, dans le panel l'onglet **MESSAGES**. Le nombre de non-lus s'affiche et les nouveaux messages arrivent sans rechargement.
+- Si le numéro correspond à un patient, la conversation est liée automatiquement ; sinon **Lier à un patient**.
+- Les messages envoyés depuis l'application WhatsApp Business du téléphone sont marqués **Depuis le téléphone**.
+- ✓ envoyé, ✓✓ distribué, ✓✓ doré lu.
+
+### Règle des 24 heures
+Vous pouvez répondre librement dans les 24 heures suivant le dernier message de la personne. Ensuite, jusqu'à ce qu'elle réécrive, seuls les modèles approuvés par Meta (ex. rappels de rendez-vous) peuvent être envoyés.
+
+### Coûts
+- **Les messages reçus sont gratuits.**
+- **Réponses :** les 1 000 premières réponses par numéro et par mois sont gratuites. Ensuite Meta facture par message selon le pays du destinataire ; exemple Turquie : environ 0,0009 $, soit 1 000 réponses ≈ 0,90 $.
+- **Messages utilitaires** (rappels, confirmations) et **marketing** : prix par pays (Turquie : 1 000 ≈ 0,90 $ et ≈ 11 $).
+- **Les messages Instagram et Facebook sont gratuits.**
+- Meta facture ces frais au compte Meta de la clinique ; les tarifs peuvent changer chaque trimestre (novembre 2026). Tarifs actuels : [tarifs WhatsApp de Meta](https://developers.facebook.com/docs/whatsapp/pricing).
+
 ## Honoraires, forfaits et comptabilité
 
 Les honoraires se saisissent dans la visite. L'encaissement, le solde dû, les échéances et les séances de forfait sont enregistrés automatiquement dans le compte du patient et dans la comptabilité. Seuls les utilisateurs administrateurs voient cette section.

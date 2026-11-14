@@ -280,6 +280,32 @@ Panelde AJANDA sekmesi günlük ve haftalık görünümü geniş ekranda verir; 
 
 İstatistik ekranı kaç mesaj gönderildiğini ve bunlardan kaç hastanın randevu aldığını gösterir.
 
+## Mesajlar (WhatsApp, Instagram, Facebook)
+
+Kliniğin WhatsApp Business numarasına, Instagram hesabına ve Facebook sayfasına gelen mesajlar Klirena'da tek gelen kutusunda toplanır. Bu bölüm, kliniğin Meta hesabı bağlandıktan sonra görünür. Bağlantıyı şimdilik destek ekibiyle birlikte yapıyoruz: support@klirena.com.
+
+### Bağlantı
+- Klinik numaranız telefondaki WhatsApp Business uygulamasında kalır. Aynı numara hem telefonda hem Klirena'da çalışır; hangisinden cevap verirseniz verin yazışma iki tarafta da görünür.
+- Bağlarken son 6 ayın yazışmaları aktarılabilir.
+- Hastalar kişisel numaranızı değil, kliniğin numarasını görür.
+
+### Kullanım
+- Uygulamada **Ana sayfa → Mesajlar**, panelde **MESAJLAR** sekmesi. Okunmamış mesaj sayısı görünür, yeni mesajlar sayfa yenilenmeden gelir.
+- Telefon numarası hasta kaydıyla eşleşirse yazışma hastaya otomatik bağlanır; eşleşmezse **Hastaya bağla**. Bağlı yazışmadan hasta kartına tek dokunuşla geçilir.
+- Telefondaki WhatsApp Business'tan gönderdiğiniz mesajlar **Telefondan** etiketiyle görünür.
+- ✓ gönderildi, ✓✓ iletildi, altın renkli ✓✓ okundu.
+
+### 24 saat kuralı
+Kişi size yazdıktan sonraki 24 saat içinde serbest cevap verebilirsiniz. Süre dolunca, kişi yeniden yazana kadar yalnızca Meta'nın onayladığı şablon mesajlar (ör. randevu hatırlatma) gönderilebilir.
+
+### Ücretler
+- **Gelen mesajlar ücretsizdir.**
+- **Cevaplar:** Her numara için ayda ilk 1.000 cevap ücretsizdir. Sonrası Türkiye'deki numaralar için mesaj başına yaklaşık 0,0009 $; yani 1.000 cevap ≈ 0,90 $.
+- **Bilgilendirme mesajları** (randevu hatırlatma, onay): 1.000 mesaj ≈ 0,90 $.
+- **Kampanya / duyuru mesajları:** 1.000 mesaj ≈ 11 $.
+- **Instagram ve Facebook mesajları ücretsizdir.**
+- Ücretleri Meta, kliniğin Meta hesabına faturalar. Fiyatlar alıcının ülkesine göre değişir ve Meta tarafından üç ayda bir güncellenebilir (Kasım 2026, Türkiye fiyatları).
+
 ## Ücret, paket ve muhasebe
 
 Ücret vizitte girilir; tahsilat, kalan borç, taksit ve paket seansı hasta hesabına ve muhasebeye kendiliğinden işlenir. Bu bölümü yalnızca yönetici kullanıcılar görür.

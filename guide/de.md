@@ -278,6 +278,31 @@ Je nach Behandlung werden Kontroll- und Wiederholungszeitpunkt automatisch berec
 
 Der Statistikbildschirm zeigt, wie viele Nachrichten gesendet wurden und wie viele Patienten daraufhin einen Termin gebucht haben.
 
+## Nachrichten (WhatsApp, Instagram, Facebook)
+
+Nachrichten an die WhatsApp-Business-Nummer, das Instagram-Konto und die Facebook-Seite der Praxis landen in Klirena in einem gemeinsamen Posteingang. Dieser Bereich erscheint, sobald das Meta-Konto der Praxis verbunden ist. Die Verbindung richten wir derzeit gemeinsam mit Ihnen ein: support@klirena.com.
+
+### Verbindung
+- Ihre Praxisnummer bleibt in der WhatsApp-Business-App auf Ihrem Telefon. Dieselbe Nummer funktioniert auf dem Telefon und in Klirena; der Verlauf erscheint auf beiden Seiten.
+- Beim Verbinden können die Chats der letzten 6 Monate übernommen werden.
+- Patienten sehen die Praxisnummer, nicht Ihre private Nummer.
+
+### Nutzung
+- In der App **Start → Nachrichten**, im Panel der Reiter **NACHRICHTEN**. Ungelesene werden gezählt, neue Nachrichten erscheinen ohne Neuladen.
+- Stimmt die Telefonnummer mit einem Patienten überein, wird der Verlauf automatisch verknüpft; sonst **Mit Patient verknüpfen**.
+- Nachrichten aus der WhatsApp-Business-App auf dem Telefon sind mit **Vom Telefon** markiert.
+- ✓ gesendet, ✓✓ zugestellt, goldenes ✓✓ gelesen.
+
+### 24-Stunden-Regel
+Innerhalb von 24 Stunden nach der letzten Nachricht der Person können Sie frei antworten. Danach sind bis zur nächsten Nachricht nur von Meta genehmigte Vorlagen (z. B. Terminerinnerungen) möglich.
+
+### Kosten
+- **Eingehende Nachrichten sind kostenlos.**
+- **Antworten:** Die ersten 1.000 Antworten pro Nummer und Monat sind kostenlos. Danach berechnet Meta pro Nachricht je nach Land des Empfängers; Beispiel Türkei: ca. 0,0009 $, also 1.000 Antworten ≈ 0,90 $.
+- **Service-Nachrichten** (Terminerinnerung, Bestätigung) und **Marketing-Nachrichten** kosten je nach Land unterschiedlich (Türkei: 1.000 ≈ 0,90 $ bzw. ≈ 11 $).
+- **Instagram- und Facebook-Nachrichten sind kostenlos.**
+- Meta stellt die Gebühren dem Meta-Konto der Praxis in Rechnung; die Preise können sich vierteljährlich ändern (Stand November 2026). Aktuelle Preise: [Meta WhatsApp-Preise](https://developers.facebook.com/docs/whatsapp/pricing).
+
 ## Honorar, Pakete und Buchhaltung
 
 Das Honorar wird im Besuch eingegeben. Zahlung, offener Betrag, Raten und Paketsitzungen werden automatisch im Patientenkonto und in der Buchhaltung verbucht. Diesen Bereich sehen nur Admin-Benutzer.

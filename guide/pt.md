@@ -278,6 +278,31 @@ O momento do controle e da repetição é calculado automaticamente conforme o p
 
 A tela de estatísticas mostra quantas mensagens foram enviadas e quantos desses pacientes marcaram horário.
 
+## Mensagens (WhatsApp, Instagram, Facebook)
+
+As mensagens enviadas para o número WhatsApp Business, a conta de Instagram e a Página de Facebook da clínica chegam a uma única caixa de entrada no Klirena. Esta secção aparece depois de ligar a conta Meta da clínica. Por agora fazemos a ligação consigo: support@klirena.com.
+
+### Ligação
+- O número da clínica continua na app WhatsApp Business do telemóvel. O mesmo número funciona no telemóvel e no Klirena; a conversa aparece nos dois.
+- Ao ligar, podem ser importadas as conversas dos últimos 6 meses.
+- Os pacientes veem o número da clínica, não o seu número pessoal.
+
+### Utilização
+- Na app **Início → Mensagens**, no painel o separador **MENSAGENS**. O número de não lidas é mostrado e as novas mensagens chegam sem recarregar.
+- Se o telefone corresponder a um paciente, a conversa é ligada automaticamente; caso contrário, **Ligar a paciente**.
+- As mensagens enviadas a partir da app WhatsApp Business do telemóvel aparecem como **Do telemóvel**.
+- ✓ enviada, ✓✓ entregue, ✓✓ dourado lida.
+
+### Regra das 24 horas
+Pode responder livremente nas 24 horas seguintes à última mensagem da pessoa. Depois, até ela voltar a escrever, só podem ser enviados modelos aprovados pela Meta (ex.: lembretes de consulta).
+
+### Custos
+- **As mensagens recebidas são gratuitas.**
+- **Respostas:** as primeiras 1.000 respostas por número e por mês são gratuitas. Depois a Meta cobra por mensagem conforme o país do destinatário; exemplo Turquia: cerca de 0,0009 $, ou seja, 1.000 respostas ≈ 0,90 $.
+- **Mensagens de utilidade** (lembretes, confirmações) e **de marketing** têm preços por país (Turquia: 1.000 ≈ 0,90 $ e ≈ 11 $).
+- **As mensagens de Instagram e Facebook são gratuitas.**
+- A Meta fatura estes valores à conta Meta da clínica; os preços podem mudar a cada trimestre (novembro de 2026). Preços atuais: [preços do WhatsApp da Meta](https://developers.facebook.com/docs/whatsapp/pricing).
+
 ## Valores, pacotes e contabilidade
 
 O valor é lançado na visita; recebimento, saldo devedor, parcelas e sessões de pacote são registrados por conta própria na conta do paciente e na contabilidade. Esta seção só é visível para usuários admin.

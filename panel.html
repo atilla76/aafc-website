@@ -382,6 +382,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
     <button class="tab" data-tab="booking" onclick="switchTab('booking')">ONLINE BOOKING</button>
     <button class="tab" data-tab="recall" onclick="switchTab('recall')">RECALLS</button>
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">STOCK</button>
+    <button class="tab" data-tab="msg" id="tabMsg" style="display:none" onclick="switchTab('msg')">MESSAGES</button>
     <button class="tab" data-tab="trk" id="tabTrk" style="display:none" onclick="switchTab('trk')">ÜTS / İTS</button>
     <button class="tab" data-tab="finance" onclick="switchTab('finance')">ACCOUNTING</button>
     <button class="tab" data-tab="settings" onclick="switchTab('settings')">SETTINGS</button>
@@ -812,6 +813,18 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
     </div>
   </div>
   <!-- ÜTS / İTS TAB (Turkish clinics, admin) -->
+  <div class="tcontent" id="tab-msg" style="flex-direction:column">
+    <div class="tab-content" style="display:flex;flex-direction:column;height:100%">
+      <div class="tab-head"><div><h2 id="msgH">Messages</h2><div class="sub" id="msgSub"></div></div></div>
+      <div style="display:flex;gap:14px;flex:1;min-height:0">
+        <div style="width:330px;flex-shrink:0;display:flex;flex-direction:column;background:#1C1929;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
+          <div style="display:flex;gap:6px;padding:10px" id="msgFilt"></div>
+          <div id="msgList" style="flex:1;overflow:auto"></div>
+        </div>
+        <div id="msgChat" style="flex:1;display:flex;flex-direction:column;background:#1C1929;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;min-width:0"></div>
+      </div>
+    </div>
+  </div>
   <div class="tcontent" id="tab-trk" style="flex-direction:column">
     <div class="tab-content">
       <div class="tab-head">
@@ -1063,7 +1076,7 @@ async function doLogin(){
 
 async function doLogout(){
   await db.auth.signOut();
-  cid=null;pts=[];signedCache={};
+  cid=null;pts=[];signedCache={};if(msgSub){db.removeChannel(msgSub);msgSub=null;}
   location.reload(); // start clean: no data of the previous account stays in memory
 }
 
@@ -1077,6 +1090,7 @@ async function showApp(user){
   db.rpc('is_edeca_staff').then(function(r){['tabRel','tabOnb'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=r.data===true?'':'none';});});
   var cr=await db.from('clinic').select('*').eq('id',cid).single();
   trkLoad();
+  msgInit();
   clinic=cr.data||{};
   try{db.rpc('set_my_language',{p_lang:LANG});}catch(e){}
   await loadPts();
@@ -1100,6 +1114,7 @@ function switchTab(name){
   if(name==='booking')bkLoad();
   if(name==='stock')stLoad();
   if(name==='trk')trkLoad();
+  if(name==='msg')msgLoad();
   if(name==='rel')relLoad();
   if(name==='onb')onbLoad();
   if(name==='finance')fnLoad();
@@ -4850,6 +4865,7 @@ var REL_ITEMS=[
  ['update','Açılış ve güncelleme ekranı'],
  ['consult','Muayene: yeni vizit sekmesi, reçete PDF, tahlil, ilaç/aşı + alerji uyarısı, onam, çalışma şekli','1.2.8'],
  ['mkapp','Muhasebe → Makbuz kes (e-SMM): hasta / kişi / işletme, çok satır, PDF','1.2.9'],
+ ['inbox','Ana sayfa → Mesajlar: liste, okunmamış sayısı, yazışma açma, hastaya bağlama (Meta bağlantısı varsa gönderme)','1.2.9'],
  ['trkscreen','Stok → ÜTS / İTS ekranı: Hatalı / Bekleyen / Gönderilen, Ne yapmalı, Tekrar dene, detay','1.2.9']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
@@ -4917,6 +4933,104 @@ function relNew(){
     if(r.error){alert(r.error.message);return;}
     mxClose();relOpen=r.data.id;relLoad();}}]);
 }
+// ============ MESSAGES (WhatsApp / Instagram / Messenger inbox) ============
+var msgThreads=[],msgKinds={},msgNames={},msgSel=null,msgUnreadOnly=false,msgSub=null,msgOn=false;
+var MSG_K={wa:['#3AB06A','WhatsApp'],ig:['#C06AB0','Instagram'],fb:['#4A7BD0','Facebook']};
+async function msgInit(){
+  var r=await db.from('msg_channels').select('id,kind,status').neq('status','disconnected');
+  var d=r.data||[];msgOn=d.length>0;msgKinds={};d.forEach(function(c){msgKinds[c.id]=c.kind;});
+  var b=document.getElementById('tabMsg');if(b)b.style.display=msgOn?'':'none';
+  if(!msgOn)return;
+  await msgFetch();
+  if(!msgSub){
+    msgSub=db.channel('msg-'+cid)
+      .on('postgres_changes',{event:'*',schema:'public',table:'msg_threads',filter:'clinic_id=eq.'+cid},function(){msgFetch();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'msg_messages',filter:'clinic_id=eq.'+cid},function(p){var m=p.new||{};if(msgSel&&m.thread_id===msgSel)msgChat(msgSel,true);})
+      .subscribe();
+  }
+}
+async function msgFetch(){
+  var r=await db.from('msg_threads').select('*').eq('clinic_id',cid).eq('archived',false).not('last_at','is',null).order('last_at',{ascending:false}).limit(300);
+  msgThreads=r.data||[];
+  var ids=msgThreads.map(function(t){return t.patient_id;}).filter(function(x){return x&&!msgNames[x];});
+  if(ids.length){var p=await db.from('patients').select('id,name,surname').in('id',ids);(p.data||[]).forEach(function(x){msgNames[x.id]=((x.name||'')+' '+(x.surname||'')).trim();});}
+  var n=msgThreads.reduce(function(a,t){return a+(t.unread||0);},0);
+  var b=document.getElementById('tabMsg');if(b)b.innerHTML=mxTr('MESSAGES','MESAJLAR')+(n?' <span style="background:#B89A6A;color:#1C1929;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px">'+n+'</span>':'');
+  if(document.getElementById('tab-msg').classList.contains('on'))msgRender();
+}
+function msgLoad(){
+  document.getElementById('msgH').textContent=mxTr('Messages','Mesajlar');
+  document.getElementById('msgSub').textContent=mxTr('WhatsApp, Instagram and Facebook messages in one place.','WhatsApp, Instagram ve Facebook mesajları tek yerde.');
+  if(!msgOn){document.getElementById('msgList').innerHTML='<div style="padding:16px;font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('WhatsApp, Instagram or Facebook is not connected yet.','WhatsApp, Instagram veya Facebook henüz bağlanmadı.'))+'</div>';return;}
+  msgRender();if(msgSel)msgChat(msgSel);else msgEmptyChat();
+}
+function msgTitle(t){return (t.patient_id&&msgNames[t.patient_id])||t.peer_name||t.peer_phone||t.peer_id||'';}
+function msgWhen(iso){if(!iso)return '';var d=new Date(iso),n=new Date();if(d.toDateString()===n.toDateString())return d.toLocaleTimeString(LANG_LOC[LANG]||'en-US',{hour:'2-digit',minute:'2-digit'});return mxDate(fmtDate(d));}
+function msgRender(){
+  var un=msgThreads.filter(function(t){return t.unread>0;}).length;
+  var chip=function(on,t,fn){return '<button class="bimp2" style="padding:5px 12px;font-size:12.5px;'+(on?'background:#B89A6A;color:#1C1929;border-color:transparent;font-weight:600':'')+'" onclick="'+fn+'">'+mxE(t)+'</button>';};
+  document.getElementById('msgFilt').innerHTML=chip(!msgUnreadOnly,mxTr('All','Tümü'),'msgUnreadOnly=false;msgRender()')+chip(msgUnreadOnly,mxTr('Unread','Okunmamış')+(un?' · '+un:''),'msgUnreadOnly=true;msgRender()');
+  var rows=msgUnreadOnly?msgThreads.filter(function(t){return t.unread>0;}):msgThreads;
+  var el=document.getElementById('msgList');
+  if(!rows.length){el.innerHTML='<div style="padding:16px;font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('No messages yet.','Henüz mesaj yok.'))+'</div>';return;}
+  el.innerHTML=rows.map(function(t){
+    var k=MSG_K[msgKinds[t.channel_id]]||['#B89A6A',''],u=t.unread>0,sel=t.id===msgSel;
+    return '<div onclick="msgChat(\''+t.id+'\')" style="cursor:pointer;padding:11px 12px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:10px;align-items:center;'+(sel?'background:rgba(184,154,106,.12)':'')+'">'+
+      '<span title="'+k[1]+'" style="width:10px;height:10px;border-radius:50%;background:'+k[0]+';flex-shrink:0"></span>'+
+      '<div style="flex:1;min-width:0"><div style="display:flex;gap:6px"><b style="flex:1;font-size:14px;'+(u?'':'font-weight:500;')+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+mxE(msgTitle(t))+'</b><span style="font-size:11.5px;color:'+(u?'#B89A6A':'rgba(245,241,235,.45)')+'">'+msgWhen(t.last_at)+'</span></div>'+
+      '<div style="display:flex;gap:6px;align-items:center"><span style="flex:1;font-size:12.5px;color:rgba(245,241,235,'+(u?'.9':'.55')+');white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.last_dir==='out'?'↩ ':'')+mxE(t.last_text||'')+'</span>'+(u?'<span style="background:#B89A6A;color:#1C1929;border-radius:9px;padding:0 6px;font-size:11px;font-weight:700">'+t.unread+'</span>':'')+'</div></div></div>';
+  }).join('');
+}
+function msgEmptyChat(){document.getElementById('msgChat').innerHTML='<div style="margin:auto;font-size:13px;color:rgba(245,241,235,.45)">'+mxE(mxTr('Select a conversation.','Bir yazışma seçin.'))+'</div>';}
+async function msgChat(id,keep){
+  msgSel=id;var t=msgThreads.find(function(x){return x.id===id;});if(!t)return;
+  if(t.unread>0&&!keep){t.unread=0;db.from('msg_threads').update({unread:0}).eq('id',id).then(function(){});}
+  msgRender();
+  var r=await db.from('msg_messages').select('*').eq('thread_id',id).order('created_at',{ascending:true}).limit(500);
+  if(msgSel!==id)return;
+  var open=t.window_until&&new Date(t.window_until)>new Date(),k=MSG_K[msgKinds[t.channel_id]]||['#B89A6A',''];
+  var tick={queued:'🕓',sent:'✓',delivered:'✓✓',read:'<span style="color:#B89A6A">✓✓</span>',failed:'<span style="color:#E05555">!</span>'};
+  var msgs=(r.data||[]).map(function(m){
+    var out=m.direction==='out',fail=m.status==='failed';
+    return '<div style="display:flex;justify-content:'+(out?'flex-end':'flex-start')+';margin:3px 0"><div style="max-width:72%;padding:8px 11px 5px;border-radius:14px;'+(out?'border-bottom-right-radius:4px;background:rgba(184,154,106,.16)':'border-bottom-left-radius:4px;background:#12101E')+';border:1px solid '+(fail?'rgba(224,85,85,.5)':'rgba(255,255,255,.07)')+'">'+
+      (m.type!=='text'?'<div style="font-size:12px;color:rgba(245,241,235,.6);margin-bottom:3px">📎 '+mxE(mxTr('Attachment','Ek'))+' · '+mxE(m.type)+'</div>':'')+
+      (m.body?'<div style="font-size:14px;white-space:pre-wrap;word-wrap:break-word">'+mxE(m.body)+'</div>':'')+
+      '<div style="font-size:10.5px;color:rgba(245,241,235,.45);text-align:right;margin-top:2px">'+(out&&!m.sent_by?mxE(mxTr('From phone','Telefondan'))+' · ':'')+(fail?'<span style="color:#E05555">'+mxE(mxTr('Not sent','Gönderilemedi'))+'</span> · ':'')+new Date(m.created_at).toLocaleString(LANG_LOC[LANG]||'en-US',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+(out&&tick[m.status]?' '+tick[m.status]:'')+'</div></div></div>';
+  }).join('');
+  var pt=t.patient_id?'<a href="#" style="color:#B89A6A;font-size:13px" onclick="goPatient(\''+t.patient_id+'\');return false">'+mxE(mxTr('Patient card','Hasta kartı'))+'</a>':'<a href="#" style="color:rgba(245,241,235,.6);font-size:13px" onclick="msgLink(\''+t.id+'\');return false">'+mxE(mxTr('Link to patient','Hastaya bağla'))+'</a>';
+  var draft=(document.getElementById('msgIn')||{}).value||'';
+  document.getElementById('msgChat').innerHTML=
+    '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:'+k[0]+'"></span><b style="flex:1">'+mxE(msgTitle(t))+'</b><span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(k[1])+(t.peer_phone?' · '+mxE(t.peer_phone):'')+'</span>'+pt+'</div>'+
+    '<div id="msgScroll" style="flex:1;overflow:auto;padding:12px 16px">'+msgs+'</div>'+
+    (open?'':'<div style="margin:0 16px 8px;padding:9px 12px;border-radius:10px;background:rgba(212,150,58,.12);border:1px solid rgba(212,150,58,.35);color:#E0B86A;font-size:12.5px">'+mxE(mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'))+'</div>')+
+    '<div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.07)"><textarea id="msgIn" class="mi" rows="2" style="flex:1;resize:none;margin:0" '+(open?'':'disabled ')+'placeholder="'+mxE(mxTr('Write a message…','Mesaj yaz…'))+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();msgSend();}"></textarea><button class="bsave" id="msgBtn" '+(open?'':'disabled ')+'onclick="msgSend()">'+mxE(mxTr('Send','Gönder'))+'</button></div>';
+  var inp=document.getElementById('msgIn');if(inp&&draft)inp.value=draft;
+  var sc=document.getElementById('msgScroll');sc.scrollTop=sc.scrollHeight;
+}
+async function msgSend(){
+  var inp=document.getElementById('msgIn'),btn=document.getElementById('msgBtn'),txt=(inp.value||'').trim();if(!txt||!msgSel)return;
+  btn.disabled=true;
+  var r=await db.functions.invoke('msg-send',{body:{thread_id:msgSel,text:txt}}),d=r.data||{};
+  btn.disabled=false;
+  if(d.ok){inp.value='';msgChat(msgSel,true);return;}
+  var e=d.error;if(!e&&r.error&&r.error.context){try{e=(await r.error.context.json()).error;}catch(x){}}
+  alert(e==='window_closed'?mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'):mxTr('Not sent','Gönderilemedi'));
+}
+function msgLink(id){
+  var b='<input class="mi" id="msgPq" placeholder="'+mxE(mxTr('Search patient','Hasta ara'))+'" oninput="msgPSearch()"><div id="msgPr" style="max-height:300px;overflow:auto;margin-top:6px"></div>';
+  mxOpen(mxTr('Link to patient','Hastaya bağla'),b,[{label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose}]);
+  window._msgLinkId=id;setTimeout(function(){var q=document.getElementById('msgPq');if(q)q.focus();},50);
+}
+var msgPSeq=0;
+async function msgPSearch(){
+  var q=(document.getElementById('msgPq').value||'').trim(),el=document.getElementById('msgPr'),seq=++msgPSeq;
+  if(q.length<2){el.innerHTML='';return;}
+  var r=await db.rpc('get_patient_list',{p_clinic_id:cid,p_filter:'recent',p_query:q,p_limit:30});
+  if(seq!==msgPSeq)return;
+  var list=Array.isArray(r.data)?r.data:((r.data&&r.data.patients)||[]);
+  el.innerHTML=list.map(function(p){return '<div style="padding:8px 10px;cursor:pointer;border-top:1px solid rgba(255,255,255,.05)" onclick="msgLinkDo(\''+p.id+'\')"><b>'+mxE((p.name||'')+' '+(p.surname||''))+'</b> <span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(p.phone||'')+'</span></div>';}).join('');
+}
+async function msgLinkDo(pid){await db.from('msg_threads').update({patient_id:pid}).eq('id',window._msgLinkId);mxClose();await msgFetch();msgChat(window._msgLinkId,true);}
 async function trkLoad(){
   if(fnAdmin===null){var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}
   var b=document.getElementById('tabTrk'),box=document.getElementById('trkBox');if(!b||!box)return;
@@ -5549,7 +5663,7 @@ var I18N_TR={'LAB TESTS':'TAHLİLLER','Results':'Sonuçlar','Add file':'Dosya ek
 'All day':'Tüm gün','Reason (e.g. Surgery)':'Açıklama (ör. Ameliyat)','Block time':'Saat kapat','No blocked times.':'Kapalı saat yok.','End time must be after start time.':'Bitiş saati başlangıçtan sonra olmalı.',
 'Calendar subscription':'Takvim aboneliği','Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).':'Randevular ve kapalı saatler iPhone, Google veya Outlook takviminizde (tek yönlü, 15 dk – birkaç saatte bir yenilenir).',
 'Enable calendar subscription':'Takvim aboneliğini aç','Show patient names':'Hasta adlarını göster','Add to Google Calendar':'Google Takvim\'e ekle','Add to iPhone / Mac calendar':'iPhone / Mac takvimine ekle','Regenerate link':'Linki yenile',
-'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','MESSAGES':'MESAJLAR','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

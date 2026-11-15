@@ -869,6 +869,23 @@ function showError(msg) {
   showState('error');
 }
 
+// Server says the consent can no longer be signed (revoked / expired) or the code must be entered again.
+// Returns true when handled; the patient gets a clear message instead of "could not save".
+function handleClosedConsent(err) {
+  if (err === 'revoked') { showError(t.revoked); return true; }
+  if (err === 'expired') { showError(t.expired); return true; }
+  if (err === 'already_signed') { showError(t.alreadySigned); return true; }
+  if (err === 'otp_required') {
+    const input = document.getElementById('otp-input');
+    input.value = '';
+    showState('otp');
+    showAlert('otp-alert', t.otpRequired);
+    input.focus();
+    return true;
+  }
+  return false;
+}
+
 function showAlert(elemId, message, type = 'error') {
   const el = document.getElementById(elemId);
   el.textContent = message;
@@ -987,6 +1004,7 @@ async function verifyOtp() {
       showConsentContent();
     } else {
       let msg = t.otpInvalid;
+      if (data.error === 'revoked') { showError(t.revoked); return; }
       if (data.error === 'expired') msg = t.otpExpired;
       else if (data.error === 'too_many_attempts') msg = t.otpTooMany;
       else if (data.error === 'already_signed') msg = t.alreadySigned;
@@ -1160,6 +1178,9 @@ async function submitSignature() {
       });
       const d0 = await r0.json().catch(() => ({}));
       if (!d0.success) {
+        btn.disabled = false;
+        btn.textContent = t.confirm;
+        if (handleClosedConsent(d0.error)) return;
         showAlert('sign-alert', d0.error === 'national_id_required' ? t.nidInvalid : t.saveFailed);
         btn.disabled = false;
         btn.textContent = t.confirm;
@@ -1186,14 +1207,12 @@ async function submitSignature() {
       document.getElementById('hash-display').textContent = data.document_hash || '-';
       showState('success');
     } else {
-      let msg = t.saveFailed;
-      if (data.error === 'already_signed') msg = 'Bu onam zaten imzalanmış.';
-      else if (data.error === 'otp_required') msg = t.otpReq;
-      else if (data.error === 'national_id_required') msg = t.nidInvalid;
-      
-      showAlert('sign-alert', msg);
       btn.disabled = false;
       btn.textContent = t.confirm;
+      if (handleClosedConsent(data.error)) return;
+      let msg = t.saveFailed;
+      if (data.error === 'national_id_required') msg = t.nidInvalid;
+      showAlert('sign-alert', msg);
     }
   } catch (err) {
     console.error(err);

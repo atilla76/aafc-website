@@ -5074,6 +5074,7 @@ function msgTplVars(){
 async function msgTplCreate(){
   var name=document.getElementById('tplName').value.trim(),body=document.getElementById('tplBody').value.trim();
   if(!name||!body){alert(mxTr('Name and text are required.','Ad ve metin gerekli.'));return;}
+  if(/^\W*\{\{\d+\}\}/.test(body)||/\{\{\d+\}\}\W*$/.test(body)){alert(mxTr('The text cannot start or end with a variable. Add a sentence after the last {{n}}, e.g. "See you soon!"','Metin bir değişkenle başlayamaz veya bitemez. Son {{n}}\'den sonra bir cümle ekleyin, ör. "Görüşmek üzere!"'));return;}
   var ex=[].map.call(document.querySelectorAll('#tplEx input'),function(i){return i.value.trim();});
   if(ex.some(function(v){return !v;})){alert(mxTr('Enter an example for each variable.','Her değişken için örnek değer girin.'));return;}
   var r=await db.functions.invoke('msg-templates',{body:{action:'create',name:name,body:body,category:document.getElementById('tplCat').value,language:document.getElementById('tplLang').value,examples:ex}}),d=r.data||{};

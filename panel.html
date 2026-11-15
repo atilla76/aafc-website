@@ -815,7 +815,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
   <!-- ÜTS / İTS TAB (Turkish clinics, admin) -->
   <div class="tcontent" id="tab-msg" style="flex-direction:column">
     <div class="tab-content" style="display:flex;flex-direction:column;height:100%">
-      <div class="tab-head"><div><h2 id="msgH">Messages</h2><div class="sub" id="msgSub"></div></div></div>
+      <div class="tab-head"><div><h2 id="msgH">Messages</h2><div class="sub" id="msgSub"></div></div><div id="msgConnBtn"></div></div>
       <div style="display:flex;gap:14px;flex:1;min-height:0">
         <div style="width:330px;flex-shrink:0;display:flex;flex-direction:column;background:#1C1929;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
           <div style="display:flex;gap:6px;padding:10px" id="msgFilt"></div>
@@ -4936,10 +4936,12 @@ function relNew(){
 // ============ MESSAGES (WhatsApp / Instagram / Messenger inbox) ============
 var msgThreads=[],msgKinds={},msgNames={},msgSel=null,msgUnreadOnly=false,msgSub=null,msgOn=false;
 var MSG_K={wa:['#3AB06A','WhatsApp'],ig:['#C06AB0','Instagram'],fb:['#4A7BD0','Facebook']};
+var msgChans=[];
 async function msgInit(){
-  var r=await db.from('msg_channels').select('id,kind,status').neq('status','disconnected');
-  var d=r.data||[];msgOn=d.length>0;msgKinds={};d.forEach(function(c){msgKinds[c.id]=c.kind;});
-  var b=document.getElementById('tabMsg');if(b)b.style.display=msgOn?'':'none';
+  var r=await db.from('msg_channels').select('id,kind,status,display,last_error').neq('status','disconnected');
+  var d=r.data||[];msgChans=d;msgOn=d.length>0;msgKinds={};d.forEach(function(c){msgKinds[c.id]=c.kind;});
+  if(fnAdmin===null){try{var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}catch(e){fnAdmin=false;}}
+  var b=document.getElementById('tabMsg');if(b)b.style.display=(msgOn||fnAdmin)?'':'none';
   if(!msgOn)return;
   await msgFetch();
   if(!msgSub){
@@ -4959,9 +4961,10 @@ async function msgFetch(){
   if(document.getElementById('tab-msg').classList.contains('on'))msgRender();
 }
 function msgLoad(){
+  document.getElementById('msgConnBtn').innerHTML=fnAdmin?'<button class="bimp2" onclick="msgConnOpen()">⚙ '+mxE(mxTr('Connections','Bağlantılar'))+'</button>':'';
   document.getElementById('msgH').textContent=mxTr('Messages','Mesajlar');
   document.getElementById('msgSub').textContent=mxTr('WhatsApp, Instagram and Facebook messages in one place.','WhatsApp, Instagram ve Facebook mesajları tek yerde.');
-  if(!msgOn){document.getElementById('msgList').innerHTML='<div style="padding:16px;font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('WhatsApp, Instagram or Facebook is not connected yet.','WhatsApp, Instagram veya Facebook henüz bağlanmadı.'))+'</div>';return;}
+  if(!msgOn){document.getElementById('msgList').innerHTML='<div style="padding:16px;font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('WhatsApp, Instagram or Facebook is not connected yet.','WhatsApp, Instagram veya Facebook henüz bağlanmadı.'))+(fnAdmin?'<div style="margin-top:12px"><button class="bsave" onclick="msgConnectWA()">'+mxE(mxTr('Connect WhatsApp','WhatsApp\'ı bağla'))+'</button></div>':'')+'</div>';msgEmptyChat();return;}
   msgRender();if(msgSel)msgChat(msgSel);else msgEmptyChat();
 }
 function msgTitle(t){return (t.patient_id&&msgNames[t.patient_id])||t.peer_name||t.peer_phone||t.peer_id||'';}
@@ -5029,6 +5032,61 @@ async function msgPSearch(){
   if(seq!==msgPSeq)return;
   var list=Array.isArray(r.data)?r.data:((r.data&&r.data.patients)||[]);
   el.innerHTML=list.map(function(p){return '<div style="padding:8px 10px;cursor:pointer;border-top:1px solid rgba(255,255,255,.05)" onclick="msgLinkDo(\''+p.id+'\')"><b>'+mxE((p.name||'')+' '+(p.surname||''))+'</b> <span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(p.phone||'')+'</span></div>';}).join('');
+}
+// ---- channel connections (admin): WhatsApp Embedded Signup incl. coexistence ----
+function msgConnOpen(){
+  var rows=msgChans.map(function(c){var k=MSG_K[c.kind]||['#B89A6A',c.kind];
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06)"><span style="width:10px;height:10px;border-radius:50%;background:'+k[0]+'"></span><div style="flex:1"><b>'+mxE(k[1])+'</b><div style="font-size:12px;color:rgba(245,241,235,.55)">'+mxE(c.display||'')+(c.status==='error'?' · <span style="color:#E05555">'+mxE(mxTr('Error','Hata'))+'</span>':'')+'</div></div><button class="bcancel" onclick="msgDisconnect(\''+c.id+'\')">'+mxE(mxTr('Disconnect','Bağlantıyı kes'))+'</button></div>';}).join('');
+  var b=(rows||'<div style="font-size:13px;color:rgba(245,241,235,.55);padding:6px 0">'+mxE(mxTr('No channels connected.','Bağlı kanal yok.'))+'</div>')+
+    '<div style="margin-top:14px;font-size:12.5px;color:rgba(245,241,235,.6);line-height:1.5">'+mxE(mxTr('Your number keeps working in the WhatsApp Business app on your phone. Keep the app open on the phone while connecting; the last 6 months of chats are imported.','Numaranız telefondaki WhatsApp Business uygulamasında çalışmaya devam eder. Bağlarken telefonda uygulamayı açık tutun; son 6 ayın yazışmaları aktarılır.'))+'</div>';
+  mxOpen(mxTr('Connections','Bağlantılar'),b,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose},{label:mxTr('Connect WhatsApp','WhatsApp\'ı bağla'),cls:'bsave',fn:function(){mxClose();msgConnectWA();}}]);
+}
+async function msgDisconnect(id){
+  if(!confirm(mxTr('Disconnect this channel? Messages stay in the archive.','Bu kanalın bağlantısı kesilsin mi? Mesajlar arşivde kalır.')))return;
+  await db.functions.invoke('msg-connect',{body:{action:'disconnect',channel_id:id}});
+  mxClose();await msgInit();msgLoad();
+}
+var msgES=null;
+function msgLoadFB(appId,ver){
+  return new Promise(function(res,rej){
+    if(window.FB){res();return;}
+    window.fbAsyncInit=function(){FB.init({appId:appId,autoLogAppEvents:true,xfbml:false,version:ver});res();};
+    var sc=document.createElement('script');sc.src='https://connect.facebook.net/en_US/sdk.js';sc.async=true;sc.defer=true;sc.crossOrigin='anonymous';sc.onerror=rej;document.body.appendChild(sc);
+  });
+}
+window.addEventListener('message',function(ev){
+  if(!/(^|\.)facebook\.com$/.test(new URL(ev.origin).hostname))return;
+  try{var d=typeof ev.data==='string'?JSON.parse(ev.data):ev.data;
+    if(d&&d.type==='WA_EMBEDDED_SIGNUP'){msgES=msgES||{};
+      if(d.data){if(d.data.waba_id)msgES.waba_id=d.data.waba_id;if(d.data.phone_number_id)msgES.phone_number_id=d.data.phone_number_id;}
+      if(d.event==='FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING')msgES.coexist=true;
+      if(d.event==='CANCEL')msgES.cancel=d.data||true;
+      if(d.event==='ERROR')msgES.error=d.data||true;}
+  }catch(e){}
+});
+async function msgConnectWA(){
+  var cf=await db.functions.invoke('msg-connect',{method:'GET'}),c=cf.data||{};
+  if(!c.app_id||!c.config_id){alert(mxTr('The Meta connection is not configured yet. Please contact support@klirena.com.','Meta bağlantısı henüz yapılandırılmadı. support@klirena.com adresine yazın.'));return;}
+  try{await msgLoadFB(c.app_id,c.graph_version||'v23.0');}catch(e){alert(mxTr('Facebook could not be loaded. Disable ad blockers and try again.','Facebook yüklenemedi. Reklam engelleyiciyi kapatıp tekrar deneyin.'));return;}
+  msgES={};
+  FB.login(function(resp){
+    var code=resp&&resp.authResponse&&resp.authResponse.code;
+    if(!code){return;}
+    var tries=0;
+    (function wait(){
+      if((!msgES.waba_id)&&tries++<20){setTimeout(wait,300);return;}
+      if(!msgES.waba_id){alert(mxTr('Meta did not return the WhatsApp account. Please try again.','Meta WhatsApp hesabını döndürmedi. Lütfen tekrar deneyin.'));return;}
+      msgFinishConnect(code);
+    })();
+  },{config_id:c.config_id,response_type:'code',override_default_response_type:true,extras:{setup:{},featureType:'whatsapp_business_app_onboarding',sessionInfoVersion:'3'}});
+}
+async function msgFinishConnect(code){
+  mxOpen(mxTr('Connecting…','Bağlanıyor…'),'<div style="font-size:13px">'+mxE(mxTr('Please wait, setting up your WhatsApp number.','Lütfen bekleyin, WhatsApp numaranız ayarlanıyor.'))+'</div>',[]);
+  var r=await db.functions.invoke('msg-connect',{body:{action:'connect',code:code,waba_id:msgES.waba_id,phone_number_id:msgES.phone_number_id||null,coexist:!!msgES.coexist}}),d=r.data||{};
+  if(!d.ok&&r.error&&r.error.context){try{d=await r.error.context.json();}catch(x){}}
+  mxClose();
+  if(d.ok){alert(mxTr('WhatsApp connected: ','WhatsApp bağlandı: ')+(d.display||'')+(d.coexist?'\n'+mxTr('Your chats from the last 6 months are being imported; this can take a few minutes.','Son 6 ayın yazışmaları aktarılıyor; birkaç dakika sürebilir.'):''));await msgInit();msgLoad();}
+  else alert(mxTr('Could not connect: ','Bağlanamadı: ')+(d.error==='number_in_use'?mxTr('this number is connected to another clinic.','bu numara başka bir kliniğe bağlı.'):(d.detail||d.error||'')));
 }
 async function msgLinkDo(pid){await db.from('msg_threads').update({patient_id:pid}).eq('id',window._msgLinkId);mxClose();await msgFetch();msgChat(window._msgLinkId,true);}
 async function trkLoad(){

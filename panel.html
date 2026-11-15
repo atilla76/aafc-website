@@ -5596,7 +5596,7 @@ async function mbTodoOpen(){
 async function mbBulk(mode){
   var p={};
   if(mode==='until'){var d=(document.getElementById('mbUntil')||{}).value;if(!d){alert('Tarih seç');return;}
-    var n=hmMbys.filter(function(x){return x.date<=d;}).length;if(!n){alert('Bu tarihe kadar girilecek vizit yok');return;}
+    var n=hmMbys.filter(function(x){return x.date<=d;}).length;if(!n){alert(mxTr('No visits to enter up to this date','Bu tarihe kadar girilecek vizit yok'));return;}
     if(!confirm(mxDate(d)+' ve öncesindeki '+n+' vizit MBYS’ye girildi olarak işaretlensin mi?'))return;p={p_until:d};}
   else{var ids=[].slice.call(document.querySelectorAll('.mbChk:checked')).map(function(c){return c.value;});if(!ids.length){alert('Vizit seç');return;}p={p_visit_ids:ids};}
   var r=await db.rpc('mark_visits_enabiz_manual',p);if(r.error){alert('Hata: '+r.error.message);return;}
@@ -5722,7 +5722,7 @@ function hmRender(){
   if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.form_id?"hmOpenForm('"+mxE(g.form_id)+"')":g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
   if(s.birthdays>0){var bn=(s.birthday_names||[]).map(function(b){return b.name+(b.age!=null?' ('+b.age+')':'');});al+=hmAlert('gold','🎂',mxTr('Birthdays today','Bugünün doğum günleri')+' · '+s.birthdays,bn.join(' · ')+(s.birthdays>bn.length?' …':''),"bdOpen()");}
   if((s.recalls||0)>0){al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'),"switchTab('recall')");}
-  if(hmMbys.length)al+=hmAlert('teal','🏥','MBYS’ye girilecek vizit · '+hmMbys.length,'En eskisi '+mxDate(hmMbys[hmMbys.length-1].date),'mbTodoOpen()');
+  if(hmMbys.length)al+=hmAlert('teal','🏥',mxTr('Visits to enter in MBYS','MBYS’ye girilecek vizit')+' · '+hmMbys.length,mxTr('Oldest','En eskisi')+' '+mxDate(hmMbys[hmMbys.length-1].date),'mbTodoOpen()');
   if(s.installments_due>0)al+=hmAlert('red','💳',mxTrV('[n] instalments due','[n] taksit vadesi geldi',{n:s.installments_due}),'',"switchTab('finance')");
   if(al)h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Attention','Dikkat')+'</span></div>'+al+'</div>';
   // shortcuts

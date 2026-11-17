@@ -616,7 +616,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
     <div class="tab-content">
       <div class="tab-head">
         <div><h2>Statistics</h2><div class="sub" id="repSub">Clinic activity across periods</div></div>
-        <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repRangeCh()"><option value="month">This Month</option><option value="lastmonth">Last Month</option><option value="pick">Choose month</option><option value="year">This Year</option><option value="lastyear">Last Year</option><option value="12m">Last 12 months</option></select><input class="bk-in" type="month" id="repMonth" style="display:none;margin-left:6px" onchange="repLoad()"></div>
+        <div class="imp-actions"><select class="bk-in" id="repRange" onchange="repRangeCh()"><option value="month">This Month</option><option value="lastmonth">Last Month</option><option value="pick">Choose month</option><option value="year">This Year</option><option value="lastyear">Last Year</option><option value="12m">Last 12 months</option><option value="custom">Custom / compare</option></select><input class="bk-in" type="month" id="repMonth" style="display:none;margin-left:6px" onchange="repLoad()"><span id="repCustom" style="display:none;margin-left:6px;font-size:12.5px;color:rgba(245,241,235,.7)"><input class="bk-in" type="date" id="repA1" onchange="repLoad()"> – <input class="bk-in" type="date" id="repA2" onchange="repLoad()"> <span id="repVsL">vs</span> <input class="bk-in" type="date" id="repB1" onchange="repLoad()"> – <input class="bk-in" type="date" id="repB2" onchange="repLoad()"></span></div>
       </div>
       <div id="statsBody" style="display:none"></div>
       <div id="repBody"></div>
@@ -2122,7 +2122,8 @@ async function loadStatsTab(){repLoad();}
 var REP_CAT={'Botoks':['Botox','Botoks'],'Dolgu':['Filler','Dolgu'],'Mezoterapi / PRP':['Mesotherapy / PRP','Mezoterapi / PRP'],'Diğer':['Other','Diğer'],'Lipoliz':['Lipolysis','Lipoliz'],
   'Gençlik aşısı':['Skin booster','Gençlik aşısı'],'İp / lifting':['Threads / lifting','İp / lifting'],'Peeling':['Peeling','Peeling'],'Cihaz / lazer':['Device / laser','Cihaz / lazer'],'Muayene':['Consultation','Muayene']};
 function repCat(c){var x=REP_CAT[c];return x?mxTr(x[0],x[1]):c;}
-function repRangeCh(){var v=document.getElementById('repRange').value,mi=document.getElementById('repMonth');mi.style.display=v==='pick'?'':'none';
+function repRangeCh(){var v=document.getElementById('repRange').value,mi=document.getElementById('repMonth');mi.style.display=v==='pick'?'':'none';document.getElementById('repCustom').style.display=v==='custom'?'':'none';
+  if(v==='custom'&&!document.getElementById('repA1').value){var n=new Date(),y=n.getFullYear();document.getElementById('repA1').value=y+'-06-01';document.getElementById('repA2').value=mxIso(n);document.getElementById('repB1').value=y+'-01-01';document.getElementById('repB2').value=y+'-05-31';}
   if(v==='pick'&&!mi.value){var d=new Date();d.setMonth(d.getMonth()-1);mi.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}repLoad();}
 function repPickMonth(ym){document.getElementById('repRange').value='pick';var mi=document.getElementById('repMonth');mi.value=ym;mi.style.display='';repLoad();}
 async function repLoad(){
@@ -2131,13 +2132,16 @@ async function repLoad(){
   if(v==='lastmonth'||v==='pick'){var ym=v==='pick'?(document.getElementById('repMonth').value||''):'';var y0=now.getFullYear(),m0=now.getMonth()-1;
     if(ym){y0=+ym.slice(0,4);m0=+ym.slice(5,7)-1;}
     f=new Date(y0,m0,1);t=new Date(y0,m0+1,0);if(t>now)t=new Date(now.getFullYear(),now.getMonth(),now.getDate());pf=new Date(y0,m0-1,1);pt=new Date(y0,m0,0);}
+  else if(v==='custom'){var g=function(id){var x=document.getElementById(id).value;return x?new Date(x+'T00:00:00'):null;};f=g('repA1');t=g('repA2');pf=g('repB1');pt=g('repB2');
+    if(!f||!t||t<f){b.innerHTML='<div class="loader">'+mxE(mxTr('Choose the period dates.','Dönem tarihlerini seçin.'))+'</div>';return;}
+    if(!pf||!pt||pt<pf){var len=Math.round((t-f)/864e5);pt=new Date(f.getTime()-864e5);pf=new Date(pt.getTime()-len*864e5);}}
   else if(v==='lastyear'){f=new Date(now.getFullYear()-1,0,1);t=new Date(now.getFullYear()-1,11,31);pf=new Date(now.getFullYear()-2,0,1);pt=new Date(now.getFullYear()-2,11,31);}
   else if(v==='year'){f=new Date(now.getFullYear(),0,1);pf=new Date(now.getFullYear()-1,0,1);pt=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());}
   else if(v==='12m'){f=new Date(now.getFullYear()-1,now.getMonth(),now.getDate()+1);pf=new Date(f.getFullYear()-1,f.getMonth(),f.getDate());pt=new Date(f.getTime()-864e5);}
   else{f=new Date(now.getFullYear(),now.getMonth(),1);pf=new Date(now.getFullYear(),now.getMonth()-1,1);var ld=new Date(now.getFullYear(),now.getMonth(),0).getDate();pt=new Date(pf.getFullYear(),pf.getMonth(),Math.min(now.getDate(),ld));}
   document.getElementById('repSub').textContent=dmy(mxIso(f))+' – '+dmy(mxIso(t));
   var days=Math.round((t-f)/864e5)+1;
-  var rr=await Promise.all([db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(pf),p_to:mxIso(pt)}),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:days})]);
+  var rr=await Promise.all([db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(pf),p_to:mxIso(pt)}),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:days}),db.rpc('get_insights',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)})]);
   var r=rr[0];
   if(r.error||!r.data){b.innerHTML='<div class="loader">'+mxE(mxTr('Could not load statistics.','İstatistikler yüklenemedi.'))+' <a href="#" onclick="repLoad();return false" style="color:#B89A6A">'+mxE(mxTr('Try again','Tekrar dene'))+'</a></div>';return;}
   var d=r.data,p=rr[1].data||{},rs=rr[2].data||{},pt0=d.patients||{},pp=p.patients||{},ap=d.appointments||{},h='';
@@ -2162,11 +2166,29 @@ async function repLoad(){
           (d.is_admin?'<div title="'+mxE(mxMoney(inc[i]))+'" style="width:40%;height:'+(mi?2+120*inc[i]/mi:2)+'px;background:#B89A6A;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div>':'')+
           '<div title="'+vis[i]+'" style="width:'+(d.is_admin?40:60)+'%;height:'+(mv?2+120*vis[i]/mv:2)+'px;background:#8E86D6;opacity:'+(last?1:.75)+';border-radius:3px 3px 0 0"></div></div>'+
           '<div style="font-size:10px;color:'+(last?'#F5F1EB':'rgba(245,241,235,.45)')+';margin-top:4px">'+mxE(ml(x.month))+(x.month.slice(5)==='01'?' '+x.month.slice(2,4):'')+'</div></div>';}).join('')+'</div></div>';}
-  if((d.procedures||[]).length){var rc={},rn={};((rev&&rev.by_category)||[]).forEach(function(x){if(x.category){rc[x.category]=x.total;rn[x.category]=x.count;}});
-    var prs=d.procedures.slice();Object.keys(rc).forEach(function(k){if(!prs.some(function(x){return x.category===k;}))prs.push({category:k,visits:0,controls:0});});
-    h+='<div class="imp-step"><h3>'+mxE(mxTr('Procedures','İşlemler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+mxE(mxTr('visits','vizit'))+(rev?' · '+mxE(mxTr('revenue (payments)','ciro (tahsilat)')):'')+'</span></h3>'+bars(prs,'#B89A6A',function(x){return repCat(x.category);},function(x){var n=rn[x.category]||0;
-      return [x.visits||0.0001,x.visits+' '+mxTr('visits','vizit')+(x.controls?' + '+x.controls:'')+(rev&&rc[x.category]?' · '+mxMoney(rc[x.category])+(n&&n!==x.visits?' ('+n+' '+mxTr('payments','tahsilat')+')':''):'')];})+
+  var pprs=p.procedures||[];
+  if((d.procedures||[]).length||pprs.length){var rc={},rn={};((rev&&rev.by_category)||[]).forEach(function(x){if(x.category){rc[x.category]=x.total;rn[x.category]=x.count;}});
+    function pn(list,c){return list.filter(function(x){return x.category===c;}).reduce(function(a,x){return a+Number(x.visits||0)+Number(x.controls||0);},0);}
+    var cats=[];(d.procedures||[]).concat(pprs).forEach(function(x){if(cats.indexOf(x.category)<0)cats.push(x.category);});Object.keys(rc).forEach(function(k){if(cats.indexOf(k)<0)cats.push(k);});
+    cats.sort(function(x,y){return (pn(d.procedures||[],y)-pn(d.procedures||[],x))||(pn(pprs,y)-pn(pprs,x));});
+    var pmx=Math.max.apply(null,cats.map(function(c){return Math.max(pn(d.procedures||[],c),pn(pprs,c));}).concat([1]));
+    var lgA=dmy(mxIso(f))+' – '+dmy(mxIso(t)),lgB=dmy(mxIso(pf))+' – '+dmy(mxIso(pt));
+    h+='<div class="imp-step"><h3>'+mxE(mxTr('Procedures','İşlemler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)"><span style="color:#B89A6A">■</span> '+mxE(lgA)+' &nbsp; <span style="color:rgba(245,241,235,.35)">■</span> '+mxE(lgB)+'</span></h3>'+
+      cats.map(function(c){var a=pn(d.procedures||[],c),bb=pn(pprs,c),dl=bb?Math.round((a-bb)/bb*100):null;
+        return '<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:13px;gap:8px"><span>'+mxE(repCat(c))+'</span><span><b>'+a+'</b> <span style="color:rgba(245,241,235,.5)">/ '+bb+(dl!==null&&dl!==0?' <span style="color:'+(dl>0?'#6FCF97':'#F0A28F')+'">'+(dl>0?'▲':'▼')+'%'+Math.abs(dl)+'</span>':'')+(rev&&rc[c]?' · '+mxMoney(rc[c]):'')+'</span></span></div>'+
+          '<div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:#B89A6A;width:'+(100*a/pmx)+'%"></div></div>'+
+          '<div style="height:4px;border-radius:4px;margin-top:2px"><div style="height:4px;border-radius:4px;background:rgba(245,241,235,.3);width:'+(100*bb/pmx)+'%"></div></div></div>';}).join('')+
       (rev&&!Number(rev.total)?'<div style="font-size:12px;color:rgba(245,241,235,.45)">'+mxE(mxTr('No payments recorded in this period. Add them in Accounting.','Bu dönemde tahsilat kaydı yok. Ödemeleri Muhasebe\'den girin.'))+'</div>':'')+'</div>';}
+  var ins=(rr[3]&&rr[3].data)||null;
+  if(ins){var REG={Face:['Face','Yüz'],Neck:['Neck','Boyun'],Abdomen:['Abdomen','Karın'],Legs:['Legs','Bacaklar'],Other:['Other','Diğer']};
+    var rg=ins.regions||[],rmx=Math.max.apply(null,rg.map(function(x){return Number(x.visits||0);}).concat([1]));
+    if(rg.length)h+='<div class="imp-step"><h3>'+mxE(mxTr('Areas','Bölgeler'))+'</h3>'+rg.map(function(x){var nm=REG[x.region]?mxTr(REG[x.region][0],REG[x.region][1]):x.region;
+      return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(nm)+'</span><span style="font-weight:700">'+x.visits+' <span style="font-weight:400;color:rgba(245,241,235,.5)">· '+mxE(mxTrV('[n] patients','[n] hasta',{n:x.patients}))+'</span></span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:#7FB8C9;width:'+(100*x.visits/rmx)+'%"></div></div></div>';}).join('')+'</div>';
+    var cr=ins.cross||[],fb=ins.face_body||{},fc=Number(fb.face||0),bd=Number(fb.body||0),bt=Number(fb.both||0);
+    function crow(lab,pct,sub){return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px;gap:8px"><span>'+mxE(lab)+'</span><span style="font-weight:700">%'+pct+' <span style="font-weight:400;color:rgba(245,241,235,.5)">· '+sub+'</span></span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:#6FCF97;width:'+pct+'%"></div></div></div>';}
+    if(cr.length||bd){h+='<div class="imp-step"><h3>'+mxE(mxTr('Treatments done together','Birlikte yapılan işlemler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+mxE(mxTrV('On the same patients, since [d]','Aynı hastalarda, [d] tarihinden bu yana',{d:dmy(ins.cross_from)}))+'</span></h3>';
+      if(bd&&fc)h+=crow(mxTr('Body patients who also had facial treatment','Vücut hastalarının yüze de işlem yaptıranları'),Math.round(100*bt/bd),bt+' / '+bd)+crow(mxTr('Facial patients who also had body treatment','Yüz hastalarının vücuda da işlem yaptıranları'),Math.round(100*bt/fc),bt+' / '+fc);
+      h+=cr.map(function(x){return crow(mxTrV('[a] patients who also had [b]','[a] yaptıranların [b] de yaptıranları',{a:repCat(x.a),b:repCat(x.b)}),x.pct,x.both+' / '+x.a_patients);}).join('')+'</div>';}}
   var tot=Number(ap.total||0);function pc(n){return tot?'%'+Math.round(100*Number(n||0)/tot):'—';}
   var sent=Number(rs.sent||0),bk=Number(rs.booked||0);
   h+='<div class="imp-step"><h3>'+mxE(mxTr('Appointments & recall','Randevular ve geri çağırma'))+'</h3><div class="imp-nums" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+
@@ -4865,6 +4887,7 @@ var REL_ITEMS=[
  ['update','Açılış ve güncelleme ekranı'],
  ['consult','Muayene: yeni vizit sekmesi, reçete PDF, tahlil, ilaç/aşı + alerji uyarısı, onam, çalışma şekli','1.2.8'],
  ['mkapp','Muhasebe → Makbuz kes (e-SMM): hasta / kişi / işletme, çok satır, PDF','1.2.9'],
+ ['insights','İstatistik: Özel dönem + karşılaştırma dönemi, işlemlerde iki dönem çubuğu, Bölgeler, Birlikte yapılan işlemler','1.2.9'],
  ['inbox','Ana sayfa → Mesajlar: liste, okunmamış sayısı, yazışma açma, hastaya bağlama (Meta bağlantısı varsa gönderme)','1.2.9'],
  ['trkscreen','Stok → ÜTS / İTS ekranı: Hatalı / Bekleyen / Gönderilen, Ne yapmalı, Tekrar dene, detay','1.2.9']
 ];
@@ -5756,7 +5779,7 @@ var I18N_TR={'LAB TESTS':'TAHLİLLER','Results':'Sonuçlar','Add file':'Dosya ek
 'All day':'Tüm gün','Reason (e.g. Surgery)':'Açıklama (ör. Ameliyat)','Block time':'Saat kapat','No blocked times.':'Kapalı saat yok.','End time must be after start time.':'Bitiş saati başlangıçtan sonra olmalı.',
 'Calendar subscription':'Takvim aboneliği','Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).':'Randevular ve kapalı saatler iPhone, Google veya Outlook takviminizde (tek yönlü, 15 dk – birkaç saatte bir yenilenir).',
 'Enable calendar subscription':'Takvim aboneliğini aç','Show patient names':'Hasta adlarını göster','Add to Google Calendar':'Google Takvim\'e ekle','Add to iPhone / Mac calendar':'iPhone / Mac takvimine ekle','Regenerate link':'Linki yenile',
-'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','MESSAGES':'MESAJLAR','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','Custom / compare':'Özel / karşılaştır','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','MESSAGES':'MESAJLAR','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

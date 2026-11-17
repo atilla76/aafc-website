@@ -2481,7 +2481,9 @@ async function stLoad(){
     db.from('clinic_products').select('*').eq('clinic_id',cid).eq('is_active',true).order('name'),
     db.from('stock_product_balance').select('*').eq('clinic_id',cid),
     db.from('stock_alerts').select('*').eq('clinic_id',cid),
-    db.rpc('get_stock_overview',{p_clinic_id:cid})]);
+    db.rpc('get_stock_overview',{p_clinic_id:cid}),
+    db.rpc('get_open_vials',{p_clinic_id:cid})]);
+  stVials=Array.isArray(r[4].data)?r[4].data:[];
   stProds=r[0].data||[];stBal={};(r[1].data||[]).forEach(function(b){stBal[b.product_id]=b;});
   stOv={};(Array.isArray(r[3].data)?r[3].data:[]).forEach(function(o){stOv[o.product_id]=o;});
   var al=r[2].data||[];
@@ -2489,8 +2491,31 @@ async function stLoad(){
     var t=a.alert==='low_stock'?'Low stock':a.alert==='expiring'?'Expiring soon':'Opened vial expired';
     var d=a.alert==='expiring'?(a.detail||'').split(' ').map(function(x,i){return i===1?mxDate(x):x;}).join(' · '):a.detail;
     return '<div style="font-size:13px;padding:3px 0"><b>'+mxE(a.name)+'</b> — <span>'+t+'</span> · '+mxE(d)+'</div>';}).join('')+'</div>':'';
+  document.getElementById('stAlerts').innerHTML+=stVialsHtml();
   stRender();
   if(stSel)stOpen(stSel.id);
+}
+var stVials=[];
+function stVialsHtml(){
+  if(!stVials.length)return '';
+  var ex=stVials.filter(function(v){return v.expired;}).length;
+  function ago(d){var h=Math.floor((Date.now()-new Date(d))/36e5);return h<24?mxTrV('opened [n] h ago','[n] saat önce açıldı',{n:Math.max(h,1)}):mxTrV('opened [n] days ago','[n] gün önce açıldı',{n:Math.floor(h/24)});}
+  return '<div class="imp-step" style="border-color:'+(ex?'rgba(240,162,143,.5)':'rgba(183,176,240,.35)')+'"><h3>🧪 '+mxE(mxTr('Open vials','Açık flakonlar'))+' · '+stVials.length+(ex?' <span style="font-size:12px;color:#F0A28F">'+mxE(mxTrV('[n] expired','[n] süresi doldu',{n:ex}))+'</span>':'')+'</h3>'+
+    stVials.map(function(v,i){var u=v.unit==='ml'?'ml':'U',st='';
+      if(v.expired)st='<span style="color:#F0A28F;font-weight:700">'+mxE(mxTr('expired','süresi doldu'))+'</span>';
+      else if(v.expires_at){var hl=Math.floor((new Date(v.expires_at)-Date.now())/36e5);st=hl<24?mxE(mxTrV('[n] h left','[n] saat kaldı',{n:Math.max(hl,1)})):mxE(mxTrV('[n] days left','[n] gün kaldı',{n:Math.floor(hl/24)}));}
+      else st='<span style="color:rgba(245,241,235,.4)">'+mxE(mxTr('no open shelf life set','açık ömür girilmemiş'))+'</span>';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.05)"><div style="flex:1;font-size:13px"><b>'+mxE(v.name)+'</b> · LOT '+mxE(v.lot_no)+
+        '<div style="font-size:12px;color:rgba(245,241,235,.65)">'+mxQty(v.left)+(v.pack?' / '+mxQty(v.pack):'')+' '+u+' '+mxE(mxTr('left','kaldı'))+(v.opened_at?' · '+mxE(ago(v.opened_at)):'')+' · '+st+'</div></div>'+
+        '<button class="'+(v.expired?'bdel':'bimp2')+'" style="padding:5px 12px;font-size:12.5px" onclick="stDiscardVial('+i+')">'+mxE(mxTr('Discard','Fire'))+'</button></div>';}).join('')+'</div>';
+}
+async function stDiscardVial(i){
+  var v=stVials[i];if(!v)return;
+  var q=prompt(mxTr('What is left in the vial is recorded as waste and removed from stock.','Flakonda kalan miktar fire olarak kaydedilir ve stoktan düşer.')+'\n'+v.name+' · LOT '+v.lot_no+' ('+(v.unit==='ml'?'ml':'U')+')',String(v.left));
+  if(q==null)return;var n=Number(String(q).replace(',','.'));if(!(n>0))return;
+  var r=await db.from('stock_movements').insert({clinic_id:cid,lot_id:v.lot_id,kind:'waste',quantity:-Math.abs(n),note:mxTr('Open vial discarded','Açık flakon imha')});
+  if(r.error){alert(r.error.message);return;}
+  stLoad();
 }
 function stRender(){
   var t=document.getElementById('stProducts');
@@ -4887,6 +4912,7 @@ var REL_ITEMS=[
  ['update','Açılış ve güncelleme ekranı'],
  ['consult','Muayene: yeni vizit sekmesi, reçete PDF, tahlil, ilaç/aşı + alerji uyarısı, onam, çalışma şekli','1.2.8'],
  ['mkapp','Muhasebe → Makbuz kes (e-SMM): hasta / kişi / işletme, çok satır, PDF','1.2.9'],
+ ['vials','Stok → Açık flakonlar: kalan/paket, açılış süresi, süresi dolan uyarısı, Fire; Ana sayfa uyarısı (süresi dolan/48 saat)','1.2.9'],
  ['insights','İstatistik: Özel dönem + karşılaştırma dönemi, işlemlerde iki dönem çubuğu, Bölgeler, Birlikte yapılan işlemler','1.2.9'],
  ['inbox','Ana sayfa → Mesajlar: liste, okunmamış sayısı, yazışma açma, hastaya bağlama (Meta bağlantısı varsa gönderme)','1.2.9'],
  ['trkscreen','Stok → ÜTS / İTS ekranı: Hatalı / Bekleyen / Gönderilen, Ne yapmalı, Tekrar dene, detay','1.2.9']

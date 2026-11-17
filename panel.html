@@ -4919,7 +4919,8 @@ var REL_ITEMS=[
  ['trkscreen','Stok → ÜTS / İTS ekranı: Hatalı / Bekleyen / Gönderilen, Ne yapmalı, Tekrar dene, detay','1.2.9'],
  ['inboxmedia','Mesajlar: gelen fotoğraf açılır (tam ekran), ses/video/belge açılır; kamera/galeriden fotoğraf gönder','1.2.10'],
  ['inboxset','Ayarlar → Mesajlar ve mesaj kutusu ⚙: bağlı kanallar, Panelde aç','1.2.10'],
- ['vialsize','Stok → ürün düzenle: Tek flakon / şırınga alanı kaydedilir','1.2.10']
+ ['vialsize','Stok → ürün düzenle: Tek flakon / şırınga alanı kaydedilir','1.2.10'],
+ ['msgsettings','Ayarlar → Mesaj bağlantıları (kanallar, bağlantıyı kes, bağla → panel) ve Mesaj şablonları (liste, yeni şablon, sil); mesaj kutusu ⚙ bağlantıları açar','1.2.11']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -5137,7 +5138,7 @@ async function msgTplOpen(){
   mxOpen(mxTr('Message templates','Mesaj şablonları'),'<div style="font-size:13px">…</div>',[]);
   var r=await db.functions.invoke('msg-templates',{body:{action:'list'}}),d=r.data||{};
   var list=(d.templates||[]).map(function(t){var st=MSG_TST[t.status]||['#888',t.status,t.status];
-    return '<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;font-size:13.5px">'+mxE(t.name)+'</b><span style="font-size:11px;color:rgba(245,241,235,.5)">'+mxE(t.category+' · '+t.language)+'</span><span style="font-size:11px;padding:1px 8px;border-radius:9px;border:1px solid '+st[0]+';color:'+st[0]+'">'+mxE(mxTr(st[1],st[2]))+'</span></div><div style="font-size:12.5px;color:rgba(245,241,235,.7);white-space:pre-wrap;margin-top:3px">'+mxE(t.body)+'</div>'+(t.rejected_reason&&t.rejected_reason!=='NONE'?'<div style="font-size:11.5px;color:#E05555">'+mxE(t.rejected_reason)+'</div>':'')+'</div>';}).join('');
+    return '<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;font-size:13.5px">'+mxE(t.name)+'</b><span style="font-size:11px;color:rgba(245,241,235,.5)">'+mxE(t.category+' · '+t.language)+'</span><span style="font-size:11px;padding:1px 8px;border-radius:9px;border:1px solid '+st[0]+';color:'+st[0]+'">'+mxE(mxTr(st[1],st[2]))+'</span><a href="#" title="'+mxE(mxTr('Delete template','Şablonu sil'))+'" style="color:rgba(245,241,235,.45);text-decoration:none" onclick="msgTplDel(\''+mxE(t.name)+'\');return false">🗑</a></div><div style="font-size:12.5px;color:rgba(245,241,235,.7);white-space:pre-wrap;margin-top:3px">'+mxE(t.body)+'</div>'+(t.rejected_reason&&t.rejected_reason!=='NONE'?'<div style="font-size:11.5px;color:#E05555">'+mxE(t.rejected_reason)+'</div>':'')+'</div>';}).join('');
   var b=(r.error&&!d.templates?'<div style="color:#E05555;font-size:13px">'+mxE(d.detail||d.error||mxTr('Could not load templates.','Şablonlar yüklenemedi.'))+'</div>':'')+
     '<div style="max-height:260px;overflow:auto">'+(list||'<div style="font-size:13px;color:rgba(245,241,235,.55)">'+mxE(mxTr('No templates yet.','Henüz şablon yok.'))+'</div>')+'</div>'+
     '<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)"><b style="font-size:13.5px">'+mxE(mxTr('New template','Yeni şablon'))+'</b>'+
@@ -5147,6 +5148,13 @@ async function msgTplOpen(){
     '<textarea class="mi" id="tplBody" rows="4" oninput="msgTplVars()" placeholder="'+mxE(mxTr('Hello {{1}}, this is a reminder of your appointment on {{2}} at {{3}}.','Merhaba {{1}}, {{2}} tarihinde saat {{3}} randevunuzu hatırlatırız.'))+'"></textarea>'+
     '<div id="tplEx"></div><div style="font-size:11.5px;color:rgba(245,241,235,.5)">'+mxE(mxTr('Use {{1}}, {{2}} … for patient name, date, time. Meta reviews every template, usually within minutes.','Hasta adı, tarih, saat için {{1}}, {{2}} … kullanın. Meta her şablonu inceler, genelde birkaç dakika sürer.'))+'</div></div>';
   mxOpen(mxTr('Message templates','Mesaj şablonları'),b,[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose},{label:mxTr('Submit to Meta','Meta\'ya gönder'),cls:'bsave',fn:msgTplCreate}]);
+}
+async function msgTplDel(name){
+  if(!confirm(mxTr('Delete template','Şablonu sil')+': '+name+'?'))return;
+  var r=await db.functions.invoke('msg-templates',{body:{action:'delete',name:name}}),d=r.data||{};
+  if(!d.ok&&r.error&&r.error.context){try{d=await r.error.context.json();}catch(x){}}
+  if(!d.ok)alert(d.error==='admin_only'?mxTr('Only an admin can do this.','Bu işlem yalnız yönetici içindir.'):(d.detail||d.error||''));
+  msgTplOpen();
 }
 function msgTplVars(){
   var body=document.getElementById('tplBody').value,n=[],m,re=/\{\{(\d+)\}\}/g;while((m=re.exec(body)))if(n.indexOf(+m[1])<0)n.push(+m[1]);n.sort(function(a,b){return a-b;});

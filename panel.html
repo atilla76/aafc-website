@@ -5042,12 +5042,15 @@ async function msgChat(id,keep){
   msgRender();
   var r=await db.from('msg_messages').select('*').eq('thread_id',id).order('created_at',{ascending:true}).limit(500);
   if(msgSel!==id)return;
+  var mp=(r.data||[]).filter(function(m){return m.media_path;}).map(function(m){return m.media_path;}),mu={};
+  if(mp.length){var su=await db.storage.from('msg-media').createSignedUrls(mp,3600);(su.data||[]).forEach(function(x){if(x.signedUrl)mu[x.path]=x.signedUrl;});}
+  if(msgSel!==id)return;
   var open=t.window_until&&new Date(t.window_until)>new Date(),k=MSG_K[msgKinds[t.channel_id]]||['#B89A6A',''];
   var tick={queued:'🕓',sent:'✓',delivered:'✓✓',read:'<span style="color:#B89A6A">✓✓</span>',failed:'<span style="color:#E05555">!</span>'};
   var msgs=(r.data||[]).map(function(m){
     var out=m.direction==='out',fail=m.status==='failed';
     return '<div style="display:flex;justify-content:'+(out?'flex-end':'flex-start')+';margin:3px 0"><div style="max-width:72%;padding:8px 11px 5px;border-radius:14px;'+(out?'border-bottom-right-radius:4px;background:rgba(184,154,106,.16)':'border-bottom-left-radius:4px;background:#12101E')+';border:1px solid '+(fail?'rgba(224,85,85,.5)':'rgba(255,255,255,.07)')+'">'+
-      (m.type!=='text'?'<div style="font-size:12px;color:rgba(245,241,235,.6);margin-bottom:3px">📎 '+mxE(mxTr('Attachment','Ek'))+' · '+mxE(m.type)+'</div>':'')+
+      msgMediaHtml(m,mu[m.media_path])+
       (m.body?'<div style="font-size:14px;white-space:pre-wrap;word-wrap:break-word">'+mxE(m.body)+'</div>':'')+
       '<div style="font-size:10.5px;color:rgba(245,241,235,.45);text-align:right;margin-top:2px">'+(out&&!m.sent_by?mxE(mxTr('From phone','Telefondan'))+' · ':'')+(fail?'<span style="color:#E05555">'+mxE(mxTr('Not sent','Gönderilemedi'))+'</span> · ':'')+new Date(m.created_at).toLocaleString(LANG_LOC[LANG]||'en-US',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+(out&&tick[m.status]?' '+tick[m.status]:'')+'</div></div></div>';
   }).join('');
@@ -5057,7 +5060,7 @@ async function msgChat(id,keep){
     '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:'+k[0]+'"></span><b style="flex:1">'+mxE(msgTitle(t))+'</b><span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(k[1])+(t.peer_phone?' · '+mxE(t.peer_phone):'')+'</span>'+pt+'</div>'+
     '<div id="msgScroll" style="flex:1;overflow:auto;padding:12px 16px">'+msgs+'</div>'+
     (open?'':'<div style="margin:0 16px 8px;padding:9px 12px;border-radius:10px;background:rgba(212,150,58,.12);border:1px solid rgba(212,150,58,.35);color:#E0B86A;font-size:12.5px">'+mxE(mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'))+'</div>')+
-    '<div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.07)"><textarea id="msgIn" class="mi" rows="2" style="flex:1;resize:none;margin:0" '+(open?'':'disabled ')+'placeholder="'+mxE(mxTr('Write a message…','Mesaj yaz…'))+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();msgSend();}"></textarea><button class="bsave" id="msgBtn" '+(open?'':'disabled ')+'onclick="msgSend()">'+mxE(mxTr('Send','Gönder'))+'</button></div>';
+    '<div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.07)"><input type="file" id="msgFile" style="display:none" accept="image/*,video/*,audio/*,application/pdf" onchange="msgSendFile(this)"><button class="bcancel" title="'+mxE(mxTr('Send photo or file','Fotoğraf veya dosya gönder'))+'" '+(open?'':'disabled ')+'onclick="document.getElementById(\'msgFile\').click()" style="padding:0 12px;font-size:17px">📎</button><textarea id="msgIn" class="mi" rows="2" style="flex:1;resize:none;margin:0" '+(open?'':'disabled ')+'placeholder="'+mxE(mxTr('Write a message…','Mesaj yaz…'))+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();msgSend();}"></textarea><button class="bsave" id="msgBtn" '+(open?'':'disabled ')+'onclick="msgSend()">'+mxE(mxTr('Send','Gönder'))+'</button></div>';
   var inp=document.getElementById('msgIn');if(inp&&draft)inp.value=draft;
   var sc=document.getElementById('msgScroll');sc.scrollTop=sc.scrollHeight;
 }
@@ -5069,6 +5072,30 @@ async function msgSend(){
   if(d.ok){inp.value='';msgChat(msgSel,true);return;}
   var e=d.error;if(!e&&r.error&&r.error.context){try{e=(await r.error.context.json()).error;}catch(x){}}
   alert(e==='window_closed'?mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'):mxTr('Not sent','Gönderilemedi'));
+}
+function msgMediaHtml(m,url){
+  if(m.type==='text'&&!m.media_path)return '';
+  var mime=m.media_mime||'',t=m.type;
+  if(!url)return '<div style="font-size:12px;color:rgba(245,241,235,.6);margin-bottom:3px">📎 '+mxE(mxTr('Attachment','Ek'))+' · '+mxE(t)+'</div>';
+  if(mime.indexOf('image/')===0)return '<a href="'+url+'" target="_blank" rel="noopener"><img src="'+url+'" style="display:block;max-width:260px;max-height:320px;border-radius:10px;margin-bottom:4px"></a>';
+  if(mime.indexOf('audio/')===0)return '<audio controls preload="none" src="'+url+'" style="max-width:260px;margin-bottom:4px"></audio>';
+  if(mime.indexOf('video/')===0)return '<video controls preload="metadata" src="'+url+'" style="max-width:280px;max-height:320px;border-radius:10px;margin-bottom:4px"></video>';
+  return '<a href="'+url+'" target="_blank" rel="noopener" style="display:block;color:#B89A6A;font-size:13px;margin-bottom:4px">📄 '+mxE(m.media_name||mxTr('Open file','Dosyayı aç'))+'</a>';
+}
+async function msgSendFile(inp){
+  var f=inp.files&&inp.files[0];inp.value='';if(!f||!msgSel)return;
+  if(f.size>16*1024*1024){alert(mxTr('The file is too large (max 16 MB).','Dosya çok büyük (en fazla 16 MB).'));return;}
+  var th=msgSel,ext=(f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'bin';
+  var path=cid+'/'+th+'/out-'+Date.now()+'.'+ext,btn=document.getElementById('msgBtn');if(btn)btn.disabled=true;
+  var up=await db.storage.from('msg-media').upload(path,f,{contentType:f.type||'application/octet-stream'});
+  if(up.error){if(btn)btn.disabled=false;alert(mxTr('Not sent','Gönderilemedi')+': '+up.error.message);return;}
+  var inEl=document.getElementById('msgIn'),cap=((inEl&&inEl.value)||'').trim();
+  var r=await db.functions.invoke('msg-send',{body:{thread_id:th,text:cap,media_path:path,media_name:f.name}}),d=r.data||{};
+  if(btn)btn.disabled=false;
+  if(d.ok){if(inEl)inEl.value='';msgChat(th,true);return;}
+  var e=d.error;if(!e&&r.error&&r.error.context){try{e=(await r.error.context.json()).error;}catch(x){}}
+  alert(e==='window_closed'?mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'):mxTr('Not sent','Gönderilemedi'));
+  msgChat(th,true);
 }
 function msgLink(id){
   var b='<input class="mi" id="msgPq" placeholder="'+mxE(mxTr('Search patient','Hasta ara'))+'" oninput="msgPSearch()"><div id="msgPr" style="max-height:300px;overflow:auto;margin-top:6px"></div>';

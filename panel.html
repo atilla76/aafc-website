@@ -4992,6 +4992,7 @@ async function msgInit(){
   var d=r.data||[];msgChans=d;msgOn=d.length>0;msgKinds={};d.forEach(function(c){msgKinds[c.id]=c.kind;});
   if(fnAdmin===null){try{var a=await db.rpc('is_clinic_admin');fnAdmin=a.data===true;}catch(e){fnAdmin=false;}}
   var b=document.getElementById('tabMsg');if(b)b.style.display=(msgOn||fnAdmin)?'':'none';
+  if(location.hash==='#msg'&&(msgOn||fnAdmin)){history.replaceState(null,'',location.pathname);switchTab('msg');if(fnAdmin)setTimeout(msgConnOpen,300);}
   if(!msgOn)return;
   await msgFetch();
   if(!msgSub){
@@ -5091,6 +5092,7 @@ function msgConnOpen(){
     '<div style="margin-top:14px;font-size:12.5px;color:rgba(245,241,235,.6);line-height:1.5">'+mxE(mxTr('Your number keeps working in the WhatsApp Business app on your phone. Keep the app open on the phone while connecting; the last 6 months of chats are imported.','Numaranız telefondaki WhatsApp Business uygulamasında çalışmaya devam eder. Bağlarken telefonda uygulamayı açık tutun; son 6 ayın yazışmaları aktarılır.'))+'</div>';
   var btns=[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}];
   if(msgChans.some(function(c){return c.kind==='wa';}))btns.push({label:mxTr('Message templates','Mesaj şablonları'),cls:'bimp2',fn:msgTplOpen});
+  btns.push({label:mxTr('Connect Instagram / Facebook','Instagram / Facebook bağla'),cls:'bimp2',fn:function(){mxClose();msgConnectPage();}});
   btns.push({label:mxTr('Connect WhatsApp','WhatsApp\'ı bağla'),cls:'bsave',fn:function(){mxClose();msgConnectWA();}});
   mxOpen(mxTr('Connections','Bağlantılar'),b,btns);
 }
@@ -5172,6 +5174,32 @@ async function msgFinishConnect(code){
   mxClose();
   if(d.ok){alert(mxTr('WhatsApp connected: ','WhatsApp bağlandı: ')+(d.display||'')+(d.coexist?'\n'+mxTr('Your chats from the last 6 months are being imported; this can take a few minutes.','Son 6 ayın yazışmaları aktarılıyor; birkaç dakika sürebilir.'):''));await msgInit();msgLoad();}
   else alert(mxTr('Could not connect: ','Bağlanamadı: ')+(d.error==='number_in_use'?mxTr('this number is connected to another clinic.','bu numara başka bir kliniğe bağlı.'):(d.detail||d.error||'')));
+}
+// ---- Instagram + Facebook Messenger: Facebook Login -> pick page -> page token stored server-side ----
+async function msgConnectPage(){
+  var cf=await db.functions.invoke('msg-connect',{method:'GET'}),c=cf.data||{};
+  if(!c.app_id){alert(mxTr('The Meta connection is not configured yet. Please contact support@klirena.com.','Meta bağlantısı henüz yapılandırılmadı. support@klirena.com adresine yazın.'));return;}
+  try{await msgLoadFB(c.app_id,c.graph_version||'v23.0');}catch(e){alert(mxTr('Facebook could not be loaded. Disable ad blockers and try again.','Facebook yüklenemedi. Reklam engelleyiciyi kapatıp tekrar deneyin.'));return;}
+  FB.login(async function(resp){
+    var tok=resp&&resp.authResponse&&resp.authResponse.accessToken;if(!tok)return;
+    mxOpen(mxTr('Connecting…','Bağlanıyor…'),'<div style="font-size:13px">…</div>',[]);
+    var r=await db.functions.invoke('msg-connect',{body:{action:'pages',user_token:tok}}),d=r.data||{};
+    if(!d.ok&&r.error&&r.error.context){try{d=await r.error.context.json();}catch(x){}}
+    if(!d.ok){mxClose();alert(mxTr('Could not read your pages: ','Sayfalar okunamadı: ')+(d.detail||d.error||''));return;}
+    if(!(d.pages||[]).length){mxClose();alert(mxTr('No Facebook page found. You must be an admin of the clinic\'s Facebook page, and the Instagram account must be a professional account linked to that page.','Facebook sayfası bulunamadı. Kliniğin Facebook sayfasında yönetici olmalısınız; Instagram hesabı da bu sayfaya bağlı profesyonel hesap olmalı.'));return;}
+    window._msgTok=tok;
+    mxOpen(mxTr('Choose the clinic page','Klinik sayfasını seçin'),(d.pages||[]).map(function(p){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)"><div style="flex:1"><b>'+mxE(p.name)+'</b><div style="font-size:12px;color:rgba(245,241,235,.55)">Facebook'+(p.ig?' + Instagram @'+mxE(p.ig):' · '+mxE(mxTr('no Instagram linked','bağlı Instagram yok')))+'</div></div><button class="bsave" onclick="msgConnectPageDo(\''+p.id+'\')">'+mxE(mxTr('Connect','Bağla'))+'</button></div>';}).join(''),
+      [{label:mxTr('Cancel','Vazgeç'),cls:'bcancel',fn:mxClose}]);
+  },{scope:'pages_show_list,pages_manage_metadata,pages_messaging,pages_read_engagement,instagram_basic,instagram_manage_messages,business_management',return_scopes:true});
+}
+async function msgConnectPageDo(pageId){
+  mxOpen(mxTr('Connecting…','Bağlanıyor…'),'<div style="font-size:13px">…</div>',[]);
+  var r=await db.functions.invoke('msg-connect',{body:{action:'connect_page',user_token:window._msgTok,page_id:pageId}}),d=r.data||{};
+  if(!d.ok&&r.error&&r.error.context){try{d=await r.error.context.json();}catch(x){}}
+  window._msgTok=null;mxClose();
+  if(d.ok){alert(mxTr('Connected: ','Bağlandı: ')+(d.connected||[]).join(', ')+(d.ig_missing?'\n'+mxTr('No Instagram professional account is linked to this page; only Messenger was connected.','Bu sayfaya bağlı Instagram profesyonel hesabı yok; yalnız Messenger bağlandı.'):''));await msgInit();msgLoad();}
+  else alert(mxTr('Could not connect: ','Bağlanamadı: ')+(d.error==='number_in_use'?mxTr('this page is connected to another clinic.','bu sayfa başka bir kliniğe bağlı.'):(d.detail||d.error||'')));
 }
 async function msgLinkDo(pid){await db.from('msg_threads').update({patient_id:pid}).eq('id',window._msgLinkId);mxClose();await msgFetch();msgChat(window._msgLinkId,true);}
 async function trkLoad(){

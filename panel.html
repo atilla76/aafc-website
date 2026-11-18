@@ -901,6 +901,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
         <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
         <button class="tab" data-fn="cash" onclick="fnView('cash')">DAY CLOSE</button>
         <button class="tab" data-fn="esmm" id="fnEsmmTab" style="display:none" onclick="fnView('esmm')">e-SMM</button>
+        <button class="tab" data-fn="kdv" id="fnKdvTab" style="display:none" onclick="fnView('kdv')">VAT</button>
       </div>
       <div id="fnBody"></div>
     </div>
@@ -2847,6 +2848,7 @@ async function fnLoad(){
     (fnProfit?'<div class="imp-num" style="cursor:pointer;text-align:left;min-width:260px" onclick="switchTab(\'stock\')"><div class="l" style="display:flex;justify-content:space-between;gap:10px"><b style="color:#F5F1EB">'+mxE(mxTr('Stock','Stok'))+'</b><span>'+mxE(mxTr('not in profit','kâra karışmaz'))+' ›</span></div><div style="display:flex;gap:14px;margin-top:8px">'+
       [[mxTr('On the shelf','Rafta'),pf.stock_value],[mxTr('Bought','Alınan'),pf.stock_bought],[mxTr('Used','Kullanılan'),used]].map(function(x){return '<div><div class="l">'+mxE(x[0])+'</div><b style="font-size:15px">'+mxMoney(x[1]||0)+'</b></div>';}).join('')+'</div></div>':'')+
     (fnEinv&&un?'<div class="imp-num" style="cursor:pointer" onclick="fnSetFilter(\'uninvoiced\')"><div class="n" style="color:#D4963A">'+un+'</div><div class="l">'+mxE(mxTr('Not invoiced','Fatura kesilmedi'))+'</div></div>':'');
+  var kt=document.getElementById('fnKdvTab');if(kt){kt.style.display=fnEinv?'':'none';kt.textContent=mxTr('VAT','KDV');}if(fnTab==='kdv'&&!fnEinv)fnTab='entries';fnKdvData=null;
   var et=document.getElementById('fnEsmmTab');if(et){et.style.display=fnEinv?'':'none';et.textContent=einvCountry()==='90'?'e-SMM':mxTr('Invoices','Faturalar');}if(fnTab==='esmm'&&!fnEinv)fnTab='entries';
   fnView(fnTab);
 }
@@ -2908,12 +2910,51 @@ async function fnBulkIssue(){
   alert(mxTr('[ok] issued, [err] failed','[ok] kesildi, [err] hata').replace('[ok]',ok).replace('[err]',bad));
   fnLoad();
 }
+// VAT (KDV) summary of issued e-SMM / invoices for the period, split by rate (get_vat_summary mirrors the receipt line rules)
+var fnKdvData=null,fnKdvF='all';
+function fnKdvNum(v){return Number(v||0).toLocaleString(LANG_LOC[LANG]||'en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+async function fnKdvRender(){
+  var b=document.getElementById('fnBody'),r=fnRange();
+  if(!fnKdvData){b.innerHTML='<div class="imp-step">…</div>';var q=await db.rpc('get_vat_summary',{p_clinic_id:cid,p_from:mxIso(r[0]),p_to:mxIso(r[1])});
+    if(q.error){b.innerHTML='<div class="imp-step">'+mxE(q.error.message)+'</div>';return;}fnKdvData=q.data||{};}
+  var d=fnKdvData,rates=d.rates||[],lines=d.lines||[];
+  if(!lines.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.5)">'+mxE(mxTr('No issued receipts in this period.','Bu dönemde kesilmiş makbuz yok.'))+'</div>';return;}
+  var T={net:0,kdv:0,gross:0};rates.forEach(function(x){T.net+=Number(x.net);T.kdv+=Number(x.kdv);T.gross+=Number(x.gross);});
+  var rl=function(v){return v===null||v===undefined?mxTr('No rate','Oran yok'):'%'+Number(v);};
+  var h='<div class="imp-nums" style="margin-bottom:12px"><div class="imp-num"><div class="n" style="font-size:19px">'+mxMoney(T.net)+'</div><div class="l">'+mxE(mxTr('Taxable amount (excl. VAT)','Matrah (KDV hariç)'))+'</div></div>'+
+    '<div class="imp-num"><div class="n" style="font-size:19px">'+mxMoney(T.kdv)+'</div><div class="l">'+mxE(mxTr('VAT','Hesaplanan KDV'))+'</div></div>'+
+    '<div class="imp-num"><div class="n" style="font-size:19px">'+mxMoney(T.gross)+'</div><div class="l">'+mxE(mxTr('Total (incl. VAT)','Toplam (KDV dahil)'))+'</div></div></div>';
+  h+='<table class="fmt" style="margin-bottom:6px"><tr><th>'+mxE(mxTr('Rate','Oran'))+'</th><th style="text-align:right">'+mxE(mxTr('Receipts','Makbuz'))+'</th><th style="text-align:right">'+mxE(mxTr('Taxable amount','Matrah'))+'</th><th style="text-align:right">'+mxE(mxTr('VAT','KDV'))+'</th><th style="text-align:right">'+mxE(mxTr('Total','Toplam'))+'</th></tr>'+
+    rates.map(function(x){return '<tr><td><b>'+mxE(rl(x.vat))+'</b></td><td style="text-align:right">'+x.docs+'</td><td style="text-align:right">'+fnKdvNum(x.net)+'</td><td style="text-align:right">'+fnKdvNum(x.kdv)+'</td><td style="text-align:right">'+fnKdvNum(x.gross)+'</td></tr>';}).join('')+
+    '<tr style="font-weight:700"><td>'+mxE(mxTr('Total','Toplam'))+'</td><td style="text-align:right">'+(d.docs||0)+'</td><td style="text-align:right">'+fnKdvNum(T.net)+'</td><td style="text-align:right">'+fnKdvNum(T.kdv)+'</td><td style="text-align:right">'+fnKdvNum(T.gross)+'</td></tr></table>';
+  var note=[];if(Number(d.stopaj))note.push(mxTr('Withholding on receipts to companies: ','Şirkete kesilenlerde stopaj: ')+mxMoney(d.stopaj));
+  if(Number(d.missing_vat))note.push(mxTrV('[n] lines have no VAT rate – set the default rate in e-SMM settings','[n] satırda KDV oranı yok – e-SMM ayarlarında varsayılan oranı girin',{n:d.missing_vat}));
+  h+='<div style="font-size:12px;color:rgba(245,241,235,.55);margin-bottom:14px">'+mxE(mxTr('Issued receipts only; cancelled ones are excluded. Lines with different rates on one receipt are split pro rata, as on the receipt.','Yalnız kesilmiş makbuzlar; iptaller hariç. Bir makbuzdaki farklı oranlı satırlar makbuzdaki gibi oranlanarak bölünür.'))+(note.length?' · '+mxE(note.join(' · ')):'')+'</div>';
+  var vs=[];rates.forEach(function(x){vs.push(x.vat===null||x.vat===undefined?'none':String(Number(x.vat)));});
+  h+='<div class="pfl" style="border:none;padding:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+[['all',mxTr('All','Tümü')]].concat(vs.map(function(v){return [v,v==='none'?mxTr('No rate','Oran yok'):'%'+v];})).map(function(x){return '<button class="'+(x[0]===fnKdvF?'on':'')+'" onclick="fnKdvF=\''+x[0]+'\';fnKdvRender()">'+mxE(x[1])+'</button>';}).join('')+
+    '<button class="bimp2" style="margin-left:auto" onclick="fnKdvCsv()">'+mxE(mxTr('Export CSV','Excel (CSV) indir'))+'</button></div>';
+  var ls=lines.filter(function(l){return fnKdvF==='all'||(fnKdvF==='none'?l.vat===null||l.vat===undefined:String(Number(l.vat))===fnKdvF);});
+  h+='<table class="fmt"><tr><th>'+mxE(mxTr('Date','Tarih'))+'</th><th>'+mxE(mxTr('Receipt no','Makbuz no'))+'</th><th>'+mxE(mxTr('Patient / recipient','Hasta / alıcı'))+'</th><th>'+mxE(mxTr('Service','Hizmet'))+'</th><th>'+mxE(mxTr('Rate','Oran'))+'</th><th style="text-align:right">'+mxE(mxTr('Taxable amount','Matrah'))+'</th><th style="text-align:right">'+mxE(mxTr('VAT','KDV'))+'</th><th style="text-align:right">'+mxE(mxTr('Total','Toplam'))+'</th></tr>'+
+    ls.map(function(l){return '<tr><td>'+mxE(new Date(l.date+'T00:00').toLocaleDateString(LANG_LOC[LANG]||'en-US'))+'</td><td>'+mxE(l.doc_no||'')+'</td><td>'+mxE(l.who||'')+'</td><td>'+mxE(l.label||'')+'</td><td>'+mxE(rl(l.vat))+'</td><td style="text-align:right">'+fnKdvNum(l.net)+'</td><td style="text-align:right">'+fnKdvNum(l.kdv)+'</td><td style="text-align:right">'+fnKdvNum(l.gross)+'</td></tr>';}).join('')+'</table>';
+  b.innerHTML=h;
+}
+function fnKdvCsv(){
+  var d=fnKdvData||{},q=function(v){v=v===null||v===undefined?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;},n=function(v){return Number(v||0).toFixed(2).replace('.',',');};
+  var rows=[[mxTr('Date','Tarih'),mxTr('Receipt no','Makbuz no'),mxTr('Patient / recipient','Hasta / alıcı'),mxTr('Service','Hizmet'),mxTr('VAT rate','KDV oranı'),mxTr('Taxable amount','Matrah'),mxTr('VAT','KDV'),mxTr('Withholding','Stopaj'),mxTr('Total','Toplam')]];
+  (d.lines||[]).filter(function(l){return fnKdvF==='all'||(fnKdvF==='none'?l.vat===null||l.vat===undefined:String(Number(l.vat))===fnKdvF);})
+    .forEach(function(l){rows.push([l.date,l.doc_no,l.who,l.label,l.vat===null||l.vat===undefined?'':l.vat,n(l.net),n(l.kdv),n(l.stopaj),n(l.gross)]);});
+  rows.push([]);rows.push([mxTr('Rate','Oran'),mxTr('Receipts','Makbuz'),mxTr('Taxable amount','Matrah'),mxTr('VAT','KDV'),mxTr('Total','Toplam')]);
+  (d.rates||[]).forEach(function(x){rows.push([x.vat===null||x.vat===undefined?'':'%'+x.vat,x.docs,n(x.net),n(x.kdv),n(x.gross)]);});
+  var csv='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n'),r=fnRange();
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='kdv_'+mxIso(r[0])+'_'+mxIso(r[1])+'.csv';document.body.appendChild(a);a.click();a.remove();
+}
 function fnView(v){
   fnTab=v;document.querySelectorAll('[data-fn]').forEach(function(t){t.classList.toggle('on',t.dataset.fn===v);});
   var b=document.getElementById('fnBody');
   if(v==='cash'){fnCashRender();return;}
   if(v==='profit'){fnProfitRender();return;}
   if(v==='esmm'){fnEsmmRender();return;}
+  if(v==='kdv'){fnKdvRender();return;}
   if(v==='entries'){
     var fl=[['all',mxTr('All','Tümü')],['income',mxTr('Income','Gelir')],['expense',mxTr('Expense','Gider')],['stock',mxTr('Stock purchases','Stok alımı')]].concat(fnEinv?[['uninvoiced',mxTr('Not invoiced','Faturasız')+' · '+fnEntries.filter(fnUninv).length]]:[]).concat([['cash',mxTr('Cash','Nakit')],['card',mxTr('Card','Kart')],['transfer',mxTr('Bank transfer','Havale / EFT')]]);
     var chips='<div class="pfl" style="border:none;padding:0 0 10px">'+fl.map(function(x){return '<button class="'+(x[0]===fnFilter?'on':'')+'" onclick="fnSetFilter(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>';

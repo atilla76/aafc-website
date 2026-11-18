@@ -5226,7 +5226,10 @@ function msgConnectPage(){
   var c=window._msgCfg;
   if(!c||!window.FB){msgPrepFB().then(function(x){alert(x?mxTr('Facebook is ready, please click the button again.','Facebook hazır, lütfen düğmeye tekrar basın.'):mxTr('Facebook could not be loaded. Disable ad blockers and try again.','Facebook yüklenemedi. Reklam engelleyiciyi kapatıp tekrar deneyin.'));}).catch(function(){alert(mxTr('Facebook could not be loaded. Disable ad blockers and try again.','Facebook yüklenemedi. Reklam engelleyiciyi kapatıp tekrar deneyin.'));});return;}
   var opts=c.page_config_id?{config_id:c.page_config_id}:{scope:'pages_show_list,pages_manage_metadata,pages_messaging,pages_read_engagement,instagram_basic,instagram_manage_messages,business_management',return_scopes:true};
-  FB.login(async function(resp){
+  // FB SDK rejects async callbacks ("Expression is of type asyncfunction"), so keep this one plain
+  FB.login(function(resp){msgPagesAfterLogin(resp);},opts);
+}
+async function msgPagesAfterLogin(resp){
     var tok=resp&&resp.authResponse&&resp.authResponse.accessToken;if(!tok){if(resp&&resp.status!=='unknown')alert(mxTr('Facebook did not return access. Status: ','Facebook erişim vermedi. Durum: ')+(resp&&resp.status));return;}
     mxOpen(mxTr('Connecting…','Bağlanıyor…'),'<div style="font-size:13px">…</div>',[]);
     var r=await db.functions.invoke('msg-connect',{body:{action:'pages',user_token:tok}}),d=r.data||{};
@@ -5237,7 +5240,6 @@ function msgConnectPage(){
     mxOpen(mxTr('Choose the clinic page','Klinik sayfasını seçin'),(d.pages||[]).map(function(p){
       return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)"><div style="flex:1"><b>'+mxE(p.name)+'</b><div style="font-size:12px;color:rgba(245,241,235,.55)">Facebook'+(p.ig?' + Instagram @'+mxE(p.ig):' · '+mxE(mxTr('no Instagram linked','bağlı Instagram yok')))+'</div></div><button class="bsave" onclick="msgConnectPageDo(\''+p.id+'\')">'+mxE(mxTr('Connect','Bağla'))+'</button></div>';}).join(''),
       [{label:mxTr('Cancel','Vazgeç'),cls:'bcancel',fn:mxClose}]);
-  },opts);
 }
 async function msgConnectPageDo(pageId){
   mxOpen(mxTr('Connecting…','Bağlanıyor…'),'<div style="font-size:13px">…</div>',[]);

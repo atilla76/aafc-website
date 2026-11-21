@@ -2552,6 +2552,7 @@ async function stOpen(id){
     var soon=l.expiry_date&&new Date(l.expiry_date)<new Date(Date.now()+30*864e5);
     return '<tr style="opacity:'+(Number(l.remaining)>0?1:.45)+'"><td><b>'+mxE(l.lot_no)+'</b></td><td style="color:'+(soon?'#C0614A':'inherit')+'">'+mxDate(l.expiry_date)+'</td><td>'+mxDate(l.opened_at)+'</td><td>'+mxQty(l.remaining)+' '+u+'</td><td style="white-space:nowrap">'+
       (l.opened_at?'':'<button class="btn bedit" onclick="stOpenLot(\''+l.lot_id+'\')">Vial opened</button> ')+
+      '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'use\')">Used (no patient)</button> '+
       '<button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'waste\')">Waste</button> <button class="btn bedit" onclick="stMove(\''+l.lot_id+'\',\'adjust\')">Count adjustment</button> <button class="btn bedit" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(mxTr('Edit','Düzenle'))+'</button> <button class="btn bedit" onclick="stRecip(\''+l.lot_id+'\',\''+mxE(l.lot_no)+'\')">Patients</button> <button class="btn bedit" style="'+(l.unit_cost==null?'color:#D4963A;border-color:rgba(212,150,58,.5)':'')+'" onclick="stCost(\''+l.lot_id+'\','+(l.unit_cost==null?'null':Number(l.unit_cost))+')">'+mxE(l.unit_cost==null?mxTr('Enter box price','Kutu fiyatı gir'):mxTr('Box price','Kutu fiyatı')+' '+mxMoney(Number(l.unit_cost)*(Number(stSel.pack_size)||1)))+'</button></td></tr>';}).join('');
 }
 async function stCost(lotId,unitCost){
@@ -2658,7 +2659,8 @@ function stLotTotal(){
 }
 async function stOpenLot(id){await db.rpc('open_stock_lot',{p_lot_id:id});stLoad();}
 function stMove(id,kind){
-  mxOpen(kind==='waste'?'Waste / disposal':'Count adjustment',
+  mxOpen(kind==='waste'?'Waste / disposal':kind==='use'?'Used (no patient)':'Count adjustment',
+    (kind==='use'?'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin:-4px 0 8px">'+mxE(mxTr('For products used without a patient record. For ÜTS products a consumption notification (no patient details) is sent to ÜTS.','Hasta kaydı olmadan kullanılan ürünler için. ÜTS ürünlerinde ÜTS\'ye hastasız tüketim bildirimi gider.'))+'</div>':'')+
     '<input class="mi" id="smQty" placeholder="Quantity">'+(kind==='adjust'?'<div style="font-size:12px;color:rgba(245,241,235,.45);margin-top:-6px">Enter + for surplus, − for shortage</div>':'')+'<input class="mi" id="smNote" placeholder="'+mxE(mxTr('Note (optional)','Not (isteğe bağlı)'))+'">',
     [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
       var q=mxNum(mxV('smQty').replace('−','-'));if(!q){return;}
@@ -4935,7 +4937,7 @@ setTimeout(setMove,0);
 function curTab(){var t=document.querySelector('.tab.on[data-tab]');return t?t.dataset.tab:'';}
 // ---- ÜTS / İTS notifications (admin) ----
 var trkCfg=null;
-function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım')})[q.kind]||q.kind;}
+function trkKind(q){return ({mal_alim:mxTr('Receipt','Mal alım'),sarf:mxTr('Consumption','Sarf'),alma:mxTr('Receipt','Alma'),kullanim:mxTr('Use on patient','Kullanım'),tuketim:mxTr('Consumption (no patient)','Tüketim (hastasız)')})[q.kind]||q.kind;}
 // ---- Release regression checklist (EDECA staff only; table release_test_runs) ----
 var REL_ITEMS=[
  ['login','Giriş / çıkış, oturum açık kalıyor'],
@@ -4965,7 +4967,8 @@ var REL_ITEMS=[
  ['kdv','Muhasebe → KDV sekmesi: oranlara göre matrah / KDV / toplam, satır listesi, oran filtresi, Excel paylaş (panel MUHASEBE › KDV ile aynı rakamlar)','1.2.12'],
  ['iosperm','iPhone: telefon dili Türkçe iken ilk kamera / fotoğraf / mikrofon izni sorusu Türkçe ve mesajlaşmadan söz ediyor','1.2.12'],
  ['camtilt','Fotoğraf çekimi: telefon yukarıdan aşağı eğik tutulunca "Eğik … telefonu dik ya da düz tut" (sarı); dik tutunca ve yatan hastada yere paralel tutunca "Düz" (yeşil)','1.2.12'],
- ['cam4k','Android fotoğraf çekimi: görüntü açılıyor, kaydedilen fotoğraf net (2160×2880); görüntü siyahsa "Görüntü siyahsa dokunun (1080p)" ile açılıyor','1.2.12']
+ ['cam4k','Android fotoğraf çekimi: görüntü açılıyor, kaydedilen fotoğraf net (2160×2880); görüntü siyahsa "Görüntü siyahsa dokunun (1080p)" ile açılıyor','1.2.12'],
+ ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -5941,7 +5944,7 @@ var I18N_TR={'LAB TESTS':'TAHLİLLER','Results':'Sonuçlar','Add file':'Dosya ek
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',
 '+ Receive lot':'+ Lot girişi','Receive lot':'Lot girişi','No lots received':'Lot girişi yok','Lot / serial no':'Lot / seri no','Expiry date':'Son kullanma tarihi','Opened':'Açıldı',
-'Vial opened':'Şişeyi açtım','Waste':'Fire','Count adjustment':'Sayım düzeltme','Waste / disposal':'Fire / imha','Enter + for surplus, − for shortage':'Fazla için +, eksik için − girin','Patients who received this lot':'Bu lotu alan hastalar',
+'Vial opened':'Şişeyi açtım','Waste':'Fire','Used (no patient)':'Kullanıldı (hastasız)','Count adjustment':'Sayım düzeltme','Waste / disposal':'Fire / imha','Enter + for surplus, − for shortage':'Fazla için +, eksik için − girin','Patients who received this lot':'Bu lotu alan hastalar',
 'This lot has not been used yet':'Bu lot henüz kullanılmadı','Product name':'Ürün adı','Units (u)':'Ünite (u)','Minimum stock (alert)':'Minimum stok (uyarı)','Use within after opening (days)':'Açıldıktan sonra kullanım (gün)',
 'Pack content (default quantity)':'Kutu içeriği (varsayılan miktar)','Product barcode (GTIN)':'Ürün barkodu (GTIN)','Deactivate product':'Ürünü pasifleştir','Deactivate product?':'Ürün pasifleştirilsin mi?',
 'Quantity':'Miktar','Unit cost':'Birim maliyet','Supplier':'Tedarikçi','Serial no':'Seri no','Barcode (UDI)':'Barkod (ÜTS/İTS)','Lot already exists, quantity added to it':'Aynı lot bulundu, miktar mevcut lota eklendi',

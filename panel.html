@@ -4970,7 +4970,8 @@ var REL_ITEMS=[
  ['camdir','Fotoğraf çekimi, önceki fotoğraf seçili: telefon eğikken önce "Eğik …" uyarısı; düzken fark yön yön yazıyor ("Üstünü öne eğ … · Sağa çevir …"), söylenen yöne çevirince sayı küçülüyor ve "Önceki açı ✓" oluyor','1.2.13'],
  ['cam4k','Android fotoğraf çekimi: görüntü açılıyor, kaydedilen fotoğraf net (2160×2880); görüntü siyahsa "Görüntü siyahsa dokunun (1080p)" ile açılıyor','1.2.12'],
  ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12'],
- ['trkignore','Ayarlar › ÜTS / İTS › Hatalı: satırda “Yoksay” → onay → satır hatalı listesinden çıkıyor, “Atlandı” listesinde “Yoksayıldı (kim, tarih)” notuyla duruyor; “Tekrar dene” ile geri alınabiliyor','1.2.13']
+ ['trkignore','Ayarlar › ÜTS / İTS › Hatalı: satırda “Yoksay” → onay → satır hatalı listesinden çıkıyor, “Atlandı” listesinde “Yoksayıldı (kim, tarih)” notuyla duruyor; “Tekrar dene” ile geri alınabiliyor','1.2.13'],
+ ['msgnotify','Panel › Mesajlar: “🔔 Bildirimleri aç” → tarayıcı izni; panel başka sekmedeyken gelen mesajda ses + “Klirena – Yeni mesaj” bildirimi (hasta adı / metin yok), sekme başlığı yanıp sönüyor; açık yazışmada uyarı yok; “Uyarı kapalı”yken ses yok','1.2.13']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -5052,8 +5053,40 @@ async function msgInit(){
   if(!msgSub){
     msgSub=db.channel('msg-'+cid)
       .on('postgres_changes',{event:'*',schema:'public',table:'msg_threads',filter:'clinic_id=eq.'+cid},function(){msgFetch();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'msg_messages',filter:'clinic_id=eq.'+cid},function(p){var m=p.new||{};if(msgSel&&m.thread_id===msgSel)msgChat(msgSel,true);})
+      .on('postgres_changes',{event:'*',schema:'public',table:'msg_messages',filter:'clinic_id=eq.'+cid},function(p){var m=p.new||{};if(p.eventType==='INSERT'&&m.direction==='in')msgNotify(m);if(msgSel&&m.thread_id===msgSel)msgChat(msgSel,true);})
       .subscribe();
+  }
+}
+// New-message alert: sound + browser notification while the panel is open. Never shows patient name or text (KVKK).
+var msgLastBeep=0,msgTitle0=document.title,msgBlinkT=null;
+function msgSnd(){try{return localStorage.getItem('klr_msg_sound')!=='0';}catch(e){return true;}}
+function msgBellBtn(){
+  var np=('Notification' in window)?Notification.permission:'denied',on=msgSnd();
+  return '<button class="bimp2" title="'+mxE(mxTr('Sound and notification for new messages','Yeni mesajda ses ve bildirim'))+'" onclick="msgBell()">'+(on?'🔔':'🔕')+' '+mxE(on?(np==='default'?mxTr('Turn on notifications','Bildirimleri aç'):mxTr('Alerts on','Uyarı açık')):mxTr('Alerts off','Uyarı kapalı'))+'</button>';
+}
+async function msgBell(){
+  var on=msgSnd();
+  if(on&&('Notification' in window)&&Notification.permission==='default'){await Notification.requestPermission();msgBeep();}
+  else{try{localStorage.setItem('klr_msg_sound',on?'0':'1');}catch(e){} if(!on)msgBeep();}
+  if(('Notification' in window)&&Notification.permission==='denied'&&msgSnd())alert(mxTr('Browser notifications are blocked for this site; only the sound will play. You can allow them from the lock icon in the address bar.','Bu sitede tarayıcı bildirimleri engelli; yalnız ses çalacak. Adres çubuğundaki kilit simgesinden izin verebilirsiniz.'));
+  document.getElementById('msgConnBtn').innerHTML=msgBellBtn()+(fnAdmin?' <button class="bimp2" onclick="msgConnOpen()">⚙ '+mxE(mxTr('Connections','Bağlantılar'))+'</button>':'');
+}
+function msgBeep(){
+  try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var x=msgBeep.c||(msgBeep.c=new C());if(x.state==='suspended')x.resume();
+    [0,0.18].forEach(function(t,i){var o=x.createOscillator(),g=x.createGain();o.type='sine';o.frequency.value=i?1046:784;g.gain.setValueAtTime(0.0001,x.currentTime+t);g.gain.exponentialRampToValueAtTime(0.18,x.currentTime+t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,x.currentTime+t+0.25);o.connect(g);g.connect(x.destination);o.start(x.currentTime+t);o.stop(x.currentTime+t+0.3);});
+  }catch(e){}
+}
+function msgNotify(m){
+  if(!msgSnd())return;
+  if(m.created_at&&Date.now()-new Date(m.created_at).getTime()>120000)return; // history import: no alert
+  var now=Date.now();if(now-msgLastBeep<8000)return;msgLastBeep=now;
+  var here=document.visibilityState==='visible'&&document.getElementById('tab-msg').classList.contains('on')&&m.thread_id===msgSel;
+  if(here)return;
+  msgBeep();
+  if(document.visibilityState!=='visible'){
+    if(('Notification' in window)&&Notification.permission==='granted'){try{var n=new Notification('Klirena',{body:mxTr('New message','Yeni mesaj'),tag:'klr-msg',icon:'/favicon.png'});n.onclick=function(){window.focus();switchTab('msg');n.close();};}catch(e){}}
+    if(!msgBlinkT){var k=0;msgBlinkT=setInterval(function(){document.title=(k++%2)?msgTitle0:'● '+mxTr('New message','Yeni mesaj');},1000);
+      var stop=function(){if(document.visibilityState==='visible'){clearInterval(msgBlinkT);msgBlinkT=null;document.title=msgTitle0;document.removeEventListener('visibilitychange',stop);}};document.addEventListener('visibilitychange',stop);}
   }
 }
 async function msgFetch(){
@@ -5066,7 +5099,7 @@ async function msgFetch(){
   if(document.getElementById('tab-msg').classList.contains('on'))msgRender();
 }
 function msgLoad(){
-  document.getElementById('msgConnBtn').innerHTML=fnAdmin?'<button class="bimp2" onclick="msgConnOpen()">⚙ '+mxE(mxTr('Connections','Bağlantılar'))+'</button>':'';
+  document.getElementById('msgConnBtn').innerHTML=msgBellBtn()+(fnAdmin?' <button class="bimp2" onclick="msgConnOpen()">⚙ '+mxE(mxTr('Connections','Bağlantılar'))+'</button>':'');
   document.getElementById('msgH').textContent=mxTr('Messages','Mesajlar');
   document.getElementById('msgSub').textContent=mxTr('WhatsApp, Instagram and Facebook messages in one place.','WhatsApp, Instagram ve Facebook mesajları tek yerde.');
   if(!msgOn){document.getElementById('msgList').innerHTML='<div style="padding:16px;font-size:13px;color:rgba(245,241,235,.6)">'+mxE(mxTr('WhatsApp, Instagram or Facebook is not connected yet.','WhatsApp, Instagram veya Facebook henüz bağlanmadı.'))+(fnAdmin?'<div style="margin-top:12px"><button class="bsave" onclick="msgConnectWA()">'+mxE(mxTr('Connect WhatsApp','WhatsApp\'ı bağla'))+'</button></div>':'')+'</div>';msgEmptyChat();return;}

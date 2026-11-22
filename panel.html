@@ -2582,15 +2582,11 @@ function stProductModal(p){
     spF('spGtin',mxTr('Product barcode (GTIN)','Ürün barkodu (GTIN)'),p.gtin,mxTr('Filled in automatically when you scan the box code; no need to type it.','Kutudaki karekod okutulunca kendiliğinden dolar; elle yazmana gerek yok.'))+
     '<label class="hint" style="display:block;margin:2px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">'+mxE(mxTr('Reported to','Bildirim'))+'</label><select class="mi" id="spTrack">'+
       [['',mxTr('Automatic (units → İTS, ml → ÜTS)','Otomatik (ünite → İTS, ml → ÜTS)')],['its',mxTr('İTS — drug (e.g. toxin)','İTS — ilaç (ör. toksin)')],['uts',mxTr('ÜTS — medical device (e.g. filler)','ÜTS — tıbbi cihaz (ör. dolgu)')],['none',mxTr('Not reported','Bildirilmez')]]
-        .map(function(o){return '<option value="'+o[0]+'"'+((p.track_system||'')===o[0]?' selected':'')+'>'+mxE(o[1])+'</option>';}).join('')+'</select>'+
-    '<label class="hint" style="display:block;margin:2px 0 4px;font-size:11px;color:rgba(245,241,235,.45)">'+mxE(mxTr('ÜTS reporting','ÜTS bildirimi'))+'</label><select class="mi" id="spUtsMode">'+
-      [['use',mxTr('Each patient use — syringe, tip','Her hastaya kullanım — şırınga, uç')],['box',mxTr('Box shared by several patients — one consumption notice when the box is used up','Kutu birden fazla hastaya — kutu bitince toplu tüketim')]]
-        .map(function(o){return '<option value="'+o[0]+'"'+((p.uts_mode||'use')===o[0]?' selected':'')+'>'+mxE(o[1])+'</option>';}).join('')+'</select>'+
-    spF('spUtsBox',mxTr('ÜTS box content','ÜTS kutu içeriği'),p.uts_box_size,mxTr('Stock amount in one ÜTS piece (e.g. NCTF 10 × 3 ml → 30). Empty = pack content.','ÜTS’deki 1 adedin stoktaki karşılığı (ör. NCTF 10 × 3 ml → 30). Boşsa kutu içeriği kullanılır.')),
+        .map(function(o){return '<option value="'+o[0]+'"'+((p.track_system||'')===o[0]?' selected':'')+'>'+mxE(o[1])+'</option>';}).join('')+'</select>',
 
     [{label:'Cancel',cls:'bcancel',fn:mxClose}].concat(p.id?[{label:'Deactivate product',cls:'bcancel',fn:async function(){if(!confirm('Deactivate product?'))return;await db.from('clinic_products').update({is_active:false}).eq('id',p.id);stSel=null;document.getElementById('stLotsBox').style.display='none';mxClose();stLoad();}}]:[]).concat([{label:'Save',fn:async function(){
       var name=mxV('spName');if(!name){alert('Name is required');return;}
-      var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),vial_size:mxNum(mxV('spVial')),gtin:mxV('spGtin')||null,track_system:document.getElementById('spTrack').value||null,uts_mode:document.getElementById('spUtsMode').value==='box'?'box':null,uts_box_size:mxNum(mxV('spUtsBox'))||null};
+      var row={clinic_id:cid,name:name,unit:document.getElementById('spUnit').value,min_stock:mxNum(mxV('spMin')),open_shelf_life_days:parseInt(mxV('spShelf'))||null,pack_size:mxNum(mxV('spPack')),vial_size:mxNum(mxV('spVial')),gtin:mxV('spGtin')||null,track_system:document.getElementById('spTrack').value||null};
       var r=p.id?await db.from('clinic_products').update(row).eq('id',p.id):await db.from('clinic_products').insert(Object.assign({kind:'both',color:'#C9A96E'},row));
       if(r.error){alert('Error: '+r.error.message);return;}
       var op=Number(p.pack_size)||0,np=Number(row.pack_size)||0;
@@ -4973,8 +4969,7 @@ var REL_ITEMS=[
  ['camtilt','Fotoğraf çekimi: telefon yukarıdan aşağı eğik tutulunca "Eğik … telefonu dik ya da düz tut" (sarı); dik tutunca ve yatan hastada yere paralel tutunca "Düz" (yeşil)','1.2.12'],
  ['camdir','Fotoğraf çekimi, önceki fotoğraf seçili: telefon eğikken önce "Eğik …" uyarısı; düzken fark yön yön yazıyor ("Üstünü öne eğ … · Sağa çevir …"), söylenen yöne çevirince sayı küçülüyor ve "Önceki açı ✓" oluyor','1.2.13'],
  ['cam4k','Android fotoğraf çekimi: görüntü açılıyor, kaydedilen fotoğraf net (2160×2880); görüntü siyahsa "Görüntü siyahsa dokunun (1080p)" ile açılıyor','1.2.12'],
- ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12'],
- ['utsbox','ÜTS “kutu bitince toplu” ürün (ör. NCTF): hastaya kullanımda ÜTS’ye kullanım bildirimi gitmiyor; lottan bir kutu dolusu kullanılınca ÜTS / İTS ekranında 1 “Tüketim (hastasız)” satırı çıkıyor','1.2.13']
+ ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}

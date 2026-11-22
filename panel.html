@@ -4971,7 +4971,8 @@ var REL_ITEMS=[
  ['cam4k','Android fotoğraf çekimi: görüntü açılıyor, kaydedilen fotoğraf net (2160×2880); görüntü siyahsa "Görüntü siyahsa dokunun (1080p)" ile açılıyor','1.2.12'],
  ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12'],
  ['trkignore','Ayarlar › ÜTS / İTS › Hatalı: satırda “Yoksay” → onay → satır hatalı listesinden çıkıyor, “Atlandı” listesinde “Yoksayıldı (kim, tarih)” notuyla duruyor; “Tekrar dene” ile geri alınabiliyor','1.2.13'],
- ['msgnotify','Panel › Mesajlar: “🔔 Bildirimleri aç” → tarayıcı izni; panel başka sekmedeyken gelen mesajda ses + “Klirena – Yeni mesaj” bildirimi (hasta adı / metin yok), sekme başlığı yanıp sönüyor; açık yazışmada uyarı yok; “Uyarı kapalı”yken ses yok','1.2.13']
+ ['msgnotify','Panel › Mesajlar: “🔔 Bildirimleri aç” → tarayıcı izni; panel başka sekmedeyken gelen mesajda ses + “Klirena – Yeni mesaj” bildirimi (hasta adı / metin yok), sekme başlığı yanıp sönüyor; açık yazışmada uyarı yok; “Uyarı kapalı”yken ses yok','1.2.13'],
+ ['pushmsg','Uygulama: ilk açılışta bildirim izni → uygulama kapalı/kilitliyken gelen mesajda “Klirena – Yeni mesaj / N okunmamış mesaj” bildirimi (hasta adı ve metin yok); bildirime dokununca Mesajlar açılıyor; Ayarlar › Mesaj bildirimleri Kapalı → bildirim gelmiyor; çıkış yapınca bildirim gelmiyor','1.2.13']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}

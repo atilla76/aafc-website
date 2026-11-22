@@ -2660,7 +2660,7 @@ function stLotTotal(){
 async function stOpenLot(id){await db.rpc('open_stock_lot',{p_lot_id:id});stLoad();}
 function stMove(id,kind){
   mxOpen(kind==='waste'?'Waste / disposal':kind==='use'?'Used (no patient)':'Count adjustment',
-    (kind==='use'?'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin:-4px 0 8px">'+mxE(mxTr('For products used without a patient record. For ÜTS products a consumption notification (no patient details) is sent to ÜTS.','Hasta kaydı olmadan kullanılan ürünler için. ÜTS ürünlerinde ÜTS\'ye hastasız tüketim bildirimi gider.'))+'</div>':'')+
+    (kind==='use'?'<div style="font-size:12.5px;color:rgba(245,241,235,.6);margin:-4px 0 8px">'+mxE(mxTr('For products used without a patient record. For ÜTS products a use notification with the count (no patient details) is sent to ÜTS.','Hasta kaydı olmadan kullanılan ürünler için. ÜTS ürünlerinde ÜTS\'ye hasta bilgisi olmadan, adetli kullanım bildirimi gider.'))+'</div>':'')+
     '<input class="mi" id="smQty" placeholder="Quantity">'+(kind==='adjust'?'<div style="font-size:12px;color:rgba(245,241,235,.45);margin-top:-6px">Enter + for surplus, − for shortage</div>':'')+'<input class="mi" id="smNote" placeholder="'+mxE(mxTr('Note (optional)','Not (isteğe bağlı)'))+'">',
     [{label:'Cancel',cls:'bcancel',fn:mxClose},{label:'Save',fn:async function(){
       var q=mxNum(mxV('smQty').replace('−','-'));if(!q){return;}

@@ -5097,6 +5097,7 @@ async function msgFetch(){
   var n=msgThreads.reduce(function(a,t){return a+(t.unread||0);},0);
   var b=document.getElementById('tabMsg');if(b)b.innerHTML=mxTr('MESSAGES','MESAJLAR')+(n?' <span style="background:#B89A6A;color:#1C1929;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px">'+n+'</span>':'');
   if(document.getElementById('tab-msg').classList.contains('on'))msgRender();
+  if(document.getElementById('tab-home').classList.contains('on')&&typeof hmSum!=='undefined'&&hmSum)hmRender();
 }
 function msgLoad(){
   document.getElementById('msgConnBtn').innerHTML=msgBellBtn()+(fnAdmin?' <button class="bimp2" onclick="msgConnOpen()">⚙ '+mxE(mxTr('Connections','Bağlantılar'))+'</button>':'');
@@ -5940,6 +5941,8 @@ function hmRender(){
   if(c.count>0){var f=c.first||{};al+=hmAlert('red','📅',c.count===1?mxTrV('[name] cancelled the [time] appointment','[name] [time] randevusunu iptal etti',{name:f.name||'',time:f.time||''}):c.count+' '+mxTr('patients cancelled their appointment','hasta randevusunu iptal etti'),s.waitlist>0?mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}):'','hmGoAppts()');}
   else if(s.waitlist>0)al+=hmAlert('gold','⏳',mxTrV('[n] people on the waitlist','Bekleme listesinde [n] kişi',{n:s.waitlist}),'','hmGoAppts()');
   if(rf.count>0){var g=rf.first||{};al+=hmAlert('amber','⚠️',mxTrV('Intake form: [n] risky answers','Ön bilgi formu: [n] riskli yanıt',{n:rf.count}),g.name||'',g.form_id?"hmOpenForm('"+mxE(g.form_id)+"')":g.patient_id?"goPatient('"+mxE(g.patient_id)+"')":'hmGoAppts()');}
+  var mu=msgThreads.reduce(function(a,t){return a+(t.unread||0);},0),mt=msgThreads.filter(function(t){return t.unread>0;}).length;
+  if(msgOn&&mu>0)al+=hmAlert('gold','💬',mxTrV('[n] unread messages','[n] okunmamış mesaj',{n:mu}),mxTrV('[n] conversations','[n] yazışma',{n:mt}),"switchTab('msg')");
   if(s.birthdays>0){var bn=(s.birthday_names||[]).map(function(b){return b.name+(b.age!=null?' ('+b.age+')':'');});al+=hmAlert('gold','🎂',mxTr('Birthdays today','Bugünün doğum günleri')+' · '+s.birthdays,bn.join(' · ')+(s.birthdays>bn.length?' …':''),"bdOpen()");}
   if((s.recalls||0)>0){al+=hmAlert('teal','🔁',mxTr('Recalls & Reviews','Geri Çağır ve Yorum'),s.recalls+' '+mxTr('due for a recall','hasta geri çağrılmalı'),"switchTab('recall')");}
   if(hmMbys.length)al+=hmAlert('teal','🏥',mxTr('Visits to enter in MBYS','MBYS’ye girilecek vizit')+' · '+hmMbys.length,mxTr('Oldest','En eskisi')+' '+mxDate(hmMbys[hmMbys.length-1].date),'mbTodoOpen()');

@@ -896,6 +896,7 @@ select option,select optgroup{background:#1C1929;color:#F5F1EB}
       <div class="imp-nums" id="fnTotals"></div>
       <div class="tabs" style="border:none;padding:0;margin-bottom:10px">
         <button class="tab on" data-fn="entries" onclick="fnView('entries')">ENTRIES</button>
+        <button class="tab" data-fn="coll" onclick="fnView('coll')">COLLECTIONS</button>
         <button class="tab" data-fn="profit" onclick="fnView('profit')">PROFIT</button>
         <button class="tab" data-fn="recv" onclick="fnView('recv')">RECEIVABLES</button>
         <button class="tab" data-fn="sum" onclick="fnView('sum')">SUMMARY</button>
@@ -2681,10 +2682,11 @@ async function stRecip(id,lotNo){
 var FN_CAT_IN=['treatment','consultation','product_sale','other'],FN_CAT_EX=['stock','rent','salary','utilities','tax','marketing','accounting','equipment','other'],FN_METHODS=['cash','card','transfer','other'];
 var FN_CAT_L={treatment:['Treatment','İşlem / tedavi'],consultation:['Consultation','Muayene'],product_sale:['Product sale','Ürün satışı'],stock:['Product purchase (stock)','Ürün alımı (stok)'],
   rent:['Rent','Kira'],salary:['Staff / salary','Personel / maaş'],utilities:['Utilities','Faturalar (elektrik, su, internet)'],tax:['Tax / social security','Vergi / SGK'],marketing:['Marketing','Reklam'],
-  accounting:['Accounting / consulting','Muhasebe / danışmanlık'],equipment:['Device / equipment','Cihaz / ekipman'],other:['Other','Diğer']};
+  accounting:['Accounting / consulting','Muhasebe / danışmanlık'],equipment:['Device / equipment','Cihaz / ekipman'],refund:['Patient refund','Hasta iadesi'],other:['Other','Diğer']};
 var FN_M_L={cash:['Cash','Nakit'],card:['Card','Kart'],transfer:['Bank transfer','Havale / EFT'],other:['Other','Diğer']};
 function fnCat(c){var x=FN_CAT_L[c]||[c,c];return mxTr(x[0],x[1]);}
 function fnMeth(m){var x=FN_M_L[m]||FN_M_L.other;return mxTr(x[0],x[1]);}
+var fnPrevSum={},fnColl=null,fnCollF='all',fnCollM='';
 var fnAnchor=new Date(new Date().getFullYear(),new Date().getMonth(),1),fnEntries=[],fnSum=null,fnRecv=[],fnTab='entries',fnAdmin=null,fnFilter='all',fnEinv=false,fnProfit=null;
 function fnNet(d){return d?Number(d.fees||0)-Number(d.product_cost||0)-Number(d.waste_cost||0)-Number(d.expenses||0):0;}
 var fnEsF='all';
@@ -2830,7 +2832,7 @@ async function fnLoad(){
     db.rpc('profit_report',{p_from:mxIso(pr[0]),p_to:mxIso(pr[1])})]);
   fnProfit=res[7].data||null;var pp=res[8].data||null;
   fnEntries=res[0].data||[];fnSum=res[1].data||{income:0,expense:0};fnRecv=res[2].data||[];
-  var ps=res[3].data||{},td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
+  var ps=res[3].data||{};fnPrevSum=ps;var td=(res[4].data||[]).filter(function(e){return e.kind==='income';}).reduce(function(a,e){return a+Number(e.amount||0);},0),cd=res[5].data||{};
   fnEinv=!!(res[6].data&&res[6].data.enabled)&&!!einvCountry();fnEinvMode=(res[6].data&&res[6].data.issue_mode)||'ask';fnEiS=res[6].data||{};var mkb=document.getElementById('fnMkBtn');if(mkb)mkb.style.display=fnEinv&&einvCountry()==='90'?'':'none';
   var closed=!!cd.closing;
   document.getElementById('fnToday').innerHTML='<div class="imp-step" style="display:flex;align-items:center;gap:14px;border-color:'+(closed?'rgba(58,176,106,.4)':'rgba(212,150,58,.4)')+'">'+
@@ -2955,6 +2957,7 @@ function fnView(v){
   var b=document.getElementById('fnBody');
   if(v==='cash'){fnCashRender();return;}
   if(v==='profit'){fnProfitRender();return;}
+  if(v==='coll'){fnCollRender();return;}
   if(v==='esmm'){fnEsmmRender();return;}
   if(v==='kdv'){fnKdvRender();return;}
   if(v==='entries'){
@@ -2965,7 +2968,7 @@ function fnView(v){
     if(!list.length){b.innerHTML=chips+'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';return;}
     b.innerHTML=chips+'<table class="fmt"><tr><th>Date</th><th>Type</th><th>Category</th><th>Patient</th><th>Payment method</th><th>Description</th><th>Invoice no</th><th style="text-align:right">Amount</th></tr>'+list.map(function(e){
       var inc=e.kind==='income',p=e.patients;
-      return '<tr style="cursor:pointer" onclick="fnEntryModal(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':e.category==='stock'?'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(212,184,150,.14);color:#D4B896">'+mxE(mxTr('STOCK','STOK'))+'</span>':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':e.einvoice_status==='cancelled'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Cancelled','İptal edildi'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
+      return '<tr style="cursor:pointer" onclick="'+(e.category==='refund'?'fnRefundModal':'fnEntryModal')+'(\''+e.id+'\')"><td>'+mxDate(e.entry_date)+'</td><td>'+(inc?'Income':e.category==='stock'?'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(212,184,150,.14);color:#D4B896">'+mxE(mxTr('STOCK','STOK'))+'</span>':'Expense')+'</td><td>'+mxE(fnCat(e.category))+'</td><td>'+mxE(p?(p.name||'')+' '+(p.surname||''):'')+'</td><td>'+mxE(fnMeth(e.method))+'</td><td>'+mxE(e.description||'')+'</td><td>'+mxE(e.invoice_no||'')+(e.einvoice_status==='issued'?' <span style="color:#6FCF97;font-size:11px;font-weight:700">e-Arşiv ✓</span>':e.einvoice_status==='error'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Failed','Hata'))+'</span>':e.einvoice_status==='deferred'?' <span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('To be issued later','Sonra kesilecek'))+'</span>':e.einvoice_status==='cancelled'?' <span style="color:#F0A28F;font-size:11px;font-weight:700">'+mxE(mxTr('Cancelled','İptal edildi'))+'</span>':(fnEinv&&fnUninv(e)?'<span style="color:#D4963A;font-size:11px;font-weight:700">'+mxE(mxTr('Not invoiced','Faturasız'))+'</span>':''))+'</td><td style="text-align:right;color:'+(inc?'#3AB06A':'#C0614A')+'">'+(inc?'+':'−')+mxMoney(e.amount)+'</td></tr>';}).join('')+'</table>';
   }else if(v==='recv'){
     if(!fnRecv.length){b.innerHTML='<div class="imp-step" style="color:rgba(245,241,235,.4)">No open receivables.</div>';return;}
     b.innerHTML='<table class="fmt"><tr><th>Patient</th><th>Phone</th><th style="text-align:right">Balance due</th><th>Overdue</th><th>Next installment</th><th></th></tr>'+fnRecv.map(function(x){
@@ -2981,6 +2984,100 @@ function fnView(v){
       bars(mxTr('Payment methods','Tahsilat şekli'),meths,'#2A9E8A',function(r){return fnMeth(r.method);})||'<div class="imp-step" style="color:rgba(245,241,235,.4)">No entries in this period</div>';
   }
 }
+// ---- Collections (Tahsilat): what came in, what is still due, refunds — one period, one list ----
+var FN_CST={paid:['Collected','Tahsil edildi','#3AB06A','rgba(58,176,106,.14)'],pending:['Waiting','Bekliyor','#D4963A','rgba(212,150,58,.14)'],overdue:['Overdue','Gecikmiş','#E07A63','rgba(192,97,74,.16)'],refund:['Refund','İade','rgba(245,241,235,.7)','rgba(245,241,235,.08)']};
+async function fnCollRender(){
+  var b=document.getElementById('fnBody'),r=fnRange();
+  b.innerHTML='<div class="imp-step">…</div>';
+  var q=await db.rpc('collections_overview',{p_from:mxIso(r[0]),p_to:mxIso(r[1])});
+  if(q.error){b.innerHTML='<div class="imp-step">'+mxE(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'))+'</div>';return;}
+  fnColl=q.data||{};if(fnTab==='coll')fnCollDraw();
+}
+function fnCollDraw(){
+  var b=document.getElementById('fnBody'),d=fnColl||{},rows=d.rows||[];
+  var col=Number(d.collected||0),n=Number(d.collected_count||0),card='text-align:left;min-width:170px',sub='font-size:12px;color:rgba(245,241,235,.55)';
+  var h='<div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:10px;flex-wrap:wrap">'+
+    '<button class="bimp2" onclick="fnCollCsv()">⬇ CSV</button>'+
+    '<button class="bimp2" onclick="fnRefundModal(null,{after:fnCollRender})">↩ '+mxE(mxTr('Refund','İade'))+'</button>'+
+    '<button class="bimp" onclick="fnEntryModal(null,{kind:\'income\',category:\'treatment\',after:fnCollRender})">+ '+mxE(mxTr('Take payment','Tahsilat al'))+'</button></div>';
+  h+='<div class="imp-nums" style="margin-bottom:12px">'+
+    '<div class="imp-num" style="'+card+'"><div class="l">'+mxE(mxTr('Collected','Tahsil edilen'))+'</div><div class="n" style="color:#3AB06A">'+mxMoney(col)+'</div>'+(fnDelta(col,fnPrevSum.income)||'<div style="'+sub+'">'+mxE(mxTrV('[n] payments','[n] tahsilat',{n:n}))+'</div>')+'</div>'+
+    '<div class="imp-num" style="'+card+';cursor:pointer" onclick="fnCollSet(\'overdue\')"><div class="l">'+mxE(mxTr('Still to collect','Tahsil edilecek'))+'</div><div class="n" style="color:#D4963A">'+mxMoney(d.receivable||0)+'</div><div style="'+sub+'">'+mxE(mxTrV('[n] patients','[n] hasta',{n:d.receivable_patients||0}))+(Number(d.overdue_patients)>0?' · <span style="color:#E07A63">'+mxE(mxTrV('[n] overdue','[n] gecikmiş',{n:d.overdue_patients}))+'</span>':'')+'</div></div>'+
+    '<div class="imp-num" style="'+card+'"><div class="l">'+mxE(mxTr('Refunded','İade'))+'</div><div class="n" style="color:#F5F1EB">'+mxMoney(d.refunded||0)+'</div><div style="'+sub+'">'+mxE(mxTrV('[n] refunds','[n] işlem',{n:d.refund_count||0}))+'</div></div>'+
+    '<div class="imp-num" style="'+card+'"><div class="l">'+mxE(mxTr('Average per payment','İşlem başı ortalama'))+'</div><div class="n" style="color:#F5F1EB">'+mxMoney(n?col/n:0)+'</div><div style="'+sub+'">'+mxE(mxTrV('[n] payments','[n] tahsilat',{n:n}))+'</div></div></div>';
+  var cnt=function(k){return rows.filter(function(x){return x.status===k;}).length;};
+  var fl=[['all',mxTr('All','Tümü')],['paid',mxTr('Collected','Tahsil edildi')],['pending',mxTr('Waiting','Bekliyor')],['overdue',mxTr('Overdue','Gecikmiş')+(cnt('overdue')?' · '+cnt('overdue'):'')],['refund',mxTr('Refund','İade')]];
+  h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px"><div class="pfl" style="border:none;padding:0;flex:1">'+fl.map(function(x){return '<button class="'+(x[0]===fnCollF?'on':'')+'" onclick="fnCollSet(\''+x[0]+'\')">'+mxE(x[1])+'</button>';}).join('')+'</div>'+
+    '<select class="bk-in" onchange="fnCollM=this.value;fnCollDraw()"><option value="">'+mxE(mxTr('All payment methods','Tüm ödeme şekilleri'))+'</option>'+['cash','card','transfer','other'].map(function(m){return '<option value="'+m+'"'+(m===fnCollM?' selected':'')+'>'+mxE(fnMeth(m))+'</option>';}).join('')+'</select></div>';
+  var list=fnCollRows();
+  if(!list.length){b.innerHTML=h+'<div class="imp-step" style="color:rgba(245,241,235,.4)">'+mxE(mxTr('Nothing in this period.','Bu dönemde kayıt yok.'))+'</div>';return;}
+  window._fnCollList=list;
+  h+='<table class="fmt"><tr><th>'+mxE(mxTr('Date','Tarih'))+'</th><th>'+mxE(mxTr('Patient','Hasta'))+'</th><th>'+mxE(mxTr('Item','İşlem'))+'</th><th style="text-align:right">'+mxE(mxTr('Amount','Tutar'))+'</th><th>'+mxE(mxTr('Status','Durum'))+'</th><th>'+mxE(mxTr('Payment method','Ödeme şekli'))+'</th><th></th></tr>'+list.map(function(x,i){
+    var st=FN_CST[x.status]||FN_CST.pending,lab=mxTr(st[0],st[1]);
+    if(x.status==='overdue'&&x.days_late)lab=mxTrV('Overdue [n] days','Gecikmiş [n] gün',{n:x.days_late});
+    var what=mxE(x.what||(x.status==='paid'?mxTr('Payment','Tahsilat'):''))+(x.seq?' <span style="color:rgba(245,241,235,.45)">· '+mxE(mxTrV('installment [a]/[b]','taksit [a]/[b]',{a:x.seq,b:x.n_inst||x.seq}))+'</span>':'');
+    var act='';
+    if(x.status==='pending'||x.status==='overdue'){
+      act='<button class="btn bedit" onclick="event.stopPropagation();fnCollPay('+i+')">'+mxE(mxTr('Collect','Tahsil et'))+'</button>';
+      if(x.status==='overdue'&&x.phone)act+=' <a class="btn bedit" target="_blank" onclick="event.stopPropagation()" href="'+mxWa(x.phone,mxFill(clinic.installment_message||mxTr('Hi [name], this is a reminder for your installment of [amount] due on [date]. Have a nice day — [clinic]','Merhaba [ad], [tarih] vadeli [tutar] tutarındaki taksit ödemenizi hatırlatmak isteriz. İyi günler dileriz — [klinik]'),x.patient,'',{'[tutar]':mxMoney(x.amount),'[amount]':mxMoney(x.amount),'[tarih]':mxDate(x.date)||'','[date]':mxDate(x.date)||''}))+'">WhatsApp</a>';
+    }
+    var open=x.entry_id?(x.status==='refund'?'fnRefundModal':'fnEntryModal')+'(\''+x.entry_id+'\')':(x.patient_id?'fnAccount(\''+x.patient_id+'\')':'');
+    return '<tr style="cursor:pointer" onclick="'+open+'"><td>'+mxDate(x.date)+'</td><td>'+(x.patient_id?'<a style="cursor:pointer;color:#F5F1EB" onclick="event.stopPropagation();fnAccount(\''+x.patient_id+'\')"><b>'+mxE(x.patient||'')+'</b></a>':'<span style="color:rgba(245,241,235,.4)">—</span>')+'</td><td>'+what+'</td>'+
+      '<td style="text-align:right;white-space:nowrap;color:'+(Number(x.amount)<0?'#E07A63':'#F5F1EB')+'">'+(Number(x.amount)<0?'− '+mxMoney(-x.amount):mxMoney(x.amount))+'</td>'+
+      '<td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap;background:'+st[3]+';color:'+st[2]+'">'+mxE(lab)+'</span></td><td>'+(x.method?mxE(fnMeth(x.method)):'<span style="color:rgba(245,241,235,.35)">—</span>')+'</td><td style="white-space:nowrap">'+act+'</td></tr>';
+  }).join('')+'</table>';
+  b.innerHTML=h;
+}
+function fnCollRows(){var rows=(fnColl&&fnColl.rows)||[];return rows.filter(function(x){return (fnCollF==='all'||x.status===fnCollF)&&(!fnCollM||x.method===fnCollM);});}
+function fnCollSet(k){fnCollF=k;fnCollDraw();}
+function fnCollPay(i){var x=(window._fnCollList||[])[i];if(!x)return;
+  fnEntryModal(null,{kind:'income',category:'treatment',patient:{id:x.patient_id,name:x.patient||'',surname:''},charge_id:x.charge_id||null,amount:Number(x.amount),after:fnCollRender});}
+function fnCollCsv(){var st=function(k){var s=FN_CST[k]||FN_CST.pending;return mxTr(s[0],s[1]);};
+  var rows=[[mxTr('Date','Tarih'),mxTr('Patient','Hasta'),mxTr('Item','İşlem'),mxTr('Amount','Tutar'),mxTr('Status','Durum'),mxTr('Payment method','Ödeme şekli')]].concat(fnCollRows().map(function(x){return [x.date,x.patient||'',(x.what||'')+(x.seq?' ('+x.seq+'/'+(x.n_inst||x.seq)+')':''),Number(x.amount).toFixed(2),st(x.status),x.method?fnMeth(x.method):''];}));
+  var csv='﻿'+rows.map(function(r){return r.map(function(c){c=String(c==null?'':c);return /[";\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c;}).join(';');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='tahsilat-'+mxIso(fnRange()[0])+'.csv';document.body.appendChild(a);a.click();a.remove();}
+// Refund to a patient: money out, linked to the patient (and, if chosen, to the charge it was paid for)
+var fnRfPat=null;
+async function fnRefundModal(id,preset){
+  preset=preset||{};var e={};
+  if(id){var q=await db.from('finance_entries').select('*, patients(name, surname)').eq('id',id).single();e=q.data||{};}
+  fnRfPat=e.patient_id?{id:e.patient_id,name:(e.patients||{}).name||'',surname:(e.patients||{}).surname||''}:(preset.patient||null);
+  mxOpen(id?mxTr('Edit refund','İadeyi düzenle'):mxTr('Refund to patient','Hastaya iade'),
+    '<div style="font-size:12px;color:rgba(245,241,235,.55);margin-bottom:8px">'+mxE(mxTr('Money paid back to the patient. Linked to a charge, it lowers what was paid on it. If the treatment was cancelled, also reduce or delete the charge.','Hastaya geri ödenen para. Bir borca bağlanırsa o borçta ödenen tutar azalır. İşlem iptal edildiyse borcu da azaltın ya da silin.'))+'</div>'+
+    '<div id="rfPat"></div><select class="mi" id="rfCharge" style="display:none"></select>'+
+    '<input class="mi" id="rfAmt" placeholder="'+mxE(mxTr('Amount','Tutar'))+'" value="'+(e.amount!=null?mxQty(e.amount):'')+'" style="font-size:18px;font-weight:600">'+
+    '<select class="mi" id="rfMeth">'+FN_METHODS.map(function(m){return '<option value="'+m+'"'+(m===(e.method||'cash')?' selected':'')+'>'+mxE(fnMeth(m))+'</option>';}).join('')+'</select>'+
+    '<input class="mi" id="rfDate" type="date" value="'+(e.entry_date||mxIso(new Date()))+'">'+
+    '<input class="mi" id="rfDesc" placeholder="'+mxE(mxTr('Reason (e.g. package cancelled)','Neden (ör. paket iptali)'))+'" value="'+mxE(e.description||'')+'">',
+    [{label:mxTr('Cancel','Vazgeç'),cls:'bcancel',fn:mxClose}].concat(id?[{label:mxTr('Delete','Sil'),cls:'bcancel',fn:async function(){if(!confirm(mxTr('Delete this refund?','Bu iade silinsin mi?')))return;await db.from('finance_entries').update({deleted_at:new Date().toISOString()}).eq('id',id);mxClose();fnLoad();if(preset.after)preset.after();}}]:[]).concat([{label:mxTr('Save','Kaydet'),fn:async function(){
+      if(!fnRfPat){alert(mxTr('Choose the patient.','Hastayı seçin.'));return;}
+      var amt=mxNum(mxV('rfAmt'));if(!amt||amt<=0){alert(mxTr('Enter the amount.','Tutarı girin.'));return;}
+      var ch=document.getElementById('rfCharge');
+      var row={clinic_id:cid,kind:'expense',category:'refund',amount:amt,method:document.getElementById('rfMeth').value,entry_date:mxV('rfDate'),patient_id:fnRfPat.id,
+        charge_id:ch.style.display!=='none'&&ch.value?ch.value:null,description:mxV('rfDesc')||null};
+      var r=id?await db.from('finance_entries').update(row).eq('id',id):await db.from('finance_entries').insert(Object.assign({currency:clinic.currency||null},row));
+      if(r.error){alert(mxTr('Something went wrong. Please try again.','Bir sorun oluştu. Tekrar deneyin.'));return;}
+      mxClose();fnLoad();if(preset.after)preset.after();}}]));
+  fnRfRender(e.charge_id||null);
+}
+function fnRfRender(sel){
+  var box=document.getElementById('rfPat');if(!box)return;var ch=document.getElementById('rfCharge');
+  if(fnRfPat){
+    box.innerHTML='<div class="mi" style="display:flex;justify-content:space-between"><span>'+mxE((fnRfPat.name||'')+' '+(fnRfPat.surname||''))+'</span><a style="cursor:pointer;color:#C0614A" onclick="fnRfPat=null;fnRfRender()">✕</a></div>';
+    db.rpc('patient_account',{p_patient_id:fnRfPat.id}).then(function(r){var acc=r.data||{};
+      var paid=(acc.charges||[]).filter(function(c){return Number(c.paid)>0.009||c.id===sel;});
+      if(!paid.length){ch.style.display='none';return;}
+      ch.innerHTML='<option value="">'+mxE(mxTr('Not linked to a charge','Borca bağlı değil'))+'</option>'+paid.map(function(c){return '<option value="'+c.id+'"'+(c.id===sel?' selected':'')+'>'+mxE(mxTr('Refund of','İade edilen'))+': '+mxE(c.description||mxDate(c.charge_date))+' · '+mxE(mxTr('paid','ödenen'))+' '+mxMoney(c.paid)+'</option>';}).join('');
+      ch.style.display='block';});
+  }else{
+    ch.style.display='none';
+    box.innerHTML='<input class="mi" id="rfQ" placeholder="'+mxE(mxTr('Search patient','Hasta ara'))+'" oninput="fnRfSearch(this.value)"><div id="rfRes"></div>';
+  }
+}
+var fnRfT=null;
+function fnRfSearch(q){clearTimeout(fnRfT);var res=document.getElementById('rfRes');if(q.trim().length<2){res.innerHTML='';return;}
+  fnRfT=setTimeout(async function(){var r=await db.rpc('search_patients',{p_clinic_id:cid,p_query:q.trim()});var list=(r.data||[]).slice(0,6);window._rfPats=list;
+    res.innerHTML=list.map(function(p,i){return '<div style="padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(245,241,235,.06)" onclick="fnRfPat=window._rfPats['+i+'];fnRfRender()">'+mxE((p.name||'')+' '+(p.surname||''))+' <span style="color:rgba(245,241,235,.4)">'+mxE(p.phone||'')+'</span></div>';}).join('');},300);}
 // Year view: profit per month (fees − products used − operating expenses), stock purchases excluded
 function fnMonthly(){
   var rows=(fnProfit&&fnProfit.by_month)||[];if(rows.length<2)return '';
@@ -3057,12 +3154,13 @@ async function fnAccount(pid){
       '<div style="font-size:12px;color:rgba(245,241,235,.5)">'+mxDate(c.charge_date)+' · '+mxMoney(c.paid)+' / '+mxMoney(c.amount)+'</div>'+
       (c.installments||[]).map(function(i){var s=st[i.status]||st.open;return '<div style="display:flex;gap:10px;font-size:13px;margin-top:4px"><span style="width:20px;color:rgba(245,241,235,.4)">'+i.seq+'.</span><span style="width:86px">'+mxDate(i.due_date)+'</span><span style="flex:1">'+mxMoney(i.amount)+'</span><span style="color:'+s[2]+'">'+mxTr(s[0],s[1])+'</span></div>';}).join('')+'</div>';});
   if((acc.payments||[]).length)h+='<div class="sec" style="margin-top:10px">'+mxTr('Payments','Ödemeler')+'</div>'+(acc.payments||[]).map(function(x){return '<div style="font-size:13px;padding:3px 0">'+mxDate(x.entry_date)+' · <b style="color:#3AB06A">'+mxMoney(x.amount)+'</b> · '+mxE(fnMeth(x.method))+(x.invoice_no?' · '+mxE(x.invoice_no):'')+'</div>';}).join('');
+  if((acc.refunds||[]).length)h+='<div class="sec" style="margin-top:10px">'+mxTr('Refunds','İadeler')+'</div>'+(acc.refunds||[]).map(function(x){return '<div style="font-size:13px;padding:3px 0;cursor:pointer" onclick="fnRefundModal(\''+x.id+'\')">'+mxDate(x.entry_date)+' · <b style="color:#C0614A">− '+mxMoney(x.amount)+'</b> · '+mxE(fnMeth(x.method))+(x.description?' · '+mxE(x.description):'')+'</div>';}).join('');
   if(!(acc.charges||[]).length&&!(acc.payments||[]).length)h+='<div style="color:rgba(245,241,235,.4);font-size:13px">'+mxTr('No charges or payments for this patient.','Bu hastanın borç veya ödeme kaydı yok.')+'</div>';
   mxOpen((p.name||'')+' '+(p.surname||''),h,[{label:'Cancel',cls:'bcancel',fn:mxClose},
-    {label:mxTr('Add charge','Borç ekle'),cls:'bcancel',fn:function(){fnChargeModal(p);}},
+    {label:mxTr('Add charge','Borç ekle'),cls:'bcancel',fn:function(){fnChargeModal(p);}}].concat((acc.payments||[]).length?[{label:mxTr('Refund','İade'),cls:'bcancel',fn:function(){fnRefundModal(null,{patient:p,after:function(){fnAccount(pid);}});}}]:[]).concat([
     {label:mxTr('Take payment','Ödeme al'),fn:function(){var open=(acc.charges||[]).filter(function(c){return Number(c.amount)-Number(c.paid)>0.009;}).sort(function(a,b){return a.charge_date<b.charge_date?-1:1;});
       var nx=null;if(open.length){var ins=(open[0].installments||[]).find(function(i){return Number(i.remaining)>0.009;});nx=ins?Number(ins.remaining):Number(open[0].amount)-Number(open[0].paid);}
-      fnEntryModal(null,{kind:'income',patient:p,charge_id:open.length?open[0].id:null,amount:nx,category:'treatment',after:function(){fnAccount(pid);}});}}]);
+      fnEntryModal(null,{kind:'income',patient:p,charge_id:open.length?open[0].id:null,amount:nx,category:'treatment',after:function(){fnAccount(pid);}});}}]));
 }
 function fnChargeModal(p){
   mxOpen(mxTr('Add charge','Borç ekle'),
@@ -4972,7 +5070,8 @@ var REL_ITEMS=[
  ['stockuse','Stok → lot: Kullanıldı (hastasız) ile düşüm; ÜTS ürününde ÜTS / İTS ekranında "Tüketim (hastasız)" bildirimi gönderildi','1.2.12'],
  ['trkignore','Ayarlar › ÜTS / İTS › Hatalı: satırda “Yoksay” → onay → satır hatalı listesinden çıkıyor, “Atlandı” listesinde “Yoksayıldı (kim, tarih)” notuyla duruyor; “Tekrar dene” ile geri alınabiliyor','1.2.13'],
  ['msgnotify','Panel › Mesajlar: “🔔 Bildirimleri aç” → tarayıcı izni; panel başka sekmedeyken gelen mesajda ses + “Klirena – Yeni mesaj” bildirimi (hasta adı / metin yok), sekme başlığı yanıp sönüyor; açık yazışmada uyarı yok; “Uyarı kapalı”yken ses yok','1.2.13'],
- ['pushmsg','Uygulama: ilk açılışta bildirim izni → uygulama kapalı/kilitliyken gelen mesajda “Klirena – Yeni mesaj / N okunmamış mesaj” bildirimi (hasta adı ve metin yok); bildirime dokununca Mesajlar açılıyor; Ayarlar › Mesaj bildirimleri Kapalı → bildirim gelmiyor; çıkış yapınca bildirim gelmiyor','1.2.13']
+ ['pushmsg','Uygulama: ilk açılışta bildirim izni → uygulama kapalı/kilitliyken gelen mesajda “Klirena – Yeni mesaj / N okunmamış mesaj” bildirimi (hasta adı ve metin yok); bildirime dokununca Mesajlar açılıyor; Ayarlar › Mesaj bildirimleri Kapalı → bildirim gelmiyor; çıkış yapınca bildirim gelmiyor','1.2.13'],
+ ['collections','Muhasebe › Tahsilat (panel) ve uygulamada Tahsilat ekranı: 4 kutu (tahsil edilen + geçen aya göre, tahsil edilecek + gecikmiş hasta, iade, işlem başı ortalama) doğru; Tümü / Tahsil edildi / Bekliyor / Gecikmiş / İade ve ödeme şekli filtresi; “Tahsil et” borca bağlı tahsilat açıyor; gecikmişte WhatsApp hatırlatma; İade kaydı → hasta hesabında İadeler ve kalan borç doğru, kâr raporunda gider sayılmıyor','1.2.14']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -5979,7 +6078,7 @@ var I18N_TR={'LAB TESTS':'TAHLİLLER','Results':'Sonuçlar','Add file':'Dosya ek
 'All day':'Tüm gün','Reason (e.g. Surgery)':'Açıklama (ör. Ameliyat)','Block time':'Saat kapat','No blocked times.':'Kapalı saat yok.','End time must be after start time.':'Bitiş saati başlangıçtan sonra olmalı.',
 'Calendar subscription':'Takvim aboneliği','Your appointments and blocked times in your iPhone, Google or Outlook calendar (one-way, refreshes every 15 min to a few hours).':'Randevular ve kapalı saatler iPhone, Google veya Outlook takviminizde (tek yönlü, 15 dk – birkaç saatte bir yenilenir).',
 'Enable calendar subscription':'Takvim aboneliğini aç','Show patient names':'Hasta adlarını göster','Add to Google Calendar':'Google Takvim\'e ekle','Add to iPhone / Mac calendar':'iPhone / Mac takvimine ekle','Regenerate link':'Linki yenile',
-'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','Custom / compare':'Özel / karşılaştır','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','MESSAGES':'MESAJLAR','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','SUMMARY':'ÖZET',
+'Regenerate link? The old link will stop working.':'Link yenilensin mi? Eski link çalışmaz hale gelir.','PROCEDURES':'İŞLEMLER','Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.':'Bu tarayıcı ses tanımayı desteklemiyor. Chrome, Edge veya Safari kullanın.','Microphone permission was denied.':'Mikrofon izni verilmedi.','Reports':'Raporlar','Last 12 months':'Son 12 ay','Custom / compare':'Özel / karşılaştır','E-mail':'E-posta','Invalid TC Kimlik No':'Geçersiz TC Kimlik No','A patient with this TC Kimlik No is already registered':'Bu TC Kimlik No ile kayıtlı bir hasta var','RECALLS':'GERİ ÇAĞIR','STOCK':'STOK','MESSAGES':'MESAJLAR','ACCOUNTING':'MUHASEBE','ENTRIES':'HAREKETLER','RECEIVABLES':'ALACAKLAR','COLLECTIONS':'TAHSİLAT','SUMMARY':'ÖZET',
 'Stock':'Stok','Products, lots and expiry. Injection maps in the app deduct stock automatically.':'Ürünler, lotlar ve son kullanma tarihleri. Uygulamadaki enjeksiyon haritaları stoktan otomatik düşer.',
 '+ Add product':'+ Ürün ekle','Add product':'Ürün ekle','Edit product':'Ürünü düzenle','Products':'Ürünler','Alerts':'Uyarılar','Low stock':'Düşük stok','Expiring soon':'SKT yaklaşıyor','Opened vial expired':'Açık şişe süresi doldu',
 'No products yet. Add a product, then receive a lot.':'Henüz ürün yok. Ürün ekleyin, ardından lot girişi yapın.','Product':'Ürün','Unit':'Birim','Remaining':'Kalan','Next expiry':'SKT','Min stock':'Min. stok',

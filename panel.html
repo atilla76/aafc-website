@@ -5072,7 +5072,8 @@ var REL_ITEMS=[
  ['msgnotify','Panel › Mesajlar: “🔔 Bildirimleri aç” → tarayıcı izni; panel başka sekmedeyken gelen mesajda ses + “Klirena – Yeni mesaj” bildirimi (hasta adı / metin yok), sekme başlığı yanıp sönüyor; açık yazışmada uyarı yok; “Uyarı kapalı”yken ses yok','1.2.13'],
  ['pushmsg','Uygulama: ilk açılışta bildirim izni → uygulama kapalı/kilitliyken gelen mesajda “Klirena – Yeni mesaj / N okunmamış mesaj” bildirimi (hasta adı ve metin yok); bildirime dokununca Mesajlar açılıyor; Ayarlar › Mesaj bildirimleri Kapalı → bildirim gelmiyor; çıkış yapınca bildirim gelmiyor','1.2.13'],
  ['collections','Muhasebe › Tahsilat (panel) ve uygulamada Tahsilat ekranı: 4 kutu (tahsil edilen + geçen aya göre, tahsil edilecek + gecikmiş hasta, iade, işlem başı ortalama) doğru; Tümü / Tahsil edildi / Bekliyor / Gecikmiş / İade ve ödeme şekli filtresi; “Tahsil et” borca bağlı tahsilat açıyor; gecikmişte WhatsApp hatırlatma; İade kaydı → hasta hesabında İadeler ve kalan borç doğru, kâr raporunda gider sayılmıyor','1.2.14'],
- ['bdgreet','Ana ekran › Bugünün doğum günleri: WhatsApp/SMS gönderince ya da ✓ ile işaretleyince hasta “Kutlandı” oluyor ve ana ekran uyarısından düşüyor (hepsi kutlanınca uyarı kayboluyor); ↺ ile geri alınıyor (panel + uygulama)','1.2.14']
+ ['bdgreet','Ana ekran › Bugünün doğum günleri: WhatsApp/SMS gönderince ya da ✓ ile işaretleyince hasta “Kutlandı” oluyor ve ana ekran uyarısından düşüyor (hepsi kutlanınca uyarı kayboluyor); ↺ ile geri alınıyor (panel + uygulama)','1.2.14'],
+ ['msgdel','Mesajlar: yazışmayı sola kaydır / uzun bas (uygulama) veya 🗑 (panel) → onay → yazışma ve mesajları siliniyor; kişi yeniden yazınca yeni yazışma açılıyor. Ana ekranda “Mesajlar” kartı yalnızca okunmamış mesaj varken görünüyor','1.2.14']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -5246,12 +5247,24 @@ async function msgChat(id,keep){
   var pt=t.patient_id?'<a href="#" style="color:#B89A6A;font-size:13px" onclick="goPatient(\''+t.patient_id+'\');return false">'+mxE(mxTr('Patient card','Hasta kartı'))+'</a>':'<a href="#" style="color:rgba(245,241,235,.6);font-size:13px" onclick="msgLink(\''+t.id+'\');return false">'+mxE(mxTr('Link to patient','Hastaya bağla'))+'</a>';
   var draft=(document.getElementById('msgIn')||{}).value||'';
   document.getElementById('msgChat').innerHTML=
-    '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:'+k[0]+'"></span><b style="flex:1">'+mxE(msgTitle(t))+'</b><span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(k[1])+(t.peer_phone?' · '+mxE(t.peer_phone):'')+'</span>'+pt+'</div>'+
+    '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:'+k[0]+'"></span><b style="flex:1">'+mxE(msgTitle(t))+'</b><span style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(k[1])+(t.peer_phone?' · '+mxE(t.peer_phone):'')+'</span>'+pt+'<button class="bcancel" title="'+mxE(mxTr('Delete conversation','Yazışmayı sil'))+'" onclick="msgDelete(\''+t.id+'\')" style="padding:3px 9px;font-size:14px">🗑</button></div>'+
     '<div id="msgScroll" style="flex:1;overflow:auto;padding:12px 16px">'+msgs+'</div>'+
     (open?'':'<div style="margin:0 16px 8px;padding:9px 12px;border-radius:10px;background:rgba(212,150,58,.12);border:1px solid rgba(212,150,58,.35);color:#E0B86A;font-size:12.5px">'+mxE(mxTr('The 24-hour reply window has closed. Free-form messages can be sent again once the person writes.','24 saatlik cevap süresi doldu. Kişi yeniden yazana kadar serbest mesaj gönderilemez.'))+'</div>')+
     '<div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.07)"><input type="file" id="msgFile" style="display:none" accept="image/*,video/*,audio/*,application/pdf" onchange="msgSendFile(this)"><button class="bcancel" title="'+mxE(mxTr('Send photo or file','Fotoğraf veya dosya gönder'))+'" '+(open?'':'disabled ')+'onclick="document.getElementById(\'msgFile\').click()" style="padding:0 12px;font-size:17px">📎</button><textarea id="msgIn" class="mi" rows="2" style="flex:1;resize:none;margin:0" '+(open?'':'disabled ')+'placeholder="'+mxE(mxTr('Write a message…','Mesaj yaz…'))+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();msgSend();}"></textarea><button class="bsave" id="msgBtn" '+(open?'':'disabled ')+'onclick="msgSend()">'+mxE(mxTr('Send','Gönder'))+'</button></div>';
   var inp=document.getElementById('msgIn');if(inp&&draft)inp.value=draft;
   var sc=document.getElementById('msgScroll');sc.scrollTop=sc.scrollHeight;
+}
+function msgDelete(id){
+  mxOpen(mxTr('Delete conversation','Yazışmayı sil'),'<div style="font-size:13.5px;line-height:1.5">'+mxE(mxTr("Delete this conversation and all its messages from Klirena? Messages on the patient's phone are not deleted; if they write again a new conversation opens.","Bu yaz\u0131\u015fma ve t\u00fcm mesajlar\u0131 Klirena'dan silinsin mi? Hastan\u0131n telefonundaki mesajlar silinmez; yeniden yazarsa yeni yaz\u0131\u015fma a\u00e7\u0131l\u0131r."))+'</div>',[
+    {label:mxTr('Cancel','İptal'),cls:'bcancel',fn:mxClose},
+    {label:mxTr('Delete','Sil'),cls:'bsave',fn:async function(){
+      var r=await db.rpc('msg_thread_delete',{p_thread_id:id});
+      if(r.error){mxClose();mxOpen(mxTr('Delete conversation','Yazışmayı sil'),'<div style="color:#E05555;font-size:13px">'+mxE(r.error.message)+'</div>',[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);return;}
+      var p=(r.data||[]).filter(Boolean);if(p.length){try{await db.storage.from('msg-media').remove(p);}catch(e){}}
+      mxClose();msgThreads=msgThreads.filter(function(t){return t.id!==id;});
+      if(msgSel===id){msgSel=null;msgEmptyChat();}
+      msgRender();
+    }}]);
 }
 async function msgSend(){
   var inp=document.getElementById('msgIn'),btn=document.getElementById('msgBtn'),txt=(inp.value||'').trim();if(!txt||!msgSel)return;

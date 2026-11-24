@@ -5073,7 +5073,8 @@ var REL_ITEMS=[
  ['pushmsg','Uygulama: ilk açılışta bildirim izni → uygulama kapalı/kilitliyken gelen mesajda “Klirena – Yeni mesaj / N okunmamış mesaj” bildirimi (hasta adı ve metin yok); bildirime dokununca Mesajlar açılıyor; Ayarlar › Mesaj bildirimleri Kapalı → bildirim gelmiyor; çıkış yapınca bildirim gelmiyor','1.2.13'],
  ['collections','Muhasebe › Tahsilat (panel) ve uygulamada Tahsilat ekranı: 4 kutu (tahsil edilen + geçen aya göre, tahsil edilecek + gecikmiş hasta, iade, işlem başı ortalama) doğru; Tümü / Tahsil edildi / Bekliyor / Gecikmiş / İade ve ödeme şekli filtresi; “Tahsil et” borca bağlı tahsilat açıyor; gecikmişte WhatsApp hatırlatma; İade kaydı → hasta hesabında İadeler ve kalan borç doğru, kâr raporunda gider sayılmıyor','1.2.14'],
  ['bdgreet','Ana ekran › Bugünün doğum günleri: WhatsApp/SMS gönderince ya da ✓ ile işaretleyince hasta “Kutlandı” oluyor ve ana ekran uyarısından düşüyor (hepsi kutlanınca uyarı kayboluyor); ↺ ile geri alınıyor (panel + uygulama)','1.2.14'],
- ['msgdel','Mesajlar: yazışmayı sola kaydır / uzun bas (uygulama) veya 🗑 (panel) → onay → yazışma ve mesajları siliniyor; kişi yeniden yazınca yeni yazışma açılıyor. Ana ekranda “Mesajlar” kartı yalnızca okunmamış mesaj varken görünüyor','1.2.14']
+ ['msgdel','Mesajlar: yazışmayı sola kaydır / uzun bas (uygulama) veya 🗑 (panel) → onay → yazışma ve mesajları siliniyor; kişi yeniden yazınca yeni yazışma açılıyor. Ana ekranda “Mesajlar” kartı yalnızca okunmamış mesaj varken görünüyor','1.2.14'],
+ ['assistant','Ana ekran › Kısayollar › Klirena Asistan (uygulama + panel): öneri sorularına veriye dayalı kısa yanıt; düğmeler doğru ekranı açıyor; ÜTS “Yeniden gönder” onay istiyor; yanıtlarda hasta yalnızca baş harfle; yönetici olmayan kullanıcı muhasebe sorusunda “yetkiniz yok” alıyor; ücretsiz planda kilit → abonelik ekranı; sayaç (kullanılan/kota) artıyor','1.2.14']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
@@ -6015,6 +6016,66 @@ function hmAlert(tone,icon,title,sub,on){
   var c={red:'224,85,85',amber:'212,150,58',gold:'184,154,106',teal:'42,158,138'}[tone];
   return '<div class="hm-alert" style="background:rgba('+c+',0.10);border-color:rgba('+c+',0.35)" onclick="'+on+'"><div class="ic" style="background:rgba('+c+',0.2)">'+icon+'</div><div style="min-width:0"><div class="t">'+mxE(title)+'</div>'+(sub?'<div class="s">'+mxE(sub)+'</div>':'')+'</div></div>';
 }
+// ============ KLIRENA ASİSTAN (edge function assistant; read-only, paid clinics) ============
+var asMsgs=[],asBusy=false,asQ=null;
+async function asStatus(){var r=await db.rpc('ai_quota_status');asQ=r.data||{};var l=document.getElementById('asLock');if(l&&asQ.premium===false)l.textContent='🔒';var c=document.getElementById('asCard');if(c)c.style.display=(asQ.premium===false||asQ.enabled)?'flex':'none';return asQ;}
+async function asOpen(){
+  if(!asQ)await asStatus();
+  if(asQ&&asQ.premium===false){mxOpen(mxTr('Klirena Assistant','Klirena Asistan'),'<div style="font-size:13.5px;line-height:1.5">'+mxE(mxTr('Klirena Assistant is available on paid plans.','Klirena Asistan ücretli planlarda kullanılabilir.'))+'</div>',[{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);return;}
+  mxOpen(mxTr('Klirena Assistant','Klirena Asistan'),
+    '<div style="font-size:11.5px;color:rgba(245,241,235,.5);margin:-4px 0 8px">'+mxE(mxTr("Only your clinic's data · read-only","Yalnızca kliniğinizin verisi · salt okunur"))+' <span id="asQuota"></span></div>'+
+    '<div id="asLog" style="height:52vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px"></div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><textarea id="asIn" class="mi" rows="2" style="flex:1;resize:none;margin:0" placeholder="'+mxE(mxTr('Ask a question…','Bir soru yazın…'))+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();asSend();}"></textarea><button class="bsave" id="asBtn" onclick="asSend()" style="padding:0 16px">↑</button></div>'+
+    '<div style="font-size:11px;color:rgba(245,241,235,.4);margin-top:6px">'+mxE(mxTr('Answers are generated automatically; double-check important ones. Medical decisions belong to the physician.','Yanıtlar otomatik üretilir; önemli konularda kontrol edin. Tıbbi kararlar hekime aittir.'))+'</div>',
+    [{label:mxTr('New chat','Yeni sohbet'),cls:'bimp2',fn:function(){if(!asBusy){asMsgs=[];asRender();}}},{label:mxTr('Close','Kapat'),cls:'bcancel',fn:mxClose}]);
+  var mxb=document.querySelector('#mxModal > div');if(mxb)mxb.style.maxWidth='640px';
+  asRender();setTimeout(function(){var i=document.getElementById('asIn');if(i)i.focus();},50);
+}
+function asRender(){
+  var el=document.getElementById('asLog');if(!el)return;
+  var q=document.getElementById('asQuota');if(q&&asQ&&asQ.quota)q.textContent='· '+(asQ.used||0)+'/'+asQ.quota;
+  if(!asMsgs.length&&!asBusy){
+    var qs=[mxTr('Why did the failed ÜTS / İTS notifications fail?','Hatalı ÜTS / İTS bildirimleri neden hatalı?'),mxTr('What is running low or close to expiry in stock?',"Stokta azalan veya SKT'si yaklaşan ne var?"),mxTr("How do this week's appointments look?",'Bu haftaki randevuların durumu nasıl?'),mxTr('Is the WhatsApp / Instagram connection working?','WhatsApp / Instagram bağlantısı çalışıyor mu?')];
+    el.innerHTML='<div style="text-align:center;color:#B89A6A;font-size:28px;margin-top:10px">✦</div><div style="text-align:center;font-size:13px;color:rgba(245,241,235,.65);margin:6px 10px 12px;line-height:1.5">'+mxE(mxTr('Ask about how your clinic is running: why a notification failed, what is running low, who is coming today… It looks at your data, explains and shows the next step; it never changes anything itself.',"Kliniğinizin işleyişiyle ilgili sorun: ÜTS'ye neden gitmedi, stokta ne azalıyor, bugün kimler geliyor… Veriye bakıp açıklar, yapılacak adımı gösterir; hiçbir şeyi kendisi değiştirmez."))+'</div>'+
+      qs.map(function(t,i){return '<button class="bimp2" style="text-align:left;padding:9px 12px;font-size:13px" onclick="asSend(this.textContent)">'+mxE(t)+'</button>';}).join('');
+    return;
+  }
+  el.innerHTML=asMsgs.map(function(m,mi){
+    var me=m.role==='user',err=m.role==='error';
+    var acts=(m.actions||[]).map(function(a,i){return '<button onclick="asAct('+mi+','+i+')" style="padding:5px 10px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid rgba(184,154,106,.6);'+(i===0?'background:#B89A6A;color:#12101E':'background:transparent;color:#B89A6A')+'">'+mxE(a.label)+'</button>';}).join('');
+    return '<div style="align-self:'+(me?'flex-end':'flex-start')+';max-width:86%;padding:8px 11px;border-radius:14px;'+(me?'border-bottom-right-radius:4px;background:rgba(184,154,106,.16);border:1px solid rgba(184,154,106,.35)':'border-bottom-left-radius:4px;background:#12101E;border:1px solid '+(err?'rgba(224,85,85,.5)':'rgba(255,255,255,.07)'))+'"><div style="font-size:13.5px;white-space:pre-wrap;line-height:1.45;'+(err?'color:#E07A6A':'')+'">'+mxE(m.text)+'</div>'+(acts?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+acts+'</div>':'')+'</div>';
+  }).join('')+(asBusy?'<div style="align-self:flex-start;font-size:13px;color:rgba(245,241,235,.55);padding:6px 4px">'+mxE(mxTr('Looking…','Bakıyorum…'))+'</div>':'');
+  el.scrollTop=el.scrollHeight;
+}
+function asPlain(s){return String(s||'').replace(/\*\*/g,'').replace(/^#+\s*/gm,'').replace(/^\s*[-*]\s+/gm,'• ').trim();}
+async function asSend(t){
+  var i=document.getElementById('asIn');var q=(t!==undefined?t:(i?i.value:'')).trim();if(!q||asBusy)return;
+  if(i)i.value='';asMsgs.push({role:'user',text:q});asBusy=true;asRender();
+  var hist=asMsgs.filter(function(m){return m.role!=='error';}).slice(-12).map(function(m){return {role:m.role,content:m.text};});
+  var d;
+  try{var r=await db.functions.invoke('assistant',{body:{messages:hist,lang:LANG}});d=r.data;
+    if(r.error){try{d=await r.error.context.json();}catch(e){d={error:'failed'};}}}catch(e){d={error:'failed'};}
+  d=d||{error:'failed'};asBusy=false;
+  if(!d.error){asMsgs.push({role:'assistant',text:asPlain(d.reply),actions:d.actions||[]});if(asQ){asQ.used=d.used;asQ.quota=d.quota;}}
+  else asMsgs.push({role:'error',text:({quota:mxTr("This month's question limit is used up. It resets next month.",'Bu ayki soru hakkınız doldu. Yeni ayda yenilenir.'),rate:mxTr('Too many questions at once; wait a minute.','Çok hızlı soruyorsunuz, bir dakika bekleyin.'),premium:mxTr('Klirena Assistant is available on paid plans.','Klirena Asistan ücretli planlarda kullanılabilir.'),not_configured:mxTr('The assistant is not enabled yet.','Asistan henüz etkinleştirilmedi.')})[d.error]||mxTr("The assistant couldn't answer right now. Try again shortly.",'Asistan şu an yanıt veremedi. Biraz sonra tekrar deneyin.')});
+  asRender();
+}
+async function asAct(mi,i){
+  var a=((asMsgs[mi]||{}).actions||[])[i];if(!a)return;
+  var go=function(fn){mxClose();fn();};
+  switch(a.type){
+    case 'open_patient':if(a.id)go(function(){goPatient(a.id);});break;
+    case 'open_tracking':go(function(){if(a.tab)trkFilt=a.tab;switchTab('trk');});break;
+    case 'tracking_retry':if(a.id&&confirm(mxTr('Send this notification again?','Bu bildirim yeniden gönderilsin mi?'))){var r=await db.rpc('track_retry',{p_id:a.id});asMsgs.push({role:r.error?'error':'assistant',text:r.error?r.error.message:mxTr('Queued to send again.','Yeniden gönderim kuyruğa alındı.')});asRender();}break;
+    case 'open_stock':go(function(){switchTab('stock');});break;
+    case 'open_appointments':go(function(){switchTab('appointments');});break;
+    case 'open_finance':case 'open_collections':go(function(){switchTab('finance');});break;
+    case 'open_recalls':case 'open_reminders':go(function(){switchTab('recall');});break;
+    case 'open_inbox':go(function(){switchTab('msg');});break;
+    case 'open_booking':go(function(){switchTab('booking');});break;
+    case 'open_support':go(function(){window.open('help.html','_blank');});break;
+  }
+}
 async function hmLoad(){
   var el=document.getElementById('hmBody');if(!el||!cid)return;
   var n=new Date(),hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
@@ -6076,7 +6137,9 @@ function hmRender(){
   if(s.installments_due!==null&&s.installments_due!==undefined)sc.push(['💰',mxTr('Accounting','Muhasebe'),"switchTab('finance')"]);
   sc.push(['📦',mxTr('Stock','Stok'),"switchTab('stock')"]);
   sc.push(['❓',mxTr('Help center','Yardım merkezi'),"window.open('help.html','_blank')"]);
-  h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Shortcuts','Kısayollar')+'</span></div><div class="hm-sc">'+
+  h+='<div class="hm-card"><div class="hm-h"><span>'+mxTr('Shortcuts','Kısayollar')+'</span></div>'+
+    '<button id="asCard" onclick="asOpen()" style="width:100%;display:flex;align-items:center;gap:12px;background:rgba(184,154,106,.12);border:1px solid rgba(184,154,106,.55);border-radius:14px;padding:12px 14px;margin-bottom:10px;cursor:pointer;color:#F5F1EB;font-family:inherit;text-align:left'+(asQ&&(asQ.premium===false||asQ.enabled)?'':';display:none')+'"><span style="width:38px;height:38px;border-radius:11px;background:rgba(184,154,106,.18);display:flex;align-items:center;justify-content:center;color:#B89A6A;font-size:19px">✦</span><span style="flex:1"><b style="display:block;font-size:14.5px">'+mxE(mxTr('Klirena Assistant','Klirena Asistan'))+'</b><span style="font-size:12.5px;color:rgba(245,241,235,.6)">'+mxE(mxTr('Ask about a problem: tracking, stock, appointments, payments…','Bir sorun sorun: ÜTS, stok, randevu, tahsilat…'))+'</span></span><span id="asLock" style="color:rgba(245,241,235,.4)">›</span></button>'+
+    '<div class="hm-sc">'+
     sc.map(function(x){return '<button'+(x[3]?' class="pri"':'')+' onclick="'+x[2]+'"><span class="e">'+x[0]+'</span>'+mxE(x[1])+'</button>';}).join('')+'</div></div>';
   if(!showSetup){
     var dn=steps.length-pend;
@@ -6084,6 +6147,7 @@ function hmRender(){
     if(hmSetupOpen)h=h.replace('<div class="hm-grid"><div>','<div class="hm-grid"><div>'+hmSetupHtml(st));
   }
   el.innerHTML=h+'</div></div></div>';
+  if(asQ){var lk=document.getElementById('asLock');if(lk&&asQ.premium===false)lk.textContent='🔒';}else asStatus();
 }
 </script>
 <script>

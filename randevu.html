@@ -223,7 +223,7 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
 
 // Bot protection: booking and waitlist go through the booking-submit function, which checks a Cloudflare
 // Turnstile token (invisible unless Cloudflare wants an interaction). TS_KEY is the public site key.
-const TS_KEY = '';
+const TS_KEY = '0x4AAAAAAGQjZePIzclWJ4D4';
 let tsId = null, tsWait = null;
 function tsLoad() {
   if (!TS_KEY || window.turnstile) return Promise.resolve();

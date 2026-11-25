@@ -6035,7 +6035,7 @@ function asRender(){
   var el=document.getElementById('asLog');if(!el)return;
   var q=document.getElementById('asQuota');if(q&&asQ&&asQ.quota)q.textContent='· '+(asQ.used||0)+'/'+asQ.quota;
   if(!asMsgs.length&&!asBusy){
-    var qs=[mxTr('Why did the failed ÜTS / İTS notifications fail?','Hatalı ÜTS / İTS bildirimleri neden hatalı?'),mxTr('What is running low or close to expiry in stock?',"Stokta azalan veya SKT'si yaklaşan ne var?"),mxTr("How do this week's appointments look?",'Bu haftaki randevuların durumu nasıl?'),mxTr('How do I send a consent form to a patient?','Hastaya onam formu nasıl gönderilir?')];
+    var qs=[LANG==='tr'?'Hatalı ÜTS / İTS bildirimleri neden hatalı?':mxTr('Which patients are due for a check-up this week?','Bu hafta kontrolü gelen hastalar kimler?'),mxTr('What is running low or close to expiry in stock?',"Stokta azalan veya SKT'si yaklaşan ne var?"),mxTr("How do this week's appointments look?",'Bu haftaki randevuların durumu nasıl?'),mxTr('How do I send a consent form to a patient?','Hastaya onam formu nasıl gönderilir?')];
     el.innerHTML='<div style="text-align:center;color:#B89A6A;font-size:28px;margin-top:10px">✦</div><div style="text-align:center;font-size:13px;color:rgba(245,241,235,.65);margin:6px 10px 12px;line-height:1.5">'+mxE(mxTr("Ask anything about your clinic and Klirena: why a notification failed, what is running low, how to send a consent, where the booking link is… It checks your data and the help center, explains and shows the next step; it never changes anything itself.","Kliniğiniz ve Klirena hakkında her şeyi sorun: ÜTS'ye neden gitmedi, stokta ne azalıyor, onam nasıl gönderilir, online randevu linki nerede… Verinize ve yardım merkezine bakıp açıklar, yapılacak adımı gösterir; hiçbir şeyi kendisi değiştirmez."))+'</div>'+
       qs.map(function(t,i){return '<button class="bimp2" style="text-align:left;padding:9px 12px;font-size:13px" onclick="asSend(this.textContent)">'+mxE(t)+'</button>';}).join('');
     return;
@@ -6043,9 +6043,23 @@ function asRender(){
   el.innerHTML=asMsgs.map(function(m,mi){
     var me=m.role==='user',err=m.role==='error';
     var acts=(m.actions||[]).map(function(a,i){return '<button onclick="asAct('+mi+','+i+')" style="padding:5px 10px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid rgba(184,154,106,.6);'+(i===0?'background:#B89A6A;color:#12101E':'background:transparent;color:#B89A6A')+'">'+mxE(a.label)+'</button>';}).join('');
-    return '<div style="align-self:'+(me?'flex-end':'flex-start')+';max-width:86%;padding:8px 11px;border-radius:14px;'+(me?'border-bottom-right-radius:4px;background:rgba(184,154,106,.16);border:1px solid rgba(184,154,106,.35)':'border-bottom-left-radius:4px;background:#12101E;border:1px solid '+(err?'rgba(224,85,85,.5)':'rgba(255,255,255,.07)'))+'"><div style="font-size:13.5px;white-space:pre-wrap;line-height:1.45;'+(err?'color:#E07A6A':'')+'">'+mxE(m.text)+'</div>'+(acts?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+acts+'</div>':'')+'</div>';
+    return '<div style="align-self:'+(me?'flex-end':'flex-start')+';max-width:86%;padding:8px 11px;border-radius:14px;'+(me?'border-bottom-right-radius:4px;background:rgba(184,154,106,.16);border:1px solid rgba(184,154,106,.35)':'border-bottom-left-radius:4px;background:#12101E;border:1px solid '+(err?'rgba(224,85,85,.5)':'rgba(255,255,255,.07)'))+'"><div style="font-size:13.5px;line-height:1.45;'+(me||err?'white-space:pre-wrap;':'')+(err?'color:#E07A6A':'')+'">'+(m.role==='assistant'?asMd(m.text):mxE(m.text))+'</div>'+(acts?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+acts+'</div>':'')+'</div>';
   }).join('')+(asBusy?'<div style="align-self:flex-start;font-size:13px;color:rgba(245,241,235,.55);padding:6px 4px">'+mxE(mxTr('Looking…','Bakıyorum…'))+'</div>':'');
   el.scrollTop=el.scrollHeight;
+}
+function asMd(t){
+  var lines=String(t||'').replace(/\r/g,'').split('\n'),out=[],tbl=null;
+  var inl=function(x){return mxE(x).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');};
+  var flush=function(){if(!tbl)return;var h='<table style="border-collapse:collapse;margin:6px 0;font-size:12.5px;width:100%">';
+    tbl.forEach(function(r,ri){h+='<tr>'+r.map(function(c,ci){var tag=ri===0?'th':'td';return '<'+tag+' style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:'+(ci===0?'left':'right')+';'+(ri===0?'color:#B89A6A;font-weight:600':'')+(ci===0&&ri>0?';color:rgba(245,241,235,.75)':'')+'">'+inl(c)+'</'+tag+'>';}).join('')+'</tr>';});
+    out.push(h+'</table>');tbl=null;};
+  lines.forEach(function(l){var x=l.trim();
+    if(/^\|.*\|$/.test(x)){if(/^\|[\s:\-|]+\|$/.test(x))return;(tbl=tbl||[]).push(x.slice(1,-1).split('|').map(function(c){return c.trim();}));return;}
+    flush();
+    if(/^#+\s/.test(x)){out.push('<div style="font-weight:600;color:#B89A6A;margin-top:4px">'+inl(x.replace(/^#+\s*/,''))+'</div>');return;}
+    if(/^[-*•]\s+/.test(x)){out.push('<div style="padding-left:12px;text-indent:-10px">• '+inl(x.replace(/^[-*•]\s+/,''))+'</div>');return;}
+    out.push(x?'<div>'+inl(x)+'</div>':'<div style="height:6px"></div>');});
+  flush();return out.join('');
 }
 function asPlain(s){return String(s||'').replace(/\*\*/g,'').replace(/^#+\s*/gm,'').replace(/^\s*[-*]\s+/gm,'• ').trim();}
 async function asSend(t){
@@ -6056,7 +6070,7 @@ async function asSend(t){
   try{var r=await db.functions.invoke('assistant',{body:{messages:hist,lang:LANG}});d=r.data;
     if(r.error){try{d=await r.error.context.json();}catch(e){d={error:'failed'};}}}catch(e){d={error:'failed'};}
   d=d||{error:'failed'};asBusy=false;
-  if(!d.error){asMsgs.push({role:'assistant',text:asPlain(d.reply),actions:d.actions||[]});if(asQ){asQ.used=d.used;asQ.quota=d.quota;}}
+  if(!d.error){asMsgs.push({role:'assistant',text:String(d.reply||'').trim(),actions:d.actions||[]});if(asQ){asQ.used=d.used;asQ.quota=d.quota;}}
   else asMsgs.push({role:'error',text:({quota:mxTr("This month's question limit is used up. It resets next month.",'Bu ayki soru hakkınız doldu. Yeni ayda yenilenir.'),rate:mxTr('Too many questions at once; wait a minute.','Çok hızlı soruyorsunuz, bir dakika bekleyin.'),premium:mxTr('Klirena Assistant is available on paid plans.','Klirena Asistan ücretli planlarda kullanılabilir.'),not_configured:mxTr('The assistant is not enabled yet.','Asistan henüz etkinleştirilmedi.')})[d.error]||mxTr("The assistant couldn't answer right now. Try again shortly.",'Asistan şu an yanıt veremedi. Biraz sonra tekrar deneyin.')});
   asRender();
 }

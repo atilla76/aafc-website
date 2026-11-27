@@ -2143,7 +2143,7 @@ async function repLoad(){
   else{f=new Date(now.getFullYear(),now.getMonth(),1);pf=new Date(now.getFullYear(),now.getMonth()-1,1);var ld=new Date(now.getFullYear(),now.getMonth(),0).getDate();pt=new Date(pf.getFullYear(),pf.getMonth(),Math.min(now.getDate(),ld));}
   document.getElementById('repSub').textContent=dmy(mxIso(f))+' – '+dmy(mxIso(t));
   var days=Math.round((t-f)/864e5)+1;
-  var rr=await Promise.all([db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(pf),p_to:mxIso(pt)}),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:days}),db.rpc('get_insights',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)})]);
+  var rr=await Promise.all([db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_reports',{p_clinic_id:cid,p_from:mxIso(pf),p_to:mxIso(pt)}),db.rpc('get_recall_stats',{p_clinic_id:cid,p_days:days}),db.rpc('get_insights',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)}),db.rpc('get_age_distribution',{p_clinic_id:cid,p_from:mxIso(f),p_to:mxIso(t)})]);
   var r=rr[0];
   if(r.error||!r.data){b.innerHTML='<div class="loader">'+mxE(mxTr('Could not load statistics.','İstatistikler yüklenemedi.'))+' <a href="#" onclick="repLoad();return false" style="color:#B89A6A">'+mxE(mxTr('Try again','Tekrar dene'))+'</a></div>';return;}
   var d=r.data,p=rr[1].data||{},rs=rr[2].data||{},pt0=d.patients||{},pp=p.patients||{},ap=d.appointments||{},h='';
@@ -2191,6 +2191,7 @@ async function repLoad(){
     if(cr.length||bd){h+='<div class="imp-step"><h3>'+mxE(mxTr('Treatments done together','Birlikte yapılan işlemler'))+' <span style="font-weight:400;font-size:12px;color:rgba(245,241,235,.5)">'+mxE(mxTrV('On the same patients, since [d]','Aynı hastalarda, [d] tarihinden bu yana',{d:dmy(ins.cross_from)}))+'</span></h3>';
       if(bd&&fc)h+=crow(mxTr('Body patients who also had facial treatment','Vücut hastalarının yüze de işlem yaptıranları'),Math.round(100*bt/bd),bt+' / '+bd)+crow(mxTr('Facial patients who also had body treatment','Yüz hastalarının vücuda da işlem yaptıranları'),Math.round(100*bt/fc),bt+' / '+fc);
       h+=cr.map(function(x){return crow(mxTrV('[a] patients who also had [b]','[a] yaptıranların [b] de yaptıranları',{a:repCat(x.a),b:repCat(x.b)}),x.pct,x.both+' / '+x.a_patients);}).join('')+'</div>';}}
+  repAges=(rr[4]&&rr[4].data)||null;if(repAges)h+='<div class="imp-step" id="repAges">'+repAgesHtml()+'</div>';
   var tot=Number(ap.total||0);function pc(n){return tot?'%'+Math.round(100*Number(n||0)/tot):'—';}
   var sent=Number(rs.sent||0),bk=Number(rs.booked||0);
   h+='<div class="imp-step"><h3>'+mxE(mxTr('Appointments & recall','Randevular ve geri çağırma'))+'</h3><div class="imp-nums" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+
@@ -2204,6 +2205,15 @@ async function repLoad(){
   b.innerHTML=h;
 }
 
+var repAges=null,repAgesAll=false;
+function repAgesSet(all){repAgesAll=all;var el=document.getElementById('repAges');if(el)el.innerHTML=repAgesHtml();}
+function repAgesHtml(){var a=repAges||{},k=repAgesAll?'all':'seen',bs=a[k]||[],tot=bs.reduce(function(s,x){return s+Number(x.count||0);},0),mx=Math.max.apply(null,bs.map(function(x){return Number(x.count||0);}).concat([1]));
+  function chip(t,on,all){return '<button onclick="repAgesSet('+all+')" style="padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:6px;border:1px solid '+(on?'rgba(184,154,106,.6)':'rgba(245,241,235,.15)')+';background:'+(on?'rgba(184,154,106,.16)':'transparent')+';color:'+(on?'#B89A6A':'rgba(245,241,235,.6)')+'">'+mxE(t)+'</button>';}
+  var foot=[];if(a[k+'_avg']!=null)foot.push(mxTrV('Average age [n]','Ortalama yaş [n]',{n:a[k+'_avg']}));if(Number(a[k+'_unknown']||0))foot.push(mxTrV('No birth date [n]','Doğum tarihi olmayan [n]',{n:a[k+'_unknown']}));
+  return '<h3>'+mxE(mxTr('Age distribution','Yaş dağılımı'))+'</h3><div style="margin:4px 0 10px">'+chip(mxTr('Seen in period','Dönemde gelenler'),!repAgesAll,false)+chip(mxTr('All patients','Tüm hastalar'),repAgesAll,true)+'</div>'+
+    (tot?bs.map(function(x){var c=Number(x.count||0);return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>'+mxE(x.band)+'</span><span style="font-weight:700">'+c+' <span style="font-weight:400;color:rgba(245,241,235,.5)">· %'+Math.round(100*c/tot)+'</span></span></div><div style="height:6px;background:rgba(245,241,235,.06);border-radius:4px;margin-top:3px"><div style="height:6px;border-radius:4px;background:#8E86D6;width:'+(100*c/mx)+'%"></div></div></div>';}).join('')
+      :'<div style="font-size:12px;color:rgba(245,241,235,.5)">'+mxE(mxTr('No patients seen in this period.','Bu dönemde gelen hasta yok.'))+'</div>')+
+    (foot.length?'<div style="font-size:12px;color:rgba(245,241,235,.5);margin-top:6px">'+mxE(foot.join('  ·  '))+'</div>':'');}
 function getPeriod(stats,key){
   var p=stats[key]||{};
   return {patients:+(p.patients||0),visits:+(p.visits||0),controls:+(p.controls||0)};
@@ -5074,7 +5084,8 @@ var REL_ITEMS=[
  ['collections','Muhasebe › Tahsilat (panel) ve uygulamada Tahsilat ekranı: 4 kutu (tahsil edilen + geçen aya göre, tahsil edilecek + gecikmiş hasta, iade, işlem başı ortalama) doğru; Tümü / Tahsil edildi / Bekliyor / Gecikmiş / İade ve ödeme şekli filtresi; “Tahsil et” borca bağlı tahsilat açıyor; gecikmişte WhatsApp hatırlatma; İade kaydı → hasta hesabında İadeler ve kalan borç doğru, kâr raporunda gider sayılmıyor','1.2.14'],
  ['bdgreet','Ana ekran › Bugünün doğum günleri: WhatsApp/SMS gönderince ya da ✓ ile işaretleyince hasta “Kutlandı” oluyor ve ana ekran uyarısından düşüyor (hepsi kutlanınca uyarı kayboluyor); ↺ ile geri alınıyor (panel + uygulama)','1.2.14'],
  ['msgdel','Mesajlar: yazışmayı sola kaydır / uzun bas (uygulama) veya 🗑 (panel) → onay → yazışma ve mesajları siliniyor; kişi yeniden yazınca yeni yazışma açılıyor. Ana ekranda “Mesajlar” kartı yalnızca okunmamış mesaj varken görünüyor','1.2.14'],
- ['assistant','Ana ekran › Kısayollar › Klirena Asistan (uygulama + panel): öneri sorularına veriye dayalı kısa yanıt; düğmeler doğru ekranı açıyor; ÜTS “Yeniden gönder” onay istiyor; yanıtlarda hasta yalnızca baş harfle; yönetici olmayan kullanıcı muhasebe sorusunda “yetkiniz yok” alıyor; ücretsiz planda kilit → abonelik ekranı; sayaç (kullanılan/kota) artıyor','1.2.14']
+ ['assistant','Ana ekran › Kısayollar › Klirena Asistan (uygulama + panel): öneri sorularına veriye dayalı kısa yanıt; düğmeler doğru ekranı açıyor; ÜTS “Yeniden gönder” onay istiyor; yanıtlarda hasta yalnızca baş harfle; yönetici olmayan kullanıcı muhasebe sorusunda “yetkiniz yok” alıyor; ücretsiz planda kilit → abonelik ekranı; sayaç (kullanılan/kota) artıyor','1.2.14'],
+ ['ages','İstatistik › Yaş dağılımı (uygulama + panel): “Dönemde gelenler” / “Tüm hastalar” geçişi; 7 yaş aralığı, sayı ve %; ortalama yaş ve doğum tarihi olmayan sayısı; dönem değişince güncelleniyor','1.2.14']
 ];
 // items with a 3rd field count only from that version on (older rounds keep their own list)
 function relVer(v){return String(v||'').split('.').map(function(n){return ('000'+(parseInt(n,10)||0)).slice(-3);}).join('.');}
